@@ -4816,6 +4816,14 @@
       font-size: 13px;
       color: var(--navy);
     }
+    .tech-icon-img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
     .tech-badge:hover {
       transform: translateY(-1px);
       border-color: var(--navy);
@@ -5827,12 +5835,12 @@
               <div class="company-detail-item">
                 <div class="detail-label"><i class="ph ph-cpu"></i> Connected Tech Stack</div>
                 <div class="tech-stack-badges">
-                  <span class="tech-badge" title="Storefront Platform &amp; Core ERP"><i class="ph ph-shopping-bag"></i> Shopify Plus</span>
+                  <span class="tech-badge" title="Storefront Platform &amp; Core ERP"><img src="images/icon_shopify.png" class="tech-icon-img" alt="Shopify Plus"> Shopify Plus</span>
                   <span class="tech-badge" title="Distributed Multi-Node 3PL WMS"><i class="ph ph-warehouse"></i> ShipBob WMS</span>
-                  <span class="tech-badge" title="Helpdesk Macros &amp; Webhook Actions"><i class="ph ph-headset"></i> Gorgias</span>
-                  <span class="tech-badge" title="Event-Driven Holds &amp; Idempotency Rules"><i class="ph ph-git-fork"></i> Shopify Flow</span>
-                  <span class="tech-badge" title="Bulk Catalog Data Governance"><i class="ph ph-file-xls"></i> Matrixify</span>
-                  <span class="tech-badge" title="Real-Time Sev-1 Alerts"><i class="ph ph-bell-ringing"></i> Slack Webhooks</span>
+                  <span class="tech-badge" title="Helpdesk Macros &amp; Webhook Actions"><img src="images/icon_gorgias.png" class="tech-icon-img" alt="Gorgias"> Gorgias</span>
+                  <span class="tech-badge" title="Event-Driven Holds &amp; Idempotency Rules"><img src="images/icon_flow.png" class="tech-icon-img" alt="Shopify Flow"> Shopify Flow</span>
+                  <span class="tech-badge" title="Bulk Catalog Data Governance"><img src="images/icon_matrixify.png" class="tech-icon-img" alt="Matrixify"> Matrixify</span>
+                  <span class="tech-badge" title="Real-Time Sev-1 Alerts"><img src="images/icon_slack.png" class="tech-icon-img" alt="Slack Webhooks"> Slack Webhooks</span>
                   <span class="tech-badge" title="Network Payload Forensics"><i class="ph ph-terminal-window"></i> Chrome DevTools</span>
                 </div>
               </div>
@@ -7544,7 +7552,7 @@
 
     /* ─────────── INIT ─────────── */
     // Version migration: if old data lacks folder structure, wipe it so defaults load
-    const DATA_VERSION = 'v16-domain-subfolders-structure';
+    const DATA_VERSION = 'v17-brand-icons-integrated';
     if (localStorage.getItem('portfolio_data_version') !== DATA_VERSION) {
       localStorage.removeItem('portfolio_projects');
       localStorage.setItem('portfolio_data_version', DATA_VERSION);
