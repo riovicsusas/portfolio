@@ -1,6 +1,7 @@
 # Synapse Botanicals — Operations & Technical Architecture Blueprint
 
-> **Portfolio Context Section:** This briefing establishes the operational, logistical, and technical framework for all accompanying case studies, standard operating procedures (SOPs), and root cause analyses (RCAs).
+> [!NOTE] **Architectural Sandbox & Benchmark Context:**  
+> Synapse Botanicals is an engineered reference architecture and technical operations sandbox built to model, stress-test, and benchmark distributed direct-to-consumer (DTC) systems. All customer profiles, order cohorts (e.g., the 500-order routing cohort, 300-order promo cohort), and telemetry logs are synthetically generated from real Shopify Plus JSON schemas, ShipBob WMS rate cards, and UPS Zone 1–8 ground freight matrices. This controlled environment enables verifiable failure-mode testing without exposing customer PII or proprietary merchant data.
 
 ---
 

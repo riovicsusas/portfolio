@@ -5536,6 +5536,9 @@
     .deliverable-detail-title { font-size: 26px; font-weight: 900; color: var(--navy); margin-bottom: 4px; line-height: 1.25; }
     .deliverable-detail-category { font-size: 13.5px; font-weight: 700; color: #8A5A2B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 22px; }
     .deliverable-full-overview-box { background: var(--bg); border: 1.5px solid var(--warm1); border-radius: 12px; padding: 18px 22px; font-size: 14px; line-height: 1.7; color: var(--text); }
+    .simulation-banner { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: rgba(138,90,43,0.06); border: 1px dashed var(--warm1); border-radius: 10px; margin-bottom: 20px; font-size: 12.5px; color: var(--navy); line-height: 1.55; }
+    .simulation-banner i { font-size: 18px; color: var(--navy); flex-shrink: 0; margin-top: 1px; }
+    .simulation-banner strong { color: var(--navy); font-weight: 700; }
     .pdf-viewer-container { width: 100%; height: 880px; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--warm1); background: #525659; box-shadow: 0 4px 24px rgba(138,90,43,0.07); margin-top: 10px; }
     .pdf-viewer-container iframe { width: 100%; height: 100%; border: none; }
     .references-box { background: var(--bg); border: 1.5px solid var(--warm1); border-radius: 14px; padding: 22px 24px; margin-top: 10px; }
@@ -5585,15 +5588,35 @@
     /* ═══════════════════════ ABOUT PAGE ═══════════════════════ */
     .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .about-bio-card { background: var(--white); border-radius: var(--card-radius); padding: 30px; border: 1.5px solid var(--warm1); grid-column: 1 / -1; }
-    .about-bio-card h3 { font-size: 20px; font-weight: 800; color: var(--navy); margin-bottom: 12px; }
-    .about-bio-card p  { font-size: 14px; color: var(--muted); line-height: 1.8; }
+    .about-bio-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .about-bio-card h3 { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+    .about-bio-title { font-size: 13.5px; font-weight: 700; color: var(--muted); margin-bottom: 0; }
+    .resume-download-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(138,90,43,0.08); border: 1px solid var(--warm1); border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--navy); text-decoration: none; transition: all 0.2s ease; }
+    .resume-download-btn:hover { background: var(--navy); color: #fff; border-color: var(--navy); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(138,90,43,0.15); }
+    .about-bio-card p  { font-size: 14px; color: var(--text); line-height: 1.8; }
+    .about-bio-card strong { color: var(--navy); font-weight: 600; }
     .skill-block { background: var(--white); border-radius: var(--card-radius); padding: 24px; border: 1.5px solid var(--warm1); }
-    .skill-block h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
-    .skill-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .skill-row > span:first-child { font-size: 13px; color: var(--text); font-weight: 500; }
+    .skill-block h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .skill-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .skill-row > span:first-child { font-size: 12.5px; color: var(--text); font-weight: 600; }
     .skill-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 10px; margin: 0 12px; }
     .skill-fill { height: 100%; background: var(--navy); border-radius: 10px; }
-    .skill-pct { font-size: 11px; font-weight: 700; color: var(--muted); }
+    .skill-pct { font-size: 11px; font-weight: 700; color: var(--muted); min-width: 55px; text-align: right; }
+    
+    /* Certifications List */
+    .cert-list { display: flex; flex-direction: column; gap: 10px; }
+    .cert-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--bg); border-radius: 10px; border: 1px solid rgba(212,196,168,0.5); }
+    .cert-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cert-icon i { font-size: 18px; color: var(--navy); }
+    .cert-info { display: flex; flex-direction: column; gap: 2px; }
+    .cert-info strong { font-size: 12.5px; font-weight: 700; color: var(--navy); }
+    .cert-info span { font-size: 11px; color: var(--muted); }
+
+    /* Mandate Grid */
+    .mandate-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .mandate-card { background: var(--bg); border-radius: 10px; padding: 16px; border: 1px solid rgba(212,196,168,0.5); }
+    .mandate-title { font-size: 12.5px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .mandate-card p { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 0; }
 
     /* ═══════════════════════ CONTACT PAGE ═══════════════════════ */
     .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -5818,7 +5841,7 @@
           <div class="company-dropdown-inner">
             <h3 class="company-title">Synapse Botanicals</h3>
             <p class="company-desc">
-              A high-velocity direct-to-consumer (DTC) botanical wellness and nootropic brand built on a live multi-location Shopify architecture. The six core technical operations domains and capstone cross-domain analysis below document production-grade systems architecture, incident mitigation, and automated workflows engineered across this storefront.
+              An engineered direct-to-consumer (DTC) systems architecture sandbox and reference brand built on Shopify Plus. The six core technical operations domains and capstone cross-domain analysis below document production-grade systems architecture, controlled failure-mode simulations, and automated workflows engineered across this storefront.
             </p>
             <div class="company-details-grid">
               <div class="company-detail-item">
@@ -5942,30 +5965,136 @@
 
     <!-- ──────────── ABOUT ──────────── -->
     <div class="page" id="page-about">
-      <div class="section-header"><h2>About Me</h2><p>Who I am, what I do, and how I work.</p></div>
+      <div class="section-header">
+        <h2>About Me</h2>
+        <p>Systems engineering background, technical operations mandate, and enterprise e-commerce architecture.</p>
+      </div>
+
       <div class="about-grid">
+        <!-- Bio Card -->
         <div class="about-bio-card">
-          <h3>Hey, I'm Riovic 👋</h3>
-          <p>I'm an e-commerce operations specialist with a passion for building systems that run themselves. I work with Shopify and its ecosystem — automating workflows, migrating data, and connecting tools so brands can focus on growth instead of grunt work.<br><br>Whether you need a Shopify store built from scratch, a Klaviyo email sequence that actually converts, or a Matrixify migration that doesn't break your catalog — I've done it, and I can do it for you.</p>
+          <div class="about-bio-header">
+            <div>
+              <h3>Riovic Matthew G. Susas</h3>
+              <p class="about-bio-title">Technical Operations &amp; Systems Analyst · Electronics Engineering Background</p>
+            </div>
+            <a href="RESUME-Riovic-Matthew-TechOps-Systems-Analyst.md" class="resume-download-btn" target="_blank" download>
+              <i class="ph ph-file-text"></i> View 1-Page Resume (.md)
+            </a>
+          </div>
+          <p>
+            I operate at the intersection of <strong>hardware-level systems discipline</strong> and <strong>high-velocity e-commerce infrastructure</strong>. With a foundation in Electronics Engineering (Finite State Machines, Logic Systems, and Signal Telemetry) paired with frontline logistics triage at <strong>Amazon Operation Services</strong>, I specialize in diagnosing and hardening the critical failure seams between e-commerce platforms and distributed physical fulfillment.
+            <br><br>
+            Rather than treating store operations as isolated manual tasks, I approach Shopify Plus, 3PL Warehouse Management Systems (WMS), and helpdesk integrations as an <strong>interconnected distributed state machine</strong>. Whether resolving asynchronous race conditions, containing multi-node freight surcharges, eliminating margin-eroding discount collisions, or authoring mission-critical Standard Operating Procedures (SOPs), my focus is absolute operational resilience, zero data corruption, and deterministic predictability.
+          </p>
         </div>
+
+        <!-- Verified Certifications & Technical Credentials -->
         <div class="skill-block">
-          <h4>Core Skills</h4>
-          <div class="skill-row"><span>Shopify &amp; Flow</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div><span class="skill-pct">92%</span></div>
-          <div class="skill-row"><span>Klaviyo</span><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div><span class="skill-pct">85%</span></div>
-          <div class="skill-row"><span>Matrixify</span><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div><span class="skill-pct">88%</span></div>
-          <div class="skill-row"><span>DSers &amp; Gorgias</span><div class="skill-bar"><div class="skill-fill" style="width:80%"></div></div><span class="skill-pct">80%</span></div>
-          <div class="skill-row"><span>Claude AI</span><div class="skill-bar"><div class="skill-fill" style="width:78%"></div></div><span class="skill-pct">78%</span></div>
+          <h4><i class="ph ph-certificate"></i> Verified Certifications</h4>
+          <div class="cert-list">
+            <div class="cert-item">
+              <div class="cert-icon"><img src="images/icon_gorgias.png" class="tech-icon-img" alt="Gorgias"></div>
+              <div class="cert-info">
+                <strong>Gorgias Certified Administrator</strong>
+                <span>Gorgias Academy · Advanced Macro &amp; HTTP Webhook Automation</span>
+              </div>
+            </div>
+            <div class="cert-item">
+              <div class="cert-icon"><img src="images/icon_gorgias.png" class="tech-icon-img" alt="Gorgias"></div>
+              <div class="cert-info">
+                <strong>Gorgias Basic Certification</strong>
+                <span>Gorgias Academy · Helpdesk Workflows &amp; SLA Management</span>
+              </div>
+            </div>
+            <div class="cert-item">
+              <div class="cert-icon"><img src="images/icon_shopify.png" class="tech-icon-img" alt="Shopify"></div>
+              <div class="cert-info">
+                <strong>Shopify Plus Platform Fundamentals &amp; Store Operations</strong>
+                <span>Shopify Academy · Architecture &amp; Fulfillment Orders API</span>
+              </div>
+            </div>
+            <div class="cert-item">
+              <div class="cert-icon"><i class="ph ph-code"></i></div>
+              <div class="cert-info">
+                <strong>Python Scripting for Data Governance &amp; Schema Validation</strong>
+                <span>Regex Linters, IEEE 754 Floating-Point Protection &amp; CSV Cleaners</span>
+              </div>
+            </div>
+            <div class="cert-item">
+              <div class="cert-icon"><i class="ph ph-shield-check"></i></div>
+              <div class="cert-info">
+                <strong>Incident Command &amp; Root Cause Analysis (RCA)</strong>
+                <span>CAPA Framework, 5 Whys Methodology &amp; Blameless Postmortems</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Core Operational Disciplines & Stack Proficiency -->
         <div class="skill-block">
-          <h4>What I Can Do For You</h4>
-          <ul style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
-            <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);"><i class="ph ph-check-circle" style="color:var(--navy);font-size:18px;flex-shrink:0;"></i>Build and optimize Shopify stores end-to-end</li>
-            <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);"><i class="ph ph-check-circle" style="color:var(--navy);font-size:18px;flex-shrink:0;"></i>Design powerful email automations with Klaviyo</li>
-            <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);"><i class="ph ph-check-circle" style="color:var(--navy);font-size:18px;flex-shrink:0;"></i>Migrate and manage product catalogs via Matrixify</li>
-            <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);"><i class="ph ph-check-circle" style="color:var(--navy);font-size:18px;flex-shrink:0;"></i>Set up customer support workflows with Gorgias</li>
-            <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);"><i class="ph ph-check-circle" style="color:var(--navy);font-size:18px;flex-shrink:0;"></i>Automate dropshipping fulfillment with DSers</li>
-          </ul>
+          <h4><i class="ph ph-cpu"></i> Technical Competencies &amp; Stack</h4>
+          
+          <div class="skill-row">
+            <span>Shopify Plus &amp; Flow (Idempotent Automations)</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+            <span class="skill-pct">Expert</span>
+          </div>
+
+          <div class="skill-row">
+            <span>ShipBob 3PL WMS &amp; Multi-Node Routing</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+            <span class="skill-pct">Advanced</span>
+          </div>
+
+          <div class="skill-row">
+            <span>Gorgias Helpdesk (Macros &amp; HTTP Actions)</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
+            <span class="skill-pct">Admin</span>
+          </div>
+
+          <div class="skill-row">
+            <span>Matrixify (Bulk Schema Governance &amp; MERGE)</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:94%"></div></div>
+            <span class="skill-pct">Expert</span>
+          </div>
+
+          <div class="skill-row">
+            <span>Chrome DevTools &amp; Network Payload Triage</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+            <span class="skill-pct">Advanced</span>
+          </div>
+
+          <div class="skill-row">
+            <span>Finite State Machines &amp; PONR Transaction Locks</span>
+            <div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
+            <span class="skill-pct">Core</span>
+          </div>
         </div>
+
+        <!-- Technical Mandates & What I Bring to a Team -->
+        <div class="skill-block" style="grid-column: 1 / -1;">
+          <h4><i class="ph ph-shield-check"></i> Technical Operations Mandate &amp; Core Capabilities</h4>
+          <div class="mandate-grid">
+            <div class="mandate-card">
+              <div class="mandate-title"><i class="ph ph-git-fork"></i> Distributed State Synchronization</div>
+              <p>Designing Point-of-No-Return (PONR) locks and two-phase commit holds to prevent asynchronous inventory drift and duplicate warehouse shipments during order mutations.</p>
+            </div>
+            <div class="mandate-card">
+              <div class="mandate-title"><i class="ph ph-buildings"></i> Bi-Coastal Logistics Routing</div>
+              <p>Engineering deterministic routing waterfalls (*Minimize Splits* → *Closest Node*) that contain split-shipment surcharges and prevent out-of-region fulfillment leakage.</p>
+            </div>
+            <div class="mandate-card">
+              <div class="mandate-title"><i class="ph ph-currency-dollar-simple"></i> Algorithmic Margin Defense</div>
+              <p>Auditing promotional combinations across Product, Order, and Shipping tiers to programmatically eliminate negative-margin coupon collision loops.</p>
+            </div>
+            <div class="mandate-card">
+              <div class="mandate-title"><i class="ph ph-wrench"></i> Forensic Diagnostics (&lt;60s MTTI)</div>
+              <p>Isolating storefront AJAX cart freeze exceptions (`HTTP 422`), webhook timeout drops (`HTTP 504`), and payment gateway declines with verifiable network evidence.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -7328,6 +7457,15 @@
             </div>
           ` : ''}
 
+          ${(p.isCaseStudy || p.isCapstone || (p.category && (p.category.includes('Simulation') || p.category.includes('Audit') || p.category.includes('Analysis') || p.category.includes('Case Study')))) ? `
+          <div class="simulation-banner">
+            <i class="ph ph-flask"></i>
+            <div>
+              <strong>Empirical Benchmark &amp; Staging Notice:</strong> Telemetry, order cohorts, and financial metrics in this deliverable were modeled in a controlled staging sandbox using synthetic order payloads, UPS Ground rate matrices, and 3PL fee schedules to benchmark failure modes without merchant PII exposure.
+            </div>
+          </div>
+          ` : ''}
+
           <p class="modal-section-label">Full Overview</p>
           <div class="deliverable-full-overview-box">
             <p style="margin:0;">${p.fullOverview || p.overview || ''}</p>
@@ -7552,7 +7690,7 @@
 
     /* ─────────── INIT ─────────── */
     // Version migration: if old data lacks folder structure, wipe it so defaults load
-    const DATA_VERSION = 'v17-brand-icons-integrated';
+    const DATA_VERSION = 'v19-simulation-disclaimers-integrated';
     if (localStorage.getItem('portfolio_data_version') !== DATA_VERSION) {
       localStorage.removeItem('portfolio_projects');
       localStorage.setItem('portfolio_data_version', DATA_VERSION);
