@@ -22,32 +22,31 @@
       }
     })();
   </script>
+  <style>
+    .homepage-back-link {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px clamp(16px, 3vw, 40px);
+      padding: 8px 0;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .homepage-back-link:hover { text-decoration: underline; }
+    .homepage-back-link:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body class="fullwidth-layout">
-  <!-- GLOBAL SITE HEADER -->
-  <header class="site-header">
-    <a href="index.html" class="site-logo">
-      <span class="site-logo-dot"></span>
-      <span>Riovic Matthew</span>
-    </a>
-    <nav class="site-nav">
-      <a href="index.html" class="site-nav-link active"><i class="ph ph-house-simple"></i> Home</a>
-      <a href="projects/" class="site-nav-link"><i class="ph ph-folder-open"></i> Projects</a>
-      <a href="about/" class="site-nav-link"><i class="ph ph-user-circle"></i> About Me</a>
-      <a href="testimonials/" class="site-nav-link"><i class="ph ph-chat-circle-dots"></i> Testimonials</a>
-      <a href="latest/" class="site-nav-link"><i class="ph ph-newspaper"></i> Latest</a>
-      <a href="contact/" class="site-nav-link"><i class="ph ph-paper-plane-tilt"></i> Contact</a>
-    </nav>
-    <div class="site-header-actions">
-      <button class="theme-toggle-btn-header" id="themeToggleBtn" aria-label="Toggle light or dark theme" title="Toggle Light/Dark Theme">
-        <span class="theme-toggle-indicator">
-          <i class="ph ph-moon" id="themeIconDark"></i>
-          <i class="ph ph-sun" id="themeIconLight" style="display:none;"></i>
-        </span>
-        <span class="theme-toggle-text" id="themeToggleText">Dark</span>
-      </button>
-    </div>
-  </header>
+  <a href="./" class="homepage-back-link">
+    <span aria-hidden="true">&larr;</span> Back to homepage
+  </a>
 
   <!-- MAIN SCROLLER -->
   <main class="main" id="mainContent">
@@ -165,7 +164,6 @@
   </main>
 
   <script src="js/main.js"></script>
-  <script src="js/theme-toggle.js"></script>
   <script src="js/radial-gallery.js"></script>
 </body>
 </html>
