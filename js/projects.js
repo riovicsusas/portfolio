@@ -35,10 +35,11 @@ function renderFlagshipGrid() {
     ? FLAGSHIP_PROJECTS 
     : FLAGSHIP_PROJECTS.filter(p => p.filterCat === currentFilter);
 
-  container.innerHTML = filtered.map(p => {
+  container.innerHTML = filtered.map((p, idx) => {
+    const delay = (idx % 7) + 1;
     if (p.isFeatured) {
       return `
-        <div class="project-card-21 featured-capstone" onclick="openProjectDetail('${p.id}')">
+        <div class="project-card-21 featured-capstone reveal" data-delay="${delay}" onclick="openProjectDetail('${p.id}')">
           <div class="project-card-image">
             <img src="${p.image}" alt="${p.title}" loading="lazy" />
             <div class="card-badges-overlay">
@@ -63,7 +64,7 @@ function renderFlagshipGrid() {
     }
 
     return `
-      <div class="project-card-21" onclick="openProjectDetail('${p.id}')">
+      <div class="project-card-21 reveal" data-delay="${delay}" onclick="openProjectDetail('${p.id}')">
         <div class="project-card-image">
           <img src="${p.image}" alt="${p.title}" loading="lazy" />
           <div class="card-badges-overlay">
@@ -85,6 +86,9 @@ function renderFlagshipGrid() {
       </div>
     `;
   }).join('');
+
+  // Boot scroll-reveal observer after DOM is updated
+  revealObserver('.reveal');
 }
 
 // Helper to safely retrieve projects

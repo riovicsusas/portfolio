@@ -55,3 +55,27 @@ const tools = [
 document.addEventListener('DOMContentLoaded', () => {
   buildBelt();
 });
+
+/**
+ * Shared scroll-reveal observer.
+ * Adds .visible to matching elements when they enter the viewport.
+ * Call after dynamically rendering elements (e.g. after innerHTML updates).
+ * @param {string} selector - CSS selector for elements with .reveal or .reveal-scale
+ */
+function revealObserver(selector) {
+  const elements = document.querySelectorAll(selector + ':not(.visible)');
+  if (!elements.length) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {
+    root: null,
+    threshold: 0.08,
+    rootMargin: '0px 0px -48px 0px'
+  });
+  elements.forEach(el => io.observe(el));
+}

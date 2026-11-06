@@ -7440,3 +7440,60 @@ body.fullwidth-layout .main {
   background: rgba(255, 255, 255, 0.08);
   color: var(--linen);
 }
+
+
+/* ============================================================
+   GLOBAL SCROLL-REVEAL ANIMATION UTILITY
+   Applied to: Projects cards, Testimonials slides, metric boxes
+   ============================================================ */
+
+/* Base hidden state — added to elements before they enter the viewport */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+/* Triggered by IntersectionObserver when element enters viewport */
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays — applied to nth children to cascade the animation */
+.reveal[data-delay="1"] { transition-delay: 0.05s; }
+.reveal[data-delay="2"] { transition-delay: 0.12s; }
+.reveal[data-delay="3"] { transition-delay: 0.19s; }
+.reveal[data-delay="4"] { transition-delay: 0.26s; }
+.reveal[data-delay="5"] { transition-delay: 0.33s; }
+.reveal[data-delay="6"] { transition-delay: 0.40s; }
+.reveal[data-delay="7"] { transition-delay: 0.47s; }
+
+/* Scale variant — for metric boxes (pop-in feel) */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.88) translateY(16px);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+.reveal-scale[data-delay="1"] { transition-delay: 0.08s; }
+.reveal-scale[data-delay="2"] { transition-delay: 0.16s; }
+.reveal-scale[data-delay="3"] { transition-delay: 0.24s; }
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-scale {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
