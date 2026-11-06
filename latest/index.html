@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Latest Updates & What's New — Riovic Matthew G. Susas</title>
+  <title>Latest Updates &amp; Engineering Activity — Riovic Matthew G. Susas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -39,55 +39,165 @@
   <main class="main" id="mainContent">
 
     <div class="page active" id="page-latest">
-      <div class="section-header">
-        <h2>Latest Updates &amp; Activity Log</h2>
-        <p>Continuous operational deployments, automation rollouts, and engineering postmortems.</p>
+      <div class="section-header" style="text-align:center; max-width:800px; margin: 0 auto 32px;">
+        <h2>Latest Updates &amp; Engineering Activity Log</h2>
+        <p>Continuous operational deployments, automation rollouts, and forensic post-mortems across Shopify Plus, 3PL WMS, and Carrier APIs. Click any update for an executive overview.</p>
       </div>
 
+      <!-- TIMELINE CONTAINER -->
       <div class="latest-timeline" id="fullTimeline"></div>
     </div>
 
   </main>
 
+  <!-- QUICK OVERVIEW MODAL POPUP -->
+  <div class="latest-modal-overlay" id="latestModalOverlay" role="dialog" aria-modal="true" aria-hidden="true" onclick="handleModalBackdropClick(event)">
+    <div class="latest-modal-sheet" id="latestModalSheet" onclick="event.stopPropagation()">
+      <div id="modalDynamicContent"></div>
+    </div>
+  </div>
+
   <script src="../js/main.js"></script>
+  <script src="../js/theme-toggle.js"></script>
   <script src="../js/feed-data.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const feed = getFeed();
-      const container = document.getElementById('fullTimeline');
-      if (container && feed) {
-        // Expanded feed with richer activity descriptions
-        const richFeed = [
-          ...feed,
-          {
-            id: 5,
-            date: 'Jun 2026',
-            text: 'Completed Synapse Botanicals enterprise simulation architecture — published full 24-SKU matrix, bi-coastal logistics waterfalls, and capstone webhook failure postmortem.',
-            tag: 'Architecture Spec',
-            link: 'projects.html?id=c1-async-mutation'
-          },
-          {
-            id: 6,
-            date: 'Jun 2026',
-            text: 'Published Master SOP for Bulk Catalog Mutation and Google Sheets IEEE 754 floating-point barcode preservation protocol.',
-            tag: 'Data Governance',
-            link: 'projects.html?id=d3-bulk-catalog-sop'
-          }
-        ];
+    let currentFeed = [];
 
-        container.innerHTML = richFeed.map(item => `
-          <div class="timeline-card">
-            <div class="timeline-meta">
-              <span class="timeline-date"><i class="ph ph-calendar-blank"></i> ${item.date}</span>
-              <span class="timeline-tag">${item.tag}</span>
+    document.addEventListener('DOMContentLoaded', () => {
+      currentFeed = getFeed();
+      const container = document.getElementById('fullTimeline');
+      if (!container || !currentFeed) return;
+
+      container.innerHTML = currentFeed.map(item => `
+        <article class="timeline-card" onclick="openLatestModal('${item.id}')" tabindex="0" role="button" aria-label="View quick overview for ${item.title}">
+          <div class="timeline-meta">
+            <span class="timeline-date"><i class="ph ph-calendar-blank"></i> ${item.date}</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="timeline-tag"><i class="ph ${item.icon || 'ph-sparkle'}"></i> ${item.tag}</span>
             </div>
-            <p class="timeline-text">${item.text}</p>
-            ${item.link ? `<a href="${item.link}" class="timeline-link">View Documentation <i class="ph ph-arrow-right"></i></a>` : ''}
           </div>
-        `).join('');
+          <h3 class="timeline-title">${item.title}</h3>
+          <p class="timeline-text">${item.short}</p>
+          <div class="timeline-card-actions">
+            <button class="timeline-quickview-btn" onclick="event.stopPropagation(); openLatestModal('${item.id}')">
+              <i class="ph ph-eye"></i> Quick Overview
+            </button>
+            <a href="../projects/?id=${item.projectId}" class="timeline-case-link" onclick="event.stopPropagation()">
+              View Case Study <i class="ph ph-arrow-right"></i>
+            </a>
+          </div>
+        </article>
+      `).join('');
+    });
+
+    // OPEN QUICK OVERVIEW MODAL
+    function openLatestModal(id) {
+      const item = currentFeed.find(x => x.id === id);
+      if (!item) return;
+
+      const content = document.getElementById('modalDynamicContent');
+      const overlay = document.getElementById('latestModalOverlay');
+      if (!content || !overlay) return;
+
+      content.innerHTML = `
+        <div class="modal-header-top">
+          <div class="modal-header-left">
+            <div class="modal-domain-icon">
+              <i class="ph ${item.icon || 'ph-cpu'}"></i>
+            </div>
+            <div class="modal-title-area">
+              <div class="modal-badges-row">
+                <span class="modal-pill-tag">${item.domain}</span>
+                <span class="modal-pill-tag" style="background:rgba(201,183,159,0.15); border-color:var(--warm1);">${item.date}</span>
+              </div>
+              <h2 style="margin-top:6px;">${item.title}</h2>
+            </div>
+          </div>
+          <button class="modal-close-btn" onclick="closeLatestModal()" aria-label="Close modal">
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+
+        <!-- PROBLEM & ROOT CAUSE -->
+        <div class="modal-section-block">
+          <div class="modal-section-heading">
+            <i class="ph ph-warning-circle" style="color:#E57373;"></i> Operational Problem &amp; Root Cause
+          </div>
+          <p class="modal-section-paragraph">${item.problem}</p>
+        </div>
+
+        <!-- ENGINEERED SOLUTION & SAFEGUARD -->
+        <div class="modal-section-block">
+          <div class="modal-section-heading">
+            <i class="ph ph-shield-check" style="color:var(--hunter);"></i> Engineered Solution &amp; Governance
+          </div>
+          <p class="modal-section-paragraph">${item.solution}</p>
+        </div>
+
+        <!-- IMPACT & VERIFICATION METRICS -->
+        <div class="modal-section-block">
+          <div class="modal-section-heading">
+            <i class="ph ph-chart-line-up" style="color:var(--isabelline);"></i> Key Outcomes &amp; Measurable Verification
+          </div>
+          <div class="modal-metrics-grid">
+            ${item.metrics.map(m => `
+              <div class="modal-metric-card">
+                <div class="modal-metric-val">${m.val}</div>
+                <div class="modal-metric-label">${m.label}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- TECH STACK -->
+        <div class="modal-section-block" style="margin-bottom:12px;">
+          <div class="modal-section-heading">
+            <i class="ph ph-stack" style="color:var(--muted);"></i> Technical Stack &amp; Protocols
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            ${item.tags.map(t => `<span class="modal-pill-tag">${t}</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- MODAL FOOTER ACTIONS -->
+        <div class="modal-actions-footer">
+          <a href="../projects/?id=${item.projectId}" class="modal-primary-cta">
+            <i class="ph ph-book-open"></i> View In-Depth Case Study &amp; Technical Defense <i class="ph ph-arrow-right"></i>
+          </a>
+          <button class="modal-secondary-cta" onclick="closeLatestModal()">
+            Close Overview
+          </button>
+        </div>
+      `;
+
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // CLOSE MODAL
+    function closeLatestModal() {
+      const overlay = document.getElementById('latestModalOverlay');
+      if (overlay) {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+      document.body.style.overflow = '';
+    }
+
+    // BACKDROP CLICK
+    function handleModalBackdropClick(event) {
+      if (event.target.id === 'latestModalOverlay') {
+        closeLatestModal();
+      }
+    }
+
+    // KEYBOARD ESCAPE TO CLOSE
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLatestModal();
       }
     });
   </script>
-  <script src="../js/theme-toggle.js"></script>
 </body>
 </html>
