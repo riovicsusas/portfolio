@@ -79,9 +79,9 @@
 
     const itemCount = itemsData.length;
     const isMobile = window.innerWidth < 768;
-    const baseRadius = isMobile ? 240 : 440;
+    const baseRadius = isMobile ? 240 : 400;
     const circleDiameter = baseRadius * 2;
-    const visiblePercentage = 0.48;
+    const visiblePercentage = isMobile ? 0.52 : 0.68;
     const hiddenDecimal = 1 - visiblePercentage;
 
     // Set wheel geometry

@@ -6271,11 +6271,11 @@
 .radial-gallery-wrapper {
   position: relative;
   width: 100%;
-  min-height: 640px;
+  min-height: 760px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   margin-top: 10px;
   margin-bottom: 40px;
 }
@@ -6283,10 +6283,10 @@
 .radial-gallery-mask {
   position: relative;
   width: 100%;
-  height: 560px;
-  overflow: hidden;
-  mask-image: linear-gradient(to top, transparent 0%, black 35%, black 100%);
-  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 35%, black 100%);
+  height: 700px;
+  overflow: visible;
+  mask-image: linear-gradient(to top, transparent 0%, black 20%, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 20%, black 85%, transparent 100%);
 }
 
 .radial-wheel {
@@ -6319,7 +6319,7 @@
     height: 290px;
   }
   .radial-gallery-mask {
-    height: 480px;
+    height: 560px;
   }
 }
 
