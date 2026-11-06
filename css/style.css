@@ -7519,3 +7519,22 @@ body.fullwidth-layout .main {
     }
 
 .homepage-back-link { flex-shrink: 0; }
+
+/* Keep the mobile gallery close to its instruction and titles unobscured. */
+@media (max-width: 768px) {
+  .scroll-instruction { margin-top: 18px; margin-bottom: 8px; }
+  .scroll-instruction-pill { text-align: center; }
+  .radial-gallery-wrapper {
+    min-height: 0;
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+  .radial-gallery-mask {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .radial-card:hover,
+  .radial-card:focus-visible {
+    transform: none;
+  }
+}

@@ -78,16 +78,17 @@
     ];
 
     const itemCount = itemsData.length;
-    const isMobile = window.innerWidth < 768;
-    const baseRadius = isMobile ? 220 : 420;
+    const isMobile = window.innerWidth <= 768;
+    // A wider mobile wheel separates the inward-facing title edges too.
+    const baseRadius = isMobile ? 560 : 420;
     const circleDiameter = baseRadius * 2;
-    const visiblePercentage = isMobile ? 0.38 : 0.40;
+    const visiblePercentage = isMobile ? 0.22 : 0.40;
     const hiddenDecimal = 1 - visiblePercentage;
 
     const maskEl = pinContainer.querySelector('.radial-gallery-mask');
     const cardHeight = isMobile ? 290 : 330;
     // Buffer for card half-height + hover expansion + safe headroom
-    const topBuffer = Math.round((cardHeight / 2) + 140);
+    const topBuffer = Math.round((cardHeight / 2) + (isMobile ? 24 : 140));
     const visibleAreaHeight = Math.round(circleDiameter * visiblePercentage + topBuffer);
 
     if (maskEl) {
