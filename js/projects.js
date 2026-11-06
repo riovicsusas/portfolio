@@ -87,9 +87,16 @@ function renderFlagshipGrid() {
   }).join('');
 }
 
+// Helper to safely retrieve projects
+function getProjects() {
+  return typeof DEFAULT_PROJECTS !== 'undefined' ? DEFAULT_PROJECTS : [];
+}
+
 // Open Deliverable / Case Study Detail
 function openProjectDetail(id) {
-  const p = getProjects().find(x => x.id === id) || FLAGSHIP_PROJECTS.find(x => x.id === id);
+  const allProjects = getProjects();
+  const allFlagships = typeof FLAGSHIP_PROJECTS !== 'undefined' ? FLAGSHIP_PROJECTS : [];
+  const p = allProjects.find(x => x.id === id) || allFlagships.find(x => x.id === id);
   if (!p) return;
 
   // Hide grid and company accordion
