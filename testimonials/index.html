@@ -9,35 +9,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
 </head>
-<body>
-  <button class="hamburger" id="hamburger" aria-label="Open menu"><i class="ph ph-list"></i></button>
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-  <!-- ══════════════════════════ SIDEBAR ══════════════════════════ -->
-  <aside class="sidebar" id="sidebar">
-    <div class="profile-pic-wrap">
-      <img src="../images/susas_profilepic.jpg" alt="Riovic Matthew G. Susas">
+<body class="fullwidth-layout">
+  <!-- GLOBAL SITE HEADER -->
+  <header class="site-header">
+    <a href="../" class="site-logo">
+      <span class="site-logo-dot"></span>
+      <span>Riovic Matthew</span>
+    </a>
+    <nav class="site-nav">
+      <a href="../" class="site-nav-link"><i class="ph ph-house-simple"></i> Home</a>
+      <a href="../projects/" class="site-nav-link"><i class="ph ph-folder-open"></i> Projects</a>
+      <a href="../about/" class="site-nav-link"><i class="ph ph-user-circle"></i> About Me</a>
+      <a href="../testimonials/" class="site-nav-link active"><i class="ph ph-chat-circle-dots"></i> Testimonials</a>
+      <a href="../latest/" class="site-nav-link"><i class="ph ph-newspaper"></i> Latest</a>
+      <a href="../contact/" class="site-nav-link"><i class="ph ph-paper-plane-tilt"></i> Contact</a>
+    </nav>
+    <div class="site-header-actions">
+      <button class="theme-toggle-btn-header" id="themeToggleBtn" aria-label="Toggle light or dark theme" title="Toggle Light/Dark Theme">
+        <span class="theme-toggle-indicator">
+          <i class="ph ph-moon" id="themeIconDark"></i>
+          <i class="ph ph-sun" id="themeIconLight" style="display:none;"></i>
+        </span>
+        <span class="theme-toggle-text" id="themeToggleText">Dark</span>
+      </button>
     </div>
-    <p class="profile-name">Riovic Matthew<br>G. Susas</p>
-    <div class="socials">
-      <a href="mailto:riovic.susas@gmail.com" title="Gmail"><i class="ph ph-envelope-simple"></i><span>Gmail</span></a>
-      <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="ph ph-linkedin-logo"></i><span>LinkedIn</span></a>
-      <a href="#" title="WhatsApp"><i class="ph ph-whatsapp-logo"></i><span>WhatsApp</span></a>
-      <a href="#" title="Upwork"><i class="ph ph-briefcase"></i><span>Upwork</span></a>
-    </div>
-    <div class="sidebar-divider"></div>
-    <ul class="nav" id="nav">
-      <li><a href="../" class="nav-link"><i class="ph ph-house-simple"></i> <span>Home</span></a></li>
-      <li><a href="../projects/" class="nav-link"><i class="ph ph-folder-open"></i> <span>Projects</span></a></li>
-      <li><a href="../about/" class="nav-link"><i class="ph ph-user-circle"></i> <span>About Me</span></a></li>
-      <li><a href="../testimonials/" class="nav-link active"><i class="ph ph-chat-circle-dots"></i> <span>Testimonials</span></a></li>
-      <li><a href="../latest/" class="nav-link"><i class="ph ph-newspaper"></i> <span>Latest</span></a></li>
-      <li><a href="../contact/" class="nav-link"><i class="ph ph-paper-plane-tilt"></i> <span>Contact</span></a></li>
-    </ul>
-    <p class="sidebar-footer">&copy; 2026 Riovic Matthew G. Susas<br>All rights reserved.</p>
-  </aside>
+  </header>
 
-  <!-- ══════════════════════════ MAIN ══════════════════════════ -->
+  <!-- MAIN SCROLLER -->
   <main class="main" id="mainContent">
 
     <div class="page active" id="page-testimonials">
