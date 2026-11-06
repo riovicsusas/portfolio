@@ -8,51 +8,67 @@ import { Badge } from '@/components/ui/badge';
 const portfolioDestinations = [
   {
     id: 1,
-    title: "Projects",
-    cat: "Case Studies & SOPs",
-    url: "projects/",
-    desc: "6 Operational Domains & Capstone",
-    img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 2,
-    title: "About Me",
-    cat: "Background",
-    url: "about/",
-    desc: "Electronics Engineering & Operations",
-    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 3,
-    title: "Testimonials",
-    cat: "Social Proof",
-    url: "testimonials/",
-    desc: "Client Endorsements & Feedback",
-    img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 4,
     title: "Latest News",
     cat: "Recent Activity",
     url: "latest/",
-    desc: "Live System Logs & Architecture",
+    desc: "Live System Incident Logs & Infrastructure Deployments",
     img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
   },
   {
-    id: 5,
+    id: 2,
     title: "Projects",
-    cat: "Order Lifecycle",
+    cat: "Case Studies & SOPs",
     url: "projects/",
-    desc: "PONR Protocols & Routing Engines",
-    img: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80"
+    desc: "6 Operational Domains & Master Capstone Investigation",
+    img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 3,
+    title: "About Me",
+    cat: "Background",
+    url: "about/",
+    desc: "Electronics Engineering Applied to High-Velocity Operations",
+    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 4,
+    title: "Testimonials",
+    cat: "Social Proof",
+    url: "testimonials/",
+    desc: "DTC Brand Founders & Operational Endorsements",
+    img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 5,
+    title: "Latest News",
+    cat: "Audits & Logs",
+    url: "latest/",
+    desc: "Matrixify Migration Standards & Flow Triage",
+    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 6,
+    title: "Projects",
+    cat: "Order Lifecycle",
+    url: "projects/",
+    desc: "Order State Machine & Point-of-No-Return Locks",
+    img: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 7,
     title: "About Me",
-    cat: "Systems Philosophy",
+    cat: "Tech Philosophy",
     url: "about/",
-    desc: "Zero Inventory Drift & Forensics",
+    desc: "Deterministic Routing & Zero Inventory Drift",
     img: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 8,
+    title: "Testimonials",
+    cat: "Storefront Impact",
+    url: "testimonials/",
+    desc: "Self-Healing Workflows & Autonomous Order Processing",
+    img: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80"
   }
 ];
 

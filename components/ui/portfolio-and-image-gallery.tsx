@@ -267,7 +267,11 @@ export const RadialScrollGallery = forwardRef<
             }}
           >
             {childrenNodes.map((child, index) => {
-              const angle = (index / childrenCount) * 2 * Math.PI;
+              const topAngle = -Math.PI / 2;
+              const angle =
+                direction === 'rtl'
+                  ? topAngle + (index / childrenCount) * 2 * Math.PI
+                  : topAngle - (index / childrenCount) * 2 * Math.PI;
               let x = currentRadius * Math.cos(angle);
               const y = currentRadius * Math.sin(angle);
 

@@ -17,8 +17,15 @@
 
     if (!pinContainer || !wheel || !scrollerEl) return;
 
-    // Gallery destinations (4 core domains repeated 2x for full 8-item wheel)
+    // Gallery destinations (4 core domains ordered: Latest News, Projects, About Me, Testimonials)
     const itemsData = [
+      {
+        title: "Latest News",
+        cat: "Recent Activity",
+        desc: "Live System Incident Logs & Infrastructure Deployments",
+        url: "latest/",
+        img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+      },
       {
         title: "Projects",
         cat: "Case Studies & SOPs",
@@ -42,10 +49,10 @@
       },
       {
         title: "Latest News",
-        cat: "Recent Activity",
-        desc: "Live System Incident Logs & Infrastructure Deployments",
+        cat: "Audits & Logs",
+        desc: "Matrixify Migration Standards & Flow Triage",
         url: "latest/",
-        img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+        img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
       },
       {
         title: "Projects",
@@ -67,13 +74,6 @@
         desc: "Self-Healing Workflows & Autonomous Order Processing",
         url: "testimonials/",
         img: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80"
-      },
-      {
-        title: "Latest News",
-        cat: "Audits & Logs",
-        desc: "Matrixify Migration Standards & Flow Triage",
-        url: "latest/",
-        img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
       }
     ];
 
@@ -91,7 +91,8 @@
 
     // Populate wheel items
     wheel.innerHTML = itemsData.map((item, idx) => {
-      const angle = (idx / itemCount) * 2 * Math.PI;
+      const topAngle = -Math.PI / 2;
+      const angle = topAngle - (idx / itemCount) * 2 * Math.PI;
       const x = baseRadius * Math.cos(angle);
       const y = baseRadius * Math.sin(angle);
       const rotationAngle = (angle * 180) / Math.PI;
