@@ -79,15 +79,25 @@
 
     const itemCount = itemsData.length;
     const isMobile = window.innerWidth < 768;
-    const baseRadius = isMobile ? 240 : 400;
+    const baseRadius = isMobile ? 220 : 420;
     const circleDiameter = baseRadius * 2;
-    const visiblePercentage = isMobile ? 0.52 : 0.68;
+    const visiblePercentage = isMobile ? 0.38 : 0.40;
     const hiddenDecimal = 1 - visiblePercentage;
+
+    const maskEl = pinContainer.querySelector('.radial-gallery-mask');
+    const cardHeight = isMobile ? 290 : 330;
+    // Buffer for card half-height + hover expansion + safe headroom
+    const topBuffer = Math.round((cardHeight / 2) + 140);
+    const visibleAreaHeight = Math.round(circleDiameter * visiblePercentage + topBuffer);
+
+    if (maskEl) {
+      maskEl.style.height = visibleAreaHeight + 'px';
+    }
 
     // Set wheel geometry
     wheel.style.width = circleDiameter + 'px';
     wheel.style.height = circleDiameter + 'px';
-    wheel.style.bottom = '-' + (circleDiameter * hiddenDecimal) + 'px';
+    wheel.style.bottom = '-' + Math.round(circleDiameter * hiddenDecimal) + 'px';
 
     // Populate wheel items
     wheel.innerHTML = itemsData.map((item, idx) => {
