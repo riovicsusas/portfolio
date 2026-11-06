@@ -7,7 +7,499 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
   <link rel="stylesheet" href="../css/style.css" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       TIMELINE PAGE — 21ST.DEV INSPIRED SCROLL-DRIVEN ANIMATION
+    ═══════════════════════════════════════════════════════════════ */
+
+    .timeline-page-wrapper {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* Header */
+    .timeline-page-header {
+      padding: 48px 0 40px;
+      max-width: 760px;
+    }
+
+    .timeline-page-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(86, 103, 70, 0.22);
+      border: 1px solid var(--hunter);
+      color: var(--isabelline);
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    .timeline-page-title {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      margin-bottom: 14px;
+    }
+
+    [data-theme="light"] .timeline-page-title {
+      color: var(--navy);
+    }
+
+    .timeline-page-subtitle {
+      font-size: 14.5px;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 600px;
+    }
+
+    /* ═══════════════════════════════════
+       TIMELINE TRACK CONTAINER
+    ═══════════════════════════════════ */
+    .tl-container {
+      position: relative;
+    }
+
+    /* The vertical track line */
+    .tl-track {
+      position: absolute;
+      left: 36px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(201, 183, 159, 0.25) 8%,
+        rgba(201, 183, 159, 0.25) 92%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* The animated fill line (scroll-driven) */
+    .tl-track-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2px;
+      height: 0%;
+      border-radius: 2px;
+      background: linear-gradient(to bottom,
+        transparent 0%,
+        var(--hunter) 20%,
+        var(--isabelline) 100%
+      );
+      transition: height 0.08s linear;
+      will-change: height;
+    }
+
+    /* ═══════════════════════════════════
+       INDIVIDUAL TIMELINE ENTRY
+    ═══════════════════════════════════ */
+    .tl-entry {
+      display: flex;
+      gap: 40px;
+      padding: 60px 0;
+      position: relative;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tl-entry.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Dot connector */
+    .tl-dot-col {
+      flex-shrink: 0;
+      width: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .tl-dot-ring {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--bg, #0f2234);
+      border: 2px solid rgba(201, 183, 159, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: sticky;
+      top: 160px;
+      z-index: 10;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    [data-theme="light"] .tl-dot-ring {
+      background: var(--bg, #F7F4EF);
+    }
+
+    .tl-dot-ring:hover,
+    .tl-entry:hover .tl-dot-ring {
+      border-color: var(--hunter);
+      box-shadow: 0 0 0 5px rgba(86, 103, 70, 0.18);
+    }
+
+    .tl-dot-inner {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(201, 183, 159, 0.4);
+      border: 2px solid rgba(201, 183, 159, 0.5);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .tl-entry:hover .tl-dot-inner {
+      background: var(--hunter);
+      border-color: var(--isabelline);
+    }
+
+    /* Date label (desktop: left of dot, sticky) */
+    .tl-date-label {
+      position: sticky;
+      top: 160px;
+      margin-top: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════
+       CONTENT COLUMN
+    ═══════════════════════════════════ */
+    .tl-content-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Period label visible on mobile */
+    .tl-mobile-date {
+      display: none;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--muted);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    /* Period big label (desktop) */
+    .tl-period-label {
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 900;
+      color: var(--muted);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+
+    /* Summary description */
+    .tl-summary {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 28px;
+      max-width: 560px;
+    }
+
+    /* ═══════════════════════════════════
+       UPDATE CARDS (clickable)
+    ═══════════════════════════════════ */
+    .tl-cards-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .tl-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      background: rgba(255, 255, 255, 0.038);
+      border: 1.5px solid rgba(201, 183, 159, 0.18);
+      border-radius: 16px;
+      padding: 20px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tl-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(86, 103, 70, 0.08), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .tl-card:hover {
+      background: rgba(86, 103, 70, 0.12);
+      border-color: var(--hunter);
+      transform: translateX(6px);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    .tl-card:hover::before {
+      opacity: 1;
+    }
+
+    [data-theme="light"] .tl-card {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: var(--warm1);
+    }
+
+    [data-theme="light"] .tl-card:hover {
+      background: rgba(86, 103, 70, 0.07);
+      border-color: var(--hunter);
+    }
+
+    /* Icon box */
+    .tl-card-icon {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(86, 103, 70, 0.3);
+      border: 1px solid rgba(86, 103, 70, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--isabelline);
+      transition: background 0.25s ease, transform 0.3s ease;
+    }
+
+    .tl-card:hover .tl-card-icon {
+      background: var(--hunter);
+      transform: rotate(-5deg) scale(1.08);
+    }
+
+    .tl-card-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tl-card-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .tl-card-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(86, 103, 70, 0.3);
+      color: var(--isabelline);
+      border: 1px solid rgba(86, 103, 70, 0.6);
+    }
+
+    .tl-card-date {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .tl-card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.35;
+      margin-bottom: 6px;
+      transition: color 0.2s ease;
+    }
+
+    [data-theme="light"] .tl-card-title {
+      color: var(--navy);
+    }
+
+    .tl-card:hover .tl-card-title {
+      color: var(--isabelline);
+    }
+
+    [data-theme="light"] .tl-card:hover .tl-card-title {
+      color: var(--hunter);
+    }
+
+    .tl-card-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .tl-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .tl-card-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--isabelline);
+      background: rgba(86, 103, 70, 0.22);
+      border: 1px solid rgba(86, 103, 70, 0.5);
+      padding: 6px 14px;
+      border-radius: 20px;
+      transition: background 0.2s ease, color 0.2s ease;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tl-card-btn-primary:hover {
+      background: var(--hunter);
+      color: #FFFFFF;
+    }
+
+    .tl-card-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tl-card-btn-secondary:hover {
+      color: var(--isabelline);
+    }
+
+    .tl-card-btn-secondary i {
+      transition: transform 0.25s ease;
+      font-size: 13px;
+    }
+
+    .tl-card-btn-secondary:hover i {
+      transform: translateX(4px);
+    }
+
+    /* Arrow on right of card */
+    .tl-card-arrow {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(201, 183, 159, 0.08);
+      border: 1px solid rgba(201, 183, 159, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--muted);
+      transition: background 0.25s ease, color 0.25s ease, transform 0.3s ease;
+      align-self: center;
+    }
+
+    .tl-card:hover .tl-card-arrow {
+      background: var(--hunter);
+      color: #FFFFFF;
+      transform: rotate(45deg);
+    }
+
+    /* ═══════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════ */
+    @media (max-width: 768px) {
+      .tl-track {
+        left: 20px;
+      }
+
+      .tl-entry {
+        gap: 20px;
+        padding: 36px 0;
+      }
+
+      .tl-dot-col {
+        width: 40px;
+      }
+
+      .tl-dot-ring {
+        width: 32px;
+        height: 32px;
+        top: 100px;
+      }
+
+      .tl-dot-inner {
+        width: 10px;
+        height: 10px;
+      }
+
+      .tl-date-label {
+        display: none;
+      }
+
+      .tl-mobile-date {
+        display: block;
+      }
+
+      .tl-period-label {
+        display: none;
+      }
+
+      .tl-card {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .tl-card-arrow {
+        display: none;
+      }
+    }
+
+    /* ═══════════════════════════════════
+       MODAL (keep existing styles compatible)
+    ═══════════════════════════════════ */
+  </style>
 </head>
 <body class="fullwidth-layout">
   <!-- GLOBAL SITE HEADER -->
@@ -37,60 +529,154 @@
 
   <!-- MAIN SCROLLER -->
   <main class="main" id="mainContent">
+    <div class="timeline-page-wrapper">
 
-    <div class="page active" id="page-latest">
-      <div class="section-header" style="text-align:center; max-width:800px; margin: 0 auto 32px;">
-        <h2>Latest Updates &amp; Engineering Activity Log</h2>
-        <p>Continuous operational deployments, automation rollouts, and forensic post-mortems across Shopify Plus, 3PL WMS, and Carrier APIs. Click any update for an executive overview.</p>
+      <!-- PAGE HEADER -->
+      <div class="timeline-page-header">
+        <div class="timeline-page-eyebrow">
+          <i class="ph ph-activity"></i> Live Engineering Log
+        </div>
+        <h1 class="timeline-page-title">Latest Updates &amp; Activity Log</h1>
+        <p class="timeline-page-subtitle">
+          Continuous operational deployments, automation rollouts, and forensic post-mortems across Shopify Plus, 3PL WMS, and Carrier APIs. Click any card for a quick overview.
+        </p>
       </div>
 
-      <!-- TIMELINE CONTAINER -->
-      <div class="latest-timeline" id="fullTimeline"></div>
-    </div>
+      <!-- TIMELINE -->
+      <div class="tl-container" id="tlContainer">
+        <!-- Track line -->
+        <div class="tl-track">
+          <div class="tl-track-fill" id="tlTrackFill"></div>
+        </div>
 
+        <!-- Entries injected by JS -->
+        <div id="tlEntries"></div>
+      </div>
+
+    </div>
   </main>
 
-  <!-- QUICK OVERVIEW MODAL POPUP -->
+  <!-- QUICK OVERVIEW MODAL -->
   <div class="latest-modal-overlay" id="latestModalOverlay" role="dialog" aria-modal="true" aria-hidden="true" onclick="handleModalBackdropClick(event)">
     <div class="latest-modal-sheet" id="latestModalSheet" onclick="event.stopPropagation()">
       <div id="modalDynamicContent"></div>
     </div>
   </div>
 
+  <!-- PHOSPHOR ICONS CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
   <script src="../js/main.js"></script>
   <script src="../js/theme-toggle.js"></script>
   <script src="../js/feed-data.js"></script>
   <script>
+    // ─── GROUP FEED BY PERIOD ─────────────────────────────────────────────────
+    const PERIODS = [
+      { label: "Nov 2026", ids: ["update-capstone"] },
+      { label: "Oct 2026", ids: ["update-d1", "update-d2"] },
+      { label: "Sep 2026", ids: ["update-d3", "update-d4"] },
+      { label: "Aug 2026", ids: ["update-d5", "update-d6"] },
+    ];
+
     let currentFeed = [];
 
+    // ─── RENDER TIMELINE ──────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
       currentFeed = getFeed();
-      const container = document.getElementById('fullTimeline');
+      const container = document.getElementById('tlEntries');
       if (!container || !currentFeed) return;
 
-      container.innerHTML = currentFeed.map(item => `
-        <article class="timeline-card" onclick="openLatestModal('${item.id}')" tabindex="0" role="button" aria-label="View quick overview for ${item.title}">
-          <div class="timeline-meta">
-            <span class="timeline-date"><i class="ph ph-calendar-blank"></i> ${item.date}</span>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="timeline-tag"><i class="ph ${item.icon || 'ph-sparkle'}"></i> ${item.tag}</span>
+      // Build a lookup map
+      const feedMap = {};
+      currentFeed.forEach(item => { feedMap[item.id] = item; });
+
+      let html = '';
+      PERIODS.forEach(period => {
+        const items = period.ids.map(id => feedMap[id]).filter(Boolean);
+        if (!items.length) return;
+
+        // Build cards for this period
+        const cardsHtml = items.map(item => `
+          <div class="tl-card" onclick="openLatestModal('${item.id}')" tabindex="0" role="button" aria-label="Quick overview: ${item.title}" onkeydown="if(event.key==='Enter')openLatestModal('${item.id}')">
+            <div class="tl-card-icon">
+              <i class="ph ${item.icon || 'ph-sparkle'}"></i>
+            </div>
+            <div class="tl-card-body">
+              <div class="tl-card-meta">
+                <span class="tl-card-tag">${item.tag}</span>
+                <span class="tl-card-date">${item.date}</span>
+              </div>
+              <div class="tl-card-title">${item.title}</div>
+              <p class="tl-card-desc">${item.short}</p>
+              <div class="tl-card-actions">
+                <button class="tl-card-btn-primary" onclick="event.stopPropagation(); openLatestModal('${item.id}')">
+                  <i class="ph ph-eye"></i> Quick Overview
+                </button>
+                <a href="../projects/?id=${item.projectId}" class="tl-card-btn-secondary" onclick="event.stopPropagation()">
+                  View Case Study <i class="ph ph-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+            <div class="tl-card-arrow">
+              <i class="ph ph-arrow-up-right"></i>
             </div>
           </div>
-          <h3 class="timeline-title">${item.title}</h3>
-          <p class="timeline-text">${item.short}</p>
-          <div class="timeline-card-actions">
-            <button class="timeline-quickview-btn" onclick="event.stopPropagation(); openLatestModal('${item.id}')">
-              <i class="ph ph-eye"></i> Quick Overview
-            </button>
-            <a href="../projects/?id=${item.projectId}" class="timeline-case-link" onclick="event.stopPropagation()">
-              View Case Study <i class="ph ph-arrow-right"></i>
-            </a>
+        `).join('');
+
+        html += `
+          <div class="tl-entry" data-period="${period.label}">
+            <div class="tl-dot-col">
+              <div class="tl-dot-ring">
+                <div class="tl-dot-inner"></div>
+              </div>
+              <div class="tl-date-label">${period.label.replace(' ', '<br>')}</div>
+            </div>
+            <div class="tl-content-col">
+              <div class="tl-mobile-date">${period.label}</div>
+              <div class="tl-period-label">${period.label}</div>
+              <p class="tl-summary">${items.length} update${items.length > 1 ? 's' : ''} · ${items.map(i => i.domain).join(' &amp; ')}</p>
+              <div class="tl-cards-grid">
+                ${cardsHtml}
+              </div>
+            </div>
           </div>
-        </article>
-      `).join('');
+        `;
+      });
+
+      container.innerHTML = html;
+
+      // ── Intersection Observer for fade-in ──────────────────────────────────
+      const entries = document.querySelectorAll('.tl-entry');
+      const io = new IntersectionObserver((obs) => {
+        obs.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+
+      entries.forEach(el => io.observe(el));
+
+      // ── Scroll-driven track fill ───────────────────────────────────────────
+      const fill = document.getElementById('tlTrackFill');
+      const tlContainer = document.getElementById('tlContainer');
+      const scroller = document.getElementById('mainContent');
+
+      function updateTrackFill() {
+        if (!fill || !tlContainer) return;
+        const containerRect = tlContainer.getBoundingClientRect();
+        const scrollerRect = scroller.getBoundingClientRect();
+        const viewportH = scrollerRect.height;
+        const totalH = containerRect.height;
+        const scrolled = -containerRect.top + scrollerRect.top + viewportH * 0.1;
+        const pct = Math.max(0, Math.min(1, scrolled / totalH));
+        fill.style.height = (pct * 100) + '%';
+      }
+
+      scroller.addEventListener('scroll', updateTrackFill, { passive: true });
+      updateTrackFill();
     });
 
-    // OPEN QUICK OVERVIEW MODAL
+    // ─── OPEN QUICK OVERVIEW MODAL ────────────────────────────────────────────
     function openLatestModal(id) {
       const item = currentFeed.find(x => x.id === id);
       if (!item) return;
@@ -126,7 +712,7 @@
           <p class="modal-section-paragraph">${item.problem}</p>
         </div>
 
-        <!-- ENGINEERED SOLUTION & SAFEGUARD -->
+        <!-- ENGINEERED SOLUTION -->
         <div class="modal-section-block">
           <div class="modal-section-heading">
             <i class="ph ph-shield-check" style="color:var(--hunter);"></i> Engineered Solution &amp; Governance
@@ -134,7 +720,7 @@
           <p class="modal-section-paragraph">${item.solution}</p>
         </div>
 
-        <!-- IMPACT & VERIFICATION METRICS -->
+        <!-- IMPACT METRICS -->
         <div class="modal-section-block">
           <div class="modal-section-heading">
             <i class="ph ph-chart-line-up" style="color:var(--isabelline);"></i> Key Outcomes &amp; Measurable Verification
@@ -159,7 +745,7 @@
           </div>
         </div>
 
-        <!-- MODAL FOOTER ACTIONS -->
+        <!-- FOOTER ACTIONS -->
         <div class="modal-actions-footer">
           <a href="../projects/?id=${item.projectId}" class="modal-primary-cta">
             <i class="ph ph-book-open"></i> View In-Depth Case Study &amp; Technical Defense <i class="ph ph-arrow-right"></i>
@@ -175,7 +761,7 @@
       document.body.style.overflow = 'hidden';
     }
 
-    // CLOSE MODAL
+    // ─── CLOSE MODAL ──────────────────────────────────────────────────────────
     function closeLatestModal() {
       const overlay = document.getElementById('latestModalOverlay');
       if (overlay) {
@@ -185,18 +771,16 @@
       document.body.style.overflow = '';
     }
 
-    // BACKDROP CLICK
+    // ─── BACKDROP CLICK ───────────────────────────────────────────────────────
     function handleModalBackdropClick(event) {
       if (event.target.id === 'latestModalOverlay') {
         closeLatestModal();
       }
     }
 
-    // KEYBOARD ESCAPE TO CLOSE
+    // ─── KEYBOARD ESCAPE ──────────────────────────────────────────────────────
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeLatestModal();
-      }
+      if (e.key === 'Escape') closeLatestModal();
     });
   </script>
 </body>
