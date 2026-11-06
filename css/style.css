@@ -7497,3 +7497,25 @@ body.fullwidth-layout .main {
     transition: none;
   }
 }
+
+/* Dedicated-page return navigation */
+    .homepage-back-link {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px clamp(16px, 3vw, 40px);
+      padding: 8px 0;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .homepage-back-link:hover { text-decoration: underline; }
+    .homepage-back-link:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+.homepage-back-link { flex-shrink: 0; }
