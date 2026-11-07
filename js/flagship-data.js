@@ -21,7 +21,7 @@ const FLAGSHIP_PROJECTS = [
       "DLQ Buffering"
     ],
     "dossierUrl": "capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md",
-    "pdfUrl": "capstone/CaseStudy-AsynchronousOrderMutationAndWebhookFailure-Analysis.pdf",
+    "pdfUrl": "",
     "specName": "CaseStudy - AsynchronousOrderMutationAndWebhookFailure - Analysis.md"
   },
   {
@@ -42,7 +42,7 @@ const FLAGSHIP_PROJECTS = [
       "State Machines"
     ],
     "dossierUrl": "domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md",
-    "pdfUrl": "domain-1-order-lifecycle/SOP-OrderExceptionMutationProtocol-Parent.pdf",
+    "pdfUrl": "",
     "specName": "SOP - OrderExceptionMutationProtocol - Parent.md"
   },
   {
@@ -63,7 +63,7 @@ const FLAGSHIP_PROJECTS = [
       "Split Containment"
     ],
     "dossierUrl": "domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md",
-    "pdfUrl": "domain-2-order-routing/Architecture-MultiNodeRoutingEngine-Spec.pdf",
+    "pdfUrl": "",
     "specName": "Architecture - MultiNodeRoutingEngine - Spec.md"
   },
   {
@@ -84,7 +84,7 @@ const FLAGSHIP_PROJECTS = [
       "Canary Batches"
     ],
     "dossierUrl": "domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md",
-    "pdfUrl": "domain-3-bulk-data-management/SOP-BulkCatalogMigrationAndHygiene-Parent.pdf",
+    "pdfUrl": "",
     "specName": "SOP - BulkCatalogMigrationAndHygiene - Parent.md"
   },
   {
@@ -105,7 +105,7 @@ const FLAGSHIP_PROJECTS = [
       "DLQ Recovery"
     ],
     "dossierUrl": "domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md",
-    "pdfUrl": "domain-4-business-automation/SOP-BusinessLogicAutomationAndWebhooks-Parent.pdf",
+    "pdfUrl": "",
     "specName": "SOP - BusinessLogicAutomationAndWebhooks - Parent.md"
   },
   {
@@ -126,7 +126,7 @@ const FLAGSHIP_PROJECTS = [
       "HTTP 422"
     ],
     "dossierUrl": "domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md",
-    "pdfUrl": "domain-5-technical-diagnosis/SOP-TechnicalDiagnosisAndAuditLogging-Parent.pdf",
+    "pdfUrl": "",
     "specName": "SOP - TechnicalDiagnosisAndAuditLogging - Parent.md"
   },
   {
@@ -147,7 +147,7 @@ const FLAGSHIP_PROJECTS = [
       "SLA Workflows"
     ],
     "dossierUrl": "domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md",
-    "pdfUrl": "domain-6-frontline-helpdesk/SOP-HelpdeskOperationsAndMacroAutomation-Parent.pdf",
+    "pdfUrl": "",
     "specName": "SOP - HelpdeskOperationsAndMacroAutomation - Parent.md"
   }
 ];

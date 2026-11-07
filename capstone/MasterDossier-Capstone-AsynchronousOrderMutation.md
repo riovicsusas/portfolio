@@ -380,32 +380,79 @@ Wave #8812 released at T+42m. Pack bench reached at T+48m. The hold had to arriv
 
 ---
 
-## 11. Cross-Domain Architecture Dependencies
+## 9. Financial Risk Exposure & Unit Economics Autopsy
 
-| This Dossier References | Domain | Dependency |
-|------------------------|--------|------------|
-| PONR State Thresholds | Domain 1 | `MasterDossier-Domain1-OrderStateMachineAndPONR.md` |
-| Multi-Node Routing (Reno exclusivity) | Domain 2 | `MasterDossier-Domain2-MultiNodeLogisticsRouting.md` |
-| Webhook Retry Backoff Curve | Domain 4 | `MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md` |
-| Diagnostic Forensics (Chrome DevTools / GraphQL) | Domain 5 | `MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md` |
-| Freeze-First SOP | SOP Parent | `SOP-OrderExceptionMutationProtocol-Parent.md` |
-| Matrix: PONR Master | Decision Matrix | `Matrix-OrderStatePointOfNoReturn-Master.md` |
-| Matrix: Automation & Webhook Triage | Decision Matrix | `Matrix-AutomationLogicAndWebhookTriage-Engine.md` |
+For a recruiter or executive evaluating operational risk, a "Zombie Order" is not merely an engineering anomaly—it represents an immediate collapse of unit economics:
+
+```
+NORMAL ORDER ECONOMICS (#1070 Baseline):
+  Gross Merchandise Value (GMV):                +$98.00
+  Cost of Goods Sold (COGS):                    -$28.40
+  3PL Fulfillment (Pick / Pack / Box):          -$4.50
+  Carrier Outbound Ground Freight (Zone 3):     -$7.20
+  Credit Card Gateway Processing (2.9% + $0.30):-$3.14
+  ─────────────────────────────────────────────────────
+  NET CONTRIBUTION MARGIN:                      +$54.76 (55.9% Net Margin)
+
+ZOMBIE ORDER COLLAPSE (#1070 Asynchronous Divergence):
+  Gross Merchandise Value (Collected):          +$98.00
+  Original Parcel Scrap (FDA 21 CFR Quarantine):-$28.40 (100% physical inventory write-off)
+  Carrier Package Intercept Toll (UPS API):     -$17.50
+  Carrier Return-to-Sender Freight:             -$8.40
+  Replacement Parcel COGS (Re-shipped from NV): -$28.40
+  Replacement 3PL Pick / Pack Handling:         -$4.50
+  Replacement Outbound Air Freight (Expedited): -$14.80
+  Customer Goodwill Account Credit:             -$25.00
+  Payment Gateway Transaction Tolls:            -$3.14
+  Potential Chargeback Penalty (if unresolved): -$15.00
+  ─────────────────────────────────────────────────────
+  NET FINANCIAL DRAIN:                          -$47.14 (NET LOSS OF -$101.90 PER ZOMBIE EVENT)
+```
+
+At Synapse Botanicals' volume of 1,000 orders/day, even a 0.5% seam failure rate translates to 150 misdirected orders per month, representing an uncontained profit leakage exceeding **$15,000/month in freight tolls, inventory write-offs, and chargeback penalties**.
 
 ---
 
-## 12. Delivery Assets Checklist
+## 10. Enterprise Prevention Playbook & Systems Engineering Summary
 
-| Asset | Location | Status |
-|-------|----------|--------|
-| This Master Dossier | `master-dossiers/MasterDossier-Capstone-AsynchronousOrderMutation.md` | ✅ |
-| Technical Systems Walkthrough | Interactive Loom Walkthrough | ⬜ Pending recording |
-| Shopify Flow Webhook Decision Matrix | `Matrix-AutomationLogicAndWebhookTriage-Engine.md` | ✅ |
-| PONR State Machine Matrix | `Matrix-OrderStatePointOfNoReturn-Master.md` | ✅ |
-| Freeze-First SOP Parent | `SOP-OrderExceptionMutationProtocol-Parent.md` | ✅ |
-| GraphQL Query Reference | Embedded in Section 5 | ✅ |
-| UPS Intercept API Reference | Embedded in Section 6 | ✅ |
-| SQS DLQ Architecture Diagram | Embedded in Section 7.3 | ✅ |
+To ensure deterministic consistency across distributed e-commerce infrastructure, four core architectural principles must be enforced across all integrations:
+
+1. **Two-Phase Commit Boundary Verification**: Never confirm an asynchronous mutation in a user interface until downstream fulfillment systems return an explicit acknowledgment (`HTTP 200 OK`).
+2. **Idempotency Key Enforcement**: All webhook mutations must carry unique idempotency tokens (`X-Idempotency-Key: {order_id}_{mutation_timestamp}`) to prevent double-execution during network retries.
+3. **Dead-Letter Queue (DLQ) Circuit Breakers**: Replace unmonitored blind retries with Amazon SQS FIFO queues equipped with exponential backoff and automated alerting thresholds.
+4. **Automated Carrier API Intercepts**: Implement instant programmatic intercept dispatch (UPS/FedEx APIs) the second a physical status check confirms an order has cleared the Point of No Return.
+
+---
+
+## 11. Cross-Domain Architecture Dependencies
+
+All foundational technical frameworks synthesized in this Capstone are documented in their respective Master Technical Dossiers:
+
+| Operational Component | Domain Specification | Foundational Master Dossier |
+|-----------------------|----------------------|----------------------------|
+| PONR State Thresholds & Lockout Matrix | Domain 1: Order Lifecycle | `MasterDossier-Domain1-OrderStateMachineAndPONR.md` |
+| Multi-Node Routing & Reno Exclusivity | Domain 2: Order Routing | `MasterDossier-Domain2-MultiNodeLogisticsRouting.md` |
+| Barcode Hygiene & Matrixify Data Governance | Domain 3: Bulk Data Management | `MasterDossier-Domain3-BulkCatalogSchemaGovernance.md` |
+| Webhook Retry Backoff Curve & Status Triage | Domain 4: Business Automations | `MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md` |
+| Diagnostic Forensics (DevTools & GraphQL) | Domain 5: Technical Diagnosis | `MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md` |
+| Frontline Helpdesk Programmatic Holds | Domain 6: Frontline Helpdesk | `MasterDossier-Domain6-FrontlineHelpdeskAutomation.md` |
+
+---
+
+## 12. Delivery Assets & Systems Architecture Checklist
+
+| Technical Deliverable | Location in Portfolio | Status |
+|-----------------------|-----------------------|--------|
+| Capstone Systems Investigation Dossier | `master-dossiers/MasterDossier-Capstone-AsynchronousOrderMutation.md` | ✅ Complete |
+| Point-of-No-Return (PONR) Decision Engine | Embedded in Domain 1 Master Dossier (Section 2 & 4) | ✅ Complete |
+| Multi-Node Freight Optimization Waterfall | Embedded in Domain 2 Master Dossier (Section 2 & 3) | ✅ Complete |
+| Matrixify Catalog Pre-Flight Schema Audit | Embedded in Domain 3 Master Dossier (Section 3 & 4) | ✅ Complete |
+| Shopify Flow Webhook & DLQ Triage Matrix | Embedded in Domain 4 Master Dossier (Section 2 & 3) | ✅ Complete |
+| Algorithmic Margin Defense & Cart Diagnostics | Embedded in Domain 5 Master Dossier (Section 3 & 4) | ✅ Complete |
+| Gorgias Frontline Webhook Automation Engine | Embedded in Domain 6 Master Dossier (Section 2 & 4) | ✅ Complete |
+| GraphQL Order State Inspection Query | Embedded in Capstone Dossier (Section 5.3) | ✅ Complete |
+| Carrier Package Intercept API Integration | Embedded in Capstone Dossier (Section 6.1) | ✅ Complete |
+| Amazon SQS Dead-Letter Queue Architecture | Embedded in Capstone Dossier (Section 7.3) | ✅ Complete |
 
 ---
 

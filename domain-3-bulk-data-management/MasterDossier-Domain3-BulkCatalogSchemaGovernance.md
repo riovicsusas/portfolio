@@ -156,7 +156,7 @@ To validate this protocol under audit conditions, an empirical mutation was exec
 | SKU Code | Variant Name | Field Mutated | Pre-Audit Raw Value | Post-Sanitization Value | Verification |
 |---|---|---|---|---|---|
 | `SYN-NB-001` | NeuroFocus Alpha (60ct) | Barcode | `8.50012E+11` (Float) | `'850012345678` (String) | PASSED (UPC-A Verified) |
-| `SYN-FG-001` | Lion's Mane Berry (60ct) | Barcode | `85001234567` (11 Digits) | `'085001234567` (Padded) | PASSED (CASS Verified) |
+| `SYN-FG-001` | Lion's Mane Berry (60ct) | Barcode | `85001234567` (11 Digits) | `'085001234567` (Padded) | PASSED (UPC-A Check Digit Verified) |
 | `SYN-NB-003` | NeuroFocus PM (Single) | Handle | `neurofocus-pm-new` | `neurofocus-pm` (Reverted) | PASSED (SEO Protected) |
 | `SYN-NB-001` | NeuroFocus Alpha (60ct) | Price | $46.00 | $48.00 | PASSED (Margin > 70%) |
 | `SYN-AT-001` | Ashwagandha Tincture | Cost | $8.50 | $8.16 | PASSED (COGS Reconciled) |

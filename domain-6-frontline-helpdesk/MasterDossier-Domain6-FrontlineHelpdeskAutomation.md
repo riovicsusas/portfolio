@@ -134,9 +134,9 @@ flowchart TD
      > *"Hi {{ticket.customer.first_name}}, I have successfully frozen your order and updated your shipping address to: {{order.shipping_address.formatted}}. Your order is now re-queued for dispatch from our warehouse. Tracking will be emailed shortly!"*
 
 ### 5.2 Macro M-02: Consumable 1:1 Flavor Swap Protocol
-- **Constraint**: Swaps are strictly permitted within identical product lines and retail values (e.g. *Lion's Mane Gummies Berry* `SYN-FG-001` $leftrightarrow$ *Citrus* `SYN-FG-002`).
+- **Constraint**: Swaps are strictly permitted within identical product lines and retail values (e.g. *Lion's Mane Gummies Berry* `SYN-FG-001` ↔ *Citrus* `SYN-FG-002`).
 - **Operator Verification**:
-  1. Check Gorgias sidebar widget for ATS inventory at the allocated node (must be $ge 5$ units).
+  1. Check Gorgias sidebar widget for ATS inventory at the allocated node (must be ≥ 5 units).
   2. Execute line item swap in Shopify Admin with net zero balance ($0.00).
   3. Release hold.
 

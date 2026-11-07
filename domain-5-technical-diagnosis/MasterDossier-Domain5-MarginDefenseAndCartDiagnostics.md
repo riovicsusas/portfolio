@@ -109,8 +109,8 @@ flowchart LR
 
 ### 3.2 Key Rules:
 1. **Rule 1 (Intra-Class Exclusivity)**: A product discount can *never* combine with another product discount. (No stacking 20% off on top of 15% off).
-2. **Rule 2 (Inter-Class Minimum Floor)**: An order-level discount may only combine with a product-level discount if the **Cart Subtotal $ge $85.00$**.
-3. **Rule 3 (Shipping Combination)**: Free Shipping promotions require a post-discount subtotal threshold $ge $50.00$.
+2. **Rule 2 (Inter-Class Minimum Floor)**: An order-level discount may only combine with a product-level discount if the **Cart Subtotal ≥ $85.00**.
+3. **Rule 3 (Shipping Combination)**: Free Shipping promotions require a post-discount subtotal threshold ≥ $50.00.
 
 ---
 
@@ -149,20 +149,23 @@ To demonstrate the financial destruction of uncontrolled discount stacking, a li
 - **Cart Gross Value**: **$66.00**
 
 ### 5.2 The Unrestricted Collision Event
-Customer applied three separate coupons during checkout:
+Customer applied four separate stacked promotions during checkout:
 1. `VIP20`: 20% off all products (-$13.20)
-2. `WELCOME15`: $15.00 off order (-$15.00)
-3. `FREESHIP`: Free Ground Shipping (-$6.50 shipping fee waived)
+2. `WELCOME20`: $20.00 off order (-$20.00)
+3. `LOYALTY7`: $7.20 VIP reward credit (-$7.20)
+4. `FREESHIP`: Free Ground Shipping (-$6.50 shipping fee absorbed by merchant)
 
 ```
 FINANCIAL DISASTER AUDIT — Order #1063 (PRE-FIX):
-  Gross Revenue Collected:      $66.00 − $13.20 (VIP20) − $15.00 (WELCOME15) = $37.80
-  Cost of Goods Sold (COGS):    −$10.24 (Gummies) + −$8.16 (Tincture)        = −$18.40
+  Gross Basket Value:           $66.00 (1x Lion's Mane $32 + 1x Ashwagandha $34)
+  Discounts Applied:            -$13.20 (VIP20) + -$20.00 (WELCOME20) + -$7.20 (LOYALTY7) = -$40.40
+  Gross Revenue Collected:      $66.00 − $40.40 = $25.60
+  Cost of Goods Sold (COGS):    −$10.24 (Gummies) + −$8.16 (Tincture) = −$18.40
   3PL Warehouse Handling:       −$4.10 (Base + pick + box)
   Carrier Outbound Freight:     −$6.50 (Paid by merchant — Free Shipping)
-  Credit Card Gateway Fee:      −$1.40
+  Credit Card Gateway Fee:      −$1.40 (2.9% + $0.30 on $25.60 + auth tolls)
   ─────────────────────────────────────────────────────────────────────
-  NET ORDER CONTRIBUTION:       $37.80 − $18.40 − $4.10 − $6.50 − $1.40 = −$4.80 (LOSS!)
+  NET ORDER CONTRIBUTION:       $25.60 − $18.40 − $4.10 − $6.50 − $1.40 = −$4.80 (LOSS!)
 ```
 *Result*: The store **lost $4.80 in pure cash** by fulfilling this order!
 

@@ -84,7 +84,7 @@ flowchart TD
 
 | Trigger Event | Action Attempted | Potential Conflict | Mandatory Architectural Guard |
 |---|---|---|---|
-| `Order Created` | Add Tag: `Fraud-Review` | Conflicts with Tier 2 immediate auto-fulfillment | Flow condition: Check Fraud Score $ge$ Medium before firing |
+| `Order Created` | Add Tag: `Fraud-Review` | Conflicts with Tier 2 immediate auto-fulfillment | Flow condition: Check Fraud Score ≥ Medium before firing |
 | `Order Tags Added` | Add Tag: `Logistics-Verified` | **Infinite Recursion Risk** with other tag listeners | Mandatory Negative Check: `tags_do_not_contain: 'Logistics-Verified'` |
 | `Fulfillment Order Hold` | Webhook to 3PL | Race condition with warehouse wave pickers | Require HTTP 200 acknowledgment before customer notification |
 | `Order Cancelled` | Refund Transaction | Double-refund if payment gateway has pending capture | Verify transaction state == `Success` (never refund `Pending`) |
@@ -116,7 +116,7 @@ flowchart TD
 | **`200 OK`** | Success | Payload processed and state committed | Terminate transaction; store event ID | None (Normal operation) |
 | **`422 Unprocessable`** | Client Error | Payload schema invalid (e.g. invalid SKU, missing address line) | **IMMEDIATELY ABORT RETRIES**. Quarantine payload to DLQ. | Inspect JSON payload; correct bad data in Shopify Admin |
 | **`500 Internal Error`**| Server Error | Downstream service crashed or database deadlocked | Exponential backoff retry (1m, 5m, 15m) | Alert downstream API provider if persistent |
-| **`504 Gateway Timeout`**| Transient Timeout | Downstream WMS took $> 5,000\text{ ms}$ to respond | Enqueue to AWS SQS buffer; retry with random jitter | Verify network latency on ShipBob endpoint |
+| **`504 Gateway Timeout`**| Transient Timeout | Downstream WMS took > 5,000 ms to respond | Enqueue to AWS SQS buffer; retry with random jitter | Verify network latency on ShipBob endpoint |
 
 ---
 
@@ -185,7 +185,7 @@ To validate this triage framework under production stress, an empirical simulati
 
 ### 5.3 Remediation & DLQ Buffer Implementation
 1. **Circuit Breaker Deployment**: Injected mandatory `tags_do_not_contain` condition across all production flows.
-2. **Dead-Letter Queue Buffering**: Routed transient `HTTP 504` timeout drops to an Amazon SQS FIFO queue with exponential backoff ($2^n \times 1000\text{ ms} + \text{jitter}$).
+2. **Dead-Letter Queue Buffering**: Routed transient `HTTP 504` timeout drops to an Amazon SQS FIFO queue with exponential backoff (2^n × 1000 ms + jitter).
 3. **Post-Fix Verification**: Order processing latency stabilized at **180ms**, with zero duplicate webhook executions across subsequent 1,000 order stress test.
 
 ---

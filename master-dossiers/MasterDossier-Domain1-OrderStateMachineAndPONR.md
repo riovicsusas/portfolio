@@ -64,10 +64,10 @@ flowchart LR
 
 | Phase | Action | Target System & Endpoint | Guard & Verification Criteria |
 |---|---|---|---|
-| **Step 1: Lock** | Native Fulfillment Hold | `POST /admin/api/2026-01/fulfillments/{id}/holds.json` | Reason: `AWAITING_CUSTOMER_UPDATE`<br>Payload: `reason_notes: "Pending customer mutation"` |
+| **Step 1: Lock** | Native Fulfillment Hold | `POST /admin/api/2026-01/fulfillment_orders/{fulfillment_order_id}/holds.json` | Reason: `AWAITING_CUSTOMER_UPDATE`<br>Payload: `reason_notes: "Pending customer mutation"` |
 | **Step 2: Verify** | 3PL Queue Lock Check | `GET /api/v1/shipments?order_id={id}` | Verify `ShipmentState == "On Hold"`<br>Req: HTTP 200 confirmation within 60s |
 | **Step 3: Mutate** | Database Mutation | `PUT /admin/api/2026-01/orders/{id}.json` | Address: CASS/ZIP+4 standardized<br>SKU Swap: 1:1 equal-value ($0.00 delta) |
-| **Step 4: Release**| Hold Release & Re-queue | `POST /admin/api/2026-01/fulfillments/{id}/release_hold.json` | Re-inject to Allentown/Reno stream<br>Confirm: `READY_FOR_WAVE_BATCH` |
+| **Step 4: Release**| Hold Release & Re-queue | `POST /admin/api/2026-01/fulfillment_orders/{fulfillment_order_id}/release_hold.json` | Re-inject to Allentown/Reno stream<br>Confirm: `READY_FOR_WAVE_BATCH` |
 
 ### 3.2 Step-by-Step Operator Procedures
 
@@ -80,9 +80,9 @@ flowchart LR
    ```
 
 #### Protocol B: 1:1 Consumable Flavor Exchange (Equal Value)
-1. **Catalog Integrity Constraint**: Swaps are strictly limited to products within the exact same product family and identical retail price point (e.g., *Lion's Mane Gummies Berry 60ct* `SYN-FG-001` $leftrightarrow$ *Lion's Mane Gummies Citrus 60ct* `SYN-FG-002`).
-2. **Inventory Availability Check**: Before mutating the line item, operator must verify Available-to-Sell (ATS) inventory $ge 5$ units at the target fulfillment node.
-3. **Financial Ledger Zero Balance**: The adjustment must result in $$0.00$ net change on the Shopify transaction ledger.
+1. **Catalog Integrity Constraint**: Swaps are strictly limited to products within the exact same product family and identical retail price point (e.g., *Lion's Mane Gummies Berry 60ct* `SYN-FG-001` ↔ *Lion's Mane Gummies Citrus 60ct* `SYN-FG-002`).
+2. **Inventory Availability Check**: Before mutating the line item, operator must verify Available-to-Sell (ATS) inventory ≥ 5 units at the target fulfillment node.
+3. **Financial Ledger Zero Balance**: The adjustment must result in $0.00 net change on the Shopify transaction ledger.
 
 #### Protocol C: Cancellation & Hard PONR Lockout
 1. If the 3PL reports status `Picked`, `Packed`, or `Manifested`, the operator is programmatically locked out from canceling in Shopify Admin.
