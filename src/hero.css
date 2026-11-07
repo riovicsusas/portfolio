@@ -152,3 +152,28 @@ body.home-starfield .drivers-logos {
 @media (max-width: 600px) {
   .home-starfield #page-home { row-gap: 12px; }
 }
+
+/* Stable single-line greeting while the active word changes. */
+.greeting-rotator { position: relative; display: inline-grid; height: 1.1em; overflow: hidden; vertical-align: bottom; }
+.greeting-sizer { grid-area: 1 / 1; visibility: hidden; white-space: nowrap; }
+.greeting-word { position: absolute; inset: 0; display: block; white-space: nowrap; }
+.home-starfield .professional-rail { border-left: 0; }
+@media (min-width: 1024px) and (min-height: 541px) {
+  .home-starfield #page-home { grid-template-rows: minmax(0, 1fr); align-content: stretch; padding-bottom: 20dvh; }
+  .home-starfield .hero-lanyard {
+    position: fixed !important;
+    top: 0 !important;
+    right: var(--lanyard-right, 16%) !important;
+    width: var(--lanyard-width, 34%) !important;
+    height: 74dvh !important;
+    transform: none;
+    margin: 0;
+  }
+  body.home-starfield .drivers-logos {
+    position: fixed;
+    left: 50%;
+    bottom: calc(14dvh - 34px);
+    transform: translateX(-50%);
+    width: min(calc(100% - 64px), 1000px);
+  }
+}

@@ -29,22 +29,22 @@ const GreetingWord = ({ greetings, intervalMs = 2200 }: { greetings: string[]; i
   return (
     <>
       <span className='sr-only'>{greetings[0]}</span>
-      <span aria-hidden='true' className='mr-2 inline-grid overflow-hidden align-bottom'>
+      <span aria-hidden='true' className='greeting-rotator'>
         {/* Invisible sizers reserve space for the widest greeting so surrounding text doesn't shift */}
         {greetings.map(word => (
-          <span key={word} className='invisible col-start-1 row-start-1 whitespace-nowrap'>
+          <span key={word} className='greeting-sizer'>
             {word}
           </span>
         ))}
 
-        <AnimatePresence mode='popLayout' initial={false}>
+        <AnimatePresence mode='wait' initial={false}>
           <motion.span
             key={greetings[index]}
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: '0%', opacity: 1 }}
             exit={{ y: '-100%', opacity: 0 }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
-            className='col-start-1 row-start-1 inline-block whitespace-nowrap'
+            className='greeting-word'
           >
             {greetings[index]}
           </motion.span>

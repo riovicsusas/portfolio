@@ -424,6 +424,22 @@ const IdCard = ({ frontImage, className }: { frontImage: string; className?: str
   const [contextLossKey, setContextLossKey] = useState(0)
   const eventSourceRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const host = eventSourceRef.current
+    const parent = host?.parentElement
+    if (!host || !parent) return
+    const align = () => {
+      const rect = parent.getBoundingClientRect()
+      host.style.setProperty('--lanyard-right', `${window.innerWidth - rect.right}px`)
+      host.style.setProperty('--lanyard-width', `${rect.width * 0.43}px`)
+    }
+    align()
+    const observer = new ResizeObserver(align)
+    observer.observe(parent)
+    window.addEventListener('resize', align)
+    return () => { observer.disconnect(); window.removeEventListener('resize', align) }
+  }, [])
+
   // Hidden elements that bridge resolved Tailwind theme colours into canvas / three.js.
   const primaryProbeRef = useRef<HTMLSpanElement>(null)
   const foregroundProbeRef = useRef<HTMLSpanElement>(null)

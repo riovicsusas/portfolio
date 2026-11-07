@@ -14052,7 +14052,7 @@ var Id = Pd(Fd), Ld = {
 	}]]
 };
 Ld.node;
-var Rd = Pd(Ld), zd = (...e) => e.filter(Boolean).join(" "), Bd = "focus-visible:ring-ring/60 focus-visible:border-ring outline-none focus-visible:ring-[3px]", Vd = (0, l.lazy)(() => import("./hero-lanyard-Du3Rf-JB.js")), Hd = class extends l.Component {
+var Rd = Pd(Ld), zd = (...e) => e.filter(Boolean).join(" "), Bd = "focus-visible:ring-ring/60 focus-visible:border-ring outline-none focus-visible:ring-[3px]", Vd = (0, l.lazy)(() => import("./hero-lanyard-Beiy4xn9.js")), Hd = class extends l.Component {
 	state = { failed: !1 };
 	static getDerivedStateFromError() {
 		return { failed: !0 };
@@ -14079,12 +14079,12 @@ var Rd = Pd(Ld), zd = (...e) => e.filter(Boolean).join(" "), Bd = "focus-visible
 		children: e[0]
 	}), /* @__PURE__ */ (0, H.jsxs)("span", {
 		"aria-hidden": "true",
-		className: "mr-2 inline-grid overflow-hidden align-bottom",
+		className: "greeting-rotator",
 		children: [e.map((e) => /* @__PURE__ */ (0, H.jsx)("span", {
-			className: "invisible col-start-1 row-start-1 whitespace-nowrap",
+			className: "greeting-sizer",
 			children: e
 		}, e)), /* @__PURE__ */ (0, H.jsx)(fu, {
-			mode: "popLayout",
+			mode: "wait",
 			initial: !1,
 			children: /* @__PURE__ */ (0, H.jsx)(bd.span, {
 				initial: {
@@ -14103,7 +14103,7 @@ var Rd = Pd(Ld), zd = (...e) => e.filter(Boolean).join(" "), Bd = "focus-visible
 					duration: .5,
 					ease: "easeInOut"
 				},
-				className: "col-start-1 row-start-1 inline-block whitespace-nowrap",
+				className: "greeting-word",
 				children: e[n]
 			}, e[n])
 		})]
