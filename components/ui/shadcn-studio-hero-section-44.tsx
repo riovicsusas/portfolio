@@ -2,6 +2,7 @@
 import { Component, Suspense, lazy, useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowRightIcon, ArrowUpRightIcon } from 'lucide-react'
+import { GlowingShadow } from './glowing-shadow'
 const cn = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(' ')
 const focusRing = 'focus-visible:ring-ring/60 focus-visible:border-ring outline-none focus-visible:ring-[3px]'
 const IdCard = lazy(() => import('./hero-lanyard'))
@@ -132,7 +133,7 @@ export const HeroSection44 = ({
             <p className='text-muted-foreground mb-8 max-w-2xl text-base'>{description}</p>
 
             <div className='flex items-center gap-2.5 pt-2'>
-              <a
+              <GlowingShadow
                 href={downloadAction.href}
                 className={cn(
                   'border-border bg-background hover:bg-muted inline-flex h-11 items-center justify-center rounded-full border px-4 text-base font-medium whitespace-nowrap transition-colors',
@@ -140,9 +141,9 @@ export const HeroSection44 = ({
                 )}
               >
                 {downloadAction.label}
-              </a>
+              </GlowingShadow>
 
-              <a
+              <GlowingShadow
                 href={connectAction.href}
                 className={cn(
                   'border-border bg-card group inline-flex h-11 items-center justify-center gap-2.5 rounded-full border pr-4 pl-4 text-base font-medium whitespace-nowrap shadow-sm transition-[padding] duration-300 hover:pl-2 focus-visible:pl-2',
@@ -156,13 +157,13 @@ export const HeroSection44 = ({
                   />
                 </span>
                 {connectAction.label}
-              </a>
+              </GlowingShadow>
             </div>
             <nav className='hero-page-links' aria-label='Explore portfolio'>
-              <a href='latest/'>Latest Updates <ArrowUpRightIcon aria-hidden='true' size={15} /></a>
-              <a href='projects/'>Projects <ArrowUpRightIcon aria-hidden='true' size={15} /></a>
-              <a href='about/'>About Me <ArrowUpRightIcon aria-hidden='true' size={15} /></a>
-              <a href='testimonials/'>Testimonials <ArrowUpRightIcon aria-hidden='true' size={15} /></a>
+              <GlowingShadow href='latest/'>Latest Updates <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
+              <GlowingShadow href='projects/'>Projects <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
+              <GlowingShadow href='about/'>About Me <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
+              <GlowingShadow href='testimonials/'>Testimonials <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
             </nav>
           </div>
         </div>

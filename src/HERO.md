@@ -18,3 +18,7 @@ The card uses the existing local profile image and a local clip texture. It is o
 ## Gravity Stars background
 
 `components/ui/gravity-stars.tsx` adapts the user-supplied component from https://21st.dev/@educalvolpz/components/gravity-stars. It mounts into the decorative, fixed `starsRoot` separately from the hero. Document pointer listeners let the stars respond behind links and the draggable card without intercepting clicks or touch scrolling. The canvas scales its particle count on mobile, follows the site's theme, freezes for reduced motion, and suspends animation in hidden tabs. The demo heading is intentionally omitted. The former radial gallery, its scroll instruction, and homepage GSAP scripts are removed.
+
+## Glowing borders and tool labels
+
+`components/ui/glowing-shadow.tsx` adapts the supplied Designali component (https://21st.dev/@designali-in/components/glowing-shadow) to semantic links, with shared scoped styles in `src/glowing-shadow.css`. Static professional-channel links and native logo buttons use the same CSS. Animated radial border color and a hover/focus halo preserve readable button surfaces. Tool buttons reveal their names on hover/focus, toggle the reveal on touch/click, and clear it with Escape. The marquee pauses during interaction; duplicate buttons stay out of the keyboard and accessibility sequence. Reduced-motion mode uses static borders.

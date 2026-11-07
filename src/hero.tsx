@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { HeroSection44 } from '../components/ui/shadcn-studio-hero-section-44'
 import GravityStars from '../components/ui/gravity-stars'
 import './hero.css'
+import './glowing-shadow.css'
 
 class HeroBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false }

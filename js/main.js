@@ -45,9 +45,28 @@ const tools = [
         const logos = tools.filter(tool => tool.logo);
         track.innerHTML = [false, true].map(duplicate =>
           `<div class="logo-belt-group"${duplicate ? ' aria-hidden="true"' : ''}>${logos.map(tool =>
-            `<div class="tool-chip" title="${tool.name}"><img src="${tool.logo}" alt="${duplicate ? '' : tool.name}" width="36" height="36" /></div>`
+            `<button type="button" class="tool-chip glowing-shadow" aria-label="${tool.name}" aria-pressed="false"${duplicate ? ' tabindex="-1"' : ''}><img src="${tool.logo}" alt="" width="36" height="36" /><span class="tool-name" id="tool-name-${duplicate ? 'copy' : 'main'}-${logos.indexOf(tool)}" aria-hidden="true">${tool.name}</span></button>`
           ).join('')}</div>`
         ).join('');
+        track.addEventListener('click', event => {
+          const button = event.target.closest('button.tool-chip');
+          if (!button) return;
+          const reveal = button.dataset.revealed !== 'true';
+          track.querySelectorAll('button.tool-chip').forEach(chip => {
+            chip.dataset.revealed = 'false';
+            chip.setAttribute('aria-pressed', 'false');
+          });
+          button.dataset.revealed = String(reveal);
+          button.setAttribute('aria-pressed', String(reveal));
+        });
+        track.addEventListener('keydown', event => {
+          if (event.key === 'Escape') {
+            track.querySelectorAll('button.tool-chip').forEach(chip => {
+              chip.dataset.revealed = 'false';
+              chip.setAttribute('aria-pressed', 'false');
+            });
+          }
+        });
         return;
       }
       const doubled = [...tools, ...tools];

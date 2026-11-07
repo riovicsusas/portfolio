@@ -1,0 +1,91 @@
+/* Adapted from the supplied Glowing Shadow: animated hue and radial position. */
+@property --gs-hue { syntax: '<number>'; inherits: false; initial-value: 75; }
+@property --gs-x { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+@property --gs-y { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+.glowing-shadow {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid transparent !important;
+  background: var(--bg);
+  --gs-radius: 12px;
+  border-radius: var(--gs-radius);
+}
+.glowing-shadow::before,
+.glowing-shadow::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse at var(--gs-x) var(--gs-y),
+    hsl(var(--gs-hue) 85% 85%), hsl(var(--gs-hue) 70% 60%) 35%, transparent 75%),
+    linear-gradient(135deg, #8fa16d80, #c9b79f60);
+  animation: gs-hue 8s linear infinite, gs-orbit 5s linear infinite;
+}
+.glowing-shadow::before {
+  z-index: -2;
+  opacity: 0;
+  filter: blur(10px);
+  transition: opacity .25s ease;
+}
+.glowing-shadow::after {
+  z-index: -1;
+  border: 1px solid transparent;
+  background: linear-gradient(var(--bg), var(--bg)) padding-box,
+    radial-gradient(ellipse at var(--gs-x) var(--gs-y),
+      hsl(var(--gs-hue) 85% 85%), hsl(var(--gs-hue) 70% 60%) 35%, transparent 75%) border-box,
+    linear-gradient(135deg, #8fa16d80, #c9b79f60) border-box;
+}
+.glowing-shadow:is(:hover, :focus-visible, [data-revealed='true'])::before { opacity: .4; }
+.glowing-shadow:is(:hover, :focus-visible, [data-revealed='true'])::after { opacity: 1; }
+.glowing-shadow:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
+@keyframes gs-hue { from { --gs-hue: 75; } to { --gs-hue: 435; } }
+@keyframes gs-orbit {
+  0%, 100% { --gs-x: 0%; --gs-y: 0%; }
+  25% { --gs-x: 100%; --gs-y: 0%; }
+  50% { --gs-x: 100%; --gs-y: 100%; }
+  75% { --gs-x: 0%; --gs-y: 100%; }
+}
+.home-starfield .portfolio-hero a.h-11 { --gs-radius: 999px; }
+.home-starfield .hero-page-links a { --gs-radius: 12px; background: var(--bg); }
+.home-starfield .professional-rail { padding-left: 0; }
+.home-starfield .professional-rail a { --gs-radius: 12px; padding: 12px 10px; background: var(--bg); }
+.home-starfield .professional-rail-label { padding-left: 10px; }
+.home-starfield .drivers-logos .tool-chip {
+  --gs-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  color: var(--text);
+  font-family: inherit;
+  background: var(--white);
+}
+.drivers-logos .tool-name {
+  position: absolute;
+  bottom: 3px;
+  left: 2px;
+  right: 2px;
+  text-align: center;
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+}
+.drivers-logos .tool-chip img { transition: transform .2s; }
+.drivers-logos .tool-chip:is(:hover, :focus-visible, [data-revealed='true']) img { transform: translateY(-7px) scale(.86); }
+.drivers-logos .tool-chip:is(:hover, :focus-visible, [data-revealed='true']) .tool-name { opacity: 1; transform: none; }
+.drivers-logos .belt-track:is(:hover, :focus-within, :has([data-revealed='true'])) { animation-play-state: paused; }
+/* Space for soft halos without changing the belt's total height. */
+.drivers-logos .belt-viewport { padding: 8px 0; margin: -8px 0; }
+@media (max-width: 600px) {
+  .home-starfield .professional-rail a { padding: 8px 3px; }
+  .drivers-logos .tool-name { font-size: 8px; line-height: 10px; white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glowing-shadow::before, .glowing-shadow::after { animation: none; transition: none; }
+  .drivers-logos .tool-chip img, .drivers-logos .tool-name { transition: none; }
+}
