@@ -59,3 +59,96 @@ body.home-starfield .main { position: relative; z-index: 1; background: transpar
 body.home-starfield .portfolio-hero { background: transparent; }
 body.home-starfield .drivers-logos .belt-viewport::before,
 body.home-starfield .drivers-logos .belt-viewport::after { background: none; }
+
+/* A compact viewport composition: introduction, logo belt, and contact rail. */
+body.home-starfield .main {
+  height: 100dvh !important;
+  min-height: 0;
+  padding: clamp(16px, 3vh, 32px) clamp(16px, 3vw, 44px) !important;
+}
+.home-starfield #page-home {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 154px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  column-gap: clamp(16px, 3vw, 44px);
+  width: 100%;
+  max-width: 1480px;
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+}
+.home-starfield #heroRoot { grid-column: 1; grid-row: 1; align-self: center; max-width: none; min-width: 0; }
+.home-starfield .portfolio-hero { border: 0; overflow: visible; }
+.home-starfield .portfolio-hero > div:first-child { padding: 12px 0; }
+.home-starfield .portfolio-hero > div:first-child > div { padding: 0; max-width: none; }
+.home-starfield .portfolio-hero .space-y-6 { max-width: 54%; }
+.home-starfield .portfolio-hero .space-y-6 > * + * { margin-top: 14px; }
+.home-starfield .portfolio-hero .space-y-6 > span:first-child { font-size: 10px; padding: 5px 9px; }
+.home-starfield .portfolio-hero .space-y-6 > h1 { font-size: clamp(32px, 3.5vw, 50px); margin-top: 16px; margin-bottom: 10px; }
+.home-starfield .portfolio-hero .space-y-6 > p:first-of-type { font-size: clamp(16px, 1.6vw, 22px); }
+.home-starfield .portfolio-hero .space-y-6 > p + p { font-size: 13px; line-height: 1.65; margin-top: 12px; margin-bottom: 0; }
+.home-starfield .portfolio-hero a.h-11 { min-height: 40px; height: 40px; padding: 0 16px; font-size: 12px; }
+.home-starfield .portfolio-hero .hero-page-links { margin-top: 18px; gap: 8px; }
+.home-starfield .hero-page-links a { padding: 11px 12px; font-size: 12px; }
+.home-starfield .hero-lanyard { width: 43% !important; height: min(68dvh, 520px) !important; top: 50% !important; transform: translateY(-50%); }
+.home-starfield .hero-static-portrait { top: 50%; transform: translateY(-50%); }
+body.home-starfield .drivers-logos { grid-column: 1; grid-row: 2; width: 100%; max-width: none; margin: 10px 0 0; padding: 8px 0; }
+.home-starfield .drivers-logos .tool-chip { width: 76px; height: 52px; }
+.home-starfield .drivers-logos .tool-chip img { width: 30px; height: 30px; }
+.professional-rail { grid-column: 2; grid-row: 1 / -1; align-self: center; display: flex; flex-direction: column; gap: 12px; border-left: 1px solid var(--warm1); padding-left: 20px; }
+.professional-rail-label { color: var(--muted); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
+.professional-rail a { display: flex; align-items: center; gap: 10px; padding: 12px 0; color: var(--text); text-decoration: none; border-radius: 8px; }
+.professional-rail a:hover { color: #8fa16d; }
+.professional-rail a:focus-visible { outline: 2px solid #8fa16d; outline-offset: 4px; }
+.professional-rail svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.professional-rail span { font-size: 12px; font-weight: 600; }
+.professional-rail small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 400; }
+@media (max-width: 1023px) {
+  .home-starfield .portfolio-hero .space-y-6 { max-width: 100%; }
+}
+@media (max-width: 600px) {
+  .home-starfield #page-home { grid-template-columns: minmax(0, 1fr) 54px; column-gap: 14px; }
+  .home-starfield .portfolio-hero .space-y-6 > span:first-child { font-size: 9px; line-height: 1.4; }
+  .home-starfield .portfolio-hero .space-y-6 > h1 { font-size: clamp(28px, 7vw, 36px); margin-top: 12px; }
+  .home-starfield .portfolio-hero .space-y-6 > p:first-of-type { font-size: 16px; }
+  .home-starfield .portfolio-hero .space-y-6 > p + p { font-size: 11px; line-height: 1.55; }
+  .home-starfield .portfolio-hero a.h-11 { min-height: 38px; height: 38px; padding: 0 10px; font-size: 11px; gap: 6px; }
+  .home-starfield .hero-page-links a { padding: 10px 8px; gap: 4px; font-size: 10px; }
+  .home-starfield .hero-page-links svg { width: 12px; height: 12px; }
+  .home-starfield .professional-rail { gap: 16px; padding-left: 10px; }
+  .professional-rail-label, .professional-rail small { display: none; }
+  .professional-rail a { flex-direction: column; gap: 6px; padding: 8px 0; }
+  .professional-rail span { font-size: 8px; }
+  .home-starfield .logo-belt-group { gap: 22px; padding-right: 22px; }
+  .home-starfield .drivers-logos .tool-chip { width: 54px; height: 44px; }
+  .home-starfield .drivers-logos .tool-chip img { width: 26px; height: 26px; }
+}
+/* Allow scrolling on unusually short screens or when the user enlarges text. */
+@media (max-height: 540px) {
+  .home-starfield #page-home { height: auto; min-height: 100%; grid-template-rows: auto auto; }
+  .home-starfield .portfolio-hero .space-y-6 > * + * { margin-top: 8px; }
+}
+
+/* Keep every rotating greeting on one line, including narrow phones. */
+.home-starfield .portfolio-hero .space-y-6 { container-type: inline-size; }
+.home-starfield .portfolio-hero .space-y-6 > h1 {
+  font-size: clamp(17px, 7.5cqi, 40px);
+  white-space: nowrap;
+}
+
+/* Keep the logo belt directly below the hero, centered across the page. */
+.home-starfield #page-home {
+  grid-template-rows: auto auto;
+  align-content: center;
+  row-gap: 16px;
+}
+.home-starfield .professional-rail { grid-row: 1; }
+body.home-starfield .drivers-logos {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(100%, 800px);
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .home-starfield #page-home { row-gap: 12px; }
+}

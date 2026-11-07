@@ -33140,7 +33140,7 @@ var rT = [
 	colliderObject: t.collider.state?.object,
 	rigidBodyObject: t.rigidBody.state?.object
 }), DT = async () => {
-	let e = await import("./rapier-DrcGbIqN.js");
+	let e = await import("./rapier-Db3SfUpm.js");
 	return await e.init(), e;
 }, OT = (e) => {
 	let { colliders: t = "cuboid", children: n, timeStep: r = 1 / 60, paused: i = !1, interpolate: a = !0, updatePriority: s, updateLoop: c = "follow", debug: l = !1, gravity: u = [
@@ -33977,7 +33977,7 @@ var oE = (e, t, n) => {
 NE * (40 * Math.tan(Math.PI / 180 * 10)) ** -1;
 var FE = .3, IE = .15, LE = 1024, RE = () => (L_((e) => {
 	let t = wn.clamp((e.size.width - LE) / 256, 0, 1);
-	wn.lerp(IE, FE, t) * e.size.width, e.camera.position.x = 0, e.camera.position.z = PE * (e.size.height / NE);
+	wn.lerp(IE, FE, t) * e.size.width, e.camera.position.x = 0, e.camera.position.z = PE;
 }), null), zE = ({ frontImage: e, className: t }) => {
 	let [n, r] = (0, o.useState)(() => typeof window < "u" && window.innerWidth < 768), [i, a] = (0, o.useState)(0), s = (0, o.useRef)(null), c = (0, o.useRef)(null), l = (0, o.useRef)(null), [u, d] = (0, o.useState)({
 		accent: "#8fa16d",

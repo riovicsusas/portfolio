@@ -124,7 +124,7 @@ export const HeroSection44 = ({
             </span>
 
             <h1 className='mb-2 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-[64px] lg:font-bold'>
-              <GreetingWord greetings={greetings} /><br />I’m {name}.
+              <GreetingWord greetings={greetings} />, I’m {name}.
             </h1>
 
             <p className='text-muted-foreground text-xl font-medium sm:text-2xl lg:text-3xl'>{role}</p>

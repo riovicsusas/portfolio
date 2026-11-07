@@ -413,7 +413,7 @@ const CameraAlign = () => {
     const targetFromRightPx = targetFromRightFraction * state.size.width
 
     state.camera.position.x = 0
-    state.camera.position.z = CAMERA_Z * (state.size.height / REFERENCE_HEIGHT_PX)
+    state.camera.position.z = CAMERA_Z
   })
 
   return null

@@ -14052,7 +14052,7 @@ var Id = Pd(Fd), Ld = {
 	}]]
 };
 Ld.node;
-var Rd = Pd(Ld), zd = (...e) => e.filter(Boolean).join(" "), Bd = "focus-visible:ring-ring/60 focus-visible:border-ring outline-none focus-visible:ring-[3px]", Vd = (0, l.lazy)(() => import("./hero-lanyard-B551RKFx.js")), Hd = class extends l.Component {
+var Rd = Pd(Ld), zd = (...e) => e.filter(Boolean).join(" "), Bd = "focus-visible:ring-ring/60 focus-visible:border-ring outline-none focus-visible:ring-[3px]", Vd = (0, l.lazy)(() => import("./hero-lanyard-Du3Rf-JB.js")), Hd = class extends l.Component {
 	state = { failed: !1 };
 	static getDerivedStateFromError() {
 		return { failed: !0 };
@@ -14152,8 +14152,7 @@ var Rd = Pd(Ld), zd = (...e) => e.filter(Boolean).join(" "), Bd = "focus-visible
 							className: "mb-2 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-[64px] lg:font-bold",
 							children: [
 								/* @__PURE__ */ (0, H.jsx)(Ud, { greetings: e }),
-								/* @__PURE__ */ (0, H.jsx)("br", {}),
-								"I’m ",
+								", I’m ",
 								t,
 								"."
 							]
