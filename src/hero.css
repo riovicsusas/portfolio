@@ -177,3 +177,23 @@ body.home-starfield .drivers-logos {
     width: min(calc(100% - 64px), 1000px);
   }
 }
+
+/* Give the specialty badge more presence and lower the desktop navigation. */
+.home-starfield .portfolio-hero .space-y-6 > span:first-child {
+  font-size: 12px;
+  padding: 7px 12px;
+  line-height: 1.4;
+}
+@media (min-width: 1024px) and (min-height: 541px) {
+  .home-starfield .portfolio-hero .hero-page-links {
+    position: relative;
+    top: clamp(24px, 5dvh, 48px);
+    row-gap: clamp(20px, 3.8dvh, 36px);
+  }
+}
+@media (max-width: 600px) {
+  .home-starfield .portfolio-hero .space-y-6 > span:first-child {
+    font-size: 10px;
+    padding: 6px 9px;
+  }
+}
