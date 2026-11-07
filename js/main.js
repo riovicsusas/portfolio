@@ -41,6 +41,15 @@ const tools = [
     function buildBelt() {
       const track = document.getElementById('beltTrack');
       if (!track) return;
+      if (track.dataset.logosOnly === 'true') {
+        const logos = tools.filter(tool => tool.logo);
+        track.innerHTML = [false, true].map(duplicate =>
+          `<div class="logo-belt-group"${duplicate ? ' aria-hidden="true"' : ''}>${logos.map(tool =>
+            `<div class="tool-chip" title="${tool.name}"><img src="${tool.logo}" alt="${duplicate ? '' : tool.name}" width="36" height="36" /></div>`
+          ).join('')}</div>`
+        ).join('');
+        return;
+      }
       const doubled = [...tools, ...tools];
       track.innerHTML = doubled.map(t => {
         const icon = t.logo

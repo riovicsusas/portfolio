@@ -7538,3 +7538,19 @@ body.fullwidth-layout .main {
     transform: none;
   }
 }
+
+/* Logo-only Daily Drivers below the hero. */
+body.fullwidth-layout .drivers-logos { max-width: 1000px; margin: 24px auto 20px; padding: 16px 0; border: 0; background: transparent; }
+.drivers-logos .belt-viewport { min-width: 0; width: 100%; }
+.drivers-logos .belt-viewport::before { background: linear-gradient(to right, var(--bg), transparent); }
+.drivers-logos .belt-viewport::after { background: linear-gradient(to left, var(--bg), transparent); }
+.drivers-logos .belt-track { gap: 0; animation: logo-belt-scroll 24s linear infinite; }
+.logo-belt-group { display: flex; align-items: center; gap: 48px; padding-right: 48px; flex-shrink: 0; }
+.drivers-logos .tool-chip { display: grid; place-items: center; width: 88px; height: 64px; background: var(--white); border: 1px solid var(--warm1); border-radius: 14px; }
+.drivers-logos .tool-chip img { width: 36px; height: 36px; object-fit: contain; }
+.hero-static { max-width: 1000px; margin: auto; padding: 56px 16px; }
+.hero-static h1 { font-size: clamp(36px, 6vw, 64px); }
+.hero-static nav { display: flex; flex-wrap: wrap; gap: 20px; padding-top: 24px; }
+.hero-static a { color: var(--text); }
+@keyframes logo-belt-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .drivers-logos .belt-track { animation: none; } .drivers-logos .belt-viewport { overflow-x: auto; } .drivers-logos .logo-belt-group[aria-hidden] { display: none; } }

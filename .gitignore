@@ -17,3 +17,6 @@ temp_*
 
 # Private interview prep & personal rehearsal notes
 interview-prep/
+
+# Hero component build dependencies
+node_modules/

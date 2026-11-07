@@ -17,10 +17,10 @@
 
     if (!pinContainer || !wheel || !scrollerEl) return;
 
-    // Gallery destinations (4 core domains ordered: Latest News, Projects, About Me, Testimonials)
+    // Gallery destinations (4 core domains ordered: Latest Updates, Projects, About Me, Testimonials)
     const itemsData = [
       {
-        title: "Latest News",
+        title: "Latest Updates",
         cat: "Recent Activity",
         desc: "Live System Incident Logs & Infrastructure Deployments",
         url: "latest/",
@@ -48,7 +48,7 @@
         img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80"
       },
       {
-        title: "Latest News",
+        title: "Latest Updates",
         cat: "Audits & Logs",
         desc: "Matrixify Migration Standards & Flow Triage",
         url: "latest/",

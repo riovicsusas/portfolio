@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="assets/hero/hero.css" />
 
   <!-- GSAP & ScrollTrigger CDN for 21st.dev Radial Scroll Gallery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -28,24 +29,24 @@
   <main class="main" id="mainContent">
 
     <div class="page active" id="page-home">
-      <!-- 21ST.DEV HERO: PORTFOLIO / NAME -->
-      <header class="gallery-hero-header">
-        <div class="gallery-hero-tag">
-          <i class="ph ph-sparkle"></i> Portfolio
-        </div>
-        <h1 class="gallery-hero-name">Riovic Matthew G. Susas</h1>
-        <p class="gallery-hero-sub">E-Commerce Systems Analyst &middot; Shopify Plus, 3PL Logistics &amp; Automation Architecture</p>
-      </header>
+      <!-- React hero island; built from src/hero.tsx -->
+      <div id="heroRoot">
+        <section class="hero-static" aria-label="Introduction">
+          <p>Technical operations · Systems &amp; automation</p>
+          <h1>Hello, I’m Riovic.</h1>
+          <p>E-Commerce Systems Analyst</p>
+          <nav aria-label="Explore portfolio">
+            <a href="latest/">Latest Updates</a>
+            <a href="projects/">Projects</a>
+            <a href="about/">About Me</a>
+            <a href="testimonials/">Testimonials</a>
+          </nav>
+        </section>
+      </div>
 
-      <!-- MOVING CAROUSEL: "Daily Drivers: Tools I Work With" -->
-      <div class="drivers-wrap">
-        <div class="drivers-label">
-          <p>Daily Drivers</p>
-          <p>Tools I work with</p>
-        </div>
-        <div class="drivers-divider"></div>
+      <div class="drivers-wrap drivers-logos" role="group" aria-label="Daily Drivers: tools I work with">
         <div class="belt-viewport">
-          <div class="belt-track" id="beltTrack"></div>
+          <div class="belt-track" id="beltTrack" data-logos-only="true"></div>
         </div>
       </div>
 
@@ -139,6 +140,7 @@
 
   </main>
 
+  <script type="module" src="assets/hero/hero.js"></script>
   <script src="js/main.js"></script>
   <script src="js/radial-gallery.js"></script>
 </body>
