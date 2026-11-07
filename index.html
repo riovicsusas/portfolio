@@ -10,10 +10,6 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="assets/hero/hero.css" />
 
-  <!-- GSAP & ScrollTrigger CDN for 21st.dev Radial Scroll Gallery -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
   <!-- Prevent theme flicker on initial load -->
   <script>
     (function() {
@@ -24,7 +20,8 @@
     })();
   </script>
 </head>
-<body class="fullwidth-layout">
+<body class="fullwidth-layout home-starfield">
+  <div id="starsRoot" aria-hidden="true"></div>
   <!-- MAIN SCROLLER -->
   <main class="main" id="mainContent">
 
@@ -49,21 +46,6 @@
           <div class="belt-track" id="beltTrack" data-logos-only="true"></div>
         </div>
       </div>
-
-      <div class="scroll-instruction">
-        <span class="scroll-instruction-pill">
-          <i class="ph ph-arrow-down"></i> Scroll down to rotate case studies &amp; explore
-        </span>
-      </div>
-
-      <!-- 21ST.DEV ROTATING RADIAL SCROLL GALLERY -->
-      <section class="radial-gallery-wrapper" id="radialGalleryPin">
-        <div class="radial-gallery-mask">
-          <ul class="radial-wheel" id="radialWheel">
-            <!-- Dynamically populated and animated by js/radial-gallery.js -->
-          </ul>
-        </div>
-      </section>
 
       <!-- FOOTER & CONNECT SECTION -->
       <footer class="portfolio-footer">
@@ -142,6 +124,5 @@
 
   <script type="module" src="assets/hero/hero.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/radial-gallery.js"></script>
 </body>
 </html>

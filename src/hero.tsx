@@ -1,6 +1,7 @@
 import { Component, Suspense, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HeroSection44 } from '../components/ui/shadcn-studio-hero-section-44'
+import GravityStars from '../components/ui/gravity-stars'
 import './hero.css'
 
 class HeroBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -25,4 +26,9 @@ if (mount) createRoot(mount).render(
       brandLogos={[]}
     />
   </Suspense></HeroBoundary>
+)
+
+const starsMount = document.getElementById('starsRoot')
+if (starsMount) createRoot(starsMount).render(
+  <GravityStars className='homepage-stars' color='var(--text)' count={180} connectDistance={110} tint={0.5} starSize={1.4} speed={0.5} gravity={0.8} />
 )
