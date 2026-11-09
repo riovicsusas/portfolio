@@ -1,0 +1,1 @@
+Gmail, WhatsApp, and Upwork vectors: Simple Icons 16.37.0, CC0 (see included license). LinkedIn: local monochrome brand mark. Brand names and marks belong to their respective owners. SVG masks inherit the active text color.

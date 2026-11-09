@@ -1,6 +1,8 @@
-import { a as e, i as t, n, o as r, r as i, t as a } from "./jsx-runtime-DMjJXqJ4.js";
+import { n as e, r as t, t as n } from "./rolldown-runtime-QGRDbDUS.js";
+import { n as r, t as i } from "./jsx-runtime-s04k_HfJ.js";
+import { t as a } from "./scheduler-oVI243f0.js";
 // node_modules/three/build/three.core.js
-var o = /* @__PURE__ */ r(i(), 1), s = {
+var o = /* @__PURE__ */ t(r(), 1), s = {
 	LEFT: 0,
 	MIDDLE: 1,
 	RIGHT: 2,
@@ -18138,12 +18140,12 @@ var ag = class {
 		let t = this.getContext();
 		t.drawingBufferColorSpace = Nn._getDrawingBufferColorSpace(e), t.unpackColorSpace = Nn._getUnpackColorSpace();
 	}
-}, og = /* @__PURE__ */ t(((e) => {
-	var t = i();
+}, og = /* @__PURE__ */ n(((e) => {
+	var t = r();
 	function n(e, t) {
 		return e === t && (e !== 0 || 1 / e == 1 / t) || e !== e && t !== t;
 	}
-	var r = typeof Object.is == "function" ? Object.is : n, a = t.useState, o = t.useEffect, s = t.useLayoutEffect, c = t.useDebugValue;
+	var i = typeof Object.is == "function" ? Object.is : n, a = t.useState, o = t.useEffect, s = t.useLayoutEffect, c = t.useDebugValue;
 	function l(e, t) {
 		var n = t(), r = a({ inst: {
 			value: n,
@@ -18166,7 +18168,7 @@ var ag = class {
 		e = e.value;
 		try {
 			var n = t();
-			return !r(e, n);
+			return !i(e, n);
 		} catch {
 			return !0;
 		}
@@ -18176,14 +18178,14 @@ var ag = class {
 	}
 	var f = typeof window > "u" || window.document === void 0 || window.document.createElement === void 0 ? d : l;
 	e.useSyncExternalStore = t.useSyncExternalStore === void 0 ? f : t.useSyncExternalStore;
-})), sg = /* @__PURE__ */ t(((e, t) => {
+})), sg = /* @__PURE__ */ n(((e, t) => {
 	t.exports = og();
-})), cg = /* @__PURE__ */ t(((e) => {
-	var t = i(), n = sg();
-	function r(e, t) {
+})), cg = /* @__PURE__ */ n(((e) => {
+	var t = r(), n = sg();
+	function i(e, t) {
 		return e === t && (e !== 0 || 1 / e == 1 / t) || e !== e && t !== t;
 	}
-	var a = typeof Object.is == "function" ? Object.is : r, o = n.useSyncExternalStore, s = t.useRef, c = t.useEffect, l = t.useMemo, u = t.useDebugValue;
+	var a = typeof Object.is == "function" ? Object.is : i, o = n.useSyncExternalStore, s = t.useRef, c = t.useEffect, l = t.useMemo, u = t.useDebugValue;
 	e.useSyncExternalStoreWithSelector = function(e, t, n, r, i) {
 		var d = s(null);
 		if (d.current === null) {
@@ -18223,9 +18225,9 @@ var ag = class {
 			f.hasValue = !0, f.value = p;
 		}, [p]), u(p), p;
 	};
-})), lg = /* @__PURE__ */ t(((e, t) => {
+})), lg = /* @__PURE__ */ n(((e, t) => {
 	t.exports = cg();
-})), J = a(), ug = /* @__PURE__ */ r(lg(), 1), dg = (e) => {
+})), J = i(), ug = /* @__PURE__ */ t(lg(), 1), dg = (e) => {
 	let t, n = /* @__PURE__ */ new Set(), r = (e, r) => {
 		let i = typeof e == "function" ? e(t) : e;
 		if (!Object.is(i, t)) {
@@ -18406,7 +18408,7 @@ function Fg() {
 	}), [t]), t.Bridge;
 }
 // node_modules/@react-three/fiber/dist/events-e51d7528.esm.js
-var Ig = /* @__PURE__ */ r(n()), Lg = /* @__PURE__ */ ((e, t) => typeof window < "u" && ((e = window.document)?.createElement || (t = window.navigator)?.product === "ReactNative"))() ? o.useLayoutEffect : o.useEffect;
+var Ig = /* @__PURE__ */ t(a()), Lg = /* @__PURE__ */ ((e, t) => typeof window < "u" && ((e = window.document)?.createElement || (t = window.navigator)?.product === "ReactNative"))() ? o.useLayoutEffect : o.useEffect;
 function Rg(e) {
 	let t = o.useRef(e);
 	return Lg(() => void (t.current = e), [e]), t;
@@ -33140,7 +33142,7 @@ var rT = [
 	colliderObject: t.collider.state?.object,
 	rigidBodyObject: t.rigidBody.state?.object
 }), DT = async () => {
-	let e = await import("./rapier-CzGZHQHG.js");
+	let e = await import("./rapier-DzVDUfP8.js");
 	return await e.init(), e;
 }, OT = (e) => {
 	let { colliders: t = "cuboid", children: n, timeStep: r = 1 / 60, paused: i = !1, interpolate: a = !0, updatePriority: s, updateLoop: c = "follow", debug: l = !1, gravity: u = [

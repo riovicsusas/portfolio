@@ -2,6 +2,7 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @source '../components/ui/shadcn-studio-hero-section-44.tsx';
+@source '../components/ui/portfolio-hero.tsx';
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--text);
@@ -196,4 +197,13 @@ body.home-starfield .drivers-logos {
     font-size: 10px;
     padding: 6px 9px;
   }
+}
+
+/* A distinct, scrollable mobile composition; desktop keeps its existing UI. */
+@media (max-width: 767px) {
+  body.home-starfield .main { padding: 0 0 28px !important; height: 100dvh !important; }
+  .home-starfield #page-home { display: block; height: auto; min-height: 100%; padding: 0; max-width: 450px; margin: 0 auto; }
+  .home-starfield #heroRoot { width: 100%; margin: 0; }
+  .home-starfield .professional-rail { display: none; }
+  body.home-starfield .drivers-logos { position: relative; left: auto; bottom: auto; transform: none; width: calc(100% - 40px); margin: 20px auto 0; }
 }

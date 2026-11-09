@@ -22,3 +22,14 @@ The card uses the existing local profile image and a local clip texture. It is o
 ## Glowing borders and tool labels
 
 `components/ui/glowing-shadow.tsx` adapts the supplied Designali component (https://21st.dev/@designali-in/components/glowing-shadow) to semantic links, with shared scoped styles in `src/glowing-shadow.css`. Static professional-channel links and native logo buttons use the same CSS. Animated radial border color and a hover/focus halo preserve readable button surfaces. Tool buttons reveal their names on hover/focus, toggle the reveal on touch/click, and clear it with Escape. The marquee pauses during interaction; duplicate buttons stay out of the keyboard and accessibility sequence. Reduced-motion mode uses static borders.
+
+## Distinct mobile homepage
+
+Below 768px, `src/hero.tsx` uses `matchMedia` to mount the lazy-loaded `src/mobile-portfolio.tsx` instead of the desktop hero. It responds to resizing without User-Agent sniffing. The mobile layout adapts the user-supplied https://21st.dev/@romanvasnev/components/portfolio-hero component, stored in `components/ui/portfolio-hero.tsx`, with Matter.js skill badges, a profile/bio, contact CTA, professional links, vertically stacked section cards. `src/mobile-portfolio.css` scopes its layout to avoid legacy resets. Mobile is intentionally a scrollable composition. The existing logo strip follows it; the separate desktop link rail is hidden on mobile. The shared galaxy remains behind both layouts, with fewer stars on mobile. Mobile links, CTA, cards, and carousel arrow controls use the same glowing border styles as desktop.
+
+Reduced motion renders static badges instead of starting the physics engine. The four section cards use stacked page previews and technical-stack metadata. Local cover art uses Lucide icons rather than external stock images. Gmail and LinkedIn retain their destinations; WhatsApp and Upwork use Contact until direct profile details are supplied. Run `npm ci`, `npm run typecheck`, and `npm run build` after component edits; retain the complete regenerated `assets/hero/` directory for static Pages deployment.
+
+
+## Mobile section cards
+
+`components/ui/card-25.tsx` adapts the supplied https://21st.dev/@ravikatiyar162/components/card-25 reference. All four cards link to existing sections and are vertically stacked at the mobile content width. Page screenshots in `images/section-previews/` supply local preview imagery; regenerate them after destination-page design changes. Metadata contains relevant tools instead of hiking statistics. Hover, keyboard focus, and touch press fan out the images; reduced motion removes the transition. The previous mobile quick-link grid and horizontal carousel are no longer mounted.
