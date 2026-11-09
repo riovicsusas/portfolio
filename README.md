@@ -2,8 +2,8 @@
 
 **Systems Architecture · E-Commerce Infrastructure · Shopify Plus · Multi-Node 3PL Logistics**
 
-> Live Portfolio: **[View Live Site](https://your-username.github.io/)**  
-> Contact: [Contact Page](https://your-username.github.io/contact/)
+> Live Portfolio: **[View Live Site](https://riovicsusas.github.io/portfolio/)**
+> Contact: [Contact Page](https://riovicsusas.github.io/portfolio/contact/)
 
 ---
 
@@ -13,13 +13,13 @@ Each dossier is an in-depth systems specification combining operational SOPs, ma
 
 | Domain | Master Dossier | Interactive Viewer |
 | :--- | :--- | :--- |
-| **★ Capstone** | [`MasterDossier-Capstone-AsynchronousOrderMutation.md`](capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) | [Open in Viewer →](https://your-username.github.io/dossier-viewer/?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) |
-| **Domain 1: Order Lifecycle** | [`MasterDossier-Domain1-OrderStateMachineAndPONR.md`](domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) | [Open in Viewer →](https://your-username.github.io/dossier-viewer/?file=domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) |
-| **Domain 2: Routing & Logistics** | [`MasterDossier-Domain2-MultiNodeLogisticsRouting.md`](domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) | [Open in Viewer →](https://your-username.github.io/dossier-viewer/?file=domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) |
-| **Domain 3: Bulk Data** | [`MasterDossier-Domain3-BulkCatalogSchemaGovernance.md`](domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) | [Open in Viewer →](https://your-username.github.io/dossier-viewer/?file=domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) |
-| **Domain 4: Automation** | [`MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md`](domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) | [Open in Viewer →](https://your-username.github.io/dossier-viewer/?file=domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) |
-| **Domain 5: Diagnostics** | [`MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md`](domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) | [Open in Viewer →](https://your-username.github.io/dossier-viewer/?file=domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) |
-| **Domain 6: Helpdesk** | [`MasterDossier-Domain6-FrontlineHelpdeskAutomation.md`](domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) | [Open in Viewer →](https://your-username.github.io/dossier-viewer/?file=domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) |
+| **★ Capstone** | [`MasterDossier-Capstone-AsynchronousOrderMutation.md`](capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) |
+| **Domain 1: Order Lifecycle** | [`MasterDossier-Domain1-OrderStateMachineAndPONR.md`](domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) |
+| **Domain 2: Routing & Logistics** | [`MasterDossier-Domain2-MultiNodeLogisticsRouting.md`](domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) |
+| **Domain 3: Bulk Data** | [`MasterDossier-Domain3-BulkCatalogSchemaGovernance.md`](domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) |
+| **Domain 4: Automation** | [`MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md`](domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) |
+| **Domain 5: Diagnostics** | [`MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md`](domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) |
+| **Domain 6: Helpdesk** | [`MasterDossier-Domain6-FrontlineHelpdeskAutomation.md`](domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) |
 
 > 💡 **Print / Save as PDF:** Every document in the interactive viewer can be saved as a print-optimized PDF with one click using the **"Save as PDF"** button (or `Ctrl+P`).
 
@@ -43,7 +43,7 @@ Each dossier is an in-depth systems specification combining operational SOPs, ma
 │   ├── flagship-data.js         # Curated 7 Flagship Studies & Loom Specs
 │   ├── projects-data.js         # 17 Enterprise Deliverables Database
 │   └── feed-data.js             # Changelog & Feed Items
-├── capstone/                    # Cross-Domain Capstone Case Study (.md & .pdf)
+├── capstone/                    # Cross-Domain Capstone Case Study (.md)
 ├── domain-1-order-lifecycle/    # Order State Machine, PONR & Simulation
 ├── domain-2-order-routing/      # Multi-Node Logistics & Freight Engine
 ├── domain-3-bulk-data-management/# Matrixify Schema Governance & Migration

@@ -1,169 +1,113 @@
-# Enterprise Matrixify Migration & Barcode Schema Governance
+# Bulk Catalog Schema & Barcode Governance
 
----
+> **Empirical staging simulation.** Synapse Botanicals is a technical operations sandbox used to stress-test e-commerce failure modes with synthetic customer and order fixtures. Commercial charges and financial outcomes are scenario inputs and calculations. The verification section distinguishes supplied trace excerpts, reproducible model results, and acceptance criteria for the designed controls. No production customer data or live fulfillment is represented.
 
-## 1. Executive Summary & The Two Fatal Catalog Traps
+## 1. Executive Context & Failure Mode
 
-### 1.1 The Operational Hazard
-Direct-to-consumer product catalogs are not static spreadsheets—they are the foundational database schema powering storefront checkout, Google/Meta advertising feeds, warehouse robotic picking, and 3PL WMS barcode verification.
+Catalog mutations affect commercial pricing, product URLs, warehouse identification and inventory joins. Two failure modes drive this study: loss of identifier fidelity during spreadsheet/export handling, and unintended changes to immutable matching fields or public product handles.
 
-When merchandising teams or operators perform bulk updates (e.g. seasonal price changes, ingredient updates, or variant additions) using standard CSV spreadsheets, they frequently trigger two catastrophic, multi-thousand-dollar failure modes:
+Scientific notation can be display-only. A twelve-digit UPC-A is below JavaScript's exact-integer limit; the risks are leading-zero loss, rounded exported text and incorrect product matching. An uncontrolled handle change can break links when redirects are absent; it does not inherently crash the whole storefront or prove a loss of search ranking.
 
-```mermaid
-flowchart TD
-    TrapA["**TRAP A: Numeric Coercion & Barcode Corruption**
-    Excel / Google Sheets auto-formats 12-digit UPC-A barcodes
-    as floating-point → scientific notation (8.50012E+11)
-    or truncates leading zeros (012345678901 → 12345678901)
-    ─────────────────────────────────────────────────
-    CONSEQUENCE: Warehouse scanners reject product.
-    Fulfillment halts. Emergency relabeling fees triggered."]
+## 2. Governance & Architecture Protocol
 
-    TrapB["**TRAP B: Handle Mutation & SEO Crash**
-    Shopify 'Handle' defines the live product URL slug:
-    synapse-botanicals.myshopify.com/products/{handle}
-    If renamed in CSV → all active links break:
-    HTTP 404 storefront crashes, dead Meta/Google ad spend,
-    immediate loss of Google SEO ranking history."]
+### 2.1 Field controls
 
-    TrapA ~~~ TrapB
-```
+| Field | Preflight gate | Acceptance check |
+|---|---|---|
+| Product / variant ID | Opaque text; exact baseline match; unique row key | Same intended resource after import |
+| SKU | Approved mapping to variant ID | No unintended create or reassignment |
+| Barcode | Exact text, checksum, approved product mapping | Re-exported value and scanner decode agree |
+| Handle | Equal to baseline for routine updates | Correct product and URL; authorized redirects if changed |
+| Price / COGS | Currency precision; nonnegative costs; approved price | Recalculate contribution with fulfillment and fees |
+| Weight / dimensions | Units explicit; valid service assumptions | Parcel billable-weight rules checked separately |
+| Metafields / tags | Type, namespace and controlled vocabulary | No unintended field deletion or trigger |
+| Inventory | Location and concurrent movement accounted for | Before + movement = after |
 
-### 1.2 The Engineering Solution: Matrixify Non-Destructive MERGE
-This Master Protocol establishes strict data hygiene standards:
-1. **Mandatory Plain Text Coercion**: Forcing string-literal formatting (`="'850012345678'"`) to prevent IEEE 754 numeric corruption.
-2. **Handle Immutability Locks**: Permanent programmatic protection of production URLs.
-3. **Non-Destructive Matrixify MERGE**: Using targeted column updates that never wipe unspecified metafields or live inventory.
-4. **10% Canary Batch Verification**: Pre-flight physical scanning before full-catalog deployment.
+Regex validates character format, not identity, immutability or economic viability. A numeric ID check alone does not establish a real product; a positive price-minus-COGS does not establish positive order contribution.
 
----
+### 2.2 UPC-A validation
 
-## 2. Field Mutation Risk Taxonomy (The 4 Hazard Tiers)
-
-To govern who can edit what and prevent accidental database corruption, every field in Synapse Botanicals' 24-SKU catalog is assigned to a strict Hazard Tier:
-
-| Hazard Tier | Risk Level | Fields Included | Permitted Operators | Validation Rule | Impact of Failure |
-|---|---|---|---|---|---|
-| **Tier 1** | **Catastrophic** | `Barcode (UPC-A)`, `Handle`, `Variant ID`, `Inventory Quantity` | Lead TechOps Only | Strict regex (`^\d{12}$`), immutable primary key check | Halts warehouse picking; destroys Google SEO; causes physical inventory drift |
-| **Tier 2** | **Financial** | `Variant Price`, `Compare At Price`, `Cost per Item`, `Variant Weight` | TechOps + Financial Controller | Decimal precision (`^\d+\.\d{2}$`), Price $>$ Cost check | Negative gross margins; carrier dimensional weight freight chargebacks |
-| **Tier 3** | **Functional** | `Metafields`, `Product Tags`, `Category / Type`, `Status` | Merchandisers (Supervised) | Namespace schema linting, controlled tag taxonomy | Breaks storefront filtering, bundles, and Shopify Flow automation triggers |
-| **Tier 4** | **Cosmetic** | `Title`, `Body (HTML)`, `Image Alt Text`, `SEO Description` | Marketing & Content Team | HTML syntax linting, character limit checks | Broken layout formatting, typos (non-operational impact) |
-
----
-
-## 3. Technical Schema & Validation Matrix
-
-### 3.1 Field-Level Specifications (Synapse Botanicals Core SKUs)
-
-```
-┌──────────────────┬──────────┬──────────────┬────────────────────────────────────────────────────────┐
-│ Field Name       │ Data Type│ Hazard Tier  │ Mandatory Automated Validation Formula (Google Sheets) │
-├──────────────────┼──────────┼──────────────┼────────────────────────────────────────────────────────┤
-│ ID               │ Integer  │ Tier 1       │ =IF(ISNUMBER(A2), "VALID", "ERROR-INVALID-PRIMARY-KEY")│
-│ Handle           │ String   │ Tier 1 (Lock)│ =IF(REGEXMATCH(B2, "^[a-z0-9-]+$"), "VALID", "INVALID")│
-│ Title            │ String   │ Tier 4       │ =IF(LEN(C2)>0, "VALID", "ERROR-BLANK-TITLE")           │
-│ Variant Price    │ Decimal  │ Tier 2       │ =IF(AND(ISNUMBER(D2), D2>0), "VALID", "ERROR-PRICE")   │
-│ Cost per Item    │ Decimal  │ Tier 2       │ =IF(AND(ISNUMBER(E2), E2<D2), "VALID", "NEGATIVE-MARGIN")│
-│ Variant Barcode  │ String   │ Tier 1       │ =IF(REGEXMATCH(TO_TEXT(F2), "^[0-9]{12}$"), "VALID")  │
-│ Variant Weight   │ Decimal  │ Tier 2       │ =IF(AND(ISNUMBER(G2), G2>0), "VALID", "ERROR-WEIGHT")  │
-└──────────────────┴──────────┴──────────────┴────────────────────────────────────────────────────────┘
-```
-
-### 3.2 The Barcode Sanitization Script (Fixing Scientific Notation)
-If a legacy CSV has already corrupted barcodes into scientific notation (e.g. `8.50012E+11`), standard text conversion will fail. The following transformation pipeline must be executed:
+Store identifiers as text before spreadsheet coercion. Export twelve digits without a formula or literal apostrophe. For the first eleven digits, multiply odd positions by three and even positions by one; the check digit makes the total divisible by ten.
 
 ```javascript
-/**
- * Barcode Reconstitution Pipeline (Regex Linter & String Coercion)
- */
-function sanitizeBarcode(rawVal) {
-  let str = String(rawVal).trim();
-  
-  // Detect and resolve scientific notation
-  if (str.includes('E+') || str.includes('e+')) {
-    let num = Number(str);
-    str = BigInt(Math.round(num)).toString();
+function validateUpcA(raw, approved) {
+  if (typeof raw !== 'string' || !/^[0-9]{12}$/.test(raw)) {
+    throw new Error('EXACT_12_DIGIT_TEXT_REQUIRED');
   }
-  
-  // Pad missing leading zeros for standard 12-digit UPC-A
-  while (str.length < 12) {
-    str = '0' + str;
+  if (/^0{12}$/.test(raw)) throw new Error('PLACEHOLDER_NOT_ALLOWED');
+  const sum = [...raw.slice(0, 11)].reduce(
+    (n, digit, index) => n + Number(digit) * (index % 2 === 0 ? 3 : 1), 0
+  );
+  if (Number(raw[11]) !== (10 - sum % 10) % 10) {
+    throw new Error('INVALID_CHECK_DIGIT');
   }
-  
-  // Final validation against UPC-A regex
-  if (!/^\d{12}$/.test(str)) {
-    throw new Error(`FATAL_BARCODE_CORRUPTION: ${str} failed 12-digit check`);
-  }
-  
-  return "'" + str; // Explicit string coercion for spreadsheet export
+  if (raw !== approved) throw new Error('VARIANT_BARCODE_MISMATCH');
+  return raw;
 }
 ```
 
----
+The approved mapping is resolved by variant ID from the source catalog. Checksum validity does not establish GS1 licensing or product ownership. `850012345671` and `085001234562` are checksum test vectors only, not licensed Synapse product identifiers.
 
-## 4. Safe Matrixify MERGE Lifecycle & Execution SOP
+### 2.3 Controlled importer operation
 
-Standard native Shopify CSV imports execute a destructive **REPLACE** operation: any column omitted from the uploaded CSV is wiped clean or reset to zero in the database.
+Native Shopify CSV and Matrixify have field-specific matching and blank-cell semantics. An omitted column is different from an included blank. A Matrixify `Command` column contains row values such as `UPDATE` or `MERGE`; `Command: MERGE` is not the header format.
 
-Matrixify (Excelify) enables atomic, non-destructive **MERGE** execution:
+For an existing-only change, select and validate an existing-only operation and the appropriate variant command. Use MERGE only when creation of unmatched records is intended. Resolve product and variant IDs against the baseline; reject unknown or duplicate matches. Validate exact current importer field behavior in a staging canary before deployment. The operation name does not imply global transaction atomicity.
 
-```mermaid
-flowchart TD
-    G1["**Gate 1: Targeted Column Pruning**
-    Strip all non-essential columns from export.
-    Only include: ID, Handle, and the exact fields being mutated.
-    Never import full master exports."] --> G2
+Preserve targeted baseline values, IDs, types and location inventory. Submit only necessary fields; inspect included blanks deliberately. Record row-level import results and re-export for reconciliation. If a canary fails, stop the rest and restore only affected fields from the baseline, preserving unrelated concurrent changes.
 
-    G2["**Gate 2: Header Command Configuration**
-    Set sheet header row: 'Command: MERGE'
-    Shopify updates only specified cells;
-    leaves all other database fields untouched."] --> G3
+## 3. Decision Matrix & Calculation Method
 
-    G3["**Gate 3: Automated Pre-Flight Schema Audit**
-    Run regex linters against 100% of rows.
-    Zero blocking errors permitted before proceeding."] --> G4
+| Input / condition | Decision |
+|---|---|
+| Scientific notation in exported barcode | Reject; recover from approved mapping |
+| Eleven-digit barcode | Reject; do not infer a missing leading zero |
+| Twelve digits, invalid checksum | Reject |
+| Valid checksum, wrong product mapping | Reject |
+| Handle differs without authorization | Reject routine import |
+| Any blocking preflight failure | No import |
+| Partial importer success | Reconcile each affected resource before continuation |
 
-    G4["**Gate 4: 10% Canary Batch Test**
-    Export 2 variants → Import via Matrixify
-    Verify on storefront + scan physical barcode
-    in ShipBob WMS testing scanner."] --> G5
+`8.50012E+11` represents **850012000000**; it contains insufficient information to reconstruct another barcode. For prefix `85001234567`, weighted sum=89 and required check digit=1. For prefix `08500123456`, sum=68 and required check digit=2.
 
-    G5["**Gate 5: Production Batch Deployment & Audit Log Archival**
-    Deploy remaining 90%
-    Archive CSV diff in secure audit vault."]
+The canary design is two variants from a twelve-variant change set: **2/12=16.67%**. Continue with the remaining ten only after field, storefront, scanner and inventory checks pass. Select by mutation coverage as well as count; expand the canary when two variants do not cover the changed field types. No catalog-wide SKU coverage percentage is inferred from the change-set count.
 
-    G5 --> Done(["✅ Catalog Deployment Complete"])
+For `SYN-NB-001`, price $48.00 and COGS $14.40 give **70.00% gross product margin**: `(48−14.40)/48`. At the prior $46 scenario price the result is 68.70%. A policy of at least 70% passes at $48; a strictly greater-than-70% policy does not. Fulfillment, freight, processing and discounts reduce contribution further.
+
+## 4. Empirical Verification & Run Sheet
+
+### 4.1 Staging rejection fixtures
+
+| Case | SKU | Fault input | Gate result |
+|---|---|---|---|
+| Barcode representation | SYN-NB-001 | `8.50012E+11` | Reject exported scientific notation |
+| Barcode length | SYN-FG-001 | `85001234567` | Reject eleven-digit value |
+| Handle identity | SYN-NB-002 | `neurofocus-pm-new` instead of baseline handle | Reject unauthorized handle change |
+| Import gate | Change set | Blocking preflight errors | Stop before import |
+
+This compact case uses the PM 60ct fixture `SYN-NB-002`; variant identity is resolved from the actual staging catalog, not inferred from the title. The recoverable handle baseline is `neurofocus-pm`. Barcode recovery remains blocked until approved product mappings are supplied; checksum test vectors are not replacement catalog data.
+
+### 4.2 Reproducible validator checks
+
+```javascript
+const assert = require('node:assert/strict');
+// Run after the validateUpcA definition above.
+assert.equal(validateUpcA('850012345671', '850012345671'), '850012345671');
+assert.equal(validateUpcA('085001234562', '085001234562'), '085001234562');
+for (const raw of ['', '8.50012E+11', '85001234567', '850012345678', '000000000000']) {
+  assert.throws(() => validateUpcA(raw, '850012345671'));
+}
+assert.throws(() => validateUpcA('850012345671', '085001234562'));
 ```
 
----
+### 4.3 Import acceptance record
 
-## 5. Empirical Proof: The 12-Variant Master Mutation Audit
+For every changed variant, record baseline, submitted and re-exported values; product/variant IDs; command and row result; checksum/product-map results; decoded scanner output; old/new URL behavior; and location-level inventory reconciliation. A scanner decode must identify the expected SKU, not merely return digits. HTTP 200 must return the intended product; it does not measure search rankings.
 
-To validate this protocol under audit conditions, an empirical mutation was executed on Synapse Botanicals' core SKU catalog (12 variants across Nootropics and Functional Gummies).
+The included fault cases and validator checks demonstrate rejection behavior. Full twelve-variant import, physical scanner and inventory acceptance requires the corresponding complete run record; those outcomes are not inferred from a five-row excerpt or a successful import summary.
 
-### 5.1 Pre-Flight Telemetry Log (Initial Scan Before Sanitization)
+## 5. Technical References
 
-```
-09:15:10 EDT [AUDIT-SCAN] Starting pre-flight validation on Catalog_Mutation_v2.xlsx
-09:15:12 EDT [FAIL-WARN] Row 4 (SYN-NB-001): Barcode rendered as 8.50012E+11 [SCIENTIFIC_NOTATION]
-09:15:13 EDT [FAIL-WARN] Row 7 (SYN-FG-001): Barcode rendered as 85001234567 (11 digits - Missing Leading Zero)
-09:15:14 EDT [FAIL-CRIT] Row 11 (SYN-NB-003): Handle mutated from 'neurofocus-pm' to 'neurofocus-pm-new' [HANDLE_MUTATION_BREACH]
-09:15:15 EDT [AUDIT-STOP] Pre-flight failed: 3 blocking errors identified. Import aborted.
-```
-
-### 5.2 Remediation & Master Diff (Post-Sanitization)
-
-| SKU Code | Variant Name | Field Mutated | Pre-Audit Raw Value | Post-Sanitization Value | Verification |
-|---|---|---|---|---|---|
-| `SYN-NB-001` | NeuroFocus Alpha (60ct) | Barcode | `8.50012E+11` (Float) | `'850012345678` (String) | PASSED (UPC-A Verified) |
-| `SYN-FG-001` | Lion's Mane Berry (60ct) | Barcode | `85001234567` (11 Digits) | `'085001234567` (Padded) | PASSED (UPC-A Check Digit Verified) |
-| `SYN-NB-003` | NeuroFocus PM (Single) | Handle | `neurofocus-pm-new` | `neurofocus-pm` (Reverted) | PASSED (SEO Protected) |
-| `SYN-NB-001` | NeuroFocus Alpha (60ct) | Price | $46.00 | $48.00 | PASSED (Margin > 70%) |
-| `SYN-AT-001` | Ashwagandha Tincture | Cost | $8.50 | $8.16 | PASSED (COGS Reconciled) |
-
-### 5.3 Post-Import Production Verification (09:42:15 EDT)
-- **Storefront HTTP Response**: **200 OK** on all 12 URLs (0 broken links, 0 SEO 404s).
-- **Physical WMS Barcode Test**: 12/12 physical scanner tests verified in ShipBob Allentown testing terminal.
-- **Inventory Variance**: **0 units** (Zero unlinked stock, zero ATS overwrite).
-
----
+- [GS1 check-digit calculation](https://www.gs1.org/services/how-calculate-check-digit-manually).
+- [Matrixify product import documentation](https://matrixify.app/documentation/products/) — confirm field-specific commands, matching and blanks for the selected import version.
+- [Shopify product CSV documentation](https://help.shopify.com/en/manual/products/import-export/using-csv).

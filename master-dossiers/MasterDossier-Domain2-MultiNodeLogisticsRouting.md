@@ -1,166 +1,118 @@
-# Bi-Coastal Multi-Node Logistics & Freight Cost Optimization
+# Multi-Node Routing & Freight Economics
 
----
+> **Empirical staging simulation.** Synapse Botanicals is a technical operations sandbox used to stress-test e-commerce failure modes with synthetic customer and order fixtures. Commercial charges and financial outcomes are scenario inputs and calculations. The verification section distinguishes supplied trace excerpts, reproducible model results, and acceptance criteria for the designed controls. No production customer data or live fulfillment is represented.
 
-## 1. Executive Summary & The Logistics Trade-Off
+## 1. Executive Context & Failure Mode
 
-### 1.1 The Operational Challenge
-In direct-to-consumer e-commerce scaling past $3M GMV, shipping costs represent the single largest variable operating expense outside of marketing. Brands distribute inventory across multi-node networks—such as East Coast (**Allentown, PA**) and West Coast (**Reno, NV**)—to reduce transit times and lower carrier zone rates.
+Closest-node routing can produce two parcels where one farther node could fulfill the complete basket. The decision balances reservation feasibility, service promise and total fulfillment cost. Minimizing splits is a useful policy, but is not proof of minimum landed cost for every order.
 
-However, direct-to-consumer catalogs with multi-item shopping baskets face a dangerous financial hazard: **Split-Shipment Surcharge Leakage**.
+Nodes are Allentown (`LOC-PA-01`) and Reno (`LOC-NV-02`). Neither has unconditional catalog-wide availability. The examples use synthetic inventory conditions, not permanent node exclusivity or verified postal ZIP-pair quotes.
 
-When a customer orders multiple items (e.g., *NeuroFocus Alpha* capsules + *Ashwagandha* tincture + *Lion's Mane* gummies):
-- If the routing algorithm blindly prioritizes **"Closest Location"**, it may fulfill Item 1 from Allentown (Zone 2) and Items 2 & 3 from Reno (Zone 2).
-- **The Financial Trap**: The merchant now pays **two independent carrier base postage charges** and **two independent 3PL pick/pack/box handling fees**.
-- The cost of the second package almost always wipes out any zone savings gained from physical proximity.
+## 2. Governance & Architecture Protocol
 
-```mermaid
-flowchart TD
-    A[Order Ingested: Multi-Item Basket] --> B{Can Any Single Node Fulfill 100%?}
-    B -- Yes: Consolidated Stock Found --> C[Assign to Single Node Closest to Customer]
-    C --> D[1 Box / 1 Postage Fee / 1 Handling Fee]
-    D --> E[Optimal Unit Economics: Zero Split Surcharge]
-    B -- No: Stock Depleted Across Nodes --> F{Is Split Penalty < Long-Zone Single Package?}
-    F -- Split Unavoidable --> G[Execute Controlled Split Wave]
-    F -- False --> H[Reroute to Central Backlog / Restock Node]
-```
+### 2.1 Cost inputs
 
----
+All rates are fixed simulation inputs in USD, not current USPS tariffs or ShipBob contract quotations. Lane qualification in an integration records origin/destination ZIPs, carrier/service, packed weight and dimensions, applicable weight tier and included/excluded surcharges. The following modeled rate buckets isolate the routing effect; they are not a claim that one price applies to every parcel below one pound.
 
-## 2. Fulfillment Economics & Carrier Rate Modeling
+| Modeled zone bucket | Ground scenario postage | Priority scenario postage |
+|---|---:|---:|
+| 1–2 | $5.40 | $7.80 |
+| 3 | $5.85 | $8.40 |
+| 4 | $6.40 | $9.10 |
+| 5 | $7.20 | $10.40 |
+| 6 | $8.10 | $11.80 |
+| 7 | $9.20 | $13.50 |
+| 8 | $10.50 | $15.20 |
 
-### 2.1 3PL Handling Fee Structure (ShipBob Benchmark)
-Every time a physical package is inducted into a fulfillment stream, standard 3PL contracts assess base handling fees:
+Standard handling includes $2.50 per parcel, first pick included, $0.80 corrugate and $0.40 per additional pick. For P parcels and U picked units: `H = 2.90P + 0.40U`. Protective packing used in other experiments adds $0.40 per parcel and is excluded from this routing experiment.
 
-| Fee Component | Single Package Order | Split Shipment (Package 1) | Split Shipment (Package 2) | Total Split Cost |
-|---|---|---|---|---|
-| **Base Order Fulfillment** | $2.50 | $2.50 | $2.50 | $5.00 |
-| **Additional Pick Fee** | $0.80 (2 extra picks) | $0.00 (single pick) | $0.40 (1 extra pick) | $0.40 |
-| **Packaging & Corrugate** | $0.80 | $0.80 | $0.80 | $1.60 |
-| **Total 3PL Handling** | **$4.10** | **$3.30** | **$3.70** | **$7.00 (+$2.90 penalty)** |
+| Three-unit basket | One parcel | Two parcels: two units + one unit |
+|---|---:|---:|
+| Base fees | $2.50 | $5.00 |
+| Additional picks | $0.80 | $0.40 |
+| Corrugate | $0.80 | $1.60 |
+| Handling total | **$4.10** | **$7.00** |
 
-### 2.2 Commercial Plus Carrier Rate Card (Under 1 lb / 16 oz Parcel)
+A second parcel adds $2.90 handling for the same total units, plus its incremental postage.
 
-| Destination Zone | Distance from Origin | Standard USPS Ground Advantage | Priority Mail Commercial |
-|---|---|---|---|
-| **Zones 1–2** | 0 – 150 miles | $5.40 | $7.80 |
-| **Zone 3** | 151 – 300 miles | $5.85 | $8.40 |
-| **Zone 4** | 301 – 600 miles | $6.40 | $9.10 |
-| **Zone 5** | 601 – 1,000 miles | $7.20 | $10.40 |
-| **Zone 6** | 1,001 – 1,400 miles | $8.10 | $11.80 |
-| **Zone 7** | 1,401 – 1,800 miles | $9.20 | $13.50 |
-| **Zone 8** | 1,801+ miles (Cross-Country) | $10.50 | $15.20 |
-
-### 2.3 The Mathematical Breakeven: Consolidated vs. Split
-
-```
-Scenario: Customer in Denver, CO (Zone 4 from Reno, Zone 6 from Allentown)
-Basket: 2 Units NeuroFocus (stocked at Reno) + 1 Unit Ashwagandha (stocked only at Allentown)
-```
-
-- **Option A: Naive Split Routing (Closest Node for each item)**:
-  - Package 1 from Reno (Zone 4): $6.40 (Carrier) + $3.30 (3PL) = $9.70
-  - Package 2 from Allentown (Zone 6): $8.10 (Carrier) + $3.30 (3PL) = $11.40
-  - **Total Cost**: **$21.10**
-
-- **Option B: Consolidated Long-Zone Routing (Allentown fulfills all 3 units)**:
-  - Single Package from Allentown (Zone 6): $8.10 (Carrier) + $4.10 (3PL) = **$12.20**
-  - **Net Financial Advantage**: **$8.90 SAVED** by shipping from the "further" warehouse in a single box!
-
-> **Core Axiom**: A consolidated shipment across Zone 8 is almost always $4.00 to $9.00 cheaper than two split shipments in Zone 2.
-
----
-
-## 3. Algorithmic Routing Waterfall Architecture
-
-To systematically contain freight leakage, the Shopify Plus routing engine was configured with a strict, hierarchical 3-tier rule stack:
+### 2.2 Reservation and routing sequence
 
 ```mermaid
 flowchart TD
-    R([Order Routing Decision]) --> T1
-
-    T1{"**Tier 1: Minimize Split Shipments**
-    ABSOLUTE PRIORITY
-    Can any single node fulfill 100% of basket?"}
-
-    T1 -- Yes --> A1["Route entirely to that node
-    Single box / single postage fee"]
-    A1 --> Done([Dispatch])
-
-    T1 -- No --> T2
-
-    T2{"**Tier 2: Closest Location**
-    SECONDARY TIE-BREAKER
-    Multiple nodes can fulfill 100%?"}
-
-    T2 -- Yes --> A2["Select node minimizing
-    destination zone distance"]
-    A2 --> Done
-
-    T2 -- No --> T3
-
-    T3["**Tier 3: Inventory Ranking Balance**
-    FALLBACK TIE-BREAKER
-    Equidistant (Midwest Zone 5):
-    Default to LOC-PA-01 Allentown
-    Protect Reno stock for West Coast velocity"]
-    T3 --> Done
+    A[Expand bundle components and quantities] --> B[Find nodes able to reserve full basket and meet SLA]
+    B --> C{Full-basket candidate set nonempty?}
+    C -->|Yes| D[Rank feasible candidates by configured policy and priced service]
+    D --> E[Reserve and dispatch]
+    C -->|No| F[Evaluate feasible split plans]
+    F --> G{Split meets customer promise?}
+    G -->|Yes| H[Reserve every component before release]
+    G -->|No| I[Authorized backorder or customer exception]
 ```
 
-### 3.1 Network Topology & Node SKU Matrix
+Native Shopify location rules and a custom total-cost optimizer are different implementations. The model uses minimize-splits priority, then service feasibility and location ranking. A deployed optimizer must identify the app/Function/adapter and its cost inputs. Recheck reservations before release; no routing diagram makes a stock read atomic.
 
-```mermaid
-flowchart LR
-    PA["**LOC-PA-01**
-    Allentown, PA
-    ─────────────────
-    Primary East & Midwest Hub
-    Carrier: USPS / UPS
-    SKU Depth: 100% (24/24 SKUs)
-    Production & Batching Lead"]
+## 3. Decision Matrix & Reproducible Economics
 
-    NV["**LOC-NV-02**
-    Reno, NV
-    ─────────────────
-    Primary West & Mountain Hub
-    Carrier: USPS / FedEx
-    SKU Depth: High-Velocity Core (16 SKUs)
-    Rapid Cross-Dock from PA"]
+### 3.1 Three-unit lane comparison
 
-    PA <-->|"Cross-dock replenishment"| NV
+The modeled basket contains two NeuroFocus units and one Ashwagandha unit (`SYN-AT-001`). Inventory input: Allentown can reserve all three; Reno can reserve the two NeuroFocus units but not the tincture. This stock condition does not apply automatically to another order or to `SYN-TNCT-AM`.
+
+| Plan | Freight | Handling | Total |
+|---|---:|---:|---:|
+| Reno: two units, modeled zone 4 | $6.40 | $3.70 | $10.10 |
+| Allentown: one unit, modeled zone 6 | $8.10 | $3.30 | $11.40 |
+| **Split combined** | **$14.50** | **$7.00** | **$21.50** |
+| **Allentown: all three** | **$8.10** | **$4.10** | **$12.20** |
+
+Savings: $21.50−$12.20=**$9.30**. No specific Denver zone assignment is inferred. With the same table, one zone-8 parcel is $10.50+$4.10=$14.60, versus two zone-2 parcels at $10.80+$7.00=$17.80: a separate **$3.20** difference. Lane economics, rather than a universal consolidation claim, determine the choice.
+
+### 3.2 Five-hundred-order model
+
+The synthetic cohort has 310 two-unit orders and 190 three-unit orders: **1,190 picked units** across 500 orders. This explicit three-unit assumption defines the reproducible model. Alpha has 157 two-parcel orders; Beta has 41. All other orders use one parcel. Aggregate freight charges are supplied scenario inputs, not reconstructed carrier invoices.
+
+| Metric | Alpha | Beta | Difference |
+|---|---:|---:|---:|
+| Orders | 500 | 500 | Same baskets |
+| Split orders | 157 (31.4%) | 41 (8.2%) | 116 fewer |
+| Parcels | 657 | 541 | 116 fewer |
+| Picked units | 1,190 | 1,190 | 0 |
+| Handling: 2.90P+0.40U | $2,381.30 | $2,044.90 | $336.40 |
+| Freight input | $5,190.20 | $4,529.20 | $661.00 |
+| Total fulfillment | **$7,571.50** | **$6,574.10** | **$997.40** |
+| Cost/order | $15.1430 | $13.1482 | **$1.9948** |
+
+Relative split reduction is 116/157=**73.89%**; absolute reduction is **23.2 percentage points**. Cohort GMV is $41,200, so AOV=$82.40. This is separate from the store's $85–$120 planning range.
+
+```python
+from decimal import Decimal as D
+orders, units = 500, 310 * 2 + 190 * 3
+alpha = D('2.90') * 657 + D('0.40') * units + D('5190.20')
+beta = D('2.90') * 541 + D('0.40') * units + D('4529.20')
+saving = alpha - beta
+assert saving == D('997.40')
+assert saving / orders == D('1.9948')
+assert saving / orders * 365000 == D('728102.0000')
 ```
 
----
+At 1,000 orders/day for 365 days, constant basket mix, costs and routing effect imply **$728,102/year**. This is an annualized model, not realized merchant savings. A delivery-promise violation, different weight tiers or added fulfillment charges changes the result.
 
-## 4. Empirical A/B Simulation: 500-Order Cohort
+## 4. Empirical Verification & Run Sheet
 
-To measure real-world performance, an empirical simulation was executed across a representative cohort of **500 live orders** representing $41,200 in gross merchandise value.
+The supplied staging study compares proximity-first and consolidation-first routing. The table and code above define an independently reproducible cost model; the aggregate freight inputs do not independently establish provider pricing or per-order routing success.
 
-### 4.1 Cohort Parameters & Geography
-- **Cohort Size**: 500 multi-item orders
-- **Geographic Mix**:
-  - East Coast (USPS Zones 1–4 East): 42% (210 orders)
-  - West Coast (USPS Zones 1–4 West): 34% (170 orders)
-  - Central / Midwest (USPS Zones 5–6): 24% (120 orders)
-- **Basket Complexity**:
-  - 2-item orders: 62% (310 orders)
-  - 3+ item orders: 38% (190 orders)
+| Test | Acceptance evidence |
+|---|---|
+| One feasible full-basket node | Reservation and selected shipment plan |
+| Several feasible nodes | Candidate ranking, service and cost comparison |
+| No full-basket node | Feasible split or explicit backorder decision |
+| Inventory changes during routing | Failed reservation triggers re-evaluation |
+| Bundle | Component reservations, not parent-SKU count alone |
+| Freight reconciliation | Parcel weights/services and fee lines match input ledger |
+| Cohort parity | Same basket units and promise constraints in both models |
 
-### 4.2 Benchmark Results: Model Alpha (Naive) vs. Model Beta (Optimized)
+Operational verification records each order's SKU quantities, candidate availability, reservations, parcel plan, lane quote and resulting cost. The embedded model establishes the arithmetic; authenticated routing and carrier-rate verification require their actual recorded responses.
 
-| Metric | Model Alpha (Naive Proximity) | Model Beta (Waterfall Optimized) | Variance / Delta |
-|---|---|---|---|
-| **Total Split Shipments** | 157 orders (31.4%) | 41 orders (8.2%) | **-73.9% Split Reduction** |
-| **Total Boxes Dispatched** | 657 parcels | 541 parcels | **-116 fewer cartons** |
-| **Total 3PL Handling Cost** | $2,481.50 | $2,036.10 | **-$445.40 saved** |
-| **Total Carrier Freight Spend** | $5,190.20 | $4,529.20 | **-$661.00 saved** |
-| **Total Fulfillment Cost** | **$7,671.70** | **$6,565.30** | **-$1,106.40 NET SAVINGS** |
-| **Average Cost Per Order** | **$15.34** | **$13.13** | **-$2.21 per order** |
+## 5. Technical References
 
-### 4.3 Annualized Business Impact
-For a direct-to-consumer store operating at Synapse Botanicals' projected scale (1,000 orders/day = 365,000 orders/year):
-```
-Annual Savings = 365,000 orders x $2.21 savings/order = $806,650 in Direct Freight Margin Recovery
-```
-
----
+- [Shopify order-routing documentation](https://help.shopify.com/en/manual/fulfillment/setup/order-routing) — deployed rule availability and behavior must match the selected configuration.
+- [USPS Postal Explorer](https://pe.usps.com/) — service, zone and price qualification; this dossier uses scenario rates.
