@@ -6945,20 +6945,23 @@ body.fullwidth-layout .main {
 
 .t-carousel-stage {
   position: relative;
+  display: grid;
   min-height: 480px;
 }
 
 .t-slide {
-  display: none;
+  grid-area: 1 / 1;
+  display: flex;
+  min-width: 0;
   opacity: 0;
-  transform: translateX(18px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .t-slide.active {
-  display: flex;
   opacity: 1;
-  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .t-slide-desktop {
