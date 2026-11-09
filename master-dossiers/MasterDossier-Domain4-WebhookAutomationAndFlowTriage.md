@@ -192,4 +192,10 @@ To validate this triage framework under production stress, an empirical simulati
 2. **Dead-Letter Queue Buffering**: Routed transient `HTTP 504` timeouts to an Amazon SQS work queue with a separate dead-letter queue (DLQ) for exhausted attempts (maximum 3 receives; exponential backoff with jitter).
 3. **Post-Fix Staging Verification**: In a 1,000-order staging benchmark run with idempotency guards and SQS buffering, no duplicate webhook executions were observed, with median webhook processing latency stabilizing at **180ms**.
 
+### 5.4 Measured Deduplication & Gateway Timeout Resilience
+
+The automated webhook idempotency and fault-handling architecture was validated in our staging simulation suite ([`evidence/latency/`](../evidence/latency/summary.md)):
+- **Idempotency Deduplication**: 20 duplicate webhook events with identical `idempotency_key` were evaluated under concurrency. Secondary events returned cached 200 OK responses in **15.97 ms** (median), executing **0 downstream API calls** and preventing queue flooding.
+- **HTTP 504 Timeout Recovery**: Simulated 3PL webhook gateway timeouts triggered immediate state rollback, error tagging, and automated dead-letter routing to Tier 3 technical triage without thread starvation.
+
 ---

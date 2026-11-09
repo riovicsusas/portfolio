@@ -1,0 +1,49 @@
+{
+  "source_metadata": {
+    "usps": {
+      "title": "USPS Notice 123 Price List",
+      "service": "USPS Ground Advantage - Commercial",
+      "effective_date": "2024-01-21",
+      "published_url": "https://pe.usps.com/text/dmm300/Notice123.htm",
+      "notes": "Published commercial tariff rates for domestic parcel delivery up to 70 lbs. Excludes private volume discounts."
+    },
+    "ups": {
+      "title": "UPS Daily Rates Schedule",
+      "service": "UPS Ground - Commercial",
+      "effective_date": "2024-01-01",
+      "published_url": "https://www.ups.com/assets/resources/webcontent/en_US/daily_rates.pdf",
+      "notes": "Published daily commercial rates. Excludes fuel surcharges and private customized contract pricing."
+    },
+    "3pl_handling": {
+      "provider": "ShipBob WMS Benchmark Standard Rate Card",
+      "base_pick_pack": 3.70,
+      "additional_pick_pack": 1.20,
+      "notes": "Standard standard DTC pick and pack handling fee covering parcel box, custom inserts, and labor."
+    }
+  },
+  "usps_ground_advantage_commercial": {
+    "4oz": { "zone1_2": 3.79, "zone3": 3.84, "zone4": 3.90, "zone5": 4.01, "zone6": 4.13, "zone7": 4.27, "zone8": 4.48 },
+    "8oz": { "zone1_2": 4.15, "zone3": 4.22, "zone4": 4.30, "zone5": 4.45, "zone6": 4.60, "zone7": 4.80, "zone8": 5.05 },
+    "12oz": { "zone1_2": 4.70, "zone3": 4.80, "zone4": 4.95, "zone5": 5.15, "zone6": 5.40, "zone7": 5.70, "zone8": 6.05 },
+    "15.999oz": { "zone1_2": 5.55, "zone3": 5.70, "zone4": 5.90, "zone5": 6.20, "zone6": 6.55, "zone7": 6.95, "zone8": 7.40 },
+    "1lb": { "zone1_2": 5.80, "zone3": 6.05, "zone4": 6.30, "zone5": 6.65, "zone6": 7.15, "zone7": 7.65, "zone8": 8.25 },
+    "2lb": { "zone1_2": 6.50, "zone3": 7.20, "zone4": 7.90, "zone5": 8.80, "zone6": 10.15, "zone7": 12.10, "zone8": 14.60 },
+    "3lb": { "zone1_2": 7.30, "zone3": 8.15, "zone4": 9.20, "zone5": 10.65, "zone6": 12.80, "zone7": 15.45, "zone8": 18.90 }
+  },
+  "ups_ground_commercial": {
+    "1lb": { "zone2": 8.10, "zone3": 8.45, "zone4": 8.90, "zone5": 9.40, "zone6": 9.85, "zone7": 10.35, "zone8": 10.85 },
+    "2lb": { "zone2": 8.95, "zone3": 9.45, "zone4": 10.15, "zone5": 10.95, "zone6": 11.75, "zone7": 13.50, "zone8": 17.80 }
+  },
+  "zone_matrix": {
+    "PA_Allentown": {
+      "Brooklyn_NY_11201": "zone1_2",
+      "Denver_CO_80202": "zone5",
+      "Irvine_CA_92602": "zone8"
+    },
+    "NV_Reno": {
+      "Brooklyn_NY_11201": "zone8",
+      "Denver_CO_80202": "zone3",
+      "Irvine_CA_92602": "zone1_2"
+    }
+  }
+}

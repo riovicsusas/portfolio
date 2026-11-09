@@ -1,0 +1,58 @@
+{
+  "currency": "USD",
+  "component_costs": {
+    "focus_stick_packs": {
+      "sku_pattern": "SYN-FSTK-*",
+      "name": "Focus Stick Packs 30-Pack (All Flavors)",
+      "component_cogs": 8.50,
+      "retail_price": 42.00,
+      "source_type": "Scenario Input (Procurement Benchmark)"
+    },
+    "adaptogen_tincture": {
+      "sku_pattern": "SYN-TNCT-*",
+      "name": "Adaptogen Tincture 60ml (AM/PM)",
+      "component_cogs": 12.50,
+      "retail_price": 38.00,
+      "source_type": "Scenario Input (Procurement Benchmark)"
+    },
+    "precision_tumbler": {
+      "sku_pattern": "SYN-TMBL-*",
+      "name": "Precision Insulated Tumbler 500ml",
+      "component_cogs": 7.00,
+      "retail_price": 34.00,
+      "source_type": "Scenario Input (Procurement Benchmark)"
+    },
+    "micro_foam_whisk": {
+      "sku_pattern": "SYN-ACC-WHSK",
+      "name": "Micro-Foam Electric Whisk",
+      "component_cogs": 3.10,
+      "retail_price": 16.00,
+      "source_type": "Scenario Input (Procurement Benchmark)"
+    }
+  },
+  "starter_bundle_breakdown": {
+    "components": [
+      { "item": "Focus Stick Packs 30-Pack", "cogs": 8.50 },
+      { "item": "Adaptogen Tincture 60ml", "cogs": 12.50 },
+      { "item": "Precision Insulated Tumbler", "cogs": 7.00 }
+    ],
+    "raw_component_sum": 28.00,
+    "kitting_packaging_and_inserts": 0.40,
+    "capstone_scenario_cogs": 28.40,
+    "historical_benchmarks": {
+      "unbundled_bulk_procurement": 24.50,
+      "landed_overseas_bulk_run": 26.50
+    }
+  },
+  "operational_costs": {
+    "payment_gateway_rate": 0.029,
+    "payment_gateway_fixed": 0.30,
+    "handling_pick_pack": 4.90,
+    "outbound_freight_standard": 6.50
+  },
+  "retail_price_points": {
+    "standard_msrp": 98.00,
+    "promotional_entry": 82.00,
+    "cohort_observed_average": 82.40
+  }
+}

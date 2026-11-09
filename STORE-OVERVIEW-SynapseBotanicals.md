@@ -113,3 +113,20 @@ Because Synapse Botanicals operates at the intersection of perishable health sup
 5. **Algorithmic Margin Defense & Storefront Cart Diagnostics (Domain 5):** Auditing multi-tier discount combinations (Product, Order, and Shipping) to eliminate negative-margin coupon stacking, while isolating client-side cart exceptions and payment gateway errors.
 6. **Frontline Helpdesk Automation & HTTP Webhook Actions (Domain 6):** Standardizing Gorgias macro payloads, automated order exception holds, and SLA-governed frontline response paths.
 7. **Asynchronous Order Mutations & Distributed Webhook Failure Architecture (Capstone):** Synthesizing all foundational domains (D1–D6) into an empirical autopsy of distributed state divergence ("Zombie Orders") when asynchronous webhooks fail across system seams.
+
+---
+
+## 6. Reproducible Technical Evidence Package
+
+All operational assumptions, freight tariffs, integration latencies, barcode checksums, and carrier contracts across these technical dossiers are grounded in an executable, reproducible evidence suite located in [`evidence/`](evidence/README.md):
+
+* **Workstream A (Freight Tariffs & Routing)**: [`evidence/freight/`](evidence/freight/summary.md) — Grounded in published USPS Notice 123 (Ground Advantage Commercial) and UPS Daily Rates tariffs.
+* **Workstream B (Measured Staging Latency)**: [`evidence/latency/`](evidence/latency/summary.md) — High-resolution monotonic timing benchmarks of the Coordinator middleware under baseline, burst, duplicate, and cutoff race conditions.
+* **Workstream C (Barcode Governance & SKU Master)**: [`evidence/barcodes/`](evidence/barcodes/summary.md) — GS1 Modulo-10 checksum validation, Excel scientific notation anomaly trapping, and software optical round-trip decoding across all 12 Universe A variants.
+* **Workstream D (Transparent BOM & Cost Sensitivity)**: [`evidence/costs/`](evidence/costs/summary.md) — Multi-tier component BOM reconciliation ($28.00 raw components + $0.40 kitting materials = $28.40) and parametric contribution margin sweeps.
+* **Workstream E (UPS Intercept Contract & Recovery FSM)**: [`evidence/carrier-recovery/`](evidence/carrier-recovery/summary.md) — Official UPS Delivery Intercept v2 OpenAPI schema validation and finite state machine transition simulation.
+
+To execute the entire verification suite in a single step:
+```bash
+node evidence/run_all.js
+```

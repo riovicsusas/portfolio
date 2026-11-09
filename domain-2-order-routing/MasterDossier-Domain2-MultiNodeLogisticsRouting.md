@@ -160,4 +160,11 @@ Annual Savings (Model-Consistent Combined):  365,000 orders × $1.9948/order = $
 Annual Savings (Historical Scenario Ledger): 365,000 orders × $2.2128/order = $807,672 / year
 ```
 
+### 4.4 Traceable Tariff Grounding & Evidence Summary
+
+The freight models applied throughout this dossier are verified against dated public rate cards in [`evidence/freight/`](../evidence/freight/summary.md):
+- **USPS Notice 123 (Effective Jan 21, 2024)**: Ground Advantage Commercial rate tables validate the exact single-vs-split rates ($6.20 Zone 5 15.999 oz single vs $4.45 + $4.22 split freight).
+- **UPS Daily Rates (2024)**: Commercial Ground rate cards validate the $8.95 (Zone 2) vs $17.80 (Zone 8) rate structure, confirming the **$8.85 penalty** for cross-country misrouting.
+- **Handling Fee Schedule**: Standard 3PL pick/pack cards ($3.70 base + $1.20 incremental pick) establish the **$11.00 net saving** on the Denver basket consolidation.
+
 ---

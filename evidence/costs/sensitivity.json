@@ -1,0 +1,205 @@
+{
+  "timestamp": "2026-11-09T16:34:01.317Z",
+  "environment": "Parametric BOM & Unit Economic Sensitivity Engine",
+  "bundle_bom_provenance": {
+    "focus_sticks_cogs": 8.5,
+    "am_tincture_cogs": 12.5,
+    "precision_tumbler_cogs": 7,
+    "raw_component_sum": 28,
+    "kitting_box_and_inserts": 0.4,
+    "total_kitted_scenario_cogs": 28.4,
+    "historical_benchmarks": {
+      "unbundled_bulk_procurement": 24.5,
+      "landed_overseas_bulk_run": 26.5
+    }
+  },
+  "baseline_order_economics": {
+    "standard_msrp_98": {
+      "retail_price": 98,
+      "cogs": 28.4,
+      "handling": 4.9,
+      "freight": 6.5,
+      "processing_fee": 3.14,
+      "total_variable_costs": 42.94,
+      "gross_profit": 69.6,
+      "gross_margin_percent": 71.02,
+      "net_contribution": 55.06,
+      "net_margin_percent": 56.18
+    },
+    "promotional_entry_82": {
+      "retail_price": 82,
+      "cogs": 28.4,
+      "handling": 4.9,
+      "freight": 6.5,
+      "processing_fee": 2.68,
+      "total_variable_costs": 42.48,
+      "gross_profit": 53.6,
+      "gross_margin_percent": 65.37,
+      "net_contribution": 39.52,
+      "net_margin_percent": 48.2
+    },
+    "cohort_observed_average_82_40": {
+      "retail_price": 82.4,
+      "cogs": 28.4,
+      "handling": 4.9,
+      "freight": 6.5,
+      "processing_fee": 2.69,
+      "total_variable_costs": 42.49,
+      "gross_profit": 54,
+      "gross_margin_percent": 65.53,
+      "net_contribution": 39.91,
+      "net_margin_percent": 48.43
+    }
+  },
+  "breakeven_floors": {
+    "standard_zone2": 41.3,
+    "cross_country_zone8": 49.64
+  },
+  "sensitivity_sweeps": {
+    "component_cost_sweep": [
+      {
+        "variance_label": "-20%",
+        "raw_component_cost": 22.4,
+        "total_kitted_cogs": 22.8,
+        "msrp_contribution": 60.66,
+        "msrp_margin_pct": 61.9,
+        "promo_contribution": 45.12,
+        "promo_margin_pct": 55.02,
+        "breakeven_floor": 35.53
+      },
+      {
+        "variance_label": "-10%",
+        "raw_component_cost": 25.2,
+        "total_kitted_cogs": 25.6,
+        "msrp_contribution": 57.86,
+        "msrp_margin_pct": 59.04,
+        "promo_contribution": 42.32,
+        "promo_margin_pct": 51.61,
+        "breakeven_floor": 38.41
+      },
+      {
+        "variance_label": "+0%",
+        "raw_component_cost": 28,
+        "total_kitted_cogs": 28.4,
+        "msrp_contribution": 55.06,
+        "msrp_margin_pct": 56.18,
+        "promo_contribution": 39.52,
+        "promo_margin_pct": 48.2,
+        "breakeven_floor": 41.3
+      },
+      {
+        "variance_label": "+10%",
+        "raw_component_cost": 30.8,
+        "total_kitted_cogs": 31.2,
+        "msrp_contribution": 52.26,
+        "msrp_margin_pct": 53.33,
+        "promo_contribution": 36.72,
+        "promo_margin_pct": 44.78,
+        "breakeven_floor": 44.18
+      },
+      {
+        "variance_label": "+20%",
+        "raw_component_cost": 33.6,
+        "total_kitted_cogs": 34,
+        "msrp_contribution": 49.46,
+        "msrp_margin_pct": 50.47,
+        "promo_contribution": 33.92,
+        "promo_margin_pct": 41.37,
+        "breakeven_floor": 47.06
+      }
+    ],
+    "kitting_cost_sweep": [
+      {
+        "kitting_cost": 0.2,
+        "total_cogs": 28.2,
+        "promo_net_contribution": 39.72,
+        "promo_margin_pct": 48.44,
+        "breakeven_floor": 41.09
+      },
+      {
+        "kitting_cost": 0.4,
+        "total_cogs": 28.4,
+        "promo_net_contribution": 39.52,
+        "promo_margin_pct": 48.2,
+        "breakeven_floor": 41.3
+      },
+      {
+        "kitting_cost": 0.6,
+        "total_cogs": 28.6,
+        "promo_net_contribution": 39.32,
+        "promo_margin_pct": 47.95,
+        "breakeven_floor": 41.5
+      },
+      {
+        "kitting_cost": 0.8,
+        "total_cogs": 28.8,
+        "promo_net_contribution": 39.12,
+        "promo_margin_pct": 47.71,
+        "breakeven_floor": 41.71
+      },
+      {
+        "kitting_cost": 1,
+        "total_cogs": 29,
+        "promo_net_contribution": 38.92,
+        "promo_margin_pct": 47.46,
+        "breakeven_floor": 41.92
+      }
+    ],
+    "freight_sweep": [
+      {
+        "freight_rate": 4.5,
+        "freight_tier": "Zone 1-2 Ground",
+        "msrp_contribution": 57.06,
+        "msrp_margin_pct": 58.22,
+        "promo_contribution": 41.52,
+        "promo_margin_pct": 50.63,
+        "breakeven_floor": 39.24
+      },
+      {
+        "freight_rate": 6.5,
+        "freight_tier": "Zone 1-2 Ground",
+        "msrp_contribution": 55.06,
+        "msrp_margin_pct": 56.18,
+        "promo_contribution": 39.52,
+        "promo_margin_pct": 48.2,
+        "breakeven_floor": 41.3
+      },
+      {
+        "freight_rate": 8.5,
+        "freight_tier": "Zone 5 Ground",
+        "msrp_contribution": 53.06,
+        "msrp_margin_pct": 54.14,
+        "promo_contribution": 37.52,
+        "promo_margin_pct": 45.76,
+        "breakeven_floor": 43.36
+      },
+      {
+        "freight_rate": 10.5,
+        "freight_tier": "Zone 5 Ground",
+        "msrp_contribution": 51.06,
+        "msrp_margin_pct": 52.1,
+        "promo_contribution": 35.52,
+        "promo_margin_pct": 43.32,
+        "breakeven_floor": 45.42
+      },
+      {
+        "freight_rate": 14.6,
+        "freight_tier": "Zone 8 Cross-Country",
+        "msrp_contribution": 46.96,
+        "msrp_margin_pct": 47.92,
+        "promo_contribution": 31.42,
+        "promo_margin_pct": 38.32,
+        "breakeven_floor": 49.64
+      },
+      {
+        "freight_rate": 17.8,
+        "freight_tier": "Zone 8 Cross-Country",
+        "msrp_contribution": 43.76,
+        "msrp_margin_pct": 44.65,
+        "promo_contribution": 28.22,
+        "promo_margin_pct": 34.41,
+        "breakeven_floor": 52.94
+      }
+    ]
+  }
+}

@@ -173,4 +173,11 @@ At 10:14:00 EDT (11 minutes post-checkout, within the 15-minute 3PL polling buff
 - **Execution Interval**: **2 minutes 13 seconds (133s)** from webhook ingestion (10:14:02) to 3PL confirmation (10:16:15); **135 seconds** from ticket receipt.
 - **Operational Feasibility**: In this specific staging run, Order #1004 was present in the WMS queue awaiting the next wave batch, demonstrating that intervention succeeded prior to wave release. (This illustrates protocol mechanics within the 15-minute polling window for this run, but does not represent a statistically proven universal production SLA across all order queues).
 
+### 5.5 Staging Latency & Rejection Benchmark Verification
+
+The timing characteristics of the hold coordinator were independently benchmarked across 200 executions in a controlled staging harness ([`evidence/latency/`](../evidence/latency/summary.md)):
+- **Baseline Hold Latency**: Median (p50) end-to-end execution of **61.92 ms** (p95: **78.42 ms**; p99: **85.15 ms**) under sequential flow.
+- **High-Concurrency Burst (50 concurrent holds)**: Median of **92.66 ms** (p95: **108.54 ms**).
+- **Warehouse Cutoff Race (PONR Breach)**: When order status transitions to `picked` or `manifested`, the coordinator rejects the mutation in **15.56 ms** (p50) with HTTP 409 Conflict, halting execution before Shopify or downstream records are modified.
+
 ---

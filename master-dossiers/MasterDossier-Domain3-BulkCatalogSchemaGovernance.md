@@ -168,4 +168,11 @@ Damaged barcode entries were blocked by pre-flight linters and recovered from th
 - **WMS Scanner Test Protocol**: Sample barcodes from the 16.67% canary batch (2 variants) and subsequent batch must scan cleanly on handheld WMS laser terminals without check-digit exceptions.
 - **Inventory Variance Target**: 0 unlinked units and zero Available-to-Sell stock overwrites during MERGE execution.
 
+### 5.4 Barcode Governance & Checksum Validation Suite
+
+The complete 12-variant Universe A catalog was verified using an automated GS1 Modulo-10 checksum engine and software round-trip decoding harness ([`evidence/barcodes/`](../evidence/barcodes/summary.md)):
+- **100% Modulo-10 Verification**: All 12 canonical UPC-A barcodes pass standard Modulo-10 checksum validation.
+- **100% Round-Trip Optical Decoding**: All 12 barcodes were encoded into standard 95-bit guard patterns and decoded by an independent software reader with zero bit-drift.
+- **Negative Rejection Validation**: 7 deliberate corruption edge-cases (scientific notation `8.50041E+11`, 11-digit truncations, single-bit check flips, and extraneous SKUs) were successfully trapped by pre-flight validation rules before database ingestion.
+
 ---

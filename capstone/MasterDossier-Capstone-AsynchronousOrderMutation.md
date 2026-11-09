@@ -450,20 +450,20 @@ All foundational technical frameworks synthesized in this Capstone are documente
 
 ## 12. Delivery Assets & Systems Architecture Checklist
 
-Deliverable verification status is categorized into three explicit states: **Specified** (architectural design documented), **Implemented** (configuration or code active in staging environment), and **Verified in Staging** (empirically tested with logged inputs, executed outputs, and validated acceptance results).
+Deliverable verification status is categorized into three explicit states: **Specified** (architectural design documented), **Implemented** (configuration or code active in staging environment), and **Verified in Staging** (empirically tested with logged inputs, executed outputs, and validated acceptance results). Staging verification outputs are maintained in [`evidence/`](../evidence/README.md).
 
-| Technical Deliverable | Location in Portfolio | Status |
-|-----------------------|-----------------------|--------|
-| Capstone Systems Investigation Dossier | `master-dossiers/MasterDossier-Capstone-AsynchronousOrderMutation.md` | Specified |
-| Point-of-No-Return (PONR) Decision Engine | Domain 1 Master Dossier (Sections 2 & 4) | Specified |
-| Multi-Node Freight Optimization Waterfall | Domain 2 Master Dossier (Sections 2 & 3) | Specified |
-| Matrixify Catalog Pre-Flight Schema Audit | Domain 3 Master Dossier (Sections 3 & 4) | Specified |
-| Shopify Flow Webhook & DLQ Triage Matrix | Domain 4 Master Dossier (Sections 2 & 3) | Specified |
-| Algorithmic Margin Defense & Cart Diagnostics | Domain 5 Master Dossier (Sections 3 & 4) | Specified |
-| Gorgias Frontline Webhook Automation Engine | Domain 6 Master Dossier (Sections 2 & 4) | Specified |
-| GraphQL Order State Inspection Query | Embedded in Capstone Dossier (Section 5.3) | Specified |
-| Carrier Package Intercept API Integration | Embedded in Capstone Dossier (Section 6.1) | Specified |
-| Amazon SQS Dead-Letter Queue Architecture | Embedded in Capstone Dossier (Section 7.3) | Specified |
+| Technical Deliverable | Location in Portfolio | Status | Staging Evidence Artifact |
+|-----------------------|-----------------------|:------:|---------------------------|
+| Capstone Systems Investigation Dossier | `master-dossiers/MasterDossier-Capstone-AsynchronousOrderMutation.md` | Implemented | Comprehensive Systems Spec |
+| Point-of-No-Return (PONR) Decision Engine | Domain 1 Master Dossier (Sections 2 & 4) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) |
+| Multi-Node Freight Optimization Waterfall | Domain 2 Master Dossier (Sections 2 & 3) | **Verified in Staging** | [`evidence/freight/results.json`](../evidence/freight/summary.md) |
+| Matrixify Catalog Pre-Flight Schema Audit | Domain 3 Master Dossier (Sections 3 & 4) | **Verified in Staging** | [`evidence/barcodes/results.json`](../evidence/barcodes/summary.md) |
+| Shopify Flow Webhook & DLQ Triage Matrix | Domain 4 Master Dossier (Sections 2 & 3) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) |
+| Algorithmic Margin Defense & Cart Diagnostics | Domain 5 Master Dossier (Sections 3 & 4) | **Verified in Staging** | [`evidence/costs/sensitivity.json`](../evidence/costs/summary.md) |
+| Gorgias Frontline Webhook Automation Engine | Domain 6 Master Dossier (Sections 2 & 4) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) |
+| GraphQL Order State Inspection Query | Embedded in Capstone Dossier (Section 5.3) | Implemented | Schema Pinned |
+| Carrier Package Intercept API Integration | Embedded in Capstone Dossier (Section 6.1) | **Verified in Staging** | [`evidence/carrier-recovery/results.json`](../evidence/carrier-recovery/summary.md) |
+| Amazon SQS Dead-Letter Queue Architecture | Embedded in Capstone Dossier (Section 7.3) | Specified | Architecture Blueprint |
 
 ---
 

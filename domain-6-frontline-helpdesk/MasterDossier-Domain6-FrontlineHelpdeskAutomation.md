@@ -194,4 +194,10 @@ flowchart TD
 - **Race Condition Incidents**: Reduced from 18 incidents/month to **0 incidents/month** in tested staging order cohorts.
 - **Avoided Scrap Cost Ledger**: Averting 18 mis-delivery incidents per month yields approximately **$4,200/month** in modeled savings (~$233.33 per avoided event, derived from avoiding dual carrier freight $15.30, replacement reshipment $14.80, consumable scrap COGS $28.40, carrier intercept fee $17.50, and customer concession credits/chargeback avoidance).
 
+### 6.2 Carrier Intercept Contract & Staging Verification
+
+The carrier intercept workflow invoked in Macro M-04 is verified in [`evidence/carrier-recovery/`](../evidence/carrier-recovery/summary.md):
+- **API Acceptance vs. Depot Intercept**: The UPS Delivery Intercept v2 OpenAPI contract and state machine verify that HTTP 202 `ACCEPTED` acknowledges the request, while physical parcel diversion requires depot optical scanning (`SUCCEEDED`).
+- **Fee Protection**: If a parcel is physically delivered before hub containment occurs (Scenario 03), the $17.50 fee is waived ($0.00 billed).
+
 ---

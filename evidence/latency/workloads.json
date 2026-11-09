@@ -1,0 +1,63 @@
+{
+  "description": "Workload configurations for Synapse Botanicals Order Coordinator & Hold Middleware Benchmark",
+  "staging_environment": {
+    "node_version": "v24.18.0",
+    "architecture": "x64",
+    "harness": "In-Process Monotonic Microsecond Instrumented Simulator",
+    "timing_source": "node:perf_hooks.performance.now()"
+  },
+  "workloads": [
+    {
+      "id": "workload_1_baseline_sequential",
+      "name": "Baseline Sequential Flow",
+      "iterations": 50,
+      "concurrency": 1,
+      "wms_jitter_ms": [10, 25],
+      "shopify_jitter_ms": [8, 18],
+      "description": "50 sequential customer hold requests under standard staging network conditions."
+    },
+    {
+      "id": "workload_2_concurrency_burst",
+      "name": "High-Concurrency Flash-Sale Burst",
+      "iterations": 50,
+      "concurrency": 50,
+      "wms_jitter_ms": [15, 45],
+      "shopify_jitter_ms": [12, 35],
+      "description": "50 simultaneous hold requests arriving in parallel to evaluate lock contention and event-loop queueing."
+    },
+    {
+      "id": "workload_3_delayed_wms_spike",
+      "name": "Downstream 3PL Latency Degradation",
+      "iterations": 20,
+      "concurrency": 5,
+      "wms_jitter_ms": [1000, 2000],
+      "shopify_jitter_ms": [10, 20],
+      "description": "Simulates 3PL WMS webhook slow responses under warehouse wave batch load."
+    },
+    {
+      "id": "workload_4_idempotent_duplicate",
+      "name": "Duplicate Webhook Re-Delivery",
+      "iterations": 20,
+      "concurrency": 5,
+      "simulate_duplicate": true,
+      "description": "Evaluates idempotency key deduplication: second delivery returns cached 200 OK immediately with 0 downstream calls."
+    },
+    {
+      "id": "workload_5_cutoff_race_ponr",
+      "name": "Warehouse Cutoff Race (PONR Breach)",
+      "iterations": 20,
+      "concurrency": 5,
+      "wms_pre_status": "picked",
+      "description": "Simulates request arriving after warehouse wave picking has commenced; verifies fast 409 Conflict rejection."
+    },
+    {
+      "id": "workload_6_timeout_fault_recovery",
+      "name": "WMS Gateway Timeout & Rollback",
+      "iterations": 10,
+      "concurrency": 2,
+      "force_timeout": true,
+      "timeout_threshold_ms": 1500,
+      "description": "Simulates HTTP 504 Gateway Timeout from 3PL; tests graceful failure and escalation queue tagging."
+    }
+  ]
+}

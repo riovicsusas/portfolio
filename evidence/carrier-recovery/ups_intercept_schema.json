@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UPS Delivery Intercept API v2 Contract Specification",
+  "version": "2.0.0",
+  "definitions": {
+    "TrackingNumber": {
+      "type": "string",
+      "pattern": "^1Z[0-9A-Z]{16}$",
+      "description": "Standard UPS 18-character tracking identifier beginning with '1Z'"
+    },
+    "InterceptRequest": {
+      "type": "object",
+      "required": ["tracking_number", "request_type", "shipper_account_number", "reason_code"],
+      "properties": {
+        "tracking_number": { "$ref": "#/definitions/TrackingNumber" },
+        "request_type": {
+          "type": "string",
+          "enum": ["RETURN_TO_SENDER", "HOLD_FOR_PICKUP", "REDIRECT_ADDRESS"]
+        },
+        "shipper_account_number": {
+          "type": "string",
+          "pattern": "^[0-9A-Z]{6}$"
+        },
+        "reason_code": {
+          "type": "string",
+          "enum": ["CUSTOMER_CANCELLATION", "FRAUD_SUSPECTED", "INCORRECT_ADDRESS", "ORDER_MUTATION"]
+        },
+        "idempotency_key": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InterceptResponse": {
+      "type": "object",
+      "required": ["request_id", "tracking_number", "status", "fee_authorized_cents", "timestamp"],
+      "properties": {
+        "request_id": { "type": "string" },
+        "tracking_number": { "$ref": "#/definitions/TrackingNumber" },
+        "status": {
+          "type": "string",
+          "enum": ["ACCEPTED", "INELIGIBLE", "ALREADY_DELIVERED", "OUT_FOR_DELIVERY"]
+        },
+        "fee_authorized_cents": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fee_settled_on": {
+          "type": "string",
+          "enum": ["PHYSICAL_INTERCEPT_CONFIRMATION", "NEVER_CHARGED_ON_FAILURE"]
+        },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

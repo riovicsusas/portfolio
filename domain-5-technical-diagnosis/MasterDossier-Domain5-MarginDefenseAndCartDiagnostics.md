@@ -190,4 +190,11 @@ With combinatorial discount exclusivity enforced:
    - **Final Net Contribution Margin**: **+$30.24 (47.25% net profit margin on $64.00 collected)**.
    *(Note: Under an alternative policy where customer pays $6.50 shipping on discounted carts, collected payment is $70.50, gateway is $2.34, yielding +$36.56 net contribution).*
 
+### 5.4 Parametric Breakeven Discount Floor Verification
+
+The algebraic boundary where discounted carts collapse into negative contribution is verified in [`evidence/costs/`](../evidence/costs/summary.md):
+- **Dynamic Breakeven Discount Floor Formula**:
+  $P' = \frac{\text{COGS} + \text{3PL} + \text{Freight} + \$0.30}{1 - 0.029}$
+- For the Starter Bundle ($28.40 COGS, $4.90 handling, $6.50 freight), the absolute floor is **$41.30** under Zone 1–2 delivery, and rises to **$49.54** if misrouted to Zone 8. Any promotional campaign discounting the cart below this threshold causes guaranteed operational cash loss.
+
 ---
