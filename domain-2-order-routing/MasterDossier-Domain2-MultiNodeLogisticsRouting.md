@@ -9,7 +9,7 @@ In direct-to-consumer e-commerce scaling past $3M GMV, shipping costs represent 
 
 However, direct-to-consumer catalogs with multi-item shopping baskets face a dangerous financial hazard: **Split-Shipment Surcharge Leakage**.
 
-When a customer orders multiple items (e.g., *NeuroFocus Alpha* capsules + *Ashwagandha* tincture + *Lion's Mane* gummies):
+When a customer orders multiple items (e.g., *Focus Stick Packs* (30-Pack) + *Adaptogen Tincture* (60ml) + *Precision Tumbler*):
 - If the routing algorithm blindly prioritizes **"Closest Location"**, it may fulfill Item 1 from Allentown (Zone 2) and Items 2 & 3 from Reno (Zone 2).
 - **The Financial Trap**: The merchant now pays **two independent carrier base postage charges** and **two independent 3PL pick/pack/box handling fees**.
 - The cost of the second package almost always wipes out any zone savings gained from physical proximity.
@@ -55,7 +55,7 @@ Every time a physical package is inducted into a fulfillment stream, standard 3P
 
 ```
 Scenario: Customer in Denver, CO (Zone 4 from Reno, Zone 6 from Allentown)
-Basket: 2 Units NeuroFocus (stocked at Reno) + 1 Unit Ashwagandha (stocked only at Allentown)
+Basket: 2 Units Focus Stick Packs (stocked at Allentown & Reno) + 1 Unit AM Focus Tincture (stocked only at Reno)
 ```
 
 - **Option A: Naive Split Routing (Closest Node for each item)**:
@@ -63,9 +63,9 @@ Basket: 2 Units NeuroFocus (stocked at Reno) + 1 Unit Ashwagandha (stocked only 
   - Package 2 from Allentown (Zone 6): $8.10 (Carrier) + $3.30 (3PL) = $11.40
   - **Total Cost**: **$21.10**
 
-- **Option B: Consolidated Long-Zone Routing (Allentown fulfills all 3 units)**:
-  - Single Package from Allentown (Zone 6): $8.10 (Carrier) + $4.10 (3PL) = **$12.20**
-  - **Net Financial Advantage**: **$8.90 SAVED** by shipping from the "further" warehouse in a single box!
+- **Option B: Consolidated Long-Zone Routing (Reno fulfills all 3 units)**:
+  - Single Package from Reno (Zone 4): $6.40 (Carrier) + $4.10 (3PL) = **$10.50**
+  - **Net Financial Advantage**: **$10.60 SAVED** ($21.10 split vs. $10.50 consolidated) by shipping from Reno in a single box!
 
 > **Core Axiom**: A consolidated shipment across Zone 8 is almost always $4.00 to $9.00 cheaper than two split shipments in Zone 2.
 
@@ -116,7 +116,7 @@ flowchart LR
     ─────────────────
     Primary East & Midwest Hub
     Carrier: USPS / UPS
-    SKU Depth: 100% (24/24 SKUs)
+    SKU Depth: 100% (12/12 Variants across 5 product lines)
     Production & Batching Lead"]
 
     NV["**LOC-NV-02**
@@ -124,7 +124,7 @@ flowchart LR
     ─────────────────
     Primary West & Mountain Hub
     Carrier: USPS / FedEx
-    SKU Depth: High-Velocity Core (16 SKUs)
+    SKU Depth: Core Lines (All Tinctures, Sticks & Bundles)
     Rapid Cross-Dock from PA"]
 
     PA <-->|"Cross-dock replenishment"| NV

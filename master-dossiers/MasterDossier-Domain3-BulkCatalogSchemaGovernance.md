@@ -40,7 +40,7 @@ This Master Protocol establishes strict data hygiene standards:
 
 ## 2. Field Mutation Risk Taxonomy (The 4 Hazard Tiers)
 
-To govern who can edit what and prevent accidental database corruption, every field in Synapse Botanicals' 24-SKU catalog is assigned to a strict Hazard Tier:
+To govern who can edit what and prevent accidental database corruption, every field in Synapse Botanicals' 12-variant catalog is assigned to a strict Hazard Tier:
 
 | Hazard Tier | Risk Level | Fields Included | Permitted Operators | Validation Rule | Impact of Failure |
 |---|---|---|---|---|---|
@@ -139,15 +139,15 @@ flowchart TD
 
 ## 5. Empirical Proof: The 12-Variant Master Mutation Audit
 
-To validate this protocol under audit conditions, an empirical mutation was executed on Synapse Botanicals' core SKU catalog (12 variants across Nootropics and Functional Gummies).
+To validate this protocol under audit conditions, an empirical mutation was executed on Synapse Botanicals' core SKU catalog (12 variants across 5 product lines: Focus Stick Packs, Adaptogen Tinctures, Starter Bundles, Tumblers, and Whisks).
 
 ### 5.1 Pre-Flight Telemetry Log (Initial Scan Before Sanitization)
 
 ```
 09:15:10 EDT [AUDIT-SCAN] Starting pre-flight validation on Catalog_Mutation_v2.xlsx
-09:15:12 EDT [FAIL-WARN] Row 4 (SYN-NB-001): Barcode rendered as 8.50012E+11 [SCIENTIFIC_NOTATION]
-09:15:13 EDT [FAIL-WARN] Row 7 (SYN-FG-001): Barcode rendered as 85001234567 (11 digits - Missing Leading Zero)
-09:15:14 EDT [FAIL-CRIT] Row 11 (SYN-NB-003): Handle mutated from 'neurofocus-pm' to 'neurofocus-pm-new' [HANDLE_MUTATION_BREACH]
+09:15:12 EDT [FAIL-WARN] Row 2 (SYN-FSTK-MY): Barcode rendered as 8.40001E+11 [SCIENTIFIC_NOTATION]
+09:15:13 EDT [FAIL-WARN] Row 6 (SYN-TNCT-AM): Barcode rendered as 84000103000 (11 digits - Missing Trailing Digit)
+09:15:14 EDT [FAIL-CRIT] Row 10 (SYN-TMBL-MO): Handle mutated from 'precision-insulated-tumbler-durable-merchandise' to 'precision-insulated-tumbler-new' [HANDLE_MUTATION_BREACH]
 09:15:15 EDT [AUDIT-STOP] Pre-flight failed: 3 blocking errors identified. Import aborted.
 ```
 
@@ -155,11 +155,11 @@ To validate this protocol under audit conditions, an empirical mutation was exec
 
 | SKU Code | Variant Name | Field Mutated | Pre-Audit Raw Value | Post-Sanitization Value | Verification |
 |---|---|---|---|---|---|
-| `SYN-NB-001` | NeuroFocus Alpha (60ct) | Barcode | `8.50012E+11` (Float) | `'850012345678` (String) | PASSED (UPC-A Verified) |
-| `SYN-FG-001` | Lion's Mane Berry (60ct) | Barcode | `85001234567` (11 Digits) | `'085001234567` (Padded) | PASSED (UPC-A Check Digit Verified) |
-| `SYN-NB-003` | NeuroFocus PM (Single) | Handle | `neurofocus-pm-new` | `neurofocus-pm` (Reverted) | PASSED (SEO Protected) |
-| `SYN-NB-001` | NeuroFocus Alpha (60ct) | Price | $46.00 | $48.00 | PASSED (Margin > 70%) |
-| `SYN-AT-001` | Ashwagandha Tincture | Cost | $8.50 | $8.16 | PASSED (COGS Reconciled) |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | Barcode | `8.40001E+11` (Float) | `'840001040001` (String) | PASSED (UPC-A Verified) |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | Barcode | `84000103000` (11 Digits) | `'840001030001` (Restored) | PASSED (UPC-A Check Digit Verified) |
+| `SYN-TMBL-MO` | Tumbler Matte Obsidian | Handle | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | PASSED (SEO Protected) |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | Price | $40.00 | $42.00 | PASSED (Margin > 79%) |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | Cost | $13.50 | $12.50 | PASSED (COGS Reconciled) |
 
 ### 5.3 Post-Import Production Verification (09:42:15 EDT)
 - **Storefront HTTP Response**: **200 OK** on all 12 URLs (0 broken links, 0 SEO 404s).

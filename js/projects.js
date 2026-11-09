@@ -260,7 +260,7 @@ function toggleCompanyDropdown() {
   }
 }
 
-// 24-SKU Catalog Quickview Drawer
+// 12-Variant Catalog Quickview Drawer
 function toggleCatalogQuickView(event) {
   if (event) {
     event.preventDefault();
@@ -279,7 +279,7 @@ function toggleCatalogQuickView(event) {
   } else {
     drawer.style.display = 'none';
     if (btn) {
-      btn.innerHTML = '<i class="ph ph-table"></i> QuickView 24-SKU Catalog';
+      btn.innerHTML = '<i class="ph ph-table"></i> QuickView 12-Variant Catalog';
       btn.setAttribute('aria-expanded', 'false');
     }
   }

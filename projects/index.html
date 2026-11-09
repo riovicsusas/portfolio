@@ -70,7 +70,7 @@
           <div class="company-details-grid">
             <div class="company-detail-item">
               <div class="detail-label"><i class="ph ph-package"></i> Product Catalog Matrix</div>
-              <p><strong>24 Master SKUs</strong> across 3 categories (Nootropic Blends, Adaptogenic Tinctures, Functional Gummies). High average unit volume requiring strict expiration tracking and lot controls.</p>
+              <p><strong>12 Master Variants</strong> across 5 product lines (Focus Stick Packs, Adaptogen Tinctures, Starter Bundles, Precision Tumblers, and Whisks). High average unit volume requiring strict lot controls, expiration tracking, and multi-node routing.</p>
             </div>
             <div class="company-detail-item">
               <div class="detail-label"><i class="ph ph-chart-line-up"></i> Order Velocity &amp; GMV</div>
@@ -91,7 +91,7 @@
                 <span class="tech-badge"><i class="ph ph-browsers"></i> Chrome DevTools</span>
               </div>
               <button class="catalog-quickview-btn" id="catalogQuickViewBtn" onclick="toggleCatalogQuickView(event)" aria-expanded="false">
-                <i class="ph ph-table"></i> QuickView 24-SKU Catalog
+                <i class="ph ph-table"></i> QuickView 12-Variant Catalog
               </button>
             </div>
           </div>
@@ -99,7 +99,7 @@
           <!-- CATALOG QUICKVIEW DRAWER -->
           <div class="catalog-quickview-drawer" id="catalogQuickViewDrawer" style="display:none;">
             <div class="quickview-header">
-              <div class="quickview-title"><i class="ph ph-database"></i> Synapse Botanicals — 24-SKU Master Catalog Matrix</div>
+              <div class="quickview-title"><i class="ph ph-database"></i> Synapse Botanicals — 12-Variant Master Catalog Matrix</div>
               <button class="quickview-close-btn" onclick="toggleCatalogQuickView(event)"><i class="ph ph-x"></i></button>
             </div>
             <div class="quickview-table-wrapper">
@@ -116,11 +116,18 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td><code>SYN-NB-001</code></td><td>NeuroFocus Alpha (60ct Capsules)</td><td>Nootropic Blends</td><td>$48.00</td><td><span class="margin-pill high">72%</span></td><td>LOC-PA-01 (Allentown)</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-NB-002</code></td><td>NeuroFocus PM (60ct Capsules)</td><td>Nootropic Blends</td><td>$48.00</td><td><span class="margin-pill high">70%</span></td><td>LOC-PA-01 (Allentown)</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-AT-001</code></td><td>Organic Ashwagandha Tincture (50ml)</td><td>Adaptogenic Tinctures</td><td>$34.00</td><td><span class="margin-pill high">76%</span></td><td>LOC-NV-02 (Reno)</td><td>Tier 2</td></tr>
-                  <tr><td><code>SYN-FG-001</code></td><td>Lion's Mane Gummies (Berry 60ct)</td><td>Functional Gummies</td><td>$32.00</td><td><span class="margin-pill med">68%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-BD-001</code></td><td>Executive Peak Focus Bundle (3-Pack)</td><td>Product Bundles</td><td>$110.00</td><td><span class="margin-pill high">74%</span></td><td>LOC-PA-01 (Allentown)</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-FSTK-MY</code></td><td>Focus Stick Packs 30-Pack (Matcha Yuzu)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-FSTK-BO</code></td><td>Focus Stick Packs 30-Pack (Blood Orange)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-FSTK-WB</code></td><td>Focus Stick Packs 30-Pack (Wild Blueberry)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-FSTK-GA</code></td><td>Focus Stick Packs 30-Pack (Crisp Green Apple)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-TNCT-AM</code></td><td>Adaptogen Tincture 60ml (AM Focus / Lion's Mane)</td><td>Tincture</td><td>$38.00</td><td><span class="margin-pill med">67%</span></td><td>LOC-NV-02 (Reno Exclusive)</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-TNCT-PM</code></td><td>Adaptogen Tincture 60ml (PM Restore / Reishi)</td><td>Tincture</td><td>$38.00</td><td><span class="margin-pill med">67%</span></td><td>LOC-NV-02 (Reno Exclusive)</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-BNDL-MAO</code></td><td>Starter Bundle (Matcha / AM / Obsidian)</td><td>Product Bundles</td><td>$82.00 / $98.00</td><td><span class="margin-pill high">70%</span></td><td>LOC-NV-02 (Reno)</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-BNDL-BAB</code></td><td>Starter Bundle (Orange / AM / Bone White)</td><td>Product Bundles</td><td>$82.00 / $98.00</td><td><span class="margin-pill high">70%</span></td><td>LOC-NV-02 (Reno)</td><td>Tier 1</td></tr>
+                  <tr><td><code>SYN-TMBL-MO</code></td><td>Precision Insulated Tumbler 500ml (Matte Obsidian)</td><td>Drinkware / Merch</td><td>$34.00</td><td><span class="margin-pill high">79%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
+                  <tr><td><code>SYN-TMBL-BW</code></td><td>Precision Insulated Tumbler 500ml (Bone White)</td><td>Drinkware / Merch</td><td>$34.00</td><td><span class="margin-pill high">79%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
+                  <tr><td><code>SYN-TMBL-SG</code></td><td>Precision Insulated Tumbler 500ml (Sage Green)</td><td>Drinkware / Merch</td><td>$34.00</td><td><span class="margin-pill high">79%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
+                  <tr><td><code>SYN-ACC-WHSK</code></td><td>Micro-Foam Electric Whisk</td><td>Kitchen Tool / Merch</td><td>$16.00</td><td><span class="margin-pill high">81%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
                 </tbody>
               </table>
             </div>

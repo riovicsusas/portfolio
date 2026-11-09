@@ -76,7 +76,7 @@ flowchart TD
    * Houses the complete catalog including all consumable batches, hardware, and packaging stock.
    * Fulfills all Pacific, Mountain, and West-Central shipments within 1–2 transit days.
 2. **Synapse 3PL - East (Allentown, PA) — Secondary Node:**
-   * Houses high-velocity consumables (Stick Packs and Tinctures) to minimize cross-country shipping zone surcharges.
+   * Houses high-velocity consumables and accessories (Focus Stick Packs, Tumblers, and Whisks) to minimize cross-country shipping zone surcharges.
    * Fulfills Mid-Atlantic, Northeast, and Southeast customer orders.
 3. **Showroom / Testing HQ — R&D Node:**
    * Used strictly for product testing, VIP sample gifting, and marketing photoshoots.

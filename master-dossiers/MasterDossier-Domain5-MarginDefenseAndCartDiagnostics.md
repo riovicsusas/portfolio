@@ -127,13 +127,13 @@ CM = (Retail Price - Total Discount) - (COGS + 3PL Handling + Carrier Freight + 
 
 | Product SKU | Variant Name | Retail Price | COGS | 3PL Handling | Carrier Postage | Stripe Fee (2.9%+$0.30) | Breakeven Cost | Max Allowable Discount | Max Discount % |
 |---|---|---|---|---|---|---|---|---|---|
-| `SYN-NB-001` | NeuroFocus Alpha (60ct) | $48.00 | $14.40 | $3.70 | $5.85 | $1.69 | **$25.64** | **$22.36** | **46.5%** |
-| `SYN-NB-002` | NeuroFocus PM (60ct) | $48.00 | $14.40 | $3.70 | $5.85 | $1.69 | **$25.64** | **$22.36** | **46.5%** |
-| `SYN-AT-001` | Ashwagandha Tincture | $34.00 | $8.16 | $3.70 | $5.85 | $1.29 | **$19.00** | **$15.00** | **44.1%** |
-| `SYN-FG-001` | Lion's Mane Gummies | $32.00 | $10.24 | $3.70 | $5.85 | $1.23 | **$21.02** | **$10.98** | **34.3%** |
-| `SYN-BD-001` | Executive Focus Bundle | $110.00 | $31.90 | $4.50 | $7.20 | $3.49 | **$47.09** | **$62.91** | **57.1%** |
+| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack (Matcha Yuzu) | $42.00 | $8.50 | $3.70 | $5.85 | $1.52 | **$19.57** | **$22.43** | **53.4%** |
+| `SYN-TNCT-AM` | Adaptogen Tincture 60ml (AM Focus) | $38.00 | $12.50 | $3.70 | $5.85 | $1.40 | **$23.45** | **$14.55** | **38.3%** |
+| `SYN-TMBL-MO` | Precision Insulated Tumbler 500ml (Matte Obsidian) | $34.00 | $7.00 | $3.70 | $5.85 | $1.29 | **$17.84** | **$16.16** | **47.5%** |
+| `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $0.76 | **$11.66** | **$4.34** | **27.1%** |
+| `SYN-BNDL-MAO` | Daily Protocol Starter Bundle (Matcha/AM/Obsidian) | $82.00 | $24.50 | $4.50 | $7.20 | $2.68 | **$38.88** | **$43.12** | **52.6%** |
 
-> **Critical Threshold**: For low-margin items like *Lion's Mane Gummies*, any discount exceeding **34.3%** pushes the order into negative gross contribution margin!
+> **Critical Threshold**: For low-margin hardware like *Micro-Foam Electric Whisk* (27.1%) and high-cost consumables like *Adaptogen Tincture* (38.3%), excessive discount stacking pushes the order into negative gross contribution margin!
 
 ---
 
@@ -144,37 +144,37 @@ To demonstrate the financial destruction of uncontrolled discount stacking, a li
 ### 5.1 Baseline Order Configuration
 - **Order ID**: `#1063`
 - **Basket Items**:
-  - 1x Lion's Mane Gummies (`SYN-FG-001`) = $32.00
-  - 1x Ashwagandha Tincture (`SYN-AT-001`) = $34.00
-- **Cart Gross Value**: **$66.00**
+  - 1x Focus Stick Packs 30-Pack (`SYN-FSTK-MY`) = $42.00 (COGS: $8.50)
+  - 1x Adaptogen Tincture 60ml (`SYN-TNCT-AM`) = $38.00 (COGS: $12.50)
+- **Cart Gross Value**: **$80.00**
 
 ### 5.2 The Unrestricted Collision Event
 Customer applied four separate stacked promotions during checkout:
-1. `VIP20`: 20% off all products (-$13.20)
-2. `WELCOME20`: $20.00 off order (-$20.00)
-3. `LOYALTY7`: $7.20 VIP reward credit (-$7.20)
+1. `VIP20`: 20% off all products (-$16.00)
+2. `WELCOME25`: $25.00 off order (-$25.00)
+3. `LOYALTY10`: $10.80 VIP reward credit (-$10.80)
 4. `FREESHIP`: Free Ground Shipping (-$6.50 shipping fee absorbed by merchant)
 
 ```
 FINANCIAL DISASTER AUDIT — Order #1063 (PRE-FIX):
-  Gross Basket Value:           $66.00 (1x Lion's Mane $32 + 1x Ashwagandha $34)
-  Discounts Applied:            -$13.20 (VIP20) + -$20.00 (WELCOME20) + -$7.20 (LOYALTY7) = -$40.40
-  Gross Revenue Collected:      $66.00 − $40.40 = $25.60
-  Cost of Goods Sold (COGS):    −$10.24 (Gummies) + −$8.16 (Tincture) = −$18.40
+  Gross Basket Value:           $80.00 (1x Focus Sticks $42 + 1x Adaptogen Tincture $38)
+  Discounts Applied:            -$16.00 (VIP20) + -$25.00 (WELCOME25) + -$10.80 (LOYALTY10) = -$51.80
+  Gross Revenue Collected:      $80.00 − $51.80 = $28.20
+  Cost of Goods Sold (COGS):    −$8.50 (Sticks) + −$12.50 (Tincture) = −$21.00
   3PL Warehouse Handling:       −$4.10 (Base + pick + box)
   Carrier Outbound Freight:     −$6.50 (Paid by merchant — Free Shipping)
-  Credit Card Gateway Fee:      −$1.40 (2.9% + $0.30 on $25.60 + auth tolls)
+  Credit Card Gateway Fee:      −$1.40 (2.9% + $0.30 on $28.20 + auth tolls)
   ─────────────────────────────────────────────────────────────────────
-  NET ORDER CONTRIBUTION:       $25.60 − $18.40 − $4.10 − $6.50 − $1.40 = −$4.80 (LOSS!)
+  NET ORDER CONTRIBUTION:       $28.20 − $21.00 − $4.10 − $6.50 − $1.40 = −$4.80 (LOSS!)
 ```
 *Result*: The store **lost $4.80 in pure cash** by fulfilling this order!
 
 ### 5.3 Post-Remediation Execution (With Matrix Protection Applied)
 With the combinatorial exclusivity engine deployed:
-1. Customer inputs `VIP20` $ightarrow$ Applied (-$13.20).
-2. Customer attempts `WELCOME15` $ightarrow$ **Blocked by Checkout Extensibility**:
-   > *"Discount code WELCOME15 cannot be combined with VIP20 on baskets under $85.00."*
-3. Customer receives standard shipping calculation ($6.50) because post-discount cart is $52.80.
-4. **Final Net Contribution Margin**: **+$17.14 (32.4% net profit margin)**.
+1. Customer inputs `VIP20` → Applied (-$16.00).
+2. Customer attempts `WELCOME25` → **Blocked by Checkout Extensibility**:
+   > *"Discount code WELCOME25 cannot be combined with VIP20 on baskets under $85.00."*
+3. Customer receives standard shipping calculation ($6.50) because post-discount cart is $64.00.
+4. **Final Net Contribution Margin**: **+$23.14 (34.0% net profit margin)**.
 
 ---

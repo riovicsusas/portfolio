@@ -14,7 +14,7 @@ When a customer contacts customer support (or initiates a self-service modificat
 If customer support mutates the order in Shopify Admin while the 3PL is simultaneously batching or wave-picking the order:
 1. **The Race Condition**: The warehouse prints a shipping label using the *stale initial address* while Shopify displays the *updated address*.
 2. **Double Shipment Hazard**: If support cancels in Shopify without verifying physical warehouse state, the 3PL ships the product anyway, forcing customer support to reship or refund, resulting in a 100% inventory write-off.
-3. **FDA 21 CFR Part 111 Regulatory Scrap**: For ingestible botanicals (capsules, adaptogenic tinctures, functional gummies), any mis-delivered or returned product cannot legally be returned to active sellable stock. It must be destroyed.
+3. **FDA 21 CFR Part 111 Regulatory Scrap**: For ingestible botanicals (Focus Stick Packs, Adaptogen Tinctures), any mis-delivered or returned product cannot legally be returned to active sellable stock. It must be destroyed.
 
 ### 1.2 The Engineering Mandate: Zero-Tolerance "Freeze First"
 This Master Protocol codifies the architectural rules, state machine transitions, and quantitative risk thresholds required to guarantee **zero physical-to-digital inventory desynchronization**.
@@ -80,7 +80,7 @@ flowchart LR
    ```
 
 #### Protocol B: 1:1 Consumable Flavor Exchange (Equal Value)
-1. **Catalog Integrity Constraint**: Swaps are strictly limited to products within the exact same product family and identical retail price point (e.g., *Lion's Mane Gummies Berry 60ct* `SYN-FG-001` ↔ *Lion's Mane Gummies Citrus 60ct* `SYN-FG-002`).
+1. **Catalog Integrity Constraint**: Swaps are strictly limited to products within the exact same product family and identical retail price point (e.g., *Focus Stick Packs Matcha Yuzu (30-Pack)* `SYN-FSTK-MY` ↔ *Blood Orange (30-Pack)* `SYN-FSTK-BO`).
 2. **Inventory Availability Check**: Before mutating the line item, operator must verify Available-to-Sell (ATS) inventory ≥ 5 units at the target fulfillment node.
 3. **Financial Ledger Zero Balance**: The adjustment must result in $0.00 net change on the Shopify transaction ledger.
 
@@ -128,10 +128,10 @@ To prove deterministic execution under live conditions, an empirical test simula
 - **Customer**: Elena Vance (`elena.vance@example.com`)
 - **Fulfillment Node**: `LOC-PA-01` (Allentown, PA)
 - **Basket Mix**:
-  - 1x NeuroFocus Alpha (60ct) `SYN-NB-001` ($48.00)
-  - 1x NeuroFocus PM (60ct) `SYN-NB-002` ($48.00)
+  - 1x Focus Stick Packs Matcha Yuzu (30-Pack) `SYN-FSTK-MY` ($42.00)
+  - 1x Focus Stick Packs Blood Orange (30-Pack) `SYN-FSTK-BO` ($42.00)
   - Expedited Shipping ($18.00)
-- **Total Paid**: $114.00 USD (Authorized & Captured)
+- **Total Paid**: $102.00 USD (Authorized & Captured)
 
 ### 5.2 Ingested Exception Event
 At 10:14:00 EDT (11 minutes post-checkout, within the 15-minute 3PL polling buffer), Gorgias Ticket `#T-10492` was received:
