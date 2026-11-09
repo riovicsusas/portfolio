@@ -123,17 +123,21 @@ CONTRIBUTION MARGIN FORMULA:
 CM = (Retail Price - Total Discount) - (COGS + 3PL Handling + Carrier Freight + Merchant Processing Fee)
 ```
 
-### 4.1 Unit Economics & Max Allowable Discount (Synapse Botanicals Catalog)
+### 4.1 Unit Economics & Max Allowable Discount Thresholds
 
-| Product SKU | Variant Name | Retail Price | COGS | 3PL Handling | Carrier Postage | Stripe Fee (2.9%+$0.30) | Breakeven Cost | Max Allowable Discount | Max Discount % |
+Discount ceilings depend on whether gateway processing fees are evaluated statically against full retail price or dynamically at discounted breakeven payment amounts. Solving dynamically for breakeven net payment $P'$ where $P' \times (1 - 0.029) = \text{COGS} + \text{3PL} + \text{Freight} + \$0.30$ establishes the true contribution margin floor:
+
+| Product SKU | Variant Name | Retail Price | COGS | 3PL Handling | Carrier Freight | Static Breakeven (Full-Fee) | Dynamic Breakeven Floor ($P'$) | Max Discount ($) | Max Discount % |
 |---|---|---|---|---|---|---|---|---|---|
-| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack (Matcha Yuzu) | $42.00 | $8.50 | $3.70 | $5.85 | $1.52 | **$19.57** | **$22.43** | **53.4%** |
-| `SYN-TNCT-AM` | Adaptogen Tincture 60ml (AM Focus) | $38.00 | $12.50 | $3.70 | $5.85 | $1.40 | **$23.45** | **$14.55** | **38.3%** |
-| `SYN-TMBL-MO` | Precision Insulated Tumbler 500ml (Matte Obsidian) | $34.00 | $7.00 | $3.70 | $5.85 | $1.29 | **$17.84** | **$16.16** | **47.5%** |
-| `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $0.76 | **$11.66** | **$4.34** | **27.1%** |
-| `SYN-BNDL-MAO` | Daily Protocol Starter Bundle (Matcha/AM/Obsidian) | $82.00 | $24.50 | $4.50 | $7.20 | $2.68 | **$38.88** | **$43.12** | **52.6%** |
+| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack | $42.00 | $8.50 | $3.70 | $5.85 | $19.57 | **$18.90** | **$23.10** | **55.0%** |
+| `SYN-TNCT-AM` | Adaptogen Tincture 60ml | $38.00 | $12.50 | $3.70 | $5.85 | $23.45 | **$23.02** | **$14.98** | **39.4%** |
+| `SYN-TMBL-MO` | Precision Insulated Tumbler | $34.00 | $7.00 | $3.70 | $5.85 | $17.84 | **$17.35** | **$16.65** | **49.0%** |
+| `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $11.66 | **$11.53** | **$4.47** | **27.9%** |
+| `SYN-BNDL-MAO` | Starter Bundle (Kitted Scenario)* | $82.00 | $28.40 | $4.50 | $7.20 | $42.78 | **$41.61** | **$40.39** | **49.3%** |
 
-> **Critical Threshold**: For low-margin hardware like *Micro-Foam Electric Whisk* (27.1%) and high-cost consumables like *Adaptogen Tincture* (38.3%), excessive discount stacking pushes the order into negative gross contribution margin!
+*Bundle inputs reflect the $28.40 kitted scenario COGS ($28.00 raw components + $0.40 packaging/kitting).
+
+> **Critical Threshold**: For low-margin accessories like *Micro-Foam Electric Whisk* (27.9% ceiling) and high-cost consumables like *Adaptogen Tincture* (39.4% ceiling), uncontrolled discount stacking pushes the order into negative gross contribution margin!
 
 ---
 
@@ -159,22 +163,31 @@ Customer applied four separate stacked promotions during checkout:
 FINANCIAL DISASTER AUDIT — Order #1063 (PRE-FIX):
   Gross Basket Value:           $80.00 (1x Focus Sticks $42 + 1x Adaptogen Tincture $38)
   Discounts Applied:            -$16.00 (VIP20) + -$25.00 (WELCOME25) + -$10.80 (LOYALTY10) = -$51.80
-  Gross Revenue Collected:      $80.00 − $51.80 = $28.20
+  Gross Merchandise Collected:  $80.00 − $51.80 = $28.20
   Cost of Goods Sold (COGS):    −$8.50 (Sticks) + −$12.50 (Tincture) = −$21.00
   3PL Warehouse Handling:       −$4.10 (Base + pick + box)
-  Carrier Outbound Freight:     −$6.50 (Paid by merchant — Free Shipping)
-  Credit Card Gateway Fee:      −$1.40 (2.9% + $0.30 on $28.20 + auth tolls)
+  Carrier Outbound Freight:     −$6.50 (Merchant-absorbed under FREESHIP)
+  Standard Gateway Fee:         −$1.12 (round(2.9% × $28.20 + $0.30))
+  Gateway Tolls / Auth Fee:     −$0.28 (Merchant gateway network toll)
   ─────────────────────────────────────────────────────────────────────
   NET ORDER CONTRIBUTION:       $28.20 − $21.00 − $4.10 − $6.50 − $1.40 = −$4.80 (LOSS!)
 ```
-*Result*: The store **lost $4.80 in pure cash** by fulfilling this order!
+*Audit Result*: The store **lost $4.80 in cash** fulfilling this order (-$4.52 under standard gateway fees alone; -$4.80 including gateway auth tolls).
 
 ### 5.3 Post-Remediation Execution (With Matrix Protection Applied)
-With the combinatorial exclusivity engine deployed:
-1. Customer inputs `VIP20` → Applied (-$16.00).
-2. Customer attempts `WELCOME25` → **Blocked by Checkout Extensibility**:
+With combinatorial discount exclusivity enforced:
+1. Customer inputs `VIP20` → Applied (-$16.00). Post-discount cart subtotal: **$64.00**.
+2. Customer attempts `WELCOME25` → **Blocked by Checkout Extensibility Rules**:
    > *"Discount code WELCOME25 cannot be combined with VIP20 on baskets under $85.00."*
-3. Customer receives standard shipping calculation ($6.50) because post-discount cart is $64.00.
-4. **Final Net Contribution Margin**: **+$23.14 (34.0% net profit margin)**.
+3. Loyalty credit stacking is restricted to non-conflicting payment tenders.
+4. **Shipping Qualification**: Because the post-discount subtotal ($64.00) exceeds the ≥$50.00 free shipping floor (Rule 3), Free Ground Shipping is applied ($6.50 freight absorbed by merchant).
+5. **Final Contribution Reconciliation**:
+   - Customer Payment Collected: **$64.00**
+   - COGS: -$21.00 ($8.50 + $12.50)
+   - 3PL Handling: -$4.10
+   - Carrier Freight: -$6.50
+   - Gateway Fee: -$2.16 (round(2.9% × $64.00 + $0.30) = $2.16)
+   - **Final Net Contribution Margin**: **+$30.24 (47.25% net profit margin on $64.00 collected)**.
+   *(Note: Under an alternative policy where customer pays $6.50 shipping on discounted carts, collected payment is $70.50, gateway is $2.34, yielding +$36.56 net contribution).*
 
 ---

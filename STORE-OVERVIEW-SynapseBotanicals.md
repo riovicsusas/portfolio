@@ -10,8 +10,8 @@
 **Synapse Botanicals** (`synapse-botanicals.myshopify.com`) is a high-growth, direct-to-consumer (DTC) functional wellness and cognitive longevity brand. The company formulates clean, nootropic-infused adaptogen tinctures, daily focus drink powders, and premium lifestyle accessories designed for daily sustained performance.
 
 * **Business Model:** DTC E-Commerce with high subscription velocity + seasonal promotional flash sales.
-* **Average Order Value (AOV):** \$85 – \$120
-* **Target Delivery SLA:** 2-day ground shipping to 90% of the contiguous United States.
+* **Average Order Value (AOV):** \$85.00 – \$120.00 planning baseline (specific evaluated cohorts vary, e.g., \$82.40 across the 500-order multi-node routing cohort).
+* **Target Delivery SLA:** 2-day ground shipping coverage to 90% of the contiguous United States via bi-coastal nodes (planning objective).
 * **Order Velocity:** High daily order volume with significant promotional spikes (e.g., Black Friday, product drops, influencer campaigns).
 
 ---
@@ -36,7 +36,7 @@ classDiagram
         Micro-Foam Electric Whisk - $16.00 [COGS: $3.10]
     }
     class Bundled_Kits {
-        The Daily Protocol Starter Bundle - $82.00 List / $98.00 Retail [COGS: $24.50 BOM / $26.50 Landed]
+        The Daily Protocol Starter Bundle - $82.00 List / $98.00 Retail [COGS: $28.00 Component BOM / $28.40 Kitted Scenario]
     }
     SynapseCatalog --> Consumables
     SynapseCatalog --> Hardware_Merch
@@ -47,9 +47,11 @@ classDiagram
 | :--- | :--- | :--- | :---: | :---: | :---: |
 | **Adaptogen Tincture (60ml)** | `synapse-adaptogen-tincture-60ml` | AM Focus (Lion's Mane)<br/>PM Restore (Reishi & Ashwagandha) | \$38.00 | \$12.50 | 67.1% |
 | **Focus Stick Packs (30-Pack)** | `synapse-focus-stick-packs-30-pack` | Matcha Yuzu, Blood Orange,<br/>Wild Blueberry, Crisp Green Apple | \$42.00 *(Comp \$48)* | \$8.50 | 79.8% |
-| **Daily Protocol Starter Bundle** | `the-daily-protocol-starter-bundle` | AM/PM Routine Kit (`SYN-BNDL-MAO` / `BAB`) | \$82.00 *(List)* / \$98.00 *(GMV)* | \$24.50 *(BOM)* / \$26.50 *(Landed)* | 70.1% – 73.0% |
+| **Daily Protocol Starter Bundle** | `the-daily-protocol-starter-bundle` | AM/PM Routine Kit (`SYN-BNDL-MAO` / `BAB`) | \$82.00 *(List)* / \$98.00 *(GMV)* | \$28.00 *(Component BOM)*<br/>\$28.40 *(Kitted Scenario)* | 65.4% – 71.4% |
 | **Precision Insulated Tumbler** | `precision-insulated-tumbler-durable-merchandise` | Matte Obsidian, Bone White, Sage Green | \$34.00 | \$7.00 | 79.4% |
 | **Micro-Foam Electric Whisk** | `micro-foam-electric-whisk` | Single Variant (`SYN-ACC-WHSK`) | \$16.00 | \$3.10 | 80.6% |
+
+*(Note on Bundle Accounting: Raw component BOM cost is \$28.00: Focus Sticks \$8.50 + AM Tincture \$12.50 + Tumbler \$7.00. The \$28.40 Capstone scenario cost incorporates \$0.40 dedicated packaging and kitting materials. Historical manufacturing procurement contracts cited \$24.50 unkitted / \$26.50 landed).*
 
 ---
 
@@ -73,10 +75,11 @@ flowchart TD
 ```
 
 1. **Synapse 3PL - West (Reno, NV) — Primary Node:**
-   * Houses the complete catalog including all consumable batches, hardware, and packaging stock.
-   * Fulfills all Pacific, Mountain, and West-Central shipments within 1–2 transit days.
+   * Full catalog distribution authorization; houses complete consumable batches, hardware, and packaging stock.
+   * Holds active on-hand inventory across all 12 variants, including exclusive on-hand allocation for Adaptogen Tinctures and Starter Bundles in the evaluated routing scenarios.
+   * Fulfills Pacific, Mountain, and West-Central shipments within 1–2 transit days.
 2. **Synapse 3PL - East (Allentown, PA) — Secondary Node:**
-   * Houses high-velocity consumables and accessories (Focus Stick Packs, Tumblers, and Whisks) to minimize cross-country shipping zone surcharges.
+   * Authorized for distributed catalog fulfillment; maintains active on-hand stock for high-velocity consumables and merchandise (Focus Stick Packs, Tumblers, and Whisks) to minimize cross-country shipping zone surcharges.
    * Fulfills Mid-Atlantic, Northeast, and Southeast customer orders.
 3. **Showroom / Testing HQ — R&D Node:**
    * Used strictly for product testing, VIP sample gifting, and marketing photoshoots.
@@ -101,12 +104,12 @@ The brand relies on an interconnected operational stack where data integrity, sp
 
 ## 5. Core Operational Challenges (The TechOps Mandate)
 
-Because Synapse Botanicals operates at the intersection of perishable health supplements, multi-location logistics, and high-velocity promotional marketing, the Technical Operations role enforces six primary operational disciplines across the architecture:
+Because Synapse Botanicals operates at the intersection of perishable health supplements, multi-location logistics, and high-velocity promotional marketing, the Technical Operations role enforces six primary operational disciplines across the architecture, synthesized by an integrated Capstone:
 
-1. **Catalog & Barcode Data Pipeline Integrity (Domain 1):** Enforcing strict schema governance and plain-text data typing to prevent catastrophic catalog corruptions (e.g., Excel coercing UPC barcodes into floating scientific notation or wiping custom metafields).
-2. **Multi-Node Routing & Freight Surcharge Mitigation (Domain 2):** Preventing multi-node stockouts and misallocated shipments that force double pick-and-pack carrier surcharges across bi-coastal nodes.
-3. **Business Logic Automation, Webhook Idempotency & Circuit Breaking (Domain 3):** Building robust event-driven workflows in Shopify Flow equipped with state-check idempotency guards, HTTP retry policies, and dead-letter queues.
-4. **Margin Defense & Discount Collision Elimination (Domain 4):** Auditing multi-tier discount combinations (Product, Order, and Shipping) to eliminate stacking loops that cause negative-margin sales.
-5. **Rapid Client-Side Cart & Network Payload Diagnostics (Domain 5):** Isolating storefront checkout friction, API status code errors (`422 Unprocessable Entity`), and payment gateway declines with <60s MTTI.
-6. **Frontline Helpdesk Macro Automation & Escalation (Domain 6):** Standardizing Gorgias macro payloads, automated order exception holds, and SLA-governed frontline response paths.
-7. **Asynchronous Order Mutations & Point-of-No-Return Locks (Capstone):** Coordinating distributed order edits across Shopify Admin and downstream 3PL WMS to eliminate phantom inventory drift and misdirected deliveries.
+1. **Order State Machine & Point-of-No-Return Protocol (Domain 1):** Managing physical-to-digital order synchronization across Shopify and 3PL WMS, enforcing fulfillment holds, and defining irreversible operational cutoffs.
+2. **Bi-Coastal Multi-Node Logistics & Freight Cost Optimization (Domain 2):** Preventing multi-node stockouts and misallocated split shipments that trigger redundant pick/pack and carrier freight surcharges.
+3. **Enterprise Matrixify Migration & Barcode Schema Governance (Domain 3):** Enforcing strict schema governance and plain-text data typing to prevent catastrophic catalog corruptions (e.g. numeric coercion of 12-digit UPC barcodes or accidental handle mutations).
+4. **Business Logic Automation & Webhook Recursion Triage (Domain 4):** Building event-driven workflows in Shopify Flow equipped with state-check guards, queue-level retries, and dead-letter queues.
+5. **Algorithmic Margin Defense & Storefront Cart Diagnostics (Domain 5):** Auditing multi-tier discount combinations (Product, Order, and Shipping) to eliminate negative-margin coupon stacking, while isolating client-side cart exceptions and payment gateway errors.
+6. **Frontline Helpdesk Automation & HTTP Webhook Actions (Domain 6):** Standardizing Gorgias macro payloads, automated order exception holds, and SLA-governed frontline response paths.
+7. **Asynchronous Order Mutations & Distributed Webhook Failure Architecture (Capstone):** Synthesizing all foundational domains (D1–D6) into an empirical autopsy of distributed state divergence ("Zombie Orders") when asynchronous webhooks fail across system seams.

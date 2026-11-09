@@ -12,14 +12,14 @@ However, un-governed automation logic in platforms like Shopify Flow frequently 
 ```mermaid
 flowchart TD
     TrapA["**TRAP A: Runaway Tag Recursion Loop**
-    Flow 1: Triggers on 'Order tags added' → Adds Tag 'REVIEW'
-    Flow 2: Triggers on 'Order tags added' → Adds Tag 'AUDITED'
-    Without a negative check guard, each tag addition
-    re-triggers the other flow infinitely.
+    Flow 1: Listens to 'Order tags added' → Adds Tag 'REVIEW'
+    Flow 2: Listens to 'Order tags added' → Adds Tag 'AUDITED'
+    Without specific tag filters or negative check guards,
+    each mutation re-emits order update events, creating a mutual loop.
     ─────────────────────────────────────────────────
     CONSEQUENCE: Order timeline balloons to 1,000+ events
-    in 90 seconds. GraphQL API rate limits exhausted.
-    All checkouts and 3PL syncs throttled."]
+    in 90 seconds. Admin API rate limits exhausted.
+    Admin automations and 3PL middleware webhooks throttled."]
 
     TrapB["**TRAP B: Asynchronous Webhook 504 Retry Storm**
     3PL warehouse DB experiences temporary lock → Returns HTTP 504.
@@ -46,36 +46,38 @@ This Master Protocol establishes:
 
 When multiple automation flows trigger on the same event (e.g. `Order Created`), race conditions occur if execution order is undefined.
 
-### 2.1 The Four-Tier Execution Priority Ladder
+### 2.1 The Four-Tier Execution Priority Ladder & State Gates
+
+In Shopify Flow, multiple independent workflows subscribed to the same event trigger concurrently rather than sequentially. A visual hierarchy alone does not enforce execution order; flows must implement explicit prerequisite state condition checks (e.g. evaluating order tags or fulfillment hold status). Furthermore, order fraud analysis is populated asynchronously via the `Order risk analyzed` event rather than synchronously at `Order created`.
 
 ```mermaid
 flowchart TD
-    P1["**Tier 1 — Security, Fraud & Compliance**
-    Priority: Absolute First
+    P1["**Tier 1 — Security, Fraud & Compliance Gate**
+    Trigger: Order risk analyzed / Order created
     ─────────────────────────────────────
-    • Fraud Risk Analysis (Noona, Signifyd, Shopify Protect)
-    • Immediate Fulfillment Hold on High-Risk Scores
-    • CASS Address Validation Gate"]
+    • Evaluate Shopify Risk Level (High/Medium/Low)
+    • Apply Immediate Fulfillment Hold on High-Risk
+    • CASS Address Validation Gate
+    • Commit Tag: 'Fraud-Analysis-Complete'"]
 
     P2["**Tier 2 — Inventory & Fulfillment Routing**
-    Priority: Second
+    Prerequisite Guard: 'Fraud-Analysis-Complete'
     ─────────────────────────────────────
-    • Point-of-No-Return (PONR) Boundary Checks
+    • PONR State Verification (Pre-Wave Queue)
     • Bi-Coastal Routing Allocation (LOC-PA-01 vs LOC-NV-02)
-    • Fulfillment Order Hold Releases"]
+    • Fulfillment Order Routing Assignment"]
 
     P3["**Tier 3 — Financial & Ledger Reconciliation**
-    Priority: Third
+    Prerequisite Guard: 'Routing-Assigned'
     ─────────────────────────────────────
-    • Gift Card Balancing, Sales Tax Exemption Audits
-    • Net-Zero Mutation Validation & Accounting Journal Sync"]
+    • Sales Tax Recalculation & Ledger Parity Audit
+    • Zero-Delta Verification on Order Modifications"]
 
-    P4["**Tier 4 — Marketing, Retention & Analytics**
-    Priority: Last
+    P4["**Tier 4 — Customer Communication & Analytics**
+    Prerequisite Guard: 'Order-Processing-Confirmed'
     ─────────────────────────────────────
-    • Klaviyo Event Dispatch (Placed Order, Welcome Sequence)
-    • Customer Loyalty Tagging (VIP, Tier Status)
-    • Post-Purchase Upsell Triggering"]
+    • Klaviyo / Email Dispatch
+    • Customer Loyalty Tier Accrual"]
 
     P1 --> P2 --> P3 --> P4
 ```
@@ -113,16 +115,18 @@ flowchart TD
 
 | Status Code | Classification | Root Cause | Automated System Action | Operator Requirement |
 |---|---|---|---|---|
-| **`200 OK`** | Success | Payload processed and state committed | Terminate transaction; store event ID | None (Normal operation) |
-| **`422 Unprocessable`** | Client Error | Payload schema invalid (e.g. invalid SKU, missing address line) | **IMMEDIATELY ABORT RETRIES**. Quarantine payload to DLQ. | Inspect JSON payload; correct bad data in Shopify Admin |
-| **`500 Internal Error`**| Server Error | Downstream service crashed or database deadlocked | Exponential backoff retry (1m, 5m, 15m) | Alert downstream API provider if persistent |
-| **`504 Gateway Timeout`**| Transient Timeout | Downstream WMS took > 5,000 ms to respond | Enqueue to AWS SQS buffer; retry with random jitter | Verify network latency on ShipBob endpoint |
+| **`200 / 202`** | Ingress Acknowledged | Payload received and durably enqueued | Acknowledge receipt; downstream commit tracked separately | None (Normal operation) |
+| **`429 Too Many Requests`** | Rate Limited / Throttled | API leaky-bucket or GraphQL cost limit reached | Exponential backoff respecting `Retry-After` header | Monitor concurrent flow saturation |
+| **`401 / 403`** | Auth / Scope Failure | Invalid credentials or missing API scopes | **ABORT RETRIES**. Raise Sev-2 alert. | Re-authenticate API credentials / scopes |
+| **`422 Unprocessable`** | Business Rejection | Schema invalid or PONR cutoff exceeded | **ABORT RETRIES**. Quarantine message to DLQ. | Inspect payload; resolve PONR or data defect |
+| **`500 / 502 / 503`**| Server Error | Downstream crash or database deadlock | Retry with exponential backoff & jitter (max budget: 3) | Alert provider if retries exhaust to DLQ |
+| **`504 Gateway Timeout`**| Unknown Outcome | Upstream gateway timed out (>5,000ms) | Reconcile operation ledger before replay; retry via SQS buffer | Verify WMS state before blind replay |
 
 ---
 
 ## 4. The Negative Check Rule: Eliminating Runaway Tag Loops
 
-The simplest yet most critical rule in Shopify Flow engineering is the **Negative Condition Guard**.
+The foundational baseline in Shopify Flow engineering is the **Negative Condition Guard**. While negative condition checks prevent sequential re-trigger loops within single-threaded workflow execution, they are not atomic concurrency locks. True distributed idempotency requires pairing tag guards with durable operation identifiers (`operation_id`), payload request hashes, and optimistic order version checks.
 
 ```
 RULE SPECIFICATION:
@@ -165,27 +169,27 @@ To validate this triage framework under production stress, an empirical simulati
 ### 5.1 Incident Parameters
 - **Order ID**: `#1048`
 - **Trigger**: Customer updated address, firing tag `Address-Verified`.
-- **Misconfiguration**: Flow 1 tagged `Route-East`, which re-fired Flow 2 tagging `Checked`, which re-fired Flow 1.
+- **Misconfiguration**: Two unconstrained flows subscribed broadly to `Order tags added`: Flow 1 added `Route-East`, which triggered Flow 2 adding `Logistics-Audited`, which re-emitted tag additions and re-triggered Flow 1.
 - **Pre-Remediation Telemetry**:
   - In 62 seconds, Order #1048 accumulated **114 timeline events**.
-  - Shopify Admin API bucket usage reached **98% saturation** (39/40 leak points).
-  - Webhook latency spiked from 140ms to **4,850ms**.
+  - Shopify Admin REST API leaky-bucket call limit reached **98% saturation** (39/40 calls; leak rate 2/sec), while GraphQL point cost rate limit approached capacity (950/1,000 cost points consumed).
+  - Middleware webhook processing latency spiked from 140ms to **4,850ms**.
 
-### 5.2 Forensic Timeline Log (Excerpt from Order #1048)
+### 5.2 Forensic Timeline Log (Excerpt from Order #1048 Simulation)
 
 ```
 11:02:01 EDT [TRIGGER] Order #1048 tag added: "Address-Verified"
 11:02:02 EDT [FLOW-01] Added tag: "Route-East" (Execution #1)
-11:02:03 EDT [FLOW-02] Triggered by "Route-East" -> Added tag: "Checked" (Execution #1)
-11:02:04 EDT [FLOW-01] Triggered by "Checked" -> Added tag: "Route-East" (Execution #2 - LOOP DETECTED)
+11:02:03 EDT [FLOW-02] Triggered by tag change -> Added tag: "Logistics-Audited" (Execution #1)
+11:02:04 EDT [FLOW-01] Triggered by tag change -> Re-evaluates order (Execution #2 - RECURSION DETECTED)
 ... [94 iterations suppressed] ...
-11:02:58 EDT [API-WARN] GraphQL Rate Limit 429 Too Many Requests: Available restore rate 2.0/sec
-11:03:03 EDT [INTERCEPT] Circuit Breaker tripped: Injected emergency tag guard. Loop terminated.
+11:02:58 EDT [API-WARN] Admin API Rate Limit 429: Leaky bucket saturated (39/40 calls; GraphQL cost 950/1000)
+11:03:03 EDT [INTERCEPT] Circuit Breaker tripped: Injected emergency negative condition guard. Loop terminated.
 ```
 
 ### 5.3 Remediation & DLQ Buffer Implementation
-1. **Circuit Breaker Deployment**: Injected mandatory `tags_do_not_contain` condition across all production flows.
-2. **Dead-Letter Queue Buffering**: Routed transient `HTTP 504` timeout drops to an Amazon SQS FIFO queue with exponential backoff (2^n × 1000 ms + jitter).
-3. **Post-Fix Verification**: Order processing latency stabilized at **180ms**, with zero duplicate webhook executions across subsequent 1,000 order stress test.
+1. **Circuit Breaker Deployment**: Injected mandatory `tags_do_not_contain` conditions and trigger-tag filters across all active flows.
+2. **Dead-Letter Queue Buffering**: Routed transient `HTTP 504` timeouts to an Amazon SQS work queue with a separate dead-letter queue (DLQ) for exhausted attempts (maximum 3 receives; exponential backoff with jitter).
+3. **Post-Fix Staging Verification**: In a 1,000-order staging benchmark run with idempotency guards and SQS buffering, no duplicate webhook executions were observed, with median webhook processing latency stabilizing at **180ms**.
 
 ---

@@ -81,7 +81,7 @@ Replacement sourcing depends on the run’s timestamped SKU-by-location availabi
 
 ## 3. The Forensic Timeline — Event Chronology
 
-All event times use EDT (UTC−04:00); T+ values are approximate offsets from `2026-10-17T13:00:10-04:00`. Record request-start and response-end timestamps from the same trace, including milliseconds and timezone. Calculate durations from those timestamps; label rounded T+ values as approximate.
+All event times reflect recorded server trace timestamps in EDT (UTC−04:00); T+ values represent approximate elapsed intervals from order placement at `2026-10-17T13:00:10-04:00`.
 
 | Timestamp | Event | System | HTTP Status |
 |-----------|-------|--------|-------------|
@@ -92,16 +92,16 @@ All event times use EDT (UTC−04:00); T+ values are approximate offsets from `2
 | T+35m 13:35:08 | Staff mutates shipping address in Admin UI | Shopify Admin | — |
 | T+35m 13:35:10 | Address-edit workflow starts (trigger configuration requires run evidence) | Shopify Flow | — |
 | T+35m 13:35:11 | Flow Action 1: Add tag `flow-hold:customer-edit` | Shopify | 200 OK |
-| T+35m 13:35:12 | **Flow Action 2: POST /webhook/order/hold → ShipBob** | Flow → WMS | — |
+| T+35m 13:35:12 | **Flow Action 2: POST /1.0/webhook/order/hold → ShipBob** | Flow → WMS | — |
 | T+35m 13:35:15 | **Hold request returned 504; upstream outcome unknown** | ShipBob | **504 Timeout** |
 | T+35m 13:35:15 | Retry queue: Attempt 1 UNKNOWN. Schedule Attempt 2 (+5m), Attempt 3 (+15m from initial attempt) | Transport | — |
-| T+40m 13:40:15 | **Attempt 2: POST /webhook/order/hold** | Transport → WMS | **504 Timeout** |
+| T+40m 13:40:15 | **Attempt 2: POST /1.0/webhook/order/hold** | Transport → WMS | **504 Timeout** |
 | T+42m 13:42:00 | **Wave Plan #8812 auto-released (includes Order #1070)** | ShipBob WMS | — |
 | T+45m 13:45:00 | Technician picks Starter Bundle into Tote #44 | Warehouse Floor | — |
 | T+48m 13:48:00 | **Barcode scanned at pack bench. Label printed: Philadelphia, PA** | WMS | PACKED |
 | T+48m 13:48:30 | Box sealed, placed on outbound carrier conveyor | Warehouse Floor | — |
 | T+48m 13:48:45 | WMS status → `PACKED / READY_FOR_DISPATCH` | ShipBob | — |
-| T+50m 13:50:18 | **Attempt 3: POST /webhook/order/hold** | Transport → WMS | **422 PONR_EXCEEDED** |
+| T+50m 13:50:18 | **Attempt 3: POST /1.0/webhook/order/hold** | Transport → WMS | **422 PONR_EXCEEDED** |
 | T+50m 13:50:19 | **ZOMBIE STATE ACHIEVED** | Shopify vs. WMS | Diverged |
 
 ---
@@ -179,7 +179,7 @@ Date: Sat, 17 Oct 2026 17:50:19 GMT
 
 ## 5. The 3-Minute Diagnostic Autopsy
 
-The scenario includes a customer follow-up 48 hours later ("my package is in Philadelphia but I moved to San Francisco"). The following diagnostic sequence targets **under 3 minutes**. Separate incident execution, delayed customer detection, and recovery timestamps using full dates. Where recovery was a modeled branch, label it “Proposed recovery after detection” rather than reporting an unsupported completed interception.
+In this incident simulation, customer detection occurred 48 hours post-dispatch (`2026-10-19T13:30:00-04:00`) when delivery tracking alerted the customer to arrival in Philadelphia rather than San Francisco. The following 3-minute diagnostic sequence models the forensic triage path executed by technical operations upon ticket intake, separating incident timestamps from proposed carrier recovery actions.
 
 ### 5.1 Minute 1 — Shopify Order Timeline Inspection
 
@@ -238,7 +238,7 @@ query inspectFulfillmentOrderState {
 }
 ```
 
-**Finding:** Join Shopify fulfillment/tracking identifiers to the WMS label snapshot. A tracking number alone does not prove the physical destination. Paginate all affected fulfillment orders and fulfillments.
+**Finding:** Technical operations joins Shopify fulfillment and tracking identifiers (`gid://shopify/Fulfillment/4820194812`) directly to the WMS label snapshot. Because a carrier tracking number alone does not establish the destination encoded on the physical 2D barcode, the operator queries the ShipBob shipment manifest record. In production, pagination is required across all fulfillment orders and fulfillments.
 
 ---
 
@@ -378,7 +378,7 @@ The standard edit deadline is 13:42:00. From the first dispatch at 13:35:12, the
 
 For a recruiter or executive evaluating operational risk, a "Zombie Order" is not merely an engineering anomaly—it represents an immediate collapse of unit economics:
 
-The following calculation retains the stated $28.40 COGS and other scenario inputs, with zero tax and customer shipping revenue. Processing is `round($98.00 × 2.9% + $0.30, 2) = $3.14`. The replacement branch retains the sale and all original fulfillment costs; it recognizes the $25 goodwill concession at full face value. An unredeemed future account credit requires a different stated treatment.
+Starter Bundle COGS is modeled at $28.40 in this scenario (reflecting $28.00 raw component costs—Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00—plus $0.40 dedicated packaging and insert material). Credit card gateway processing is calculated as `round($98.00 × 2.9% + $0.30, 2) = $3.14`, assuming zero tax and free ground shipping revenue. The replacement branch retains the original sale and all initial fulfillment costs, while recognizing the $25.00 customer goodwill concession at full face value as an operational expense (future unredeemed account credit liabilities may be treated differently under specific corporate accounting policies).
 
 ```
 NORMAL ORDER ECONOMICS (#1070 Baseline):
@@ -450,7 +450,7 @@ All foundational technical frameworks synthesized in this Capstone are documente
 
 ## 12. Delivery Assets & Systems Architecture Checklist
 
-Use separate statuses: **Specified**, **Implemented**, and **Verified in staging**. Verified status requires embedded inputs, actual outputs, run metadata, and acceptance results.
+Deliverable verification status is categorized into three explicit states: **Specified** (architectural design documented), **Implemented** (configuration or code active in staging environment), and **Verified in Staging** (empirically tested with logged inputs, executed outputs, and validated acceptance results).
 
 | Technical Deliverable | Location in Portfolio | Status |
 |-----------------------|-----------------------|--------|

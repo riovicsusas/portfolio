@@ -31,10 +31,10 @@ flowchart TD
 
 ### 1.2 The Engineering Solution: Matrixify Non-Destructive MERGE
 This Master Protocol establishes strict data hygiene standards:
-1. **Mandatory Plain Text Coercion**: Forcing string-literal formatting (`="'850012345678'"`) to prevent IEEE 754 numeric corruption.
-2. **Handle Immutability Locks**: Permanent programmatic protection of production URLs.
-3. **Non-Destructive Matrixify MERGE**: Using targeted column updates that never wipe unspecified metafields or live inventory.
-4. **10% Canary Batch Verification**: Pre-flight physical scanning before full-catalog deployment.
+1. **Mandatory Plain Text Schema Formatting**: Preserving barcodes as pure text strings without mathematical coercion, apostrophe artifacts, or formula wrappers.
+2. **Handle Immutability Locks**: Permanent programmatic protection of live storefront URLs and SEO canonical paths.
+3. **Targeted Matrixify MERGE Operations**: Using explicit `Command: MERGE` row operations to update specific columns without overwriting omitted attributes or desynchronizing unreserved inventory.
+4. **16.67% Canary Batch Verification**: Pre-flight verification on 2 of 12 catalog variants before full batch release.
 
 ---
 
@@ -103,34 +103,34 @@ function sanitizeBarcode(rawVal) {
 
 ## 4. Safe Matrixify MERGE Lifecycle & Execution SOP
 
-Standard native Shopify CSV imports execute a destructive **REPLACE** operation: any column omitted from the uploaded CSV is wiped clean or reset to zero in the database.
+In standard native Shopify CSV imports, updating partial attributes can inadvertently overwrite unlisted fields or reset inventory levels if blank cells are imported.
 
-Matrixify (Excelify) enables atomic, non-destructive **MERGE** execution:
+Matrixify provides targeted, non-destructive catalog updates by specifying a `Command` column with row-level operations (`MERGE`, `UPDATE`, `DELETE`, or `NEW`). Rows are matched by primary key (`ID`, `Handle`, or `Variant SKU`). In a `MERGE` operation, Matrixify updates only the populated cells in each row, leaving omitted columns, unlisted variants, and untouched metafields intact. Note that Matrixify imports process rows sequentially via API batches rather than executing a globally atomic single-transaction rollback.
 
 ```mermaid
 flowchart TD
     G1["**Gate 1: Targeted Column Pruning**
-    Strip all non-essential columns from export.
-    Only include: ID, Handle, and the exact fields being mutated.
-    Never import full master exports."] --> G2
+    Strip all unneeded columns from import file.
+    Include only primary keys (ID, Handle, SKU)
+    and exact fields undergoing mutation."] --> G2
 
-    G2["**Gate 2: Header Command Configuration**
-    Set sheet header row: 'Command: MERGE'
-    Shopify updates only specified cells;
-    leaves all other database fields untouched."] --> G3
+    G2["**Gate 2: Matrixify Command Configuration**
+    Set column header 'Command' with row value 'MERGE'.
+    Updates only populated fields;
+    preserves unlisted metafields and inventory."] --> G3
 
-    G3["**Gate 3: Automated Pre-Flight Schema Audit**
-    Run regex linters against 100% of rows.
-    Zero blocking errors permitted before proceeding."] --> G4
+    G3["**Gate 3: Automated Pre-Flight Schema Linter**
+    Execute checksum and regex linters against 100% of rows.
+    Zero blocking errors permitted before deployment."] --> G4
 
-    G4["**Gate 4: 10% Canary Batch Test**
-    Export 2 variants → Import via Matrixify
-    Verify on storefront + scan physical barcode
-    in ShipBob WMS testing scanner."] --> G5
+    G4["**Gate 4: 16.67% Canary Batch Test**
+    Import 2 of 12 variants via Matrixify.
+    Verify storefront response and scan barcode
+    against ShipBob WMS test terminal."] --> G5
 
-    G5["**Gate 5: Production Batch Deployment & Audit Log Archival**
-    Deploy remaining 90%
-    Archive CSV diff in secure audit vault."]
+    G5["**Gate 5: Full Production Deployment (83.33%)**
+    Deploy remaining 10 variants.
+    Archive audit diff and validation logs."]
 
     G5 --> Done(["✅ Catalog Deployment Complete"])
 ```
@@ -151,19 +151,21 @@ To validate this protocol under audit conditions, an empirical mutation was exec
 09:15:15 EDT [AUDIT-STOP] Pre-flight failed: 3 blocking errors identified. Import aborted.
 ```
 
-### 5.2 Remediation & Master Diff (Post-Sanitization)
+### 5.2 Remediation & Master Diff (Authoritative Recovery)
+
+Damaged barcode entries were blocked by pre-flight linters and recovered from the authoritative SKU catalog mapping table rather than mathematical inference:
 
 | SKU Code | Variant Name | Field Mutated | Pre-Audit Raw Value | Post-Sanitization Value | Verification |
 |---|---|---|---|---|---|
-| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | Barcode | `8.40001E+11` (Float) | `'840001040001` (String) | PASSED (UPC-A Verified) |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | Barcode | `84000103000` (11 Digits) | `'840001030001` (Restored) | PASSED (UPC-A Check Digit Verified) |
-| `SYN-TMBL-MO` | Tumbler Matte Obsidian | Handle | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | PASSED (SEO Protected) |
-| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | Price | $40.00 | $42.00 | PASSED (Margin > 79%) |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | Cost | $13.50 | $12.50 | PASSED (COGS Reconciled) |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | Barcode | `8.40001E+11` (Scientific Notation) | Authoritative Master UPC String | PASSED (Resolved from Master Mapping) |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | Barcode | `84000103000` (11 Digits - Truncated) | Authoritative Master UPC String | PASSED (Resolved from Master Mapping) |
+| `SYN-TMBL-MO` | Tumbler Matte Obsidian | Handle | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | PASSED (Canonical Handle Restored) |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | Price | $40.00 | $42.00 | PASSED (Gross Margin: 79.76% at $8.50 COGS) |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | Cost | $13.50 | $12.50 | PASSED (Reconciled to Production COGS) |
 
-### 5.3 Post-Import Production Verification (09:42:15 EDT)
-- **Storefront HTTP Response**: **200 OK** on all 12 URLs (0 broken links, 0 SEO 404s).
-- **Physical WMS Barcode Test**: 12/12 physical scanner tests verified in ShipBob Allentown testing terminal.
-- **Inventory Variance**: **0 units** (Zero unlinked stock, zero ATS overwrite).
+### 5.3 Post-Import Verification Protocol & Acceptance Criteria
+- **Storefront URL Health**: 100% of product handles must return HTTP 200 OK across desktop and mobile storefront routes (0 broken links, 0 redirects to 404).
+- **WMS Scanner Test Protocol**: Sample barcodes from the 16.67% canary batch (2 variants) and subsequent batch must scan cleanly on handheld WMS laser terminals without check-digit exceptions.
+- **Inventory Variance Target**: 0 unlinked units and zero Available-to-Sell stock overwrites during MERGE execution.
 
 ---
