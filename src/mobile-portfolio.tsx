@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react'
 import { PortfolioTemplate, type PortfolioBadge } from '../components/ui/portfolio-hero'
 import { SectionCards } from './section-cards'
 import './mobile-portfolio.css'
@@ -9,6 +10,22 @@ const badges: PortfolioBadge[] = [
   { label: 'WAREHOUSE ROUTING' }, { label: 'SYSTEMS THINKING' },
   { label: 'CUSTOMER OPERATIONS' },
 ]
+function MobileDailyDrivers() {
+  const slot = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const drivers = document.querySelector<HTMLElement>('.drivers-logos')
+    const host = slot.current
+    if (!drivers || !host || !drivers.parentNode) return
+    const originalParent = drivers.parentNode
+    const originalNext = drivers.nextSibling
+    host.appendChild(drivers)
+    return () => {
+      originalParent.insertBefore(drivers, originalNext?.parentNode === originalParent ? originalNext : null)
+    }
+  }, [])
+  return <div className='mobile-drivers-slot' ref={slot} />
+}
+
 export default function MobilePortfolio() {
   return <PortfolioTemplate
     name="Riovic Matthew Susas"
@@ -22,6 +39,7 @@ export default function MobilePortfolio() {
       { label: 'Upwork', icon: 'images/professional/upwork.svg', href: 'contact/' },
     ]}
     badges={badges} autoplay={0} dragHint={false}
+    dailyDrivers={<MobileDailyDrivers />}
     sectionContent={<SectionCards layout='stack' />}
   />
 }

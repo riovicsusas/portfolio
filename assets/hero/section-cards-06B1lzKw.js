@@ -366,14 +366,23 @@ function O({ layout: e }) {
 					"aria-label": "Previous portfolio cards",
 					children: /* @__PURE__ */ (0, w.jsx)(y, { size: 15 })
 				}),
-				/* @__PURE__ */ (0, w.jsxs)("span", {
-					"aria-live": "polite",
-					children: [
-						1 + Math.round(i * 2),
-						"–",
-						2 + Math.round(i * 2),
-						" / 4"
-					]
+				/* @__PURE__ */ (0, w.jsx)("div", {
+					className: "desktop-page-dots",
+					role: "group",
+					"aria-label": "Portfolio carousel pages",
+					children: [0, 1].map((e) => /* @__PURE__ */ (0, w.jsx)("button", {
+						type: "button",
+						className: "desktop-page-dot",
+						"aria-label": `Show portfolio cards ${e * 2 + 1} and ${e * 2 + 2}`,
+						"aria-current": (i < .5 ? 0 : 1) === e ? "true" : "false",
+						onClick: () => {
+							let n = t.current;
+							n && n.scrollTo({
+								left: e === 0 ? 0 : n.scrollWidth - n.clientWidth,
+								behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+							});
+						}
+					}, e))
 				}),
 				/* @__PURE__ */ (0, w.jsx)("button", {
 					type: "button",

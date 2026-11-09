@@ -439,6 +439,7 @@ export type PortfolioTemplateProps = {
   badges?: PortfolioBadge[];
   cases?: ShowcaseItem[];
   sectionContent?: React.ReactNode;
+  dailyDrivers?: React.ReactNode;
   /** "auto" follows the `dark` class on <html> (shadcn / 21st convention). */
   theme?: "dark" | "light" | "auto";
   /** Change this value to drop the badges again. */
@@ -890,6 +891,7 @@ export function PortfolioTemplate(props: PortfolioTemplateProps) {
               <Bio text={bio} ink={t.ink} />
             </p>
 
+            {props.dailyDrivers}
             <a className="mobile-connect glowing-shadow connect-glow" href="contact/">Let’s Connect <ArrowUpRight color="currentColor" /></a>
             <div className="mobile-professional-links mt-8 flex flex-wrap gap-4 @6xl:col-start-1 @6xl:row-start-2 @6xl:mt-7">
               {links.map((l) => (

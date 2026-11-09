@@ -1,6 +1,6 @@
 import { r as e, t } from "./rolldown-runtime-QGRDbDUS.js";
 import { n, t as r } from "./jsx-runtime-s04k_HfJ.js";
-import { t as i } from "./section-cards-igEGSIyX.js";
+import { t as i } from "./section-cards-06B1lzKw.js";
 // node_modules/matter-js/build/matter.js
 var a = /* @__PURE__ */ t(((e, t, n) => {
 	(function(n, r) {
@@ -3173,6 +3173,7 @@ function T(e) {
 									ink: T.ink
 								})
 							}),
+							e.dailyDrivers,
 							/* @__PURE__ */ (0, c.jsxs)("a", {
 								className: "mobile-connect glowing-shadow connect-glow",
 								href: "contact/",
@@ -3238,6 +3239,20 @@ var E = [
 	{ label: "CUSTOMER OPERATIONS" }
 ];
 function D() {
+	let e = (0, o.useRef)(null);
+	return (0, o.useLayoutEffect)(() => {
+		let t = document.querySelector(".drivers-logos"), n = e.current;
+		if (!t || !n || !t.parentNode) return;
+		let r = t.parentNode, i = t.nextSibling;
+		return n.appendChild(t), () => {
+			r.insertBefore(t, i?.parentNode === r ? i : null);
+		};
+	}, []), /* @__PURE__ */ (0, c.jsx)("div", {
+		className: "mobile-drivers-slot",
+		ref: e
+	});
+}
+function O() {
 	return /* @__PURE__ */ (0, c.jsx)(T, {
 		name: "Riovic Matthew Susas",
 		role: "E-commerce Systems Analyst",
@@ -3268,7 +3283,8 @@ function D() {
 		badges: E,
 		autoplay: 0,
 		dragHint: !1,
+		dailyDrivers: /* @__PURE__ */ (0, c.jsx)(D, {}),
 		sectionContent: /* @__PURE__ */ (0, c.jsx)(i, { layout: "stack" })
 	});
 }
-export { D as default };
+export { O as default };

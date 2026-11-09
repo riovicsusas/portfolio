@@ -55,3 +55,11 @@
 .mobile-showcase-card.glowing-shadow { --gs-radius: 20px; }
 .mobile-showcase-controls > .glowing-shadow { --gs-radius: 50%; color: var(--text); background: var(--bg); }
 .mobile-portfolio .glowing-shadow:active::before { opacity: .4; }
+
+/* A smaller logo belt sits between the biography and contact CTA. */
+.mobile-drivers-slot { margin: 20px 0 16px; min-width: 0; }
+body.home-starfield .mobile-drivers-slot .drivers-logos { width: 100%; margin: 0; padding: 4px 0; }
+.home-starfield .mobile-drivers-slot .logo-belt-group { gap: 16px; padding-right: 16px; }
+.home-starfield .mobile-drivers-slot .tool-chip { width: 44px; height: 36px; border-radius: 10px; }
+.home-starfield .mobile-drivers-slot .tool-chip img { width: 22px; height: 22px; }
+.mobile-drivers-slot + .mobile-connect { margin-top: 0; }

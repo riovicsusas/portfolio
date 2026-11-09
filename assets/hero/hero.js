@@ -1,7 +1,7 @@
 import { r as e, t } from "./rolldown-runtime-QGRDbDUS.js";
 import { n, t as r } from "./jsx-runtime-s04k_HfJ.js";
 import { t as i } from "./scheduler-oVI243f0.js";
-import { n as a, t as o } from "./section-cards-igEGSIyX.js";
+import { n as a, t as o } from "./section-cards-06B1lzKw.js";
 // node_modules/react-dom/cjs/react-dom.production.js
 var s = /* @__PURE__ */ t(((e) => {
 	var t = n();
@@ -14012,14 +14012,6 @@ var wd = (...e) => e.filter(Boolean).join(" "), Td = "focus-visible:ring-ring/60
 				children: /* @__PURE__ */ (0, W.jsxs)("div", {
 					className: "space-y-6 lg:max-w-lg",
 					children: [
-						/* @__PURE__ */ (0, W.jsxs)("span", {
-							className: "bg-card text-primary border-border inline-flex h-6.5 w-fit items-center gap-1 rounded-full border px-2 text-xs font-medium",
-							children: [/* @__PURE__ */ (0, W.jsxs)("span", {
-								className: "relative inline-flex size-1.5",
-								"aria-hidden": "true",
-								children: [/* @__PURE__ */ (0, W.jsx)("span", { className: "bg-primary/40 absolute -inset-0.5 rounded-full opacity-75 motion-safe:animate-[ping_1.8s_cubic-bezier(0,0,0.2,1)_infinite]" }), /* @__PURE__ */ (0, W.jsx)("span", { className: "bg-primary relative inline-flex size-1.5 rounded-full" })]
-							}), i]
-						}),
 						/* @__PURE__ */ (0, W.jsxs)("h1", {
 							className: "mb-2 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-[64px] lg:font-bold",
 							children: [
@@ -14463,7 +14455,7 @@ var wd = (...e) => e.filter(Boolean).join(" "), Td = "focus-visible:ring-ring/60
 			]
 		}) : this.props.children;
 	}
-}, Qf = (0, d.lazy)(() => import("./mobile-portfolio-unQnb4KD.js"));
+}, Qf = (0, d.lazy)(() => import("./mobile-portfolio-ClNXO8Ec.js"));
 function $f() {
 	let [e, t] = (0, d.useState)(() => window.matchMedia("(max-width: 767px)").matches);
 	return (0, d.useEffect)(() => {

@@ -29,7 +29,12 @@ export function SectionCards({ layout }: { layout: 'stack' | 'carousel' }) {
     </div>
     <div className='desktop-section-controls'>
       <button type='button' onClick={() => move(-1)} disabled={position < .01} aria-label='Previous portfolio cards'><ArrowLeft size={15} /></button>
-      <span aria-live='polite'>{1 + Math.round(position * 2)}–{2 + Math.round(position * 2)} / 4</span>
+      <div className='desktop-page-dots' role='group' aria-label='Portfolio carousel pages'>
+        {[0, 1].map(page => <button key={page} type='button' className='desktop-page-dot'
+          aria-label={`Show portfolio cards ${page * 2 + 1} and ${page * 2 + 2}`}
+          aria-current={(position < .5 ? 0 : 1) === page ? 'true' : 'false'}
+          onClick={() => { const el = track.current; if (el) el.scrollTo({ left: page === 0 ? 0 : el.scrollWidth - el.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }) }} />)}
+      </div>
       <button type='button' onClick={() => move(1)} disabled={position > .99} aria-label='Next portfolio cards'><ArrowRight size={15} /></button>
     </div>
   </section>

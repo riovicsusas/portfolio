@@ -118,14 +118,6 @@ export const HeroSection44 = ({
       <div className='max-sm:pt-20 sm:py-16 lg:pt-32 lg:pb-24'>
         <div className='mx-auto max-w-5xl px-4 sm:px-6 lg:px-8'>
           <div className='space-y-6 lg:max-w-lg'>
-            <span className='bg-card text-primary border-border inline-flex h-6.5 w-fit items-center gap-1 rounded-full border px-2 text-xs font-medium'>
-              <span className='relative inline-flex size-1.5' aria-hidden='true'>
-                <span className='bg-primary/40 absolute -inset-0.5 rounded-full opacity-75 motion-safe:animate-[ping_1.8s_cubic-bezier(0,0,0.2,1)_infinite]' />
-                <span className='bg-primary relative inline-flex size-1.5 rounded-full' />
-              </span>
-              {availabilityLabel}
-            </span>
-
             <h1 className='mb-2 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-[64px] lg:font-bold'>
               <GreetingWord greetings={greetings} />, I’m {name}.
             </h1>
