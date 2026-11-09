@@ -1,6 +1,6 @@
 # Workstream A: Freight Tariffs & Logistics Routing Evidence
 
-**Generated:** 2026-11-09T16:33:42.557Z  
+**Generated:** 2026-11-09T16:49:38.392Z  
 **Classification:** Public Reference Tariffs & Deterministic Mathematical Calculation  
 **Sources:**
 - **USPS Notice 123** (Effective January 21, 2024): USPS Ground Advantage Commercial Price List
