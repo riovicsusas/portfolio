@@ -3108,7 +3108,7 @@ function T(e) {
 		style: {
 			background: "transparent",
 			color: T.ink,
-			fontFamily: "'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+			fontFamily: "'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
 			letterSpacing: "-0.05em"
 		},
 		children: /* @__PURE__ */ (0, c.jsxs)("div", {

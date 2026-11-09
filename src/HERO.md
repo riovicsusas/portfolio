@@ -42,3 +42,7 @@ Reduced motion renders static badges instead of starting the physics engine. The
 `npm run build` first runs `scripts/generate-homepage-data.mjs`, which refreshes `src/homepage-content.generated.json` from the existing project catalogue, update feed, and testimonial HTML. Project thumbnails follow the feed's project order (deduplicated, first three), then catalogue order as a fallback. Testimonial portraits reuse the first three existing testimonial image URLs. Failed external image loads receive local illustrative placeholders. About uses the profile photo and local artwork; Latest Updates uses the first three feed entries’ own images, or their linked project thumbnails when no update-specific image is provided. Only `.connect-glow` retains animated glow; other homepage controls retain visible static borders and focus outlines.
 
 The desktop specialty badge is omitted. Carousel pagination uses two clickable dots for the two pairs of cards. Mobile Daily Drivers reuse the original strip in a smaller format between the bio and contact CTA, preserving existing animation and logo-label interactions.
+
+## Typography
+
+All HTML entry pages load `css/typography.css` after their layout styles. It defines local font faces and the shared hierarchy: Space Grotesk 700 for primary headings, Space Grotesk 500 for section/card headings, Manrope 400 for body text, and Manrope 500/600 for labels and controls. Local files and licenses are in `fonts/`. Existing code and icon fonts are preserved. Regenerate the résumé PDF after modifying its typography.
