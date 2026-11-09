@@ -13,10 +13,12 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "noEmit": true
+    "noEmit": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src",
-    "components/ui/shadcn-studio-hero-section-44.tsx", "components/ui/hero-lanyard.tsx"
+    "components/ui/shadcn-studio-hero-section-44.tsx",
+    "components/ui/hero-lanyard.tsx"
   ]
 }

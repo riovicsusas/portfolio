@@ -80,6 +80,7 @@ export type HeroSection44Props = {
   connectAction?: ActionLink
   brandLogos?: BrandLogo[]
   className?: string
+  sectionContent?: ReactNode
 }
 
 // Fallbacks so the component still renders when mounted without props (e.g. in a preview sandbox).
@@ -101,7 +102,8 @@ export const HeroSection44 = ({
   downloadAction = { label: 'Download CV', href: '#' },
   connectAction = { label: "Let's connect", href: '#' },
   brandLogos = DEFAULT_BRAND_LOGOS,
-  className
+  className,
+  sectionContent
 }: HeroSection44Props) => {
   const [showCard, setShowCard] = useState(false)
   useEffect(() => {
@@ -146,7 +148,7 @@ export const HeroSection44 = ({
               <GlowingShadow
                 href={connectAction.href}
                 className={cn(
-                  'border-border bg-card group inline-flex h-11 items-center justify-center gap-2.5 rounded-full border pr-4 pl-4 text-base font-medium whitespace-nowrap shadow-sm transition-[padding] duration-300 hover:pl-2 focus-visible:pl-2',
+                  'connect-glow border-border bg-card group inline-flex h-11 items-center justify-center gap-2.5 rounded-full border pr-4 pl-4 text-base font-medium whitespace-nowrap shadow-sm transition-[padding] duration-300 hover:pl-2 focus-visible:pl-2',
                   focusRing
                 )}
               >
@@ -159,12 +161,8 @@ export const HeroSection44 = ({
                 {connectAction.label}
               </GlowingShadow>
             </div>
-            <nav className='hero-page-links' aria-label='Explore portfolio'>
-              <GlowingShadow href='latest/'>Latest Updates <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
-              <GlowingShadow href='projects/'>Projects <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
-              <GlowingShadow href='about/'>About Me <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
-              <GlowingShadow href='testimonials/'>Testimonials <ArrowUpRightIcon aria-hidden='true' size={15} /></GlowingShadow>
-            </nav>
+            {sectionContent}
+
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { r as e, t } from "./rolldown-runtime-QGRDbDUS.js";
 import { n, t as r } from "./jsx-runtime-s04k_HfJ.js";
 import { t as i } from "./scheduler-oVI243f0.js";
-import { n as a, t as o } from "./arrow-up-right-CvLP1RWX.js";
+import { n as a, t as o } from "./section-cards-igEGSIyX.js";
 // node_modules/react-dom/cjs/react-dom.production.js
 var s = /* @__PURE__ */ t(((e) => {
 	var t = n();
@@ -13915,28 +13915,16 @@ function bd() {
 	return e;
 }
 // node_modules/motion/dist/es/react.mjs
-var xd = /* @__PURE__ */ e(u(), 1), Sd = yd, Cd = {
-	name: "arrow-right",
-	size: 24,
-	node: [["path", {
-		d: "M5 12h14",
-		key: "1ays0h"
-	}], ["path", {
-		d: "m12 5 7 7-7 7",
-		key: "xquz4c"
-	}]]
-};
-Cd.node;
-var wd = a(Cd);
+var xd = /* @__PURE__ */ e(u(), 1), Sd = yd;
 // components/ui/glowing-shadow.tsx
-function Td({ className: e = "", ...t }) {
+function Cd({ className: e = "", ...t }) {
 	return /* @__PURE__ */ (0, W.jsx)("a", {
 		...t,
 		className: `glowing-shadow ${e}`
 	});
 }
 // components/ui/shadcn-studio-hero-section-44.tsx
-var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60 focus-visible:border-ring outline-none focus-visible:ring-[3px]", Od = (0, d.lazy)(() => import("./hero-lanyard-COu3Fdyp.js")), kd = class extends d.Component {
+var wd = (...e) => e.filter(Boolean).join(" "), Td = "focus-visible:ring-ring/60 focus-visible:border-ring outline-none focus-visible:ring-[3px]", Ed = (0, d.lazy)(() => import("./hero-lanyard-COu3Fdyp.js")), Dd = class extends d.Component {
 	state = { failed: !1 };
 	static getDerivedStateFromError() {
 		return { failed: !0 };
@@ -13948,7 +13936,7 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			alt: ""
 		}) : this.props.children;
 	}
-}, Ad = ({ greetings: e, intervalMs: t = 2200 }) => {
+}, Od = ({ greetings: e, intervalMs: t = 2200 }) => {
 	let [n, r] = (0, d.useState)(0), i = bd();
 	return (0, d.useEffect)(() => {
 		if (i || e.length < 2) return;
@@ -13992,31 +13980,31 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			}, e[n])
 		})]
 	})] });
-}, jd = "https://cdn.shadcnstudio.com/ss-assets/template/landing-page/zolt", Md = Array.from({ length: 20 }, (e, t) => {
+}, kd = "https://cdn.shadcnstudio.com/ss-assets/template/landing-page/zolt", Ad = Array.from({ length: 20 }, (e, t) => {
 	let n = String(t + 1).padStart(2, "0");
 	return {
-		image: `${jd}/logo-${n}.png`,
+		image: `${kd}/logo-${n}.png`,
 		name: `Tech stack logo ${n}`
 	};
-}), Nd = ({ greetings: e = [
+}), jd = ({ greetings: e = [
 	"Hello",
 	"नमस्ते",
 	"你好",
 	"Ciao"
-], name: t = "Zolt", role: n = "Design engineer", description: r = "Design engineer based in Austin. I don't just bridge design and engineering - I own the entire experience, from the first sketch to the final shipped product.", availabilityLabel: i = "Available", profileImage: a = `${jd}/profile.png`, downloadAction: s = {
+], name: t = "Zolt", role: n = "Design engineer", description: r = "Design engineer based in Austin. I don't just bridge design and engineering - I own the entire experience, from the first sketch to the final shipped product.", availabilityLabel: i = "Available", profileImage: o = `${kd}/profile.png`, downloadAction: s = {
 	label: "Download CV",
 	href: "#"
 }, connectAction: c = {
 	label: "Let's connect",
 	href: "#"
-}, brandLogos: l = Md, className: u }) => {
-	let [f, p] = (0, d.useState)(!1);
+}, brandLogos: l = Ad, className: u, sectionContent: f }) => {
+	let [p, m] = (0, d.useState)(!1);
 	return (0, d.useEffect)(() => {
-		let e = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)"), t = () => p(e.matches);
+		let e = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)"), t = () => m(e.matches);
 		return t(), e.addEventListener("change", t), () => e.removeEventListener("change", t);
 	}, []), /* @__PURE__ */ (0, W.jsxs)("section", {
 		"aria-label": "Introduction",
-		className: Ed("portfolio-hero bg-background text-foreground overflow-x-clip lg:relative", u),
+		className: wd("portfolio-hero bg-background text-foreground overflow-x-clip lg:relative", u),
 		children: [/* @__PURE__ */ (0, W.jsx)("div", {
 			className: "max-sm:pt-20 sm:py-16 lg:pt-32 lg:pb-24",
 			children: /* @__PURE__ */ (0, W.jsx)("div", {
@@ -14035,7 +14023,7 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 						/* @__PURE__ */ (0, W.jsxs)("h1", {
 							className: "mb-2 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-[64px] lg:font-bold",
 							children: [
-								/* @__PURE__ */ (0, W.jsx)(Ad, { greetings: e }),
+								/* @__PURE__ */ (0, W.jsx)(Od, { greetings: e }),
 								", I’m ",
 								t,
 								"."
@@ -14051,84 +14039,51 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 						}),
 						/* @__PURE__ */ (0, W.jsxs)("div", {
 							className: "flex items-center gap-2.5 pt-2",
-							children: [/* @__PURE__ */ (0, W.jsx)(Td, {
+							children: [/* @__PURE__ */ (0, W.jsx)(Cd, {
 								href: s.href,
-								className: Ed("border-border bg-background hover:bg-muted inline-flex h-11 items-center justify-center rounded-full border px-4 text-base font-medium whitespace-nowrap transition-colors", Dd),
+								className: wd("border-border bg-background hover:bg-muted inline-flex h-11 items-center justify-center rounded-full border px-4 text-base font-medium whitespace-nowrap transition-colors", Td),
 								children: s.label
-							}), /* @__PURE__ */ (0, W.jsxs)(Td, {
+							}), /* @__PURE__ */ (0, W.jsxs)(Cd, {
 								href: c.href,
-								className: Ed("border-border bg-card group inline-flex h-11 items-center justify-center gap-2.5 rounded-full border pr-4 pl-4 text-base font-medium whitespace-nowrap shadow-sm transition-[padding] duration-300 hover:pl-2 focus-visible:pl-2", Dd),
+								className: wd("connect-glow border-border bg-card group inline-flex h-11 items-center justify-center gap-2.5 rounded-full border pr-4 pl-4 text-base font-medium whitespace-nowrap shadow-sm transition-[padding] duration-300 hover:pl-2 focus-visible:pl-2", Td),
 								children: [/* @__PURE__ */ (0, W.jsx)("span", {
 									className: "bg-primary relative flex size-2.5 items-center justify-center overflow-hidden rounded-full transition-all duration-300 group-hover:size-6.5 group-focus-visible:size-6.5",
-									children: /* @__PURE__ */ (0, W.jsx)(wd, {
+									children: /* @__PURE__ */ (0, W.jsx)(a, {
 										"aria-hidden": "true",
 										className: "text-primary-foreground absolute size-4.5 -translate-x-3 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
 									})
 								}), c.label]
 							})]
 						}),
-						/* @__PURE__ */ (0, W.jsxs)("nav", {
-							className: "hero-page-links",
-							"aria-label": "Explore portfolio",
-							children: [
-								/* @__PURE__ */ (0, W.jsxs)(Td, {
-									href: "latest/",
-									children: ["Latest Updates ", /* @__PURE__ */ (0, W.jsx)(o, {
-										"aria-hidden": "true",
-										size: 15
-									})]
-								}),
-								/* @__PURE__ */ (0, W.jsxs)(Td, {
-									href: "projects/",
-									children: ["Projects ", /* @__PURE__ */ (0, W.jsx)(o, {
-										"aria-hidden": "true",
-										size: 15
-									})]
-								}),
-								/* @__PURE__ */ (0, W.jsxs)(Td, {
-									href: "about/",
-									children: ["About Me ", /* @__PURE__ */ (0, W.jsx)(o, {
-										"aria-hidden": "true",
-										size: 15
-									})]
-								}),
-								/* @__PURE__ */ (0, W.jsxs)(Td, {
-									href: "testimonials/",
-									children: ["Testimonials ", /* @__PURE__ */ (0, W.jsx)(o, {
-										"aria-hidden": "true",
-										size: 15
-									})]
-								})
-							]
-						})
+						f
 					]
 				})
 			})
-		}), f && /* @__PURE__ */ (0, W.jsx)(kd, { children: /* @__PURE__ */ (0, W.jsx)(d.Suspense, {
+		}), p && /* @__PURE__ */ (0, W.jsx)(Dd, { children: /* @__PURE__ */ (0, W.jsx)(d.Suspense, {
 			fallback: null,
-			children: /* @__PURE__ */ (0, W.jsx)(Od, {
-				frontImage: a,
+			children: /* @__PURE__ */ (0, W.jsx)(Ed, {
+				frontImage: o,
 				className: "mx-auto mt-8 aspect-4/5 w-full max-w-80 max-lg:hidden lg:absolute lg:-top-31 lg:right-0 lg:left-0 lg:z-10 lg:mt-0 lg:aspect-auto lg:h-182 lg:max-w-none"
 			})
 		}) })]
 	});
-}, Pd = (...e) => e.filter(Boolean).join(" "), Fd = 2, Id = 1e3, Ld = Math.PI * 2, Rd = 220, zd = 1.5, Bd = 1, Vd = .03, Hd = 130, Ud = .55, Wd = 5.5, Gd = 1, Kd = .5, qd = "var(--color-foreground, oklch(0.93 0.004 265))", Jd = "oklch(0.92 0.028 255)", Yd = "oklch(0.92 0.055 75)", Xd = [
+}, Md = (...e) => e.filter(Boolean).join(" "), Nd = 2, Pd = 1e3, Fd = Math.PI * 2, Id = 220, Ld = 1.5, Rd = 1, zd = .03, Bd = 130, Vd = .55, Hd = 5.5, Ud = 1, Wd = .5, Gd = "var(--color-foreground, oklch(0.93 0.004 265))", Kd = "oklch(0.92 0.028 255)", qd = "oklch(0.92 0.055 75)", Jd = [
 	232,
 	233,
 	238
-], Zd = [
+], Yd = [
 	221,
 	233,
 	247
-], Qd = [
+], Xd = [
 	243,
 	226,
 	194
-], $d = {
-	base: Xd,
-	cool: Zd,
-	warm: Qd
-}, ef = 600, tf = 8, nf = 640, rf = .6, af = 260, of = 4e6, sf = 676, cf = 5e3, lf = 1200, uf = .85, df = 12, ff = .05, pf = 60, Z = 24, mf = 8, hf = 1.7, gf = 1.9, _f = .42, vf = .82, yf = .18, bf = .7, xf = .6, Sf = .8, Cf = .6, wf = 1, Tf = .35, Ef = .01, Df = 6, Of = .3, kf = .3, Af = .12, jf = 1.5, Mf = .25, Nf = .75, Pf = 1.15, Ff = .8, If = .5, Lf = .5, Rf = 128, zf = 5, Bf = 987654321, Vf = 16807, Q = 2147483647, Hf = [
+], Zd = {
+	base: Jd,
+	cool: Yd,
+	warm: Xd
+}, Qd = 600, $d = 8, ef = 640, tf = .6, nf = 260, rf = 4e6, af = 676, of = 5e3, sf = 1200, cf = .85, lf = 12, uf = .05, df = 60, ff = 24, pf = 8, Z = 1.7, mf = 1.9, hf = .42, gf = .82, _f = .18, vf = .7, yf = .6, bf = .8, xf = .6, Sf = 1, Cf = .35, wf = .01, Tf = 6, Ef = .3, Df = .3, Of = .12, kf = 1.5, Af = .25, jf = .75, Mf = 1.15, Nf = .8, Pf = .5, Ff = .5, If = 128, Lf = 5, Rf = 987654321, zf = 16807, Bf = 2147483647, Vf = [
 	1,
 	0,
 	-1,
@@ -14137,15 +14092,15 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 	1,
 	1,
 	1
-], Uf = (e, t, n) => Math.max(t, Math.min(n, e)), Wf = (e, t, n) => e + (t - e) * n, Gf = (e) => e.trim().startsWith("--") ? `var(${e.trim()})` : e.trim(), Kf = (e, t) => {
+], Q = (e, t, n) => Math.max(t, Math.min(n, e)), Hf = (e, t, n) => e + (t - e) * n, Uf = (e) => e.trim().startsWith("--") ? `var(${e.trim()})` : e.trim(), Wf = (e, t) => {
 	let n = document.createElement("span");
 	n.style.display = "none", t.append(n);
 	let r = document.createElement("canvas");
 	r.width = 1, r.height = 1;
 	let i = r.getContext("2d", { willReadFrequently: !0 }), a = e.map((e, t) => {
-		let r = t === 0 ? Xd : $d[t === 1 ? "cool" : "warm"] ?? Xd;
+		let r = t === 0 ? Jd : Zd[t === 1 ? "cool" : "warm"] ?? Jd;
 		if (!i) return r;
-		n.style.color = "", n.style.color = Gf(e);
+		n.style.color = "", n.style.color = Uf(e);
 		let a = window.getComputedStyle(n).color;
 		if (!a) return r;
 		i.clearRect(0, 0, 1, 1), i.fillStyle = "#000000", i.fillStyle = a, i.fillRect(0, 0, 1, 1);
@@ -14157,67 +14112,67 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 		];
 	});
 	return n.remove(), a;
-}, qf = (e) => {
-	let t = e % Q || 1;
-	return () => (t = t * Vf % Q, t / Q);
-}, Jf = (e, t) => {
+}, Gf = (e) => {
+	let t = e % Bf || 1;
+	return () => (t = t * zf % Bf, t / Bf);
+}, Kf = (e, t) => {
 	let n = e.getContext("2d");
 	if (!n) return;
-	let [r, i, a] = t, o = Rf / 2;
-	n.clearRect(0, 0, Rf, Rf);
+	let [r, i, a] = t, o = If / 2;
+	n.clearRect(0, 0, If, If);
 	let s = n.createRadialGradient(o, o, 0, o, o, o);
-	s.addColorStop(0, `rgba(${r}, ${i}, ${a}, 1)`), s.addColorStop(.06, `rgba(${r}, ${i}, ${a}, 0.95)`), s.addColorStop(.14, `rgba(${r}, ${i}, ${a}, 0.5)`), s.addColorStop(.28, `rgba(${r}, ${i}, ${a}, 0.16)`), s.addColorStop(.55, `rgba(${r}, ${i}, ${a}, 0.04)`), s.addColorStop(1, `rgba(${r}, ${i}, ${a}, 0)`), n.fillStyle = s, n.fillRect(0, 0, Rf, Rf);
-}, Yf = (e, t, n) => {
+	s.addColorStop(0, `rgba(${r}, ${i}, ${a}, 1)`), s.addColorStop(.06, `rgba(${r}, ${i}, ${a}, 0.95)`), s.addColorStop(.14, `rgba(${r}, ${i}, ${a}, 0.5)`), s.addColorStop(.28, `rgba(${r}, ${i}, ${a}, 0.16)`), s.addColorStop(.55, `rgba(${r}, ${i}, ${a}, 0.04)`), s.addColorStop(1, `rgba(${r}, ${i}, ${a}, 0)`), n.fillStyle = s, n.fillRect(0, 0, If, If);
+}, qf = (e, t, n) => {
 	let r = Math.max(e.length - 1, 1);
 	for (let i = 0; i < e.length; i++) {
 		let a = i / r, o = [
-			Math.round(Wf(t.base[0], Wf(t.cool[0], t.warm[0], a), n)),
-			Math.round(Wf(t.base[1], Wf(t.cool[1], t.warm[1], a), n)),
-			Math.round(Wf(t.base[2], Wf(t.cool[2], t.warm[2], a), n))
+			Math.round(Hf(t.base[0], Hf(t.cool[0], t.warm[0], a), n)),
+			Math.round(Hf(t.base[1], Hf(t.cool[1], t.warm[1], a), n)),
+			Math.round(Hf(t.base[2], Hf(t.cool[2], t.warm[2], a), n))
 		];
-		Jf(e[i], o);
+		Kf(e[i], o);
 	}
-}, Xf = (e, t) => e.base[0] === t.base[0] && e.base[1] === t.base[1] && e.base[2] === t.base[2] && e.cool.every((e, n) => e === t.cool[n]) && e.warm.every((e, n) => e === t.warm[n]), Zf = (e) => {
+}, Jf = (e, t) => e.base[0] === t.base[0] && e.base[1] === t.base[1] && e.base[2] === t.base[2] && e.cool.every((e, n) => e === t.cool[n]) && e.warm.every((e, n) => e === t.warm[n]), Yf = (e) => {
 	let t = e.getContext("2d");
 	if (!t) return null;
 	let n = [];
-	for (let e = 0; e < zf; e++) {
+	for (let e = 0; e < Lf; e++) {
 		let e = document.createElement("canvas");
-		e.width = Rf, e.height = Rf, n.push(e);
+		e.width = If, e.height = If, n.push(e);
 	}
-	let r = new Float32Array(ef), i = new Float32Array(ef), a = new Float32Array(ef), o = new Float32Array(ef), s = new Float32Array(ef), c = new Float32Array(ef), l = new Float32Array(ef), u = new Float32Array(ef), d = new Float32Array(ef), f = new Float32Array(ef), p = new Float32Array(ef), m = new Float32Array(ef), h = new Uint8Array(ef), g = qf(Bf);
-	for (let e = 0; e < ef; e++) {
+	let r = new Float32Array(Qd), i = new Float32Array(Qd), a = new Float32Array(Qd), o = new Float32Array(Qd), s = new Float32Array(Qd), c = new Float32Array(Qd), l = new Float32Array(Qd), u = new Float32Array(Qd), d = new Float32Array(Qd), f = new Float32Array(Qd), p = new Float32Array(Qd), m = new Float32Array(Qd), h = new Uint8Array(Qd), g = Gf(Rf);
+	for (let e = 0; e < Qd; e++) {
 		p[e] = g(), m[e] = g();
-		let t = g() ** hf;
-		l[e] = t, u[e] = g() * Ld, d[e] = Pf * (1 + (g() - .5) * Ff), f[e] = 1 + (g() - .5) * Lf;
+		let t = g() ** Z;
+		l[e] = t, u[e] = g() * Fd, d[e] = Mf * (1 + (g() - .5) * Nf), f[e] = 1 + (g() - .5) * Ff;
 		let n = (g() + g()) / 2;
-		h[e] = Math.min(4, Math.floor(n * zf));
-		let r = g() * Ld, i = df * (.15 + t);
+		h[e] = Math.min(4, Math.floor(n * Lf));
+		let r = g() * Fd, i = lf * (.15 + t);
 		s[e] = Math.cos(r) * i, c[e] = Math.sin(r) * i;
 	}
-	let _ = ef * mf, v = new Float32Array(_ * 4), y = new Uint8Array(_), b = /* @__PURE__ */ new Int32Array(1), x = /* @__PURE__ */ new Int32Array(1), S = new Int32Array(ef), ee = performance.now(), C = {
+	let _ = Qd * pf, v = new Float32Array(_ * 4), y = new Uint8Array(_), b = /* @__PURE__ */ new Int32Array(1), x = /* @__PURE__ */ new Int32Array(1), S = new Int32Array(Qd), ee = performance.now(), C = {
 		connect: !0,
-		connectDistance: Hd,
-		count: Rd,
-		drag: Vd,
-		glow: Wd,
-		gravity: Bd,
-		palette: $d,
-		speed: Gd,
-		starSize: zd,
+		connectDistance: Bd,
+		count: Id,
+		drag: zd,
+		glow: Hd,
+		gravity: Rd,
+		palette: Zd,
+		speed: Ud,
+		starSize: Ld,
 		still: !1,
-		tint: Kd,
-		twinkle: Ud
+		tint: Wd,
+		twinkle: Vd
 	};
-	Yf(n, C.palette, C.tint);
+	qf(n, C.palette, C.tint);
 	let w = 1, T = 1, E = 0, te = !1, ne = 0, re = 0, ie = !1, ae = ee, oe = 0, se = !1, ce = !1, D = () => {
-		let e = Uf(Math.round(C.count), tf, ef);
-		return w < nf ? Math.max(tf, Math.round(e * rf)) : e;
+		let e = Q(Math.round(C.count), $d, Qd);
+		return w < ef ? Math.max($d, Math.round(e * tf)) : e;
 	}, le = (e) => {
 		for (let t = 0; t < e; t++) r[t] = p[t] * w, i[t] = m[t] * T, a[t] = 0, o[t] = 0;
 		E = e, te = !0;
 	}, ue = () => {
-		let n = e.getBoundingClientRect(), a = Math.min(window.devicePixelRatio || 1, Fd), o = w, s = T;
+		let n = e.getBoundingClientRect(), a = Math.min(window.devicePixelRatio || 1, Nd), o = w, s = T;
 		w = Math.max(1, n.width), T = Math.max(1, n.height);
 		let c = Math.max(1, Math.round(w * a)), l = Math.max(1, Math.round(T * a));
 		(e.width !== c || e.height !== l) && (e.width = c, e.height = l), t.setTransform(a, 0, 0, a, 0, 0);
@@ -14229,7 +14184,7 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 		let d = w / o, f = T / s;
 		for (let e = 0; e < E; e++) r[e] *= d, i[e] *= f;
 	}, de = () => {
-		let e = Math.max(C.connectDistance, Z);
+		let e = Math.max(C.connectDistance, ff);
 		return {
 			cell: e,
 			cols: Math.max(1, Math.ceil(w / e)),
@@ -14239,26 +14194,26 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 		let a = t * n;
 		b.length < a + 1 && (b = new Int32Array(a + 1), x = new Int32Array(a + 1)), b.fill(0, 0, a + 1), S.length < E && (S = new Int32Array(E));
 		for (let a = 0; a < E; a++) {
-			let o = Uf(Math.floor(r[a] / e), 0, t - 1), s = Uf(Math.floor(i[a] / e), 0, n - 1);
+			let o = Q(Math.floor(r[a] / e), 0, t - 1), s = Q(Math.floor(i[a] / e), 0, n - 1);
 			b[s * t + o + 1]++;
 		}
 		for (let e = 0; e < a; e++) b[e + 1] += b[e], x[e] = b[e];
 		for (let a = 0; a < E; a++) {
-			let o = Uf(Math.floor(r[a] / e), 0, t - 1), s = Uf(Math.floor(i[a] / e), 0, n - 1) * t + o;
+			let o = Q(Math.floor(r[a] / e), 0, t - 1), s = Q(Math.floor(i[a] / e), 0, n - 1) * t + o;
 			S[x[s]] = a, x[s]++;
 		}
 	}, pe = (e, t) => {
-		let n = l[e], a = af * (Cf + n * Sf), o = ne - r[e], s = re - i[e], c = o * o + s * s;
+		let n = l[e], a = nf * (xf + n * bf), o = ne - r[e], s = re - i[e], c = o * o + s * s;
 		if (c > a * a) return;
-		let u = Math.sqrt(c), d = Math.sqrt(c + sf), f = 1 - u / a, p = Tf + n * wf, m = Math.min(C.gravity * of * p / (d * d), cf) * f * f, h = o / d, g = s / d;
-		t[0] += h * m - g * m * uf, t[1] += g * m + h * m * uf;
+		let u = Math.sqrt(c), d = Math.sqrt(c + af), f = 1 - u / a, p = Cf + n * Sf, m = Math.min(C.gravity * rf * p / (d * d), of) * f * f, h = o / d, g = s / d;
+		t[0] += h * m - g * m * cf, t[1] += g * m + h * m * cf;
 	}, me = /* @__PURE__ */ new Float32Array(2), he = (e) => {
-		let t = (1 - C.drag) ** (e * pf), { speed: n } = C;
+		let t = (1 - C.drag) ** (e * df), { speed: n } = C;
 		for (let l = 0; l < E; l++) {
 			me[0] = 0, me[1] = 0, ie && pe(l, me);
 			let u = (a[l] + me[0] * e) * t, d = (o[l] + me[1] * e) * t, f = u * u + d * d;
-			if (f > lf * lf) {
-				let e = lf / Math.sqrt(f);
+			if (f > sf * sf) {
+				let e = sf / Math.sqrt(f);
 				u *= e, d *= e;
 			}
 			a[l] = u, o[l] = d, r[l] += (u + s[l] * n) * e, i[l] += (d + c[l] * n) * e, r[l] < 0 ? r[l] += w : r[l] > w && (r[l] -= w), i[l] < 0 ? i[l] += T : i[l] > T && (i[l] -= T);
@@ -14268,7 +14223,7 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			if (a >= _) return;
 			let o = r[e] - r[t], s = i[e] - i[t], c = o * o + s * s;
 			if (c > n || c === 0) return;
-			let u = (1 - Math.sqrt(c) / C.connectDistance) ** jf, d = Mf + (l[e] + l[t]) / 2 * Nf, f = Math.min(5, Math.floor(u * d * Df)), p = a * 4;
+			let u = (1 - Math.sqrt(c) / C.connectDistance) ** kf, d = Af + (l[e] + l[t]) / 2 * jf, f = Math.min(5, Math.floor(u * d * Tf)), p = a * 4;
 			v[p] = r[e], v[p + 1] = i[e], v[p + 2] = r[t], v[p + 3] = i[t], y[a] = f, a++;
 		};
 		for (let n = 0; n < t; n++) for (let r = 0; r < e; r++) {
@@ -14276,8 +14231,8 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			for (let i = a; i < s; i++) {
 				let a = S[i];
 				for (let e = i + 1; e < s; e++) o(a, S[e]);
-				for (let i = 0; i < Hf.length; i += 2) {
-					let s = r + Hf[i], c = n + Hf[i + 1];
+				for (let i = 0; i < Vf.length; i += 2) {
+					let s = r + Vf[i], c = n + Vf[i + 1];
 					if (s < 0 || s >= e || c >= t) continue;
 					let l = c * e + s, u = b[l], d = b[l + 1];
 					for (let e = u; e < d; e++) o(a, S[e]);
@@ -14287,9 +14242,9 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 		return a;
 	}, _e = (e) => {
 		let [n, r, i] = C.palette.base;
-		for (let a = 0; a < Df; a++) {
-			let o = Of * (a + 1) / Df;
-			t.strokeStyle = `rgba(${n}, ${r}, ${i}, ${o})`, t.lineWidth = kf + a * Af, t.beginPath();
+		for (let a = 0; a < Tf; a++) {
+			let o = Ef * (a + 1) / Tf;
+			t.strokeStyle = `rgba(${n}, ${r}, ${i}, ${o})`, t.lineWidth = Df + a * Of, t.beginPath();
 			let s = !1;
 			for (let n = 0; n < e; n++) {
 				if (y[n] !== a) continue;
@@ -14299,11 +14254,11 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			s && t.stroke();
 		}
 	}, ve = () => {
-		let e = (performance.now() - ee) / Id, { glow: a, starSize: o, still: s, twinkle: c } = C;
+		let e = (performance.now() - ee) / Pd, { glow: a, starSize: o, still: s, twinkle: c } = C;
 		for (let p = 0; p < E; p++) {
-			let m = l[p], g = Math.sin(s ? u[p] : e * d[p] + u[p]), _ = Uf((yf + m * vf) * (1 - c * If * (1 - g)), 0, 1);
-			if (_ <= Ef) continue;
-			let v = o * (_f + m * gf) * f[p] * a * (xf + m * bf);
+			let m = l[p], g = Math.sin(s ? u[p] : e * d[p] + u[p]), _ = Q((_f + m * gf) * (1 - c * Pf * (1 - g)), 0, 1);
+			if (_ <= wf) continue;
+			let v = o * (hf + m * mf) * f[p] * a * (yf + m * vf);
 			t.globalAlpha = _, t.drawImage(n[h[p]], r[p] - v, i[p] - v, v * 2, v * 2);
 		}
 		t.globalAlpha = 1;
@@ -14316,7 +14271,7 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 		ye(r);
 	}, xe = () => {
 		if (ce || !se) return;
-		let e = performance.now(), t = Math.min((e - ae) / Id, ff);
+		let e = performance.now(), t = Math.min((e - ae) / Pd, uf);
 		ae = e, he(t);
 		let n = 0;
 		if (C.connect) {
@@ -14343,30 +14298,30 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			ce || se === e || (se = e, e ? (ae = performance.now(), oe = requestAnimationFrame(xe)) : cancelAnimationFrame(oe));
 		},
 		setSettings: (e) => {
-			let t = e.count !== C.count, r = e.tint !== C.tint || !Xf(e.palette, C.palette);
-			C = e, r && Yf(n, e.palette, e.tint), t && le(D());
+			let t = e.count !== C.count, r = e.tint !== C.tint || !Jf(e.palette, C.palette);
+			C = e, r && qf(n, e.palette, e.tint), t && le(D());
 		}
 	};
-}, Qf = ({ children: e, className: t, color: n = qd, connect: r = !0, connectDistance: i = Hd, count: a = Rd, drag: o = Vd, glow: s = Wd, gravity: c = Bd, paused: l = !1, speed: u = Gd, starSize: f = zd, tint: p = Kd, twinkle: m = Ud }) => {
+}, Xf = ({ children: e, className: t, color: n = Gd, connect: r = !0, connectDistance: i = Bd, count: a = Id, drag: o = zd, glow: s = Hd, gravity: c = Rd, paused: l = !1, speed: u = Ud, starSize: f = Ld, tint: p = Wd, twinkle: m = Vd }) => {
 	let h = bd(), [g, _] = (0, d.useState)(h === !0);
 	(0, d.useEffect)(() => {
 		let e = window.matchMedia("(prefers-reduced-motion: reduce)"), t = () => _(e.matches);
 		return t(), e.addEventListener("change", t), () => e.removeEventListener("change", t);
 	}, []);
-	let v = (0, d.useRef)(null), y = (0, d.useRef)(null), b = (0, d.useRef)(null), [x, S] = (0, d.useState)(!0), [ee, C] = (0, d.useState)(!1), [w, T] = (0, d.useState)($d);
+	let v = (0, d.useRef)(null), y = (0, d.useRef)(null), b = (0, d.useRef)(null), [x, S] = (0, d.useState)(!0), [ee, C] = (0, d.useState)(!1), [w, T] = (0, d.useState)(Zd);
 	(0, d.useEffect)(() => {
 		let e = v.current;
 		if (!e) return;
 		let t = () => {
-			let [t, r, i] = Kf([
+			let [t, r, i] = Wf([
 				n,
-				Jd,
-				Yd
+				Kd,
+				qd
 			], e);
 			T({
-				base: t ?? Xd,
-				cool: r ?? Zd,
-				warm: i ?? Qd
+				base: t ?? Jd,
+				cool: r ?? Yd,
+				warm: i ?? Xd
 			});
 		};
 		t();
@@ -14382,7 +14337,7 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 	}, [n]), (0, d.useEffect)(() => {
 		let e = y.current;
 		if (!e) return;
-		let t = Zf(e);
+		let t = Yf(e);
 		if (b.current = t, S(t !== null), !t) return;
 		let n = new ResizeObserver(() => t.resize());
 		return n.observe(e), () => {
@@ -14404,16 +14359,16 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 		e && (e.setSettings({
 			connect: r,
 			connectDistance: Math.max(i, 1),
-			count: Uf(Math.round(a), tf, ef),
-			drag: Uf(o, 0, 1),
+			count: Q(Math.round(a), $d, Qd),
+			drag: Q(o, 0, 1),
 			glow: Math.max(s, 1),
 			gravity: Math.max(c, 0),
 			palette: w,
 			speed: Math.max(u, 0),
 			starSize: Math.max(f, .2),
 			still: g === !0,
-			tint: Uf(p, 0, 1),
-			twinkle: Uf(m, 0, 1)
+			tint: Q(p, 0, 1),
+			twinkle: Q(m, 0, 1)
 		}), e.render());
 	}, [
 		r,
@@ -14450,9 +14405,9 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			document.removeEventListener("pointermove", n), document.removeEventListener("pointerleave", r), document.removeEventListener("pointercancel", r), document.removeEventListener("pointerup", r), window.removeEventListener("blur", r);
 		};
 	}, [g]);
-	let E = Gf(n);
+	let E = Uf(n);
 	return /* @__PURE__ */ (0, W.jsxs)("div", {
-		className: Pd("relative isolate overflow-hidden", t),
+		className: Md("relative isolate overflow-hidden", t),
 		ref: v,
 		children: [x ? /* @__PURE__ */ (0, W.jsx)("div", {
 			"aria-hidden": "true",
@@ -14473,7 +14428,7 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			children: e
 		})]
 	});
-}, $f = class extends d.Component {
+}, Zf = class extends d.Component {
 	state = { failed: !1 };
 	static getDerivedStateFromError() {
 		return { failed: !0 };
@@ -14508,16 +14463,16 @@ var Ed = (...e) => e.filter(Boolean).join(" "), Dd = "focus-visible:ring-ring/60
 			]
 		}) : this.props.children;
 	}
-}, ep = (0, d.lazy)(() => import("./mobile-portfolio-CAz1p1MH.js"));
-function $() {
+}, Qf = (0, d.lazy)(() => import("./mobile-portfolio-unQnb4KD.js"));
+function $f() {
 	let [e, t] = (0, d.useState)(() => window.matchMedia("(max-width: 767px)").matches);
 	return (0, d.useEffect)(() => {
 		let e = window.matchMedia("(max-width: 767px)"), n = () => t(e.matches);
 		return e.addEventListener("change", n), () => e.removeEventListener("change", n);
 	}, []), e;
 }
-function tp() {
-	return $() ? /* @__PURE__ */ (0, W.jsx)(ep, {}) : /* @__PURE__ */ (0, W.jsx)(Nd, {
+function ep() {
+	return $f() ? /* @__PURE__ */ (0, W.jsx)(Qf, {}) : /* @__PURE__ */ (0, W.jsx)(jd, {
 		greetings: [
 			"Hello",
 			"Kumusta",
@@ -14536,20 +14491,21 @@ function tp() {
 			label: "Let’s connect",
 			href: "contact/"
 		},
-		brandLogos: []
+		brandLogos: [],
+		sectionContent: /* @__PURE__ */ (0, W.jsx)(o, { layout: "carousel" })
 	});
 }
-var np = document.getElementById("heroRoot");
-np && (0, xd.createRoot)(np).render(/* @__PURE__ */ (0, W.jsx)($f, { children: /* @__PURE__ */ (0, W.jsx)(d.Suspense, {
+var $ = document.getElementById("heroRoot");
+$ && (0, xd.createRoot)($).render(/* @__PURE__ */ (0, W.jsx)(Zf, { children: /* @__PURE__ */ (0, W.jsx)(d.Suspense, {
 	fallback: /* @__PURE__ */ (0, W.jsx)("div", {
 		className: "hero-loading",
 		children: "Loading introduction…"
 	}),
-	children: /* @__PURE__ */ (0, W.jsx)(tp, {})
+	children: /* @__PURE__ */ (0, W.jsx)(ep, {})
 }) }));
-function rp() {
-	let e = $();
-	return /* @__PURE__ */ (0, W.jsx)(Qf, {
+function tp() {
+	let e = $f();
+	return /* @__PURE__ */ (0, W.jsx)(Xf, {
 		className: "homepage-stars",
 		color: "var(--text)",
 		count: e ? 120 : 180,
@@ -14560,5 +14516,5 @@ function rp() {
 		gravity: .8
 	});
 }
-var ip = document.getElementById("starsRoot");
-ip && (0, xd.createRoot)(ip).render(/* @__PURE__ */ (0, W.jsx)(rp, {}));
+var np = document.getElementById("starsRoot");
+np && (0, xd.createRoot)(np).render(/* @__PURE__ */ (0, W.jsx)(tp, {}));

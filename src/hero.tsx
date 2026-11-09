@@ -2,6 +2,7 @@ import { Component, Suspense, lazy, useEffect, useState, type ReactNode } from '
 import { createRoot } from 'react-dom/client'
 import { HeroSection44 } from '../components/ui/shadcn-studio-hero-section-44'
 import GravityStars from '../components/ui/gravity-stars'
+import { SectionCards } from './section-cards'
 import './hero.css'
 import './glowing-shadow.css'
 
@@ -35,6 +36,7 @@ function ResponsiveHomepage() {
       downloadAction={{ label: 'View résumé', href: 'RESUME-Riovic-Matthew-TechOps-Systems-Analyst.md' }}
       connectAction={{ label: 'Let’s connect', href: 'contact/' }}
       brandLogos={[]}
+      sectionContent={<SectionCards layout='carousel' />}
     />
 }
 const mount = document.getElementById('heroRoot')

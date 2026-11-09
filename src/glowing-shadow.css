@@ -89,3 +89,9 @@
   .glowing-shadow::before, .glowing-shadow::after { animation: none; transition: none; }
   .drivers-logos .tool-chip img, .drivers-logos .tool-name { transition: none; }
 }
+
+/* Only the primary contact CTA retains the animated glow. */
+.home-starfield .glowing-shadow:not(.connect-glow) { border: 1px solid color-mix(in srgb, var(--text) 42%, transparent) !important; }
+.home-starfield .glowing-shadow:not(.connect-glow)::before,
+.home-starfield .glowing-shadow:not(.connect-glow)::after { content: none; animation: none; }
+.home-starfield .glowing-shadow:not(.connect-glow):hover { border-color: var(--text) !important; }

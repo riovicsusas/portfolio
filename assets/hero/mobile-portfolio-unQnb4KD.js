@@ -1,206 +1,8 @@
 import { r as e, t } from "./rolldown-runtime-QGRDbDUS.js";
 import { n, t as r } from "./jsx-runtime-s04k_HfJ.js";
-import { n as i, t as a } from "./arrow-up-right-CvLP1RWX.js";
-// node_modules/lucide-react/dist/esm/icons/boxes.mjs
-var o = {
-	name: "boxes",
-	size: 24,
-	node: [
-		["path", {
-			d: "M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z",
-			key: "lc1i9w"
-		}],
-		["path", {
-			d: "m7 16.5-4.74-2.85",
-			key: "1o9zyk"
-		}],
-		["path", {
-			d: "m7 16.5 5-3",
-			key: "va8pkn"
-		}],
-		["path", {
-			d: "M7 16.5v5.17",
-			key: "jnp8gn"
-		}],
-		["path", {
-			d: "M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z",
-			key: "8zsnat"
-		}],
-		["path", {
-			d: "m17 16.5-5-3",
-			key: "8arw3v"
-		}],
-		["path", {
-			d: "m17 16.5 4.74-2.85",
-			key: "8rfmw"
-		}],
-		["path", {
-			d: "M17 16.5v5.17",
-			key: "k6z78m"
-		}],
-		["path", {
-			d: "M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z",
-			key: "1xygjf"
-		}],
-		["path", {
-			d: "M12 8 7.26 5.15",
-			key: "1vbdud"
-		}],
-		["path", {
-			d: "m12 8 4.74-2.85",
-			key: "3rx089"
-		}],
-		["path", {
-			d: "M12 13.5V8",
-			key: "1io7kd"
-		}]
-	]
-};
-o.node;
-var s = i(o), c = {
-	name: "braces",
-	size: 24,
-	node: [["path", {
-		d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1",
-		key: "ezmyqa"
-	}], ["path", {
-		d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1",
-		key: "e1hn23"
-	}]],
-	aliases: ["curly-braces"]
-};
-c.node;
-var l = i(c), u = {
-	name: "headset",
-	size: 24,
-	node: [["path", {
-		d: "M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z",
-		key: "12oyoe"
-	}], ["path", {
-		d: "M21 16v2a4 4 0 0 1-4 4h-5",
-		key: "1x7m43"
-	}]]
-};
-u.node;
-var d = i(u), f = {
-	name: "shopping-bag",
-	size: 24,
-	node: [
-		["path", {
-			d: "M16 10a4 4 0 0 1-8 0",
-			key: "1ltviw"
-		}],
-		["path", {
-			d: "M3.103 6.034h17.794",
-			key: "awc11p"
-		}],
-		["path", {
-			d: "M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z",
-			key: "o988cm"
-		}]
-	]
-};
-f.node;
-var p = i(f), m = {
-	name: "table-2",
-	size: 24,
-	node: [
-		["path", {
-			d: "M3 9h18",
-			key: "1pudct"
-		}],
-		["path", {
-			d: "M9 3v18",
-			key: "fh3hqa"
-		}],
-		["rect", {
-			x: "3",
-			y: "3",
-			width: "18",
-			height: "18",
-			rx: "2",
-			key: "h1oib"
-		}]
-	]
-};
-m.node;
-var h = i(m), g = {
-	name: "truck",
-	size: 24,
-	node: [
-		["path", {
-			d: "M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2",
-			key: "wrbu53"
-		}],
-		["path", {
-			d: "M15 18H9",
-			key: "1lyqi6"
-		}],
-		["path", {
-			d: "M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14",
-			key: "lysw3i"
-		}],
-		["circle", {
-			cx: "17",
-			cy: "18",
-			r: "2",
-			key: "332jqn"
-		}],
-		["circle", {
-			cx: "7",
-			cy: "18",
-			r: "2",
-			key: "19iecd"
-		}]
-	]
-};
-g.node;
-var _ = i(g), v = {
-	name: "workflow",
-	size: 24,
-	node: [
-		["rect", {
-			width: "8",
-			height: "8",
-			x: "3",
-			y: "3",
-			rx: "2",
-			key: "by2w9f"
-		}],
-		["path", {
-			d: "M7 11v4a2 2 0 0 0 2 2h4",
-			key: "xkn7yn"
-		}],
-		["rect", {
-			width: "8",
-			height: "8",
-			x: "13",
-			y: "13",
-			rx: "2",
-			key: "1cgmvn"
-		}]
-	]
-};
-v.node;
-var y = i(v), b = {
-	name: "wrench",
-	size: 24,
-	node: [["path", {
-		d: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z",
-		key: "1ngwbx"
-	}]]
-};
-b.node;
-var x = i(b), S = {
-	name: "zap",
-	size: 24,
-	node: [["path", {
-		d: "M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z",
-		key: "1v7up4"
-	}]]
-};
-S.node;
-var C = i(S), w = /* @__PURE__ */ t(((e, t, n) => {
+import { t as i } from "./section-cards-igEGSIyX.js";
+// node_modules/matter-js/build/matter.js
+var a = /* @__PURE__ */ t(((e, t, n) => {
 	(function(n, r) {
 		typeof e == "object" && typeof t == "object" ? t.exports = r() : typeof define == "function" && define.amd ? define("Matter", [], r) : typeof e == "object" ? e.Matter = r() : n.Matter = r();
 	})(n, function() {
@@ -1768,17 +1570,17 @@ var C = i(S), w = /* @__PURE__ */ t(((e, t, n) => {
 							if (h.isActive && !h.isSensor) {
 								var g = h.collision, _ = g.parentA, v = g.parentB, y = g.normal.x, b = g.normal.y, x = g.tangent.x, S = g.tangent.y, C = h.inverseMass, w = h.friction * h.frictionStatic * c, T = h.contacts, E = h.contactCount, D = 1 / E, O = _.position.x - _.positionPrev.x, k = _.position.y - _.positionPrev.y, A = _.angle - _.anglePrev, j = v.position.x - v.positionPrev.x, M = v.position.y - v.positionPrev.y, N = v.angle - v.anglePrev;
 								for (m = 0; m < E; m++) {
-									var P = T[m], F = P.vertex, I = F.x - _.position.x, L = F.y - _.position.y, R = F.x - v.position.x, z = F.y - v.position.y, B = O - L * A, V = k + I * A, H = j - z * N, U = M + R * N, W = B - H, G = V - U, K = y * W + b * G, q = x * W + S * G, J = h.separation + K, Y = Math.min(J, 1);
-									Y = J < 0 ? 0 : Y;
-									var X = Y * w;
-									q < -X || q > X ? (f = q > 0 ? q : -q, d = h.friction * (q > 0 ? 1 : -1) * i, d < -f ? d = -f : d > f && (d = f)) : (d = q, f = l);
-									var ee = I * b - L * y, te = R * b - z * y, ne = D / (C + _.inverseInertia * ee * ee + v.inverseInertia * te * te), Z = (1 + h.restitution) * K * ne;
-									if (d *= ne, K < o) P.normalImpulse = 0;
+									var P = T[m], F = P.vertex, I = F.x - _.position.x, L = F.y - _.position.y, R = F.x - v.position.x, z = F.y - v.position.y, B = O - L * A, ee = k + I * A, te = j - z * N, ne = M + R * N, V = B - te, H = ee - ne, U = y * V + b * H, W = x * V + S * H, G = h.separation + U, K = Math.min(G, 1);
+									K = G < 0 ? 0 : K;
+									var q = K * w;
+									W < -q || W > q ? (f = W > 0 ? W : -W, d = h.friction * (W > 0 ? 1 : -1) * i, d < -f ? d = -f : d > f && (d = f)) : (d = W, f = l);
+									var J = I * b - L * y, Y = R * b - z * y, X = D / (C + _.inverseInertia * J * J + v.inverseInertia * Y * Y), Z = (1 + h.restitution) * U * X;
+									if (d *= X, U < o) P.normalImpulse = 0;
 									else {
 										var re = P.normalImpulse;
 										P.normalImpulse += Z, P.normalImpulse > 0 && (P.normalImpulse = 0), Z = P.normalImpulse - re;
 									}
-									if (q < -s || q > s) P.tangentImpulse = 0;
+									if (W < -s || W > s) P.tangentImpulse = 0;
 									else {
 										var ie = P.tangentImpulse;
 										P.tangentImpulse += d, P.tangentImpulse < -f && (P.tangentImpulse = -f), P.tangentImpulse > f && (P.tangentImpulse = f), d = P.tangentImpulse - ie;
@@ -2662,7 +2464,7 @@ var C = i(S), w = /* @__PURE__ */ t(((e, t, n) => {
 			})
 		]);
 	});
-})), T = /* @__PURE__ */ e(n(), 1), E = /* @__PURE__ */ e(w(), 1), D = r(), O = 768, k = {
+})), o = /* @__PURE__ */ e(n(), 1), s = /* @__PURE__ */ e(a(), 1), c = r(), l = 768, u = {
 	dark: {
 		card: "bg-[#101010]",
 		title: "text-white",
@@ -2692,20 +2494,20 @@ var C = i(S), w = /* @__PURE__ */ t(((e, t, n) => {
 		arrowDot: "bg-[#111] text-white"
 	}
 };
-function A() {
-	let [e, t] = T.useState(!1);
-	return T.useEffect(() => {
+function d() {
+	let [e, t] = o.useState(!1);
+	return o.useEffect(() => {
 		let e = window.matchMedia("(prefers-reduced-motion: reduce)"), n = () => t(e.matches);
 		return n(), e.addEventListener("change", n), () => e.removeEventListener("change", n);
 	}, []), e;
 }
-var j = ({ dir: e }) => /* @__PURE__ */ (0, D.jsx)("svg", {
+var f = ({ dir: e }) => /* @__PURE__ */ (0, c.jsx)("svg", {
 	width: "16",
 	height: "12",
 	viewBox: "0 0 48 14",
 	fill: "none",
 	"aria-hidden": "true",
-	children: /* @__PURE__ */ (0, D.jsx)("path", {
+	children: /* @__PURE__ */ (0, c.jsx)("path", {
 		d: e === "prev" ? "M47 7H1M7 1 1 7l6 6" : "M1 7h46M41 1l6 6-6 6",
 		stroke: "currentColor",
 		strokeWidth: "2.5",
@@ -2713,11 +2515,11 @@ var j = ({ dir: e }) => /* @__PURE__ */ (0, D.jsx)("svg", {
 		strokeLinejoin: "round"
 	})
 });
-function M({ className: e = "", theme: t = "dark" }) {
-	return /* @__PURE__ */ (0, D.jsx)("div", {
+function p({ className: e = "", theme: t = "dark" }) {
+	return /* @__PURE__ */ (0, c.jsx)("div", {
 		className: `absolute inset-0 grid place-items-center ${t === "dark" ? "bg-[#1e1e1e] text-[#4d4d4d]" : "bg-[#e3e3e3] text-[#b0b0b0]"} ${e}`,
 		"aria-hidden": "true",
-		children: /* @__PURE__ */ (0, D.jsxs)("svg", {
+		children: /* @__PURE__ */ (0, c.jsxs)("svg", {
 			width: "40",
 			height: "40",
 			viewBox: "0 0 24 24",
@@ -2727,41 +2529,41 @@ function M({ className: e = "", theme: t = "dark" }) {
 			strokeLinecap: "round",
 			strokeLinejoin: "round",
 			children: [
-				/* @__PURE__ */ (0, D.jsx)("rect", {
+				/* @__PURE__ */ (0, c.jsx)("rect", {
 					x: "3",
 					y: "3",
 					width: "18",
 					height: "18",
 					rx: "4"
 				}),
-				/* @__PURE__ */ (0, D.jsx)("circle", {
+				/* @__PURE__ */ (0, c.jsx)("circle", {
 					cx: "9",
 					cy: "9",
 					r: "1.8"
 				}),
-				/* @__PURE__ */ (0, D.jsx)("path", { d: "m21 15-4.6-4.6a1.5 1.5 0 0 0-2.1 0L5 19.5" })
+				/* @__PURE__ */ (0, c.jsx)("path", { d: "m21 15-4.6-4.6a1.5 1.5 0 0 0-2.1 0L5 19.5" })
 			]
 		})
 	});
 }
-function N({ items: e = [], autoplay: t = 6e3, theme: n = "dark", label: r = "Showcase", ctaLabel: i = "Read case", className: a = "", onIndexChange: o }) {
-	let s = k[n], c = T.useRef(null), l = T.useRef(null), u = T.useRef([]), d = A(), [f, p] = T.useState(0), [m, h] = T.useState(!0), [g, _] = T.useState(!1), [v, y] = T.useState(!1), [b, x] = T.useState({
+function m({ items: e = [], autoplay: t = 6e3, theme: n = "dark", label: r = "Showcase", ctaLabel: i = "Read case", className: a = "", onIndexChange: s }) {
+	let m = u[n], h = o.useRef(null), g = o.useRef(null), _ = o.useRef([]), v = d(), [y, b] = o.useState(0), [x, S] = o.useState(!0), [C, w] = o.useState(!1), [T, E] = o.useState(!1), [D, O] = o.useState({
 		start: !0,
 		end: !1
 	});
-	T.useEffect(() => {
-		let e = c.current;
+	o.useEffect(() => {
+		let e = h.current;
 		if (!e) return;
-		let t = new ResizeObserver(([e]) => h(e.contentRect.width < O));
+		let t = new ResizeObserver(([e]) => S(e.contentRect.width < l));
 		return t.observe(e), () => t.disconnect();
-	}, []), T.useEffect(() => {
-		let e = l.current;
+	}, []), o.useEffect(() => {
+		let e = g.current;
 		if (!e) return;
-		let t = new IntersectionObserver(([e]) => _(e.isIntersecting), { threshold: .4 });
+		let t = new IntersectionObserver(([e]) => w(e.isIntersecting), { threshold: .4 });
 		return t.observe(e), () => t.disconnect();
 	}, []);
-	let S = () => Array.from(l.current?.children ?? []), C = T.useCallback(() => {
-		let e = l.current, t = S();
+	let k = () => Array.from(g.current?.children ?? []), A = o.useCallback(() => {
+		let e = g.current, t = k();
 		if (!e || !t.length) return;
 		let n = t[0].offsetLeft, r = e.scrollLeft, i = 0, a = Infinity;
 		t.forEach((e, t) => {
@@ -2769,81 +2571,81 @@ function N({ items: e = [], autoplay: t = 6e3, theme: n = "dark", label: r = "Sh
 			o < a && (a = o, i = t);
 		});
 		let o = e.scrollWidth - e.clientWidth;
-		x({
+		O({
 			start: r < 4,
 			end: r > o - 4
-		}), p((e) => e === i ? e : i);
+		}), b((e) => e === i ? e : i);
 	}, []);
-	T.useEffect(() => {
-		o?.(f);
-	}, [f, o]), T.useEffect(() => (C(), window.addEventListener("resize", C), () => window.removeEventListener("resize", C)), [
-		C,
+	o.useEffect(() => {
+		s?.(y);
+	}, [y, s]), o.useEffect(() => (A(), window.addEventListener("resize", A), () => window.removeEventListener("resize", A)), [
+		A,
 		e.length,
-		m
+		x
 	]);
-	let w = T.useCallback((e) => {
-		let t = l.current, n = S();
+	let j = o.useCallback((e) => {
+		let t = g.current, n = k();
 		if (!t || !n.length) return;
 		let r = Math.max(0, Math.min(n.length - 1, e));
 		t.scrollTo({
 			left: n[r].offsetLeft - n[0].offsetLeft,
-			behavior: d ? "auto" : "smooth"
+			behavior: v ? "auto" : "smooth"
 		});
-	}, [d]), E = () => y(!0), N = m && g && !v && !d && t > 0 && e.length > 1;
-	return T.useEffect(() => {
-		if (u.current.forEach((e) => e?.getAnimations().forEach((e) => e.cancel())), !N) return;
-		let n = u.current[f]?.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], {
+	}, [v]), M = () => E(!0), N = x && C && !T && !v && t > 0 && e.length > 1;
+	return o.useEffect(() => {
+		if (_.current.forEach((e) => e?.getAnimations().forEach((e) => e.cancel())), !N) return;
+		let n = _.current[y]?.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], {
 			duration: t,
 			easing: "linear",
 			fill: "forwards"
 		}), r = window.setTimeout(() => {
-			let t = l.current, n = t ? t.scrollLeft > t.scrollWidth - t.clientWidth - 4 : !1;
-			w(n ? 0 : (f + 1) % e.length);
+			let t = g.current, n = t ? t.scrollLeft > t.scrollWidth - t.clientWidth - 4 : !1;
+			j(n ? 0 : (y + 1) % e.length);
 		}, t);
 		return () => {
 			window.clearTimeout(r), n?.cancel();
 		};
 	}, [
 		N,
-		f,
+		y,
 		t,
 		e.length,
-		w
-	]), /* @__PURE__ */ (0, D.jsxs)("div", {
-		ref: c,
+		j
+	]), /* @__PURE__ */ (0, c.jsxs)("div", {
+		ref: h,
 		className: `mobile-showcase @container w-full ${a}`,
-		children: [/* @__PURE__ */ (0, D.jsx)("div", {
-			ref: l,
+		children: [/* @__PURE__ */ (0, c.jsx)("div", {
+			ref: g,
 			role: "region",
 			"aria-roledescription": "carousel",
 			"aria-label": r,
 			tabIndex: 0,
 			onKeyDown: (e) => {
-				e.key === "ArrowRight" ? (e.preventDefault(), E(), w(f + 1)) : e.key === "ArrowLeft" && (e.preventDefault(), E(), w(f - 1));
+				e.key === "ArrowRight" ? (e.preventDefault(), M(), j(y + 1)) : e.key === "ArrowLeft" && (e.preventDefault(), M(), j(y - 1));
 			},
-			onScroll: C,
-			onPointerDown: E,
-			onWheel: (e) => Math.abs(e.deltaX) > Math.abs(e.deltaY) && E(),
+			onScroll: A,
+			onPointerDown: M,
+			onWheel: (e) => Math.abs(e.deltaX) > Math.abs(e.deltaY) && M(),
 			className: "mobile-showcase-track flex flex-row items-stretch gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory px-4 scroll-px-4 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden focus-visible:outline-none @3xl:gap-6 @3xl:px-0 @3xl:scroll-px-0",
 			children: e.map((t, r) => {
-				let a = r === f, o = t.href ? "a" : "div", c = t.href ? { href: t.href } : {};
-				return /* @__PURE__ */ (0, D.jsxs)(o, {
-					...c,
+				let a = r === y, o = t.href ? "a" : "div", s = t.href ? { href: t.href } : {};
+				return /* @__PURE__ */ (0, c.jsxs)(o, {
+					...s,
 					role: t.href ? void 0 : "group",
 					"aria-roledescription": "slide",
 					"aria-label": `${r + 1} of ${e.length}: ${t.title}`,
 					className: [
 						"mobile-showcase-card glowing-shadow group flex flex-none snap-start flex-col gap-5 overflow-hidden rounded-[20px] no-underline transition-opacity duration-[450ms]",
 						"h-[510px] w-[min(340px,calc(100cqw-48px))]",
-						s.card,
-						m && !a ? "opacity-50" : "opacity-100",
+						m.card,
+						x && !a ? "opacity-50" : "opacity-100",
 						"@3xl:h-auto @3xl:w-[calc((100%-24px)/2.15)] @3xl:gap-0 @3xl:overflow-visible @3xl:rounded-none @3xl:bg-transparent @6xl:w-[calc((100%-48px)/2.6)]",
 						t.href ? "cursor-pointer" : "cursor-default"
 					].join(" "),
-					children: [/* @__PURE__ */ (0, D.jsxs)("div", {
+					children: [/* @__PURE__ */ (0, c.jsxs)("div", {
 						className: `mobile-showcase-cover relative h-[230px] flex-none overflow-hidden rounded-[20px] transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] @3xl:h-auto @3xl:aspect-[16/10] ${t.href ? "group-active:scale-[.98]" : ""}`,
 						style: { background: t.background ?? (t.cover || t.image || t.video ? "#1a1a1a" : n === "dark" ? "#1e1e1e" : "#e3e3e3") },
-						children: [t.cover ? t.cover : t.video ? /* @__PURE__ */ (0, D.jsx)("video", {
+						children: [t.cover ? t.cover : t.video ? /* @__PURE__ */ (0, c.jsx)("video", {
 							src: t.video,
 							poster: t.image,
 							muted: !0,
@@ -2853,46 +2655,46 @@ function N({ items: e = [], autoplay: t = 6e3, theme: n = "dark", label: r = "Sh
 							preload: "metadata",
 							"aria-label": t.alt ?? t.title,
 							className: "absolute inset-0 h-full w-full object-cover"
-						}) : t.image ? /* @__PURE__ */ (0, D.jsx)("img", {
+						}) : t.image ? /* @__PURE__ */ (0, c.jsx)("img", {
 							src: t.image,
 							alt: t.alt ?? t.title,
 							loading: "lazy",
 							decoding: "async",
 							draggable: !1,
 							className: "absolute inset-0 h-full w-full object-cover"
-						}) : /* @__PURE__ */ (0, D.jsx)(M, { theme: n }), t.badge && /* @__PURE__ */ (0, D.jsx)("span", {
-							className: `absolute left-2.5 top-3 z-10 flex h-[22px] items-center rounded-md border px-1.5 text-xs leading-5 tracking-[-0.05em] ${s.badge}`,
+						}) : /* @__PURE__ */ (0, c.jsx)(p, { theme: n }), t.badge && /* @__PURE__ */ (0, c.jsx)("span", {
+							className: `absolute left-2.5 top-3 z-10 flex h-[22px] items-center rounded-md border px-1.5 text-xs leading-5 tracking-[-0.05em] ${m.badge}`,
 							children: t.badge
 						})]
-					}), /* @__PURE__ */ (0, D.jsxs)("div", {
+					}), /* @__PURE__ */ (0, c.jsxs)("div", {
 						className: "mobile-showcase-copy flex min-h-0 flex-1 flex-col gap-4 px-[15px] pb-[15px] @3xl:mt-5 @3xl:px-0 @3xl:pb-0",
 						children: [
-							/* @__PURE__ */ (0, D.jsx)("h3", {
-								className: `m-0 text-[22px] font-medium leading-[29px] tracking-[-0.05em] text-balance transition-colors duration-[450ms] @3xl:text-[26px] ${s.title}`,
+							/* @__PURE__ */ (0, c.jsx)("h3", {
+								className: `m-0 text-[22px] font-medium leading-[29px] tracking-[-0.05em] text-balance transition-colors duration-[450ms] @3xl:text-[26px] ${m.title}`,
 								children: t.title
 							}),
-							t.tags && t.tags.length > 0 && /* @__PURE__ */ (0, D.jsx)("div", {
+							t.tags && t.tags.length > 0 && /* @__PURE__ */ (0, c.jsx)("div", {
 								className: "flex flex-wrap gap-1.5",
-								children: t.tags.map((e) => /* @__PURE__ */ (0, D.jsx)("span", {
-									className: `h-6 rounded-full px-2.5 py-0.5 text-sm leading-5 ${s.tag}`,
+								children: t.tags.map((e) => /* @__PURE__ */ (0, c.jsx)("span", {
+									className: `h-6 rounded-full px-2.5 py-0.5 text-sm leading-5 ${m.tag}`,
 									children: e
 								}, e))
 							}),
-							t.description && /* @__PURE__ */ (0, D.jsx)("p", {
-								className: `m-0 line-clamp-3 text-base leading-6 @3xl:line-clamp-none ${s.desc}`,
+							t.description && /* @__PURE__ */ (0, c.jsx)("p", {
+								className: `m-0 line-clamp-3 text-base leading-6 @3xl:line-clamp-none ${m.desc}`,
 								children: t.description
 							}),
-							t.href && /* @__PURE__ */ (0, D.jsxs)("span", {
-								className: `-mt-1 hidden items-center gap-1.5 text-base font-medium @3xl:inline-flex ${s.cta}`,
-								children: [t.cta ?? i, /* @__PURE__ */ (0, D.jsx)("span", {
-									className: `grid h-[18px] w-[18px] place-items-center rounded-full ${s.arrowDot}`,
-									children: /* @__PURE__ */ (0, D.jsx)("svg", {
+							t.href && /* @__PURE__ */ (0, c.jsxs)("span", {
+								className: `-mt-1 hidden items-center gap-1.5 text-base font-medium @3xl:inline-flex ${m.cta}`,
+								children: [t.cta ?? i, /* @__PURE__ */ (0, c.jsx)("span", {
+									className: `grid h-[18px] w-[18px] place-items-center rounded-full ${m.arrowDot}`,
+									children: /* @__PURE__ */ (0, c.jsx)("svg", {
 										width: "10",
 										height: "8",
 										viewBox: "0 0 10 8",
 										fill: "none",
 										"aria-hidden": "true",
-										children: /* @__PURE__ */ (0, D.jsx)("path", {
+										children: /* @__PURE__ */ (0, c.jsx)("path", {
 											d: "M1 4h8M6 1l3 3-3 3",
 											stroke: "currentColor",
 											strokeWidth: "1.4",
@@ -2906,59 +2708,59 @@ function N({ items: e = [], autoplay: t = 6e3, theme: n = "dark", label: r = "Sh
 					})]
 				}, t.id ?? r);
 			})
-		}), e.length > 1 && /* @__PURE__ */ (0, D.jsxs)("div", {
+		}), e.length > 1 && /* @__PURE__ */ (0, c.jsxs)("div", {
 			className: "mobile-showcase-controls mt-5 flex items-center gap-3.5 @3xl:mt-7",
 			children: [
-				/* @__PURE__ */ (0, D.jsx)("button", {
+				/* @__PURE__ */ (0, c.jsx)("button", {
 					type: "button",
 					"aria-label": "Previous",
-					disabled: b.start,
+					disabled: D.start,
 					onClick: () => {
-						E(), w(f - 1);
+						M(), j(y - 1);
 					},
-					className: `glowing-shadow hidden h-11 w-11 place-items-center rounded-full border transition disabled:cursor-default disabled:opacity-30 @3xl:grid ${s.btn}`,
-					children: /* @__PURE__ */ (0, D.jsx)(j, { dir: "prev" })
+					className: `glowing-shadow hidden h-11 w-11 place-items-center rounded-full border transition disabled:cursor-default disabled:opacity-30 @3xl:grid ${m.btn}`,
+					children: /* @__PURE__ */ (0, c.jsx)(f, { dir: "prev" })
 				}),
-				/* @__PURE__ */ (0, D.jsx)("div", {
+				/* @__PURE__ */ (0, c.jsx)("div", {
 					role: "group",
 					"aria-label": r,
 					className: "flex flex-1 justify-center gap-1.5",
 					children: e.map((e, t) => {
-						let n = t === f;
-						return /* @__PURE__ */ (0, D.jsx)("button", {
+						let n = t === y;
+						return /* @__PURE__ */ (0, c.jsx)("button", {
 							type: "button",
 							"aria-current": n ? "true" : "false",
 							"aria-label": `${t + 1}: ${e.title}`,
 							onClick: () => {
-								E(), w(t);
+								M(), j(t);
 							},
-							className: `mobile-showcase-dot relative h-1.5 cursor-pointer overflow-hidden rounded-[3px] transition-[width,background-color] duration-[350ms] ease-[cubic-bezier(.2,.8,.2,1)] before:absolute before:-inset-x-1 before:-inset-y-2.5 before:content-[''] ${n ? `w-[22px] ${s.dotActive}` : "w-1.5"} ${s.dot}`,
-							children: m && /* @__PURE__ */ (0, D.jsx)("span", {
+							className: `mobile-showcase-dot relative h-1.5 cursor-pointer overflow-hidden rounded-[3px] transition-[width,background-color] duration-[350ms] ease-[cubic-bezier(.2,.8,.2,1)] before:absolute before:-inset-x-1 before:-inset-y-2.5 before:content-[''] ${n ? `w-[22px] ${m.dotActive}` : "w-1.5"} ${m.dot}`,
+							children: x && /* @__PURE__ */ (0, c.jsx)("span", {
 								ref: (e) => {
-									u.current[t] = e;
+									_.current[t] = e;
 								},
 								"aria-hidden": "true",
-								className: `absolute inset-0 origin-left ${t < f ? s.done : s.fill}`,
-								style: { transform: t < f || n && !N ? "scaleX(1)" : "scaleX(0)" }
+								className: `absolute inset-0 origin-left ${t < y ? m.done : m.fill}`,
+								style: { transform: t < y || n && !N ? "scaleX(1)" : "scaleX(0)" }
 							})
 						}, e.id ?? t);
 					})
 				}),
-				/* @__PURE__ */ (0, D.jsx)("button", {
+				/* @__PURE__ */ (0, c.jsx)("button", {
 					type: "button",
 					"aria-label": "Next",
-					disabled: b.end,
+					disabled: D.end,
 					onClick: () => {
-						E(), w(f + 1);
+						M(), j(y + 1);
 					},
-					className: `glowing-shadow hidden h-11 w-11 place-items-center rounded-full border transition disabled:cursor-default disabled:opacity-30 @3xl:grid ${s.btn}`,
-					children: /* @__PURE__ */ (0, D.jsx)(j, { dir: "next" })
+					className: `glowing-shadow hidden h-11 w-11 place-items-center rounded-full border transition disabled:cursor-default disabled:opacity-30 @3xl:grid ${m.btn}`,
+					children: /* @__PURE__ */ (0, c.jsx)(f, { dir: "next" })
 				})
 			]
 		})]
 	});
 }
-var P = {
+var h = {
 	name: "Your Name",
 	role: "Product Designer · UX/UI Designer",
 	bio: "**N+ years designing digital products — **fintech and payments, marketplaces, B2B systems and e-commerce,** from the first idea to the release.**",
@@ -3085,7 +2887,7 @@ var P = {
 			href: "#"
 		}
 	]
-}, F = {
+}, g = {
 	dark: {
 		bg: "#060606",
 		ink: "#ffffff",
@@ -3106,7 +2908,7 @@ var P = {
 		avatarBorder: "#e6e6e6",
 		hint: "bg-white/90 border-[#e2e2e2] text-[#3d3d3d]"
 	}
-}, I = {
+}, _ = {
 	gravity: 2.1,
 	restitution: .04,
 	friction: .9,
@@ -3114,132 +2916,132 @@ var P = {
 	frictionAir: .012,
 	density: .006,
 	stagger: 55
-}, L = 1e3 / 120, R = (e, t) => e + Math.random() * (t - e);
-function z({ badges: e, plain: t, onSettled: n, onGrab: r }) {
-	let i = A(), a = T.useRef(null), o = T.useRef([]), s = T.useRef({
+}, v = 1e3 / 120, y = (e, t) => e + Math.random() * (t - e);
+function b({ badges: e, plain: t, onSettled: n, onGrab: r }) {
+	let i = d(), a = o.useRef(null), l = o.useRef([]), u = o.useRef({
 		onSettled: n,
 		onGrab: r
 	});
-	s.current = {
+	u.current = {
 		onSettled: n,
 		onGrab: r
 	};
-	let [c, l] = T.useState({
+	let [f, p] = o.useState({
 		w: 0,
 		h: 0
-	}), u = T.useMemo(() => [...e].sort(() => Math.random() - .5), [e]);
-	return T.useEffect(() => {
+	}), m = o.useMemo(() => [...e].sort(() => Math.random() - .5), [e]);
+	return o.useEffect(() => {
 		let e = a.current;
 		if (!e) return;
 		let t = new ResizeObserver(([e]) => {
 			let t = Math.round(e.contentRect.width), n = Math.round(e.contentRect.height);
-			l((e) => Math.abs(e.w - t) > 8 || e.h !== n ? {
+			p((e) => Math.abs(e.w - t) > 8 || e.h !== n ? {
 				w: t,
 				h: n
 			} : e);
 		});
 		return t.observe(e), () => t.disconnect();
-	}, []), T.useEffect(() => {
+	}, []), o.useEffect(() => {
 		let e = a.current;
-		if (!e || !c.w || i) return;
-		let { Engine: t, Bodies: n, Body: r, Composite: l, Constraint: d, Sleeping: f } = E.default, p = window.matchMedia("(prefers-reduced-motion: reduce)").matches, m = c.w, h = c.h, g = t.create({
+		if (!e || !f.w || i) return;
+		let { Engine: t, Bodies: n, Body: r, Composite: o, Constraint: c, Sleeping: d } = s.default, p = window.matchMedia("(prefers-reduced-motion: reduce)").matches, h = f.w, g = f.h, b = t.create({
 			enableSleeping: !0,
 			positionIterations: 24,
 			velocityIterations: 16,
 			constraintIterations: 4
 		});
-		g.gravity.y = I.gravity, l.add(g.world, [
-			n.rectangle(m / 2, h - 3 + 100, m * 3, 200, {
+		b.gravity.y = _.gravity, o.add(b.world, [
+			n.rectangle(h / 2, g - 3 + 100, h * 3, 200, {
 				isStatic: !0,
 				friction: 1,
 				slop: .01
 			}),
-			n.rectangle(-100, h / 2 - 600, 200, h + 1600, { isStatic: !0 }),
-			n.rectangle(m + 100, h / 2 - 600, 200, h + 1600, { isStatic: !0 }),
-			n.rectangle(m / 2, -1500, m * 3, 200, { isStatic: !0 })
+			n.rectangle(-100, g / 2 - 600, 200, g + 1600, { isStatic: !0 }),
+			n.rectangle(h + 100, g / 2 - 600, 200, g + 1600, { isStatic: !0 }),
+			n.rectangle(h / 2, -1500, h * 3, 200, { isStatic: !0 })
 		]);
-		let _ = o.current.slice(0, u.length).filter(Boolean);
-		_.forEach((e) => e.style.visibility = "hidden");
-		let v = _.map((e) => {
-			let t = e.offsetWidth, r = e.offsetHeight, i = n.rectangle(R(t / 2 + 4, Math.max(t / 2 + 5, m - t / 2 - 4)), 0, t, r, {
+		let x = l.current.slice(0, m.length).filter(Boolean);
+		x.forEach((e) => e.style.visibility = "hidden");
+		let S = x.map((e) => {
+			let t = e.offsetWidth, r = e.offsetHeight, i = n.rectangle(y(t / 2 + 4, Math.max(t / 2 + 5, h - t / 2 - 4)), 0, t, r, {
 				chamfer: { radius: 12 },
-				restitution: I.restitution,
-				friction: I.friction,
-				frictionStatic: I.frictionStatic,
-				frictionAir: I.frictionAir,
-				density: I.density,
+				restitution: _.restitution,
+				friction: _.friction,
+				frictionStatic: _.frictionStatic,
+				frictionAir: _.frictionAir,
+				density: _.density,
 				sleepThreshold: 40,
 				slop: .01
 			});
 			return i.el = e, i.w = t, i.h = r, i;
-		}), y = 0, b = !1, x = 0, S = 0, C = 0, w = !1, T = null, D = [], O = () => {
-			for (let e of v) e.el.style.transform = `translate(${(e.position.x - e.w / 2).toFixed(1)}px,${(e.position.y - e.h / 2).toFixed(1)}px) rotate(${e.angle.toFixed(4)}rad)`;
-		}, k = (e) => {
-			for (x ||= e, S += Math.min(50, e - x), x = e; S >= L;) t.update(g, L), S -= L;
-			O(), C === v.length && !T && v.every((e) => e.isSleeping) ? (b = !1, x = 0, S = 0, w || (w = !0, s.current.onSettled?.())) : y = requestAnimationFrame(k);
-		}, A = () => {
-			b || (b = !0, x = 0, y = requestAnimationFrame(k));
-		}, j = (e, t) => {
+		}), C = 0, w = !1, T = 0, E = 0, D = 0, O = !1, k = null, A = [], j = () => {
+			for (let e of S) e.el.style.transform = `translate(${(e.position.x - e.w / 2).toFixed(1)}px,${(e.position.y - e.h / 2).toFixed(1)}px) rotate(${e.angle.toFixed(4)}rad)`;
+		}, M = (e) => {
+			for (T ||= e, E += Math.min(50, e - T), T = e; E >= v;) t.update(b, v), E -= v;
+			j(), D === S.length && !k && S.every((e) => e.isSleeping) ? (w = !1, T = 0, E = 0, O || (O = !0, u.current.onSettled?.())) : C = requestAnimationFrame(M);
+		}, N = () => {
+			w || (w = !0, T = 0, C = requestAnimationFrame(M));
+		}, P = (e, t) => {
 			r.setPosition(e, {
 				x: e.position.x,
 				y: t
-			}), r.setAngle(e, R(-.7, .7)), l.add(g.world, e), r.setVelocity(e, {
-				x: R(-1.2, 1.2),
-				y: R(3, 6)
-			}), r.setAngularVelocity(e, R(-.04, .04));
-		}, M = (t) => {
+			}), r.setAngle(e, y(-.7, .7)), o.add(b.world, e), r.setVelocity(e, {
+				x: y(-1.2, 1.2),
+				y: y(3, 6)
+			}), r.setAngularVelocity(e, y(-.04, .04));
+		}, F = (t) => {
 			let n = e.getBoundingClientRect();
 			return {
 				x: t.clientX - n.left,
 				y: t.clientY - n.top
 			};
-		}, N = [];
-		if (v.forEach((e) => {
+		}, I = [];
+		if (S.forEach((e) => {
 			let t = e.el, n = (n) => {
-				if (!g.world.bodies.includes(e)) return;
-				n.preventDefault(), s.current.onGrab?.(), t.setPointerCapture(n.pointerId), t.style.cursor = "grabbing";
-				let r = M(n), i = r.x - e.position.x, a = r.y - e.position.y, o = Math.cos(-e.angle), c = Math.sin(-e.angle);
-				T = d.create({
+				if (!b.world.bodies.includes(e)) return;
+				n.preventDefault(), u.current.onGrab?.(), t.setPointerCapture(n.pointerId), t.style.cursor = "grabbing";
+				let r = F(n), i = r.x - e.position.x, a = r.y - e.position.y, s = Math.cos(-e.angle), l = Math.sin(-e.angle);
+				k = c.create({
 					pointA: r,
 					bodyB: e,
 					pointB: {
-						x: i * o - a * c,
-						y: i * c + a * o
+						x: i * s - a * l,
+						y: i * l + a * s
 					},
 					stiffness: .12,
 					damping: .08,
 					length: 0
-				}), l.add(g.world, T), f.set(e, !1), A();
+				}), o.add(b.world, k), d.set(e, !1), N();
 			}, r = (t) => {
-				T && T.bodyB === e && (T.pointA = M(t), f.set(e, !1));
+				k && k.bodyB === e && (k.pointA = F(t), d.set(e, !1));
 			}, i = () => {
-				T && T.bodyB === e && (l.remove(g.world, T), T = null, t.style.cursor = "grab", v.forEach((e) => f.set(e, !1)), A());
+				k && k.bodyB === e && (o.remove(b.world, k), k = null, t.style.cursor = "grab", S.forEach((e) => d.set(e, !1)), N());
 			};
-			t.addEventListener("pointerdown", n), t.addEventListener("pointermove", r), t.addEventListener("pointerup", i), t.addEventListener("pointercancel", i), N.push(() => {
+			t.addEventListener("pointerdown", n), t.addEventListener("pointermove", r), t.addEventListener("pointerup", i), t.addEventListener("pointercancel", i), I.push(() => {
 				t.removeEventListener("pointerdown", n), t.removeEventListener("pointermove", r), t.removeEventListener("pointerup", i), t.removeEventListener("pointercancel", i);
 			});
 		}), p) {
-			v.forEach((e, t) => j(e, -60 - t * 45));
-			for (let e = 0; e < 1800; e++) t.update(g, L);
-			O(), v.forEach((e) => e.el.style.visibility = "visible"), C = v.length, w = !0, s.current.onSettled?.();
-		} else v.forEach((e, t) => D.push(window.setTimeout(() => {
-			j(e, -50 - R(0, 120)), e.el.style.visibility = "visible", C++, A();
-		}, 300 + t * I.stagger)));
+			S.forEach((e, t) => P(e, -60 - t * 45));
+			for (let e = 0; e < 1800; e++) t.update(b, v);
+			j(), S.forEach((e) => e.el.style.visibility = "visible"), D = S.length, O = !0, u.current.onSettled?.();
+		} else S.forEach((e, t) => A.push(window.setTimeout(() => {
+			P(e, -50 - y(0, 120)), e.el.style.visibility = "visible", D++, N();
+		}, 300 + t * _.stagger)));
 		return () => {
-			cancelAnimationFrame(y), D.forEach(clearTimeout), N.forEach((e) => e()), l.clear(g.world, !1), t.clear(g);
+			cancelAnimationFrame(C), A.forEach(clearTimeout), I.forEach((e) => e()), o.clear(b.world, !1), t.clear(b);
 		};
 	}, [
-		c,
-		u,
+		f,
+		m,
 		i
-	]), /* @__PURE__ */ (0, D.jsx)("div", {
+	]), /* @__PURE__ */ (0, c.jsx)("div", {
 		ref: a,
 		className: "mobile-badge-zone absolute inset-x-0 top-0 h-[424px] overflow-hidden @6xl:h-[456px]",
 		"data-reduced": i,
 		"aria-label": "Skills",
-		children: u.map((e, n) => /* @__PURE__ */ (0, D.jsx)("div", {
+		children: m.map((e, n) => /* @__PURE__ */ (0, c.jsx)("div", {
 			ref: (e) => {
-				o.current[n] = e;
+				l.current[n] = e;
 			},
 			className: "mobile-skill-badge absolute left-0 top-0 flex h-[34px] cursor-grab touch-none select-none items-center whitespace-nowrap rounded-xl border px-3.5 text-base tracking-[-0.05em] will-change-transform",
 			style: {
@@ -3252,17 +3054,17 @@ function z({ badges: e, plain: t, onSettled: n, onGrab: r }) {
 		}, e.label + n))
 	});
 }
-var B = ({ color: e }) => /* @__PURE__ */ (0, D.jsx)("svg", {
+var x = ({ color: e }) => /* @__PURE__ */ (0, c.jsx)("svg", {
 	className: "h-[15px] w-[15px] flex-none",
 	viewBox: "0 0 15 15",
 	"aria-hidden": "true",
-	children: /* @__PURE__ */ (0, D.jsx)("path", {
+	children: /* @__PURE__ */ (0, c.jsx)("path", {
 		d: "M4 11 11 4M5 4h6v6",
 		stroke: e,
 		strokeWidth: "1.4",
 		fill: "none"
 	})
-}), V = () => /* @__PURE__ */ (0, D.jsxs)("svg", {
+}), S = () => /* @__PURE__ */ (0, c.jsxs)("svg", {
 	width: "16",
 	height: "16",
 	viewBox: "0 0 24 24",
@@ -3272,18 +3074,18 @@ var B = ({ color: e }) => /* @__PURE__ */ (0, D.jsx)("svg", {
 	strokeLinecap: "round",
 	strokeLinejoin: "round",
 	"aria-hidden": "true",
-	children: [/* @__PURE__ */ (0, D.jsx)("path", { d: "M18 11V6a2 2 0 0 0-4 0v1M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8" }), /* @__PURE__ */ (0, D.jsx)("path", { d: "M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" })]
+	children: [/* @__PURE__ */ (0, c.jsx)("path", { d: "M18 11V6a2 2 0 0 0-4 0v1M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8" }), /* @__PURE__ */ (0, c.jsx)("path", { d: "M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" })]
 });
-function H({ text: e, ink: t }) {
-	return /* @__PURE__ */ (0, D.jsx)(D.Fragment, { children: e.split("**").map((e, n) => n % 2 ? /* @__PURE__ */ (0, D.jsx)("b", {
+function C({ text: e, ink: t }) {
+	return /* @__PURE__ */ (0, c.jsx)(c.Fragment, { children: e.split("**").map((e, n) => n % 2 ? /* @__PURE__ */ (0, c.jsx)("b", {
 		className: "font-medium",
 		style: { color: t },
 		children: e
-	}, n) : /* @__PURE__ */ (0, D.jsx)(T.Fragment, { children: e }, n)) });
+	}, n) : /* @__PURE__ */ (0, c.jsx)(o.Fragment, { children: e }, n)) });
 }
-function U(e) {
-	let [t, n] = T.useState("dark");
-	return T.useEffect(() => {
+function w(e) {
+	let [t, n] = o.useState("dark");
+	return o.useEffect(() => {
 		if (e !== "auto") return;
 		let t = document.documentElement, r = () => n(t.getAttribute("data-theme") === "light" ? "light" : "dark");
 		r();
@@ -3294,99 +3096,99 @@ function U(e) {
 		}), () => i.disconnect();
 	}, [e]), e === "auto" ? t : e;
 }
-function W(e) {
-	let { name: t, role: n, bio: r, links: i, badges: a, cases: o } = {
-		...P,
+function T(e) {
+	let { name: t, role: n, bio: r, links: i, badges: a, cases: s } = {
+		...h,
 		...e
-	}, { avatar: s, theme: c = "auto", dropKey: l = 0, dragHint: u = !0, autoplay: d = 6e3, className: f = "" } = e, p = U(c), m = F[p], [h, g] = T.useState("hidden");
-	return T.useEffect(() => {
-		g((e) => e === "done" ? e : "hidden");
-	}, [l]), /* @__PURE__ */ (0, D.jsx)("div", {
-		className: `mobile-portfolio @container relative w-full overflow-x-clip antialiased transition-colors duration-300 ${f}`,
+	}, { avatar: l, theme: u = "auto", dropKey: d = 0, dragHint: f = !0, autoplay: _ = 6e3, className: v = "" } = e, y = w(u), T = g[y], [E, D] = o.useState("hidden");
+	return o.useEffect(() => {
+		D((e) => e === "done" ? e : "hidden");
+	}, [d]), /* @__PURE__ */ (0, c.jsx)("div", {
+		className: `mobile-portfolio @container relative w-full overflow-x-clip antialiased transition-colors duration-300 ${v}`,
 		style: {
 			background: "transparent",
-			color: m.ink,
+			color: T.ink,
 			fontFamily: "'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
 			letterSpacing: "-0.05em"
 		},
-		children: /* @__PURE__ */ (0, D.jsxs)("div", {
+		children: /* @__PURE__ */ (0, c.jsxs)("div", {
 			className: "mobile-portfolio-content relative mx-auto max-w-[450px] @3xl:max-w-[820px] @6xl:max-w-[1280px]",
-			children: [/* @__PURE__ */ (0, D.jsxs)("section", {
+			children: [/* @__PURE__ */ (0, c.jsxs)("section", {
 				className: "mobile-intro relative pt-[440px] @6xl:pt-[480px]",
 				children: [
-					/* @__PURE__ */ (0, D.jsx)("div", {
+					/* @__PURE__ */ (0, c.jsx)("div", {
 						className: "mobile-ambient-glow pointer-events-none absolute -left-[120px] -top-[160px] h-[360px] w-[420px] rounded-full @6xl:-left-20 @6xl:-top-[200px] @6xl:h-[620px] @6xl:w-[900px]",
-						style: { background: `radial-gradient(closest-side, ${m.glow}, transparent)` }
+						style: { background: `radial-gradient(closest-side, ${T.glow}, transparent)` }
 					}),
-					/* @__PURE__ */ (0, D.jsx)(z, {
+					/* @__PURE__ */ (0, c.jsx)(b, {
 						badges: a,
 						plain: {
-							border: m.plainBorder,
-							color: m.plainColor
+							border: T.plainBorder,
+							color: T.plainColor
 						},
-						onSettled: () => u && g((e) => e === "done" ? e : "shown"),
-						onGrab: () => g("done")
-					}, l),
-					u && /* @__PURE__ */ (0, D.jsx)("div", {
+						onSettled: () => f && D((e) => e === "done" ? e : "shown"),
+						onGrab: () => D("done")
+					}, d),
+					f && /* @__PURE__ */ (0, c.jsx)("div", {
 						className: "pointer-events-none absolute inset-x-0 top-16 z-10 flex justify-center px-2.5 @3xl:top-[220px] @6xl:top-[260px]",
-						children: /* @__PURE__ */ (0, D.jsxs)("div", {
+						children: /* @__PURE__ */ (0, c.jsxs)("div", {
 							"aria-live": "polite",
-							className: `flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm backdrop-blur-md transition-all duration-500 ${m.hint} ${h === "shown" ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}`,
-							children: [/* @__PURE__ */ (0, D.jsx)("span", {
-								className: h === "shown" ? "animate-bounce" : "",
-								children: /* @__PURE__ */ (0, D.jsx)(V, {})
+							className: `flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm backdrop-blur-md transition-all duration-500 ${T.hint} ${E === "shown" ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}`,
+							children: [/* @__PURE__ */ (0, c.jsx)("span", {
+								className: E === "shown" ? "animate-bounce" : "",
+								children: /* @__PURE__ */ (0, c.jsx)(S, {})
 							}), "Grab a badge and throw it"]
 						})
 					}),
-					/* @__PURE__ */ (0, D.jsxs)("div", {
+					/* @__PURE__ */ (0, c.jsxs)("div", {
 						className: "mobile-profile-body relative px-2.5 @3xl:px-8 @6xl:grid @6xl:grid-cols-[380px_1fr] @6xl:items-start @6xl:gap-x-20 @6xl:px-12",
 						children: [
-							/* @__PURE__ */ (0, D.jsxs)("div", {
+							/* @__PURE__ */ (0, c.jsxs)("div", {
 								className: "mobile-identity flex items-center gap-6 @6xl:col-start-1 @6xl:row-start-1",
-								children: [/* @__PURE__ */ (0, D.jsx)("div", {
+								children: [/* @__PURE__ */ (0, c.jsx)("div", {
 									className: "mobile-avatar relative h-20 w-[60px] flex-none overflow-hidden rounded-[20px] border",
-									style: { borderColor: m.avatarBorder },
-									children: s ? /* @__PURE__ */ (0, D.jsx)("img", {
-										src: s,
+									style: { borderColor: T.avatarBorder },
+									children: l ? /* @__PURE__ */ (0, c.jsx)("img", {
+										src: l,
 										alt: t,
 										className: "h-full w-full object-cover"
-									}) : /* @__PURE__ */ (0, D.jsx)(M, {
-										theme: p,
+									}) : /* @__PURE__ */ (0, c.jsx)(p, {
+										theme: y,
 										className: "[&_svg]:h-6 [&_svg]:w-6"
 									})
-								}), /* @__PURE__ */ (0, D.jsxs)("div", { children: [/* @__PURE__ */ (0, D.jsx)("h1", {
+								}), /* @__PURE__ */ (0, c.jsxs)("div", { children: [/* @__PURE__ */ (0, c.jsx)("h1", {
 									className: "m-0 text-[32px] font-normal leading-[42px]",
 									children: t
-								}), /* @__PURE__ */ (0, D.jsx)("p", {
+								}), /* @__PURE__ */ (0, c.jsx)("p", {
 									className: "m-0 text-lg",
-									style: { color: m.muted },
+									style: { color: T.muted },
 									children: n
 								})] })]
 							}),
-							/* @__PURE__ */ (0, D.jsx)("p", {
+							/* @__PURE__ */ (0, c.jsx)("p", {
 								className: "mobile-bio mt-[30px] text-[26px] font-medium leading-[28px] @6xl:col-start-2 @6xl:row-span-2 @6xl:row-start-1 @6xl:m-0 @6xl:max-w-[820px] @6xl:text-[40px] @6xl:leading-[44px]",
-								style: { color: m.muted },
-								children: /* @__PURE__ */ (0, D.jsx)(H, {
+								style: { color: T.muted },
+								children: /* @__PURE__ */ (0, c.jsx)(C, {
 									text: r,
-									ink: m.ink
+									ink: T.ink
 								})
 							}),
-							/* @__PURE__ */ (0, D.jsxs)("a", {
-								className: "mobile-connect glowing-shadow",
+							/* @__PURE__ */ (0, c.jsxs)("a", {
+								className: "mobile-connect glowing-shadow connect-glow",
 								href: "contact/",
-								children: ["Let’s Connect ", /* @__PURE__ */ (0, D.jsx)(B, { color: "currentColor" })]
+								children: ["Let’s Connect ", /* @__PURE__ */ (0, c.jsx)(x, { color: "currentColor" })]
 							}),
-							/* @__PURE__ */ (0, D.jsx)("div", {
+							/* @__PURE__ */ (0, c.jsx)("div", {
 								className: "mobile-professional-links mt-8 flex flex-wrap gap-4 @6xl:col-start-1 @6xl:row-start-2 @6xl:mt-7",
-								children: i.map((e) => /* @__PURE__ */ (0, D.jsx)("a", {
+								children: i.map((e) => /* @__PURE__ */ (0, c.jsx)("a", {
 									href: e.href,
 									"aria-label": e.label,
 									title: e.label,
 									target: e.href.startsWith("https:") ? "_blank" : void 0,
 									rel: e.href.startsWith("https:") ? "noopener noreferrer" : void 0,
 									className: "glowing-shadow flex items-center gap-1.5 text-lg leading-5",
-									style: { color: m.ink },
-									children: e.icon ? /* @__PURE__ */ (0, D.jsx)("span", {
+									style: { color: T.ink },
+									children: e.icon ? /* @__PURE__ */ (0, c.jsx)("span", {
 										className: "mobile-professional-logo",
 										"aria-hidden": "true",
 										style: {
@@ -3399,77 +3201,23 @@ function W(e) {
 						]
 					})
 				]
-			}), /* @__PURE__ */ (0, D.jsxs)("section", {
+			}), /* @__PURE__ */ (0, c.jsxs)("section", {
 				className: "mobile-cases mt-20 pb-24 @3xl:px-8 @6xl:mt-[120px] @6xl:px-12",
-				children: [/* @__PURE__ */ (0, D.jsx)("h2", {
+				children: [/* @__PURE__ */ (0, c.jsx)("h2", {
 					className: "mobile-section-heading",
 					children: "Explore my portfolio"
-				}), e.sectionContent ?? /* @__PURE__ */ (0, D.jsx)(N, {
-					items: o,
-					theme: p,
+				}), e.sectionContent ?? /* @__PURE__ */ (0, c.jsx)(m, {
+					items: s,
+					theme: y,
 					label: "Portfolio highlights",
-					autoplay: d
+					autoplay: _
 				})]
 			})]
 		})
 	});
 }
-// components/ui/card-25.tsx
-var G = T.forwardRef(({ title: e, images: t, stats: n, description: r, href: i, className: o = "" }, s) => /* @__PURE__ */ (0, D.jsxs)("a", {
-	ref: s,
-	href: i,
-	className: `section-preview-card glowing-shadow ${o}`,
-	"aria-label": `Explore ${e}`,
-	children: [
-		/* @__PURE__ */ (0, D.jsxs)("div", {
-			className: "section-preview-header",
-			children: [/* @__PURE__ */ (0, D.jsx)("h3", { children: e }), /* @__PURE__ */ (0, D.jsx)(a, {
-				size: 22,
-				"aria-hidden": "true"
-			})]
-		}),
-		/* @__PURE__ */ (0, D.jsx)("div", {
-			className: "section-preview-images",
-			"aria-hidden": "true",
-			children: t.slice(0, 3).map((e, n) => /* @__PURE__ */ (0, D.jsx)("div", {
-				className: "section-preview-image",
-				style: {
-					"--stack-left": `${n * 10}%`,
-					"--fan-left": `${n * 24}%`,
-					"--fan-rotate": `${n * 5 - 5}deg`,
-					zIndex: t.length - n
-				},
-				children: /* @__PURE__ */ (0, D.jsx)("img", {
-					src: e,
-					alt: "",
-					loading: "lazy",
-					decoding: "async",
-					width: 576,
-					height: 380
-				})
-			}, e))
-		}),
-		/* @__PURE__ */ (0, D.jsx)("ul", {
-			className: "section-preview-stack",
-			"aria-label": "Technical stack",
-			children: n.map((e) => /* @__PURE__ */ (0, D.jsxs)("li", { children: [/* @__PURE__ */ (0, D.jsx)("span", {
-				"aria-hidden": "true",
-				children: e.icon
-			}), e.label] }, e.label))
-		}),
-		/* @__PURE__ */ (0, D.jsx)("p", { children: r }),
-		/* @__PURE__ */ (0, D.jsxs)("span", {
-			className: "section-preview-cta",
-			children: ["Explore section ", /* @__PURE__ */ (0, D.jsx)("span", {
-				"aria-hidden": "true",
-				children: "→"
-			})]
-		})
-	]
-}));
-G.displayName = "AnimatedHikeCard";
 // src/mobile-portfolio.tsx
-var K = [
+var E = [
 	{
 		label: "SHOPIFY PLUS",
 		bg: "#c6e795",
@@ -3488,94 +3236,9 @@ var K = [
 	{ label: "WAREHOUSE ROUTING" },
 	{ label: "SYSTEMS THINKING" },
 	{ label: "CUSTOMER OPERATIONS" }
-], q = (e) => [
-	1,
-	2,
-	3
-].map((t) => `images/section-previews/${e}-${t}.jpg`), J = [
-	{
-		title: "Latest Updates",
-		href: "latest/",
-		images: q("latest"),
-		stats: [
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(C, {}),
-				label: "Shopify Flow"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(s, {}),
-				label: "ShipBob"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(l, {}),
-				label: "Admin API"
-			}
-		],
-		description: "An activity timeline covering order-state controls, fulfillment routing, catalog changes, and webhook diagnostics."
-	},
-	{
-		title: "Projects",
-		href: "projects/",
-		images: q("projects"),
-		stats: [
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(p, {}),
-				label: "Shopify Plus"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(h, {}),
-				label: "Matrixify"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(y, {}),
-				label: "GraphQL"
-			}
-		],
-		description: "Case studies across six operational domains and a capstone investigation, from logistics and catalog governance to automation and support."
-	},
-	{
-		title: "About Me",
-		href: "about/",
-		images: q("about"),
-		stats: [
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(p, {}),
-				label: "Shopify Plus"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(d, {}),
-				label: "Gorgias"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(x, {}),
-				label: "DevTools"
-			}
-		],
-		description: "My engineering background, certifications, technical competencies, and résumé—with a closer look at how I approach e-commerce operations."
-	},
-	{
-		title: "Testimonials",
-		href: "testimonials/",
-		images: q("testimonials"),
-		stats: [
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(C, {}),
-				label: "Shopify Flow"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(_, {}),
-				label: "ShipBob"
-			},
-			{
-				icon: /* @__PURE__ */ (0, D.jsx)(d, {}),
-				label: "Gorgias"
-			}
-		],
-		description: "Client feedback on automation, margin protection, bulk catalog work, and frontline operations, presented in an interactive testimonial gallery."
-	}
 ];
-function Y() {
-	return /* @__PURE__ */ (0, D.jsx)(W, {
+function D() {
+	return /* @__PURE__ */ (0, c.jsx)(T, {
 		name: "Riovic Matthew Susas",
 		role: "E-commerce Systems Analyst",
 		bio: "**I connect the moving parts of e-commerce.** From Shopify Plus to warehouse routing and automation, I turn complex operations into **clear, reliable systems.**",
@@ -3602,14 +3265,10 @@ function Y() {
 				href: "contact/"
 			}
 		],
-		badges: K,
+		badges: E,
 		autoplay: 0,
 		dragHint: !1,
-		sectionContent: /* @__PURE__ */ (0, D.jsx)("nav", {
-			className: "mobile-section-cards",
-			"aria-label": "Portfolio sections",
-			children: J.map((e) => /* @__PURE__ */ (0, D.jsx)(G, { ...e }, e.href))
-		})
+		sectionContent: /* @__PURE__ */ (0, c.jsx)(i, { layout: "stack" })
 	});
 }
-export { Y as default };
+export { D as default };

@@ -890,7 +890,7 @@ export function PortfolioTemplate(props: PortfolioTemplateProps) {
               <Bio text={bio} ink={t.ink} />
             </p>
 
-            <a className="mobile-connect glowing-shadow" href="contact/">Let’s Connect <ArrowUpRight color="currentColor" /></a>
+            <a className="mobile-connect glowing-shadow connect-glow" href="contact/">Let’s Connect <ArrowUpRight color="currentColor" /></a>
             <div className="mobile-professional-links mt-8 flex flex-wrap gap-4 @6xl:col-start-1 @6xl:row-start-2 @6xl:mt-7">
               {links.map((l) => (
                 <a key={l.label} href={l.href} aria-label={l.label} title={l.label} target={l.href.startsWith("https:") ? "_blank" : undefined} rel={l.href.startsWith("https:") ? "noopener noreferrer" : undefined} className="glowing-shadow flex items-center gap-1.5 text-lg leading-5" style={{ color: t.ink }}>
