@@ -83,6 +83,8 @@ Payment declines must be diagnosed via the raw payment gateway response strings 
 
 ## 3. The 3x3 Discount Class Permutation & Combination Matrix
 
+The diagnostic path above addresses failures that prevent checkout completion. The following sections examine a separate failure mode: orders that complete with discount combinations that erode contribution.
+
 Shopify divides promotional rules into three distinct classes: **Product Discounts**, **Order Discounts**, and **Shipping Discounts**.
 
 ### 3.1 The Master Combinatorial Ruleset
@@ -117,6 +119,8 @@ flowchart LR
 ---
 
 ## 4. Mathematical Modeling: Contribution Margin Protection Floor
+
+Combination rules define which promotions may coexist; they do not determine how much discount a basket can afford. The cost model below calculates the remaining contribution after goods, handling, freight and processing.
 
 To guarantee that no order is ever sold at a loss, every SKU enforces an algorithmic **Contribution Margin Protection Floor**:
 

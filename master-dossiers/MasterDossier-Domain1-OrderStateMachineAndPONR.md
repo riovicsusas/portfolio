@@ -52,6 +52,8 @@ The primary source of failure in e-commerce operations is assuming that Shopify'
 
 ## 3. The "Freeze First" Fulfillment Hold Protocol
 
+The state matrix determines whether an order remains eligible for modification. For an eligible order, the next requirement is to confirm that warehouse execution has stopped before applying the change.
+
 ### 3.1 The Atomic Execution Sequence
 No operator or automated script may edit, exchange, or cancel an order without executing an atomic fulfillment hold.
 
@@ -134,6 +136,8 @@ Synapse Botanicals manufactures and distributes dietary supplements and function
 ---
 
 ## 5. Empirical Simulation & Verification: Order #1004
+
+The decision gates above define when intervention is permitted. Order #1004 illustrates their application to an address-correction request, connecting the requested change to the hold, mutation and release checks.
 
 To prove deterministic execution under live conditions, an empirical test simulation was conducted on Synapse Botanicals' live staging environment.
 

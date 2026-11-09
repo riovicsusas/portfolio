@@ -70,6 +70,8 @@ Headers:
 
 ## 3. Helpdesk State Machine Integration & Tag Taxonomy
 
+The outcome of a hold request determines which actions the support agent may take. The following state taxonomy translates pending, confirmed, rejected and unknown outcomes into explicit operator decisions.
+
 To govern order state transitions and eliminate race conditions, the helpdesk implements an explicit 4-outcome state taxonomy:
 
 - `CS-ADDR-HOLD-PENDING`: Dispatched hold mutation to Shopify; awaiting WMS acknowledgment.
@@ -126,6 +128,8 @@ flowchart TD
 ---
 
 ## 5. Frontline Macro Playbooks & Operational Protocols
+
+The rules route each ticket and initiate the relevant system action. The macros then guide the operator through verification, order changes and customer communication.
 
 ### 5.1 Macro M-01: Pre-PONR Address Mutation Protocol
 - **Triggered When**: Ticket is flagged with `CS-ADDR-HOLD` and physical status is in Queue.

@@ -126,6 +126,8 @@ flowchart TD
 
 ## 4. The Negative Check Rule: Eliminating Runaway Tag Loops
 
+Retry policy determines when a request may be attempted again; duplicate prevention determines whether that attempt represents new work. Tag checks address sequential retriggering, while durable operation records handle concurrent duplicates.
+
 The foundational baseline in Shopify Flow engineering is the **Negative Condition Guard**. While negative condition checks prevent sequential re-trigger loops within single-threaded workflow execution, they are not atomic concurrency locks. True distributed idempotency requires pairing tag guards with durable operation identifiers (`operation_id`), payload request hashes, and optimistic order version checks.
 
 ```
@@ -163,6 +165,8 @@ flowchart TD
 ---
 
 ## 5. Empirical Incident Autopsy: Order #1048 Telemetry
+
+The controls above define how repeated events should be handled. The incident walkthrough below connects those safeguards to a failure scenario before presenting the local coordinator’s verification results.
 
 Order #1048 is a controlled failure scenario illustrating repeated event delivery. Its narrative telemetry is distinct from the executed local coordinator tests below; the harness does not establish actual platform throttling or production performance.
 

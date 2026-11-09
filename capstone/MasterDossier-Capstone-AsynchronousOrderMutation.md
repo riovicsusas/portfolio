@@ -108,6 +108,8 @@ All event times reflect recorded server trace timestamps in EDT (UTC−04:00); T
 
 ## 4. Raw Payload Telemetry
 
+The timeline establishes when the systems diverged. The request and response examples below clarify how the adapter represents an uncertain hold outcome and a later rejection after the warehouse cutoff.
+
 The hold request and `PONR_EXCEEDED` response below illustrate the Synapse adapter contract; they are not native ShipBob API schemas. A custom Flow HTTP request is distinct from a native Shopify webhook delivery.
 
 ### 4.1 Outbound Hold Request (T+35m / 13:35:12 EDT)
@@ -293,6 +295,8 @@ Assess returned supplements through documented quarantine and quality dispositio
 
 ## 7. Root Cause Analysis & Architectural Failure Modes
 
+The containment protocol addresses the affected shipment and customer resolution. Preventing recurrence requires examining why the address change proceeded without a confirmed warehouse hold and why retries continued beyond the editing deadline.
+
 ### 7.1 The Three Failure Modes in Stack Order
 
 | # | Failure Mode | Classification | PONR? |
@@ -375,6 +379,8 @@ The standard edit deadline is 13:42:00. From the first dispatch at 13:35:12, the
 ---
 
 ## 9. Financial Risk Exposure & Unit Economics Autopsy
+
+The retry schedule explains how the intervention window was missed. The following calculation measures the financial consequence by comparing normal fulfillment with the retained-sale replacement branch.
 
 For a recruiter or executive evaluating operational risk, a "Zombie Order" is not merely an engineering anomaly—it represents an immediate collapse of unit economics:
 

@@ -106,6 +106,8 @@ function validateBarcodeRecord(inputUpc, sku, approvedMapping) {
 
 ## 4. Safe Matrixify MERGE Lifecycle & Execution SOP
 
+Validation determines whether each proposed value is acceptable; the import procedure controls where those values are applied. The lifecycle below combines targeted updates, pre-flight checks and a canary batch before broader release.
+
 In standard native Shopify CSV imports, updating partial attributes can inadvertently overwrite unlisted fields or reset inventory levels if blank cells are imported.
 
 Matrixify provides targeted, non-destructive catalog updates by specifying a `Command` column with row-level operations (`MERGE`, `UPDATE`, `DELETE`, or `NEW`). Rows are matched by primary key (`ID`, `Handle`, or `Variant SKU`). In a `MERGE` operation, Matrixify updates only the populated cells in each row, leaving omitted columns, unlisted variants, and untouched metafields intact. Note that Matrixify imports process rows sequentially via API batches rather than executing a globally atomic single-transaction rollback.
@@ -172,6 +174,8 @@ Damaged barcode entries were blocked by pre-flight linters and recovered from th
 - **Inventory Variance Target**: 0 unlinked units and zero Available-to-Sell stock overwrites during MERGE execution.
 
 ### 5.4 Barcode Governance & Checksum Validation Suite
+
+The acceptance criteria above cover the full import workflow. The reproducible suite below exercises the barcode-validation subset and defines the limits of that evidence.
 
 The [barcode suite](../evidence/barcodes/summary.md) validates all twelve synthetic SKU-to-UPC mappings and checks rejection of wrong-product UPCs, placeholders, numeric input, blanks, scientific notation and malformed values. It also exercises leading-zero preservation and corrupted guard patterns.
 

@@ -76,6 +76,8 @@ Basket: 2 Units Focus Stick Packs (stocked at Allentown & Reno) + 1 Unit AM Focu
 
 ## 3. Algorithmic Routing Waterfall Architecture
 
+The cost comparison makes parcel count a routing concern alongside proximity. The waterfall below first checks whether one node can fulfill the entire basket, then ranks eligible nodes or evaluates a split or backorder.
+
 To systematically contain freight leakage, the Shopify Plus routing engine was configured with a strict, hierarchical 3-tier rule stack:
 
 ```mermaid
@@ -128,6 +130,8 @@ flowchart LR
 ---
 
 ## 4. Empirical A/B Simulation: 500-Order Cohort
+
+To quantify the cost of fewer splits, the following cohort comparison holds the baskets constant and varies parcel counts and aggregate freight inputs. It then distinguishes the cohort result from projections at other operating volumes.
 
 > [!NOTE] **Scenario Inputs & Modeling Context:**  
 > The 500-order cohort ($41,200 GMV, average order value $82.40) uses fixed freight inputs and a declared parcel-handling model. Published tariff and actual ZIP-zone verification are outside this execution. Results reflect conditional model calculations comparing naive independent-line proximity against consolidated multi-node waterfall rules.
