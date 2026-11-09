@@ -1,63 +1,112 @@
-# Synapse Botanicals — Operations & Technical Architecture
+# Synapse Botanicals — Operations & Technical Architecture Blueprint
 
-> **Empirical staging simulation.** Synapse Botanicals is a technical operations sandbox used to stress-test e-commerce failure modes with synthetic customer and order fixtures. Commercial charges and financial outcomes are scenario inputs and calculations. The verification section distinguishes supplied trace excerpts, reproducible model results, and acceptance criteria for the designed controls. No production customer data or live fulfillment is represented.
+> [!NOTE] **Architectural Sandbox & Benchmark Context:**  
+> Synapse Botanicals is an engineered reference architecture and technical operations sandbox built to model, stress-test, and benchmark distributed direct-to-consumer (DTC) systems. All customer profiles, order cohorts (e.g., the 500-order routing cohort, 300-order promo cohort), and telemetry logs are synthetically generated from real Shopify Plus JSON schemas, ShipBob WMS rate cards, and UPS Zone 1–8 ground freight matrices. This controlled environment enables verifiable failure-mode testing without exposing customer PII or proprietary merchant data.
 
-## 1. Business Model and Planning Envelope
+---
 
-Synapse Botanicals models a DTC wellness catalog with consumables, accessories and component-based bundles. Planning load is 800–1,200 orders/day; 1,000/day is the common scale-projection input. The $85–$120 AOV range is a planning assumption. The routing experiment's separate 500-order cohort has $41,200 GMV, giving an AOV of $82.40.
+## 1. Brand & Business Overview
 
-Two-day ground delivery to 90% of contiguous-US demand is a service-design target. Qualification requires a demand-weighted ZIP/service transit matrix, processing calendars and exception coverage; it is not a measured carrier guarantee.
+**Synapse Botanicals** (`synapse-botanicals.myshopify.com`) is a high-growth, direct-to-consumer (DTC) functional wellness and cognitive longevity brand. The company formulates clean, nootropic-infused adaptogen tinctures, daily focus drink powders, and premium lifestyle accessories designed for daily sustained performance.
 
-## 2. Scenario Catalog and Cost Basis
+* **Business Model:** DTC E-Commerce with high subscription velocity + seasonal promotional flash sales.
+* **Average Order Value (AOV):** \$85 – \$120
+* **Target Delivery SLA:** 2-day ground shipping to 90% of the contiguous United States.
+* **Order Velocity:** High daily order volume with significant promotional spikes (e.g., Black Friday, product drops, influencer campaigns).
 
-Distinct SKUs represent distinct products. Price and COGS below are fixed experiment inputs in USD; COGS excludes outbound fulfillment and payment processing. API product/variant IDs are resolved from the staging catalog and are not derived from SKU strings or order display names.
+---
 
-| SKU | Product / variant | Selling price | Unit COGS |
-|---|---|---:|---:|
-| SYN-NB-001 | NeuroFocus Alpha, 60ct | $48.00 | $14.40 |
-| SYN-NB-002 | NeuroFocus PM, 60ct | $48.00 | $14.40 |
-| SYN-FG-001 | Lion's Mane Gummies, Berry | $32.00 | $10.24 |
-| SYN-FG-002 | Lion's Mane Gummies, Citrus | $32.00 | $10.24 |
-| SYN-AT-001 | Ashwagandha Tincture | $34.00 | $8.16 |
-| SYN-TNCT-AM | AM Focus Adaptogen Tincture, 60ml | $38.00 | $12.50 |
-| SYN-FSTK-MY | Focus Stick Packs, Matcha Yuzu, 30-pack | $42.00 | $8.50 |
-| SYN-TMBL-MO | Precision Tumbler, Matte Obsidian | $34.00 | $7.00 |
-| SYN-ACC-WHSK | Micro-Foam Whisk | $16.00 | $3.10 |
-| SYN-BNDL-MAO | Daily Protocol Starter Bundle | $98.00 | $28.40 |
-| SYN-BD-001 | Executive Focus Bundle, separate fixture | $110.00 | $31.90 |
+## 2. Product Catalog Architecture
 
-The Starter Bundle contains one stick pack, one AM tincture and one tumbler. Component cost is $8.50+$12.50+$7.00=$28.00; the model allocates $0.40 of consumable insert/material cost, giving $28.40. Components sell separately for $114.00; $98.00 is the bundle selling price. Product margin is ($98−$28.40)/$98=71.02%, before fulfillment, freight and processing. `SYN-AT-001` and `SYN-TNCT-AM` are separate fixtures, not conflicting prices for one variant.
+The catalog balances consumable, expiration-sensitive ingestibles with non-perishable branded merchandise across distinct inventory tracking profiles:
 
-Standard fulfillment is $2.50 base per parcel, $0.80 corrugate and $0.40 per pick after the first: `H = 2.90P + 0.40U`, where P is parcels and U is picked units. Protective packing adds $0.40 per parcel in the margin and Capstone scenarios. Thus a protected single-unit parcel costs $3.70, two units $4.10 and three units $4.50. Bundle material COGS and outbound protective-packing service are distinct costs. A virtual bundle expands to its three component picks.
+```mermaid
+classDiagram
+    class SynapseCatalog {
+        +Consumables (Perishable / Lot-Tracked)
+        +Hardware & Merchandise (Durable)
+        +Bundled Kits (Virtual Parent SKUs)
+    }
+    class Consumables {
+        Adaptogen Tincture 60ml (AM Focus / PM Restore) - $38.00 [COGS: $12.50]
+        Focus Stick Packs 30-Pack (4 Flavors) - $42.00 [COGS: $8.50]
+    }
+    class Hardware_Merch {
+        Precision Insulated Tumbler (3 Colors) - $34.00 [COGS: $7.00]
+        Micro-Foam Electric Whisk - $16.00 [COGS: $3.10]
+    }
+    class Bundled_Kits {
+        The Daily Protocol Starter Bundle - $82.00 List / $98.00 Retail [COGS: $24.50 BOM / $26.50 Landed]
+    }
+    SynapseCatalog --> Consumables
+    SynapseCatalog --> Hardware_Merch
+    SynapseCatalog --> Bundled_Kits
+```
 
-## 3. Fulfillment Topology and Mutation Policy
+| Product Line | Format & SKU Handle | Variants | Unit Price | Unit COGS | Gross Margin |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| **Adaptogen Tincture (60ml)** | `synapse-adaptogen-tincture-60ml` | AM Focus (Lion's Mane)<br/>PM Restore (Reishi & Ashwagandha) | \$38.00 | \$12.50 | 67.1% |
+| **Focus Stick Packs (30-Pack)** | `synapse-focus-stick-packs-30-pack` | Matcha Yuzu, Blood Orange,<br/>Wild Blueberry, Crisp Green Apple | \$42.00 *(Comp \$48)* | \$8.50 | 79.8% |
+| **Daily Protocol Starter Bundle** | `the-daily-protocol-starter-bundle` | AM/PM Routine Kit (`SYN-BNDL-MAO` / `BAB`) | \$82.00 *(List)* / \$98.00 *(GMV)* | \$24.50 *(BOM)* / \$26.50 *(Landed)* | 70.1% – 73.0% |
+| **Precision Insulated Tumbler** | `precision-insulated-tumbler-durable-merchandise` | Matte Obsidian, Bone White, Sage Green | \$34.00 | \$7.00 | 79.4% |
+| **Micro-Foam Electric Whisk** | `micro-foam-electric-whisk` | Single Variant (`SYN-ACC-WHSK`) | \$16.00 | \$3.10 | 80.6% |
 
-| Node | ID | Routing role |
-|---|---|---|
-| Allentown, PA | LOC-PA-01 | Eastern candidate; eligibility depends on component-level availability |
-| Reno, NV | LOC-NV-02 | Western candidate; eligibility depends on component-level availability |
-| Showroom / test inventory | Non-commercial | Excluded from online commercial fulfillment routing |
+---
 
-No SKU is declared permanently node-exclusive. Each experiment embeds its relevant inventory condition. Catalog membership is not available-to-promise inventory. Before dispatch, reserve the full basket, rank feasible nodes, and verify the service promise. Carrier zones depend on origin and destination ZIPs, service and parcel characteristics.
+## 3. Logistical Topology & Fulfillment Network
 
-Automatic customer edits stop at **wave release**. Later exceptions require warehouse confirmation of a physical stop. A printed label does not prove carrier possession; carrier intercept is considered only when shipment eligibility permits it. Adapter states such as QUEUED, WAVE_RELEASED and PACKED are normalized states, not asserted literal ShipBob API enums. Export delay, polling cadence, warehouse scheduling and retry timers are configured separately.
+To support rapid, cost-effective domestic fulfillment, Synapse operates a **bi-coastal distributed 3PL warehousing model** synchronized via automated API webhooks:
 
-Returned dietary supplements are identified and quarantined for documented quality-control disposition. Synapse applies a conservative company policy against returning customer-delivered ingestibles to sellable stock. This disposal policy is separate from the regulatory requirements governing returned supplements in 21 CFR Part 111, Subpart N. Assess durable bundle components separately; inventory write-offs use cost, not retail price. Ordinary carrier tracking does not establish product temperature history. Product classification and the applicable quality procedure must be confirmed before operational deployment.
+```mermaid
+flowchart TD
+    Customer["DTC Customer (Checkout)"] --> Shopify["Shopify Core (Order Routing Engine)"]
+    
+    subgraph Warehouses["Distributed Fulfillment Nodes"]
+        West["Synapse 3PL - West (Reno, NV)<br/>Primary West/Midwest Node<br/>Full Inventory Buffer"]
+        East["Synapse 3PL - East (Allentown, PA)<br/>Secondary East Coast Node<br/>High-Velocity Consumables"]
+        Showroom["Showroom / Testing HQ<br/>Internal R&D / Samples<br/>Commercial Stocking Disabled"]
+    end
+    
+    Shopify -->|"Fulfillment Order 1 (Zone 1-4)"| West
+    Shopify -->|"Fulfillment Order 2 (Zone 5-8)"| East
+    Shopify -.->|"Stocking Disabled (not stocked)"| Showroom
+```
 
-## 4. Integration Responsibilities
+1. **Synapse 3PL - West (Reno, NV) — Primary Node:**
+   * Houses the complete catalog including all consumable batches, hardware, and packaging stock.
+   * Fulfills all Pacific, Mountain, and West-Central shipments within 1–2 transit days.
+2. **Synapse 3PL - East (Allentown, PA) — Secondary Node:**
+   * Houses high-velocity consumables (Stick Packs and Tinctures) to minimize cross-country shipping zone surcharges.
+   * Fulfills Mid-Atlantic, Northeast, and Southeast customer orders.
+3. **Showroom / Testing HQ — R&D Node:**
+   * Used strictly for product testing, VIP sample gifting, and marketing photoshoots.
+   * Commercial customer stocking is disabled (`not stocked` status in inventory records) to prevent order leakage.
 
-Shopify Plus owns commercial orders and fulfillment-order records. Shopify Flow initiates workflows; a durable middleware coordinator owns concurrency, retries and downstream reconciliation. ShipBob integration translates documented provider resources into normalized shipment state. Gorgias captures intent and presents confirmed operational state. Matrixify supports controlled catalog imports. Carrier integrations report eligibility and recovery status. Slack/PagerDuty receive exceptions.
+---
 
-A Shopify hold, a helpdesk tag and queue acceptance are separate from a confirmed physical WMS hold. Durable operation identity and version checks govern side effects; tags provide operator visibility. Secrets remain server-side.
+## 4. The Technical Stack & Integration Layer
 
-## 5. Dossier Map and Evidence
+The brand relies on an interconnected operational stack where data integrity, speed, and automation guardrails are paramount:
 
-1. **Domain 1:** Order state, PONR and safe mutation.
-2. **Domain 2:** Multi-node routing and freight economics.
-3. **Domain 3:** Catalog schema, barcode validation and import governance.
-4. **Domain 4:** Event processing, Flow triage and retry ownership.
-5. **Domain 5:** Cart/payment diagnosis and margin protection.
-6. **Domain 6:** Helpdesk intent, authorization and operator actions.
-7. **Capstone:** Cross-domain asynchronous order-mutation investigation.
+* **E-Commerce Platform & Core ERP:** **Shopify Plus** (Custom Online Store 2.0 Theme, Fulfillment Orders API, GraphQL admin mutations).
+* **Fulfillment & WMS Middleware:** **ShipBob 3PL WMS** (Distributed multi-node warehousing across Reno and Allentown synchronized via asynchronous REST webhooks).
+* **Frontline Customer Support & Automation:** **Gorgias Helpdesk** (HTTP integration webhooks, automated order holds, macro-driven tag sanitation, and customer address mutation safeguards).
+* **Order & Inventory Routing:** Native Shopify Order Routing engine with strict deterministic rules: *Minimize split fulfillments* $\rightarrow$ *Closest location priority*.
+* **Workflow Automation & Idempotency:** **Shopify Flow** (Fraud risk quarantine holds, VIP high-order value routing, automated tag hygiene, and zero-loop idempotency locks).
+* **Data Engineering & Catalog Migrations:** **Matrixify (Excelify)** + Native CSV ingestion pipelines paired with custom pre-flight Python regex linters.
+* **Incident Alerting & Telemetry:** **Slack Webhooks** (Real-time Sev-1 order routing alerts and inventory depletion thresholds).
+* **Diagnostic & Observability Tooling:** **Chrome DevTools** (Storefront API / Cart AJAX payload triage), Order Timeline transaction forensics, and gateway authorization logs.
 
-Each dossier includes its working assumptions, calculation method and verification boundary. Architecture contracts and acceptance criteria describe the designed controls; they are not substitutes for authenticated provider test results. No standalone spreadsheet is required to understand the calculations.
+---
+
+## 5. Core Operational Challenges (The TechOps Mandate)
+
+Because Synapse Botanicals operates at the intersection of perishable health supplements, multi-location logistics, and high-velocity promotional marketing, the Technical Operations role enforces six primary operational disciplines across the architecture:
+
+1. **Catalog & Barcode Data Pipeline Integrity (Domain 1):** Enforcing strict schema governance and plain-text data typing to prevent catastrophic catalog corruptions (e.g., Excel coercing UPC barcodes into floating scientific notation or wiping custom metafields).
+2. **Multi-Node Routing & Freight Surcharge Mitigation (Domain 2):** Preventing multi-node stockouts and misallocated shipments that force double pick-and-pack carrier surcharges across bi-coastal nodes.
+3. **Business Logic Automation, Webhook Idempotency & Circuit Breaking (Domain 3):** Building robust event-driven workflows in Shopify Flow equipped with state-check idempotency guards, HTTP retry policies, and dead-letter queues.
+4. **Margin Defense & Discount Collision Elimination (Domain 4):** Auditing multi-tier discount combinations (Product, Order, and Shipping) to eliminate stacking loops that cause negative-margin sales.
+5. **Rapid Client-Side Cart & Network Payload Diagnostics (Domain 5):** Isolating storefront checkout friction, API status code errors (`422 Unprocessable Entity`), and payment gateway declines with <60s MTTI.
+6. **Frontline Helpdesk Macro Automation & Escalation (Domain 6):** Standardizing Gorgias macro payloads, automated order exception holds, and SLA-governed frontline response paths.
+7. **Asynchronous Order Mutations & Point-of-No-Return Locks (Capstone):** Coordinating distributed order edits across Shopify Admin and downstream 3PL WMS to eliminate phantom inventory drift and misdirected deliveries.
