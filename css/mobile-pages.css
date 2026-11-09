@@ -1,0 +1,88 @@
+/* Dedicated pages: fluid sizing and usable content widths on phones. */
+@media (max-width: 767px) {
+  body.responsive-page { height: 100dvh; min-height: 0; }
+  body.responsive-page > .homepage-back-link { margin: 10px clamp(14px, 4vw, 24px); padding: 8px 0; font-size: 13px; flex-shrink: 0; }
+  body.responsive-page .main {
+    flex: 1 1 auto;
+    height: auto !important;
+    min-height: 0;
+    width: 100% !important;
+    padding: 16px clamp(14px, 4vw, 24px) 36px !important;
+  }
+  .responsive-page .main > *, .responsive-page .page, .responsive-page .section-header { min-width: 0; max-width: 100%; }
+  .responsive-page .section-header { margin-bottom: 22px; }
+  .responsive-page .section-header h2 { font-size: clamp(22px, 6vw, 28px); line-height: 1.25; overflow-wrap: anywhere; }
+  .responsive-page .section-header p { font-size: 13px; line-height: 1.65; }
+  .responsive-page .main a, .responsive-page .main p, .responsive-page .main h3, .responsive-page .main h4 { overflow-wrap: anywhere; }
+  .responsive-page .main img { max-width: 100%; }
+
+  /* Project overview: keep the URL, label, and toggle within the card. */
+  .responsive-page .company-dropdown-toggle { flex-direction: column; align-items: stretch; padding: 16px; gap: 14px; }
+  .responsive-page .company-toggle-left { flex-direction: column; align-items: flex-start; min-width: 0; gap: 10px; }
+  .responsive-page .company-toggle-name { font-size: 14px; line-height: 1.5; }
+  .responsive-page .company-toggle-right { width: 100%; min-width: 0; justify-content: space-between; gap: 8px; }
+  .responsive-page .company-store-pill { flex: 1; min-width: 0; white-space: normal; overflow-wrap: anywhere; font-size: 11px; }
+  .responsive-page .company-caret-btn { flex-shrink: 0; }
+  .responsive-page .company-badge { max-width: 100%; font-size: 10px; }
+  .responsive-page .company-dropdown-content { padding: 16px; }
+  .responsive-page .company-details-grid, .responsive-page .projects-curated-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .responsive-page .company-detail-item, .responsive-page .project-card-body { min-width: 0; padding: 18px; }
+  .responsive-page .filter-bar { flex-wrap: wrap; gap: 8px; }
+  .responsive-page .filter-pill { max-width: 100%; min-height: 38px; font-size: 11px; white-space: normal; line-height: 1.4; }
+  .responsive-page .project-card-title { font-size: clamp(17px, 4.7vw, 21px) !important; line-height: 1.35; }
+  .responsive-page .project-card-desc { font-size: 13px; line-height: 1.65; }
+  .responsive-page .project-card-21.featured-capstone { grid-template-columns: minmax(0, 1fr); }
+  .responsive-page .project-card-21.featured-capstone .project-card-image { min-height: 0; height: clamp(170px, 50vw, 260px); }
+  .responsive-page .project-card-tags, .responsive-page .tech-stack-badges { flex-wrap: wrap; }
+  .responsive-page .deliverable-detail { padding: 18px !important; }
+  .responsive-page .loom-display-screen { padding: 20px 14px !important; }
+  .responsive-page .main table { display: block; max-width: 100%; overflow-x: auto; }
+
+  /* Biography: allow long credentials, role labels, and the résumé link to wrap. */
+  .responsive-page .about-grid, .responsive-page .mandate-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .responsive-page .about-bio-card, .responsive-page .skill-block { padding: 20px; min-width: 0; }
+  .responsive-page .about-bio-header { flex-direction: column; align-items: stretch; gap: 16px; }
+  .responsive-page .about-bio-card h3 { font-size: clamp(20px, 5.6vw, 25px); line-height: 1.35; }
+  .responsive-page .about-bio-card p { font-size: 13px; line-height: 1.75; }
+  .responsive-page .resume-download-btn { justify-content: center; max-width: 100%; padding: 12px; white-space: normal; line-height: 1.4; }
+  .responsive-page .skill-row { flex-wrap: wrap; gap: 8px; }
+  .responsive-page .skill-title { min-width: 0; }
+  .responsive-page .cert-item { align-items: flex-start; padding: 12px; }
+  .responsive-page .cert-info { min-width: 0; }
+
+  /* Timeline: use a narrow rail so updates retain the available reading width. */
+  .responsive-page .timeline-page-wrapper { width: 100%; padding: 0 0 24px; }
+  .responsive-page .timeline-page-header { padding: 12px 0 24px; }
+  .responsive-page .timeline-page-title { font-size: clamp(24px, 7vw, 34px); line-height: 1.15; }
+  .responsive-page .timeline-page-subtitle { font-size: 13px; line-height: 1.7; }
+  .responsive-page .tl-entry { gap: 12px; padding: 24px 0; }
+  .responsive-page .tl-dot-col { width: 24px; }
+  .responsive-page .tl-track { left: 11px; }
+  .responsive-page .tl-dot-ring { width: 24px; height: 24px; top: 12px; }
+  .responsive-page .tl-dot-inner { width: 8px; height: 8px; }
+  .responsive-page .tl-mobile-date { font-size: clamp(20px, 5vw, 26px); margin-bottom: 10px; }
+  .responsive-page .tl-summary { margin-bottom: 18px; font-size: 12px; }
+  .responsive-page .tl-content-col, .responsive-page .tl-card-body { min-width: 0; }
+  .responsive-page .tl-card { flex-direction: column; padding: 16px; gap: 12px; }
+  .responsive-page .tl-card:hover { transform: none; }
+  .responsive-page .tl-card-title { font-size: clamp(15px, 4.3vw, 18px); }
+  .responsive-page .tl-card-tag { max-width: 100%; white-space: normal; line-height: 1.4; }
+  .responsive-page .tl-card-btn-primary, .responsive-page .tl-card-btn-secondary { white-space: normal; min-height: 38px; }
+  .responsive-page .latest-modal-overlay { padding: 12px; }
+  .responsive-page .latest-modal-sheet { width: 100%; max-height: calc(100dvh - 24px); padding: 20px; }
+  .responsive-page .modal-metrics-grid { grid-template-columns: minmax(0, 1fr); }
+  .responsive-page .modal-actions-footer { flex-wrap: wrap; }
+
+  /* Testimonial portrait, quote, and controls scale with the content width. */
+  .responsive-page .testimonial-carousel-container { margin: 20px auto; }
+  .responsive-page .t-carousel-stage { min-height: 0; }
+  .responsive-page .t-slide-desktop { flex-direction: column; width: 100%; min-width: 0; }
+  .responsive-page .t-slide-avatar { width: min(100%, 280px); height: auto; aspect-ratio: 1; margin: 0 auto 16px; }
+  .responsive-page .t-slide-card { width: 100%; max-width: 100%; min-width: 0; padding: 20px 16px; margin-left: 0; border-radius: 20px; }
+  .responsive-page .t-slide-name { font-size: clamp(22px, 6vw, 28px); }
+  .responsive-page .t-slide-title { font-size: 12px; line-height: 1.5; }
+  .responsive-page .t-slide-quote { font-size: 14px; line-height: 1.7; }
+  .responsive-page .t-slide-socials { justify-content: center; flex-wrap: wrap; }
+  .responsive-page .t-carousel-controls { gap: 16px; margin-top: 22px; }
+  .responsive-page .card-contact { padding: 22px 16px !important; }
+}
