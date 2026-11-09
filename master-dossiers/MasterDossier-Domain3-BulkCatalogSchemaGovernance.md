@@ -69,39 +69,44 @@ To govern who can edit what and prevent accidental database corruption, every fi
 └──────────────────┴──────────┴──────────────┴────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 The Barcode Sanitization Script (Fixing Scientific Notation)
-If a legacy CSV has already corrupted barcodes into scientific notation (e.g. `8.50012E+11`), standard text conversion will fail. The following transformation pipeline must be executed:
+### 3.2 Barcode Validation & Authoritative Recovery
+
+Preserve identifiers as exact text. Scientific notation can be display-only; inspect the actual export. A rounded exported string cannot recreate missing digits. Reject malformed values, then recover only from the approved SKU/variant mapping. Export digits without formulas or literal apostrophes.
+
+The following validator is the implementation exercised by the evidence suite. `approvedMapping` maps each SKU to its fixture record, including the exact `upc` string. The fixtures are synthetic test identifiers, not evidence of GS1 licensing.
 
 ```javascript
-/**
- * Barcode Reconstitution Pipeline (Regex Linter & String Coercion)
- */
-function sanitizeBarcode(rawVal) {
-  let str = String(rawVal).trim();
-  
-  // Detect and resolve scientific notation
-  if (str.includes('E+') || str.includes('e+')) {
-    let num = Number(str);
-    str = BigInt(Math.round(num)).toString();
+function calculateModulo10CheckDigit(elevenDigits) {
+  if (typeof elevenDigits !== 'string' || !/^[0-9]{11}$/.test(elevenDigits)) {
+    throw new TypeError('CHECK_DIGIT_REQUIRES_ELEVEN_DIGIT_TEXT');
   }
-  
-  // Pad missing leading zeros for standard 12-digit UPC-A
-  while (str.length < 12) {
-    str = '0' + str;
-  }
-  
-  // Final validation against UPC-A regex
-  if (!/^\d{12}$/.test(str)) {
-    throw new Error(`FATAL_BARCODE_CORRUPTION: ${str} failed 12-digit check`);
-  }
-  
-  return "'" + str; // Explicit string coercion for spreadsheet export
+  const sum = [...elevenDigits].reduce((total, digit, index) =>
+    total + Number(digit) * (index % 2 === 0 ? 3 : 1), 0);
+  return (10 - sum % 10) % 10;
+}
+
+function validateBarcodeRecord(inputUpc, sku, approvedMapping) {
+  const reject = (error, details) => ({ valid: false, error, details });
+  if (typeof inputUpc !== 'string') return reject('BARCODE_TEXT_REQUIRED', 'Numeric and other non-string identifiers are rejected before coercion.');
+  if (inputUpc.length === 0) return reject('BLANK_BARCODE', 'A barcode is required.');
+  if (/[eE][+-]?\d+/.test(inputUpc)) return reject('SCIENTIFIC_NOTATION_DETECTED', 'Restore from the approved variant mapping; no precision recovery is inferred.');
+  if (!/^[0-9]+$/.test(inputUpc)) return reject('NON_NUMERIC_CHARACTERS', 'Export exact digits without whitespace, formulas or apostrophes.');
+  if (inputUpc.length !== 12) return reject('INVALID_LENGTH_NOT_12_DIGITS', `Received ${inputUpc.length} digits.`);
+  if (/^0{12}$/.test(inputUpc)) return reject('PLACEHOLDER_BARCODE', 'All-zero placeholders are prohibited.');
+  const computedCheckDigit = calculateModulo10CheckDigit(inputUpc.slice(0, 11));
+  if (Number(inputUpc[11]) !== computedCheckDigit) return reject('CHECKSUM_MODULO_10_MISMATCH', `Expected check digit ${computedCheckDigit}.`);
+  const approved = approvedMapping.get(sku);
+  if (!approved) return reject('SKU_NOT_IN_UNIVERSE_A_MASTER', `No approved fixture mapping for ${sku}.`);
+  if (approved.upc !== inputUpc) return reject('SKU_BARCODE_MISMATCH', 'Checksum-valid barcode does not match this SKU.');
+  return { valid: true, upc: inputUpc, sku, computedCheckDigit };
 }
 ```
 
 ---
 
 ## 4. Safe Matrixify MERGE Lifecycle & Execution SOP
+
+Validation determines whether each proposed value is acceptable; the import procedure controls where those values are applied. The lifecycle below combines targeted updates, pre-flight checks and a canary batch before broader release.
 
 In standard native Shopify CSV imports, updating partial attributes can inadvertently overwrite unlisted fields or reset inventory levels if blank cells are imported.
 
@@ -170,9 +175,10 @@ Damaged barcode entries were blocked by pre-flight linters and recovered from th
 
 ### 5.4 Barcode Governance & Checksum Validation Suite
 
-The complete 12-variant Universe A catalog was verified using an automated GS1 Modulo-10 checksum engine and software round-trip decoding harness ([`evidence/barcodes/`](../evidence/barcodes/summary.md)):
-- **100% Modulo-10 Verification**: All 12 canonical UPC-A barcodes pass standard Modulo-10 checksum validation.
-- **100% Round-Trip Optical Decoding**: All 12 barcodes were encoded into standard 95-bit guard patterns and decoded by an independent software reader with zero bit-drift.
-- **Negative Rejection Validation**: 7 deliberate corruption edge-cases (scientific notation `8.50041E+11`, 11-digit truncations, single-bit check flips, and extraneous SKUs) were successfully trapped by pre-flight validation rules before database ingestion.
+The acceptance criteria above cover the full import workflow. The reproducible suite below exercises the barcode-validation subset and defines the limits of that evidence.
+
+The [barcode suite](../evidence/barcodes/summary.md) validates all twelve synthetic SKU-to-UPC mappings and checks rejection of wrong-product UPCs, placeholders, numeric input, blanks, scientific notation and malformed values. It also exercises leading-zero preservation and corrupted guard patterns.
+
+Each approved UPC is encoded into a 95-bit stream and decoded using shared pattern tables. This establishes bitstream self-consistency, not independent optical-decoder agreement, printed-label quality or warehouse-terminal acceptance. Passing checks are enumerated in the generated report; no licensed GTIN ownership or physical scanner result is inferred.
 
 ---

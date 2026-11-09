@@ -1,0 +1,14 @@
+{
+  "classification": "Public reference snapshot, not an executed API response",
+  "publisher": "UPS-API",
+  "source_url": "https://github.com/UPS-API/api-documentation/blob/fd57ca9fde3c26c4ec5c2c4f4831715a223daa85/DeliveryIntercept.yaml",
+  "upstream_commit": "fd57ca9fde3c26c4ec5c2c4f4831715a223daa85",
+  "source_yaml_sha256": "704e1993da72aa22790575a64e67e9f34e50e16e24af243e6ceeebdcc08e29d0",
+  "converted_json_sha256": "6bf051ea964d3c74de18c30b87505d80f9ccf2056d6809fe9cecf700355ec33b",
+  "converted_at_utc": "2026-11-09T17:48:50.232134+00:00",
+  "conversion": "Previously retrieved official YAML snapshot parsed with PyYAML, serialized to JSON; no runtime YAML dependency",
+  "documented_api_server_version": "v2",
+  "upstream_info_version": "1.0",
+  "live_cie_executed": false,
+  "validator_scope": "Selected schema constraints and return-operation field checks; not a complete OpenAPI validator or provider certification"
+}

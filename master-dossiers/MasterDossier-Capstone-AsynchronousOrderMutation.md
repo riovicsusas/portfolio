@@ -108,6 +108,8 @@ All event times reflect recorded server trace timestamps in EDT (UTC−04:00); T
 
 ## 4. Raw Payload Telemetry
 
+The timeline establishes when the systems diverged. The request and response examples below clarify how the adapter represents an uncertain hold outcome and a later rejection after the warehouse cutoff.
+
 The hold request and `PONR_EXCEEDED` response below illustrate the Synapse adapter contract; they are not native ShipBob API schemas. A custom Flow HTTP request is distinct from a native Shopify webhook delivery.
 
 ### 4.1 Outbound Hold Request (T+35m / 13:35:12 EDT)
@@ -293,6 +295,8 @@ Assess returned supplements through documented quarantine and quality dispositio
 
 ## 7. Root Cause Analysis & Architectural Failure Modes
 
+The containment protocol addresses the affected shipment and customer resolution. Preventing recurrence requires examining why the address change proceeded without a confirmed warehouse hold and why retries continued beyond the editing deadline.
+
 ### 7.1 The Three Failure Modes in Stack Order
 
 | # | Failure Mode | Classification | PONR? |
@@ -376,6 +380,8 @@ The standard edit deadline is 13:42:00. From the first dispatch at 13:35:12, the
 
 ## 9. Financial Risk Exposure & Unit Economics Autopsy
 
+The retry schedule explains how the intervention window was missed. The following calculation measures the financial consequence by comparing normal fulfillment with the retained-sale replacement branch.
+
 For a recruiter or executive evaluating operational risk, a "Zombie Order" is not merely an engineering anomaly—it represents an immediate collapse of unit economics:
 
 Starter Bundle COGS is modeled at $28.40 in this scenario (reflecting $28.00 raw component costs—Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00—plus $0.40 dedicated packaging and insert material). Credit card gateway processing is calculated as `round($98.00 × 2.9% + $0.30, 2) = $3.14`, assuming zero tax and free ground shipping revenue. The replacement branch retains the original sale and all initial fulfillment costs, while recognizing the $25.00 customer goodwill concession at full face value as an operational expense (future unredeemed account credit liabilities may be treated differently under specific corporate accounting policies).
@@ -450,20 +456,21 @@ All foundational technical frameworks synthesized in this Capstone are documente
 
 ## 12. Delivery Assets & Systems Architecture Checklist
 
-Deliverable verification status is categorized into three explicit states: **Specified** (architectural design documented), **Implemented** (configuration or code active in staging environment), and **Verified in Staging** (empirically tested with logged inputs, executed outputs, and validated acceptance results). Staging verification outputs are maintained in [`evidence/`](../evidence/README.md).
+The evidence package distinguishes a documented specification, executed local model tests, focused offline contract checks, authenticated vendor-sandbox execution and physical verification. These are different scopes. No local result below establishes a live Shopify, ShipBob, Gorgias, SQS or carrier deployment.
 
-| Technical Deliverable | Location in Portfolio | Status | Staging Evidence Artifact |
-|-----------------------|-----------------------|:------:|---------------------------|
-| Capstone Systems Investigation Dossier | `master-dossiers/MasterDossier-Capstone-AsynchronousOrderMutation.md` | Implemented | Comprehensive Systems Spec |
-| Point-of-No-Return (PONR) Decision Engine | Domain 1 Master Dossier (Sections 2 & 4) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) |
-| Multi-Node Freight Optimization Waterfall | Domain 2 Master Dossier (Sections 2 & 3) | **Verified in Staging** | [`evidence/freight/results.json`](../evidence/freight/summary.md) |
-| Matrixify Catalog Pre-Flight Schema Audit | Domain 3 Master Dossier (Sections 3 & 4) | **Verified in Staging** | [`evidence/barcodes/results.json`](../evidence/barcodes/summary.md) |
-| Shopify Flow Webhook & DLQ Triage Matrix | Domain 4 Master Dossier (Sections 2 & 3) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) |
-| Algorithmic Margin Defense & Cart Diagnostics | Domain 5 Master Dossier (Sections 3 & 4) | **Verified in Staging** | [`evidence/costs/sensitivity.json`](../evidence/costs/summary.md) |
-| Gorgias Frontline Webhook Automation Engine | Domain 6 Master Dossier (Sections 2 & 4) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) |
-| GraphQL Order State Inspection Query | Embedded in Capstone Dossier (Section 5.3) | Implemented | Schema Pinned |
-| Carrier Package Intercept API Integration | Embedded in Capstone Dossier (Section 6.1) | **Verified in Staging** | [`evidence/carrier-recovery/results.json`](../evidence/carrier-recovery/summary.md) |
-| Amazon SQS Dead-Letter Queue Architecture | Embedded in Capstone Dossier (Section 7.3) | Specified | Architecture Blueprint |
+| Technical Deliverable | Documented Location | Evidence Scope | Artifact |
+|---|---|---|---|
+| Capstone investigation | This dossier | Documented scenario and reproducible financial model | [Cost results](../evidence/costs/summary.md) |
+| PONR and hold coordination | Domain 1 | Local SQLite simulator safety and process-restart tests | [Coordinator results](../evidence/latency/summary.md) |
+| Multi-node freight economics | Domain 2 | Conditional model and reservation-fixture assertions; tariffs unverified | [Freight results](../evidence/freight/summary.md) |
+| Barcode governance | Domain 3 | Exact mapping, checksum and shared-table bitstream tests; Matrixify import specified | [Barcode results](../evidence/barcodes/summary.md) |
+| Flow and retry architecture | Domain 4 | Local coordinator cases; Flow/SQS integration specified | [Coordinator results](../evidence/latency/summary.md) |
+| Margin model | Domain 5 | Cent-level arithmetic and boundary assertions; checkout enforcement specified | [Cost results](../evidence/costs/summary.md) |
+| Helpdesk automation | Domain 6 | Workflow specified; no authenticated Gorgias execution | [Evidence scope](../evidence/README.md) |
+| GraphQL inspection | §5.3 | Versioned schema-compatible example; no authenticated execution claimed | Query in this dossier |
+| Carrier recovery | §6.1 | Focused official-contract checks and local recovery events; no CIE/physical test | [Recovery results](../evidence/carrier-recovery/summary.md) |
+| SQS architecture | §7.3 | Specified; local SQLite tests do not verify deployed SQS | Architecture in this dossier |
+
 
 ---
 

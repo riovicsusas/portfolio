@@ -1,65 +1,104 @@
-# Workstream D: Transparent BOM & Unit Cost Sensitivity Evidence
+# BOM and Contribution Evidence
 
-**Generated:** 2026-11-09T16:34:01.317Z  
-**Classification:** Scenario Inputs & Deterministic Sensitivity Modeling  
+Classification: scenario inputs and calculated results. All money is represented as integer cents; percentage fees use rational arithmetic with half-up rounding.
 
----
+## Bundle cost inputs
 
-## 1. Starter Bundle BOM Provenance & Cost Reconciliation
+| Component | Quantity | Extended cost |
+|---|---:|---:|
+| Focus Stick Packs 30-Pack | 1 | $8.50 |
+| AM Adaptogen Tincture 60ml | 1 | $12.50 |
+| Precision Tumbler, Matte Obsidian | 1 | $7.00 |
+| Raw component BOM | | $28.00 |
+| Assumed kitting material | | $0.40 |
+| Kitted cost | | $28.40 |
 
-The unit costs across all technical dossiers are reconciled into a single transparent ledger:
+These are declared scenario costs. No historical supplier contract, invoice or procurement transaction is established. The kitting allowance is product material, distinct from outbound fulfillment service.
 
-| BOM Component Item | SKU Lineage | Individual Price | Direct Component COGS | Scenario Notes |
-| :--- | :--- | :---: | :---: | :--- |
-| **Focus Stick Packs (30ct)** | `SYN-FSTK-MY` / `BO` | $42.00 | **$8.50** | Component unit cost |
-| **Adaptogen Tincture (60ml)** | `SYN-TNCT-AM` | $38.00 | **$12.50** | Component unit cost |
-| **Precision Insulated Tumbler** | `SYN-TMBL-MO` / `BW` | $34.00 | **$7.00** | Component unit cost |
-| **Subtotal (Raw Components)** | — | $114.00 (Unbundled) | **$28.00** | **Pure Component BOM** |
-| **Custom Kitting Box & Inserts**| — | — | **$0.40** | Dedicated packaging / labor |
-| **Total Kitted Bundle COGS** | `SYN-BNDL-MAO` / `BAB` | **$98.00 MSRP / $82 Promo** | **$28.40** | **Capstone Scenario Cost** |
+## Separate financial scenarios
 
-> **Historical Contract Footnote**: Prior unbundled bulk procurement runs achieved a **$24.50** component baseline; landed container shipments incurred **$26.50**. The **$28.00 / $28.40** figures represent the authoritative active operational scenario inputs.
+Shipping revenue and tax are zero for these baselines. Tax collected is excluded from revenue but included in the processing base when applicable.
 
----
+| Scenario | Merchandise | COGS | Handling | Freight | Processing | Contribution | Contribution margin | Minimum payable |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| capstone | $98.00 | $28.40 | $4.50 | $7.20 | $3.14 | $54.76 | 55.88% | $41.61 |
+| alternative_standard | $98.00 | $28.40 | $4.90 | $6.50 | $3.14 | $55.06 | 56.18% | $41.30 |
+| alternative_promo | $82.00 | $28.40 | $4.90 | $6.50 | $2.68 | $39.52 | 48.2% | $41.30 |
+| reference_price_82_40 | $82.40 | $28.40 | $4.90 | $6.50 | $2.69 | $39.91 | 48.43% | $41.30 |
 
-## 2. Baseline Unit Economics (MSRP vs Promotional Entry)
+The alternative fulfillment rows intentionally use different handling/freight from the Capstone. The representative-price row is not a measurement of cohort profitability.
 
-| Financial Metric | Standard MSRP ($98.00) | Promotional Price ($82.00) | Cohort Average ($82.40) |
-| :--- | :---: | :---: | :---: |
-| **Gross Revenue** | $98.00 | $82.00 | $82.40 |
-| **COGS (Kitted)** | -$28.40 | -$28.40 | -$28.40 |
-| **Gross Profit / Margin** | **$69.60 (71.02%)** | **$53.60 (65.37%)** | **$54.00 (65.53%)** |
-| **3PL Pick/Pack Handling** | -$4.90 | -$4.90 | -$4.90 |
-| **Standard Ground Freight** | -$6.50 | -$6.50 | -$6.50 |
-| **Payment Processing (2.9% + $0.30)** | -$3.14 | -$2.68 | -$2.69 |
-| **Net Dollar Contribution** | **+$55.06** | **+$39.52** | **+$39.91** |
-| **Net Contribution Margin %** | **56.18%** | **48.20%** | **48.43%** |
+## Capstone replacement branch
 
----
+| Additional recovery cost | Amount |
+|---|---:|
+| Intercept scenario charge | $17.50 |
+| Return freight | $8.40 |
+| Fresh replacement COGS | $28.40 |
+| Replacement handling | $4.50 |
+| Replacement freight | $14.80 |
+| Goodwill expense | $25.00 |
+| Total incremental cost | $98.60 |
 
-## 3. Parametric Sensitivity Sweeps
+Baseline $54.76 − incremental recovery $98.60 = retained-sale contribution **-$43.84**. Original COGS, handling, outbound freight and processing remain incurred. No salvage recovery is assumed. Goodwill is fully expensed in this scenario.
 
-### A. Component Cost Sensitivity (±20% Shift on Raw Ingredients)
-| Component Shift | Raw BOM | Total COGS | MSRP Net Contrib ($) | MSRP Margin % | Promo Net Contrib ($) | Promo Margin % | Breakeven Floor |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **-20%** | $22.40 | $22.80 | +$60.66 | 61.9% | +$45.12 | 55.02% | **$35.53** |
-| **-10%** | $25.20 | $25.60 | +$57.86 | 59.04% | +$42.32 | 51.61% | **$38.41** |
-| **+0%** | $28.00 | $28.40 | +$55.06 | 56.18% | +$39.52 | 48.2% | **$41.30** |
-| **+10%** | $30.80 | $31.20 | +$52.26 | 53.33% | +$36.72 | 44.78% | **$44.18** |
-| **+20%** | $33.60 | $34.00 | +$49.46 | 50.47% | +$33.92 | 41.37% | **$47.06** |
+A separate lost-chargeback branch reverses $98.00 principal and adds $15.00 dispute fee, producing **-$156.84**. Neither is included in the retained-sale branch.
 
-### B. Outbound Freight Sensitivity (Local Zone 2 vs Cross-Country Zone 8)
-| Freight Cost | Zone / Service Context | MSRP Net Contrib ($) | MSRP Margin % | Promo Net Contrib ($) | Promo Margin % | Breakeven Floor |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **$4.50** | Zone 1-2 Ground | +$57.06 | 58.22% | +$41.52 | 50.63% | **$39.24** |
-| **$6.50** | Zone 1-2 Ground | +$55.06 | 56.18% | +$39.52 | 48.2% | **$41.30** |
-| **$8.50** | Zone 5 Ground | +$53.06 | 54.14% | +$37.52 | 45.76% | **$43.36** |
-| **$10.50** | Zone 5 Ground | +$51.06 | 52.1% | +$35.52 | 43.32% | **$45.42** |
-| **$14.60** | Zone 8 Cross-Country | +$46.96 | 47.92% | +$31.42 | 38.32% | **$49.64** |
-| **$17.80** | Zone 8 Cross-Country | +$43.76 | 44.65% | +$28.22 | 34.41% | **$52.94** |
+## Sensitivity analysis
 
----
+The following chosen ranges hold the promotional scenario's other inputs fixed; they are not supplier quotes or carrier zone assignments. Minimum payable is the lowest whole-cent amount with nonnegative contribution under the rounded processing fee. Its preceding cent is asserted negative. A production policy needs a positive buffer and actual basket costs.
 
-## 4. Evidentiary Boundary
-- **What this proves**: Reconciles all bundle pricing discrepancies across dossiers, transparently details the $28.00 vs $28.40 provenance, and proves the financial floor ($41.20 standard / $49.54 cross-country) below which discounts cause cash burn.
-- **What remains outside scope**: Synapse Botanicals private audited historical general ledger tax filings and supplier contract invoices.
+### Component costs
+
+| Parameter | COGS | Freight | Contribution | Minimum payable |
+|---|---:|---:|---:|---:|
+| -20% | $22.80 | $6.50 | $45.12 | $35.53 |
+| -10% | $25.60 | $6.50 | $42.32 | $38.41 |
+| 0% | $28.40 | $6.50 | $39.52 | $41.30 |
+| 10% | $31.20 | $6.50 | $36.72 | $44.18 |
+| 20% | $34.00 | $6.50 | $33.92 | $47.06 |
+
+### Kitting material
+
+| Parameter | COGS | Freight | Contribution | Minimum payable |
+|---|---:|---:|---:|---:|
+| $0.20 | $28.20 | $6.50 | $39.72 | $41.09 |
+| $0.40 | $28.40 | $6.50 | $39.52 | $41.30 |
+| $0.60 | $28.60 | $6.50 | $39.32 | $41.50 |
+| $0.80 | $28.80 | $6.50 | $39.12 | $41.71 |
+| $1.00 | $29.00 | $6.50 | $38.92 | $41.92 |
+
+### Freight
+
+| Parameter | COGS | Freight | Contribution | Minimum payable |
+|---|---:|---:|---:|---:|
+| $4.50 | $28.40 | $4.50 | $41.52 | $39.24 |
+| $6.50 | $28.40 | $6.50 | $39.52 | $41.30 |
+| $8.50 | $28.40 | $8.50 | $37.52 | $43.36 |
+| $10.50 | $28.40 | $10.50 | $35.52 | $45.42 |
+| $14.60 | $28.40 | $14.60 | $31.42 | $49.64 |
+| $17.80 | $28.40 | $17.80 | $28.22 | $52.93 |
+
+## Scope
+
+This package verifies the printed scenario arithmetic and boundary behavior. It does not establish actual purchasing costs, a universal discount ceiling, realized merchant savings, or net profit after overhead, acquisition, support, returns, tax effects and other excluded fees.
+
+## Executed checks
+
+Run: `2026-11-09T18-21-14-457Z-59d713d1` · Node v24.22.1
+
+Passed: 11; failed: 0; skipped: 0.
+
+| Check | Status | Detail |
+|---|---|---|
+| Input ledger uses nonnegative integer cents and valid component/scenario identities | passed |  |
+| Half-up rational processing fees are correct at a half-cent boundary | passed |  |
+| Money helpers reject negative, fractional, unsafe or invalid-rate inputs | passed |  |
+| Fixture BOM contains exactly one of each approved bundle component | passed |  |
+| Capstone baseline preserves the declared financial fixture | passed |  |
+| Replacement and chargeback branches retain original costs without double-expensing COGS | passed |  |
+| Alternative fulfillment inputs are a distinct scenario, not the Capstone baseline | passed |  |
+| Every baseline and sensitivity row reconciles in cents | passed |  |
+| Every discount floor passes and its immediately preceding cent fails | passed |  |
+| Processing includes shipping and tax, but contribution excludes tax liability | passed |  |
+| Increasing a declared cost cannot increase contribution or reduce its floor | passed |  |

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Synapse Botanicals Reproducible Evidence Package",
+  "version": "1.0.0",
+  "generated_at": "2026-11-10T00:20:00Z",
+  "repository": "riovicsusas/portfolio",
+  "environment": "Staging / Offline Test Harness",
+  "workstreams": [
+    {
+      "id": "A",
+      "name": "Carrier Rates & Freight Routing",
+      "directory": "evidence/freight",
+      "entry_script": "evidence/freight/calculate_freight.js",
+      "sources": [
+        "USPS Notice 123 (Price List, Ground Advantage Commercial, Jan 21 2024)",
+        "UPS Published Daily Rates (Commercial Ground, 2024)",
+        "ShipBob WMS Standard 3PL Handling Fee Schedule (2024)"
+      ],
+      "outputs": [
+        "evidence/freight/results.json",
+        "evidence/freight/summary.md"
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Measured Staging Latency & Fault Tolerances",
+      "directory": "evidence/latency",
+      "entry_script": "evidence/latency/coordinator_simulator.js",
+      "sources": [
+        "Instrumented Node.js Coordinator Middleware Test Harness",
+        "Shopify Admin API Fulfillment Orders Hold Specification (v2026-01)",
+        "ShipBob Webhook v1.0 Hold Contract"
+      ],
+      "outputs": [
+        "evidence/latency/metrics.json",
+        "evidence/latency/summary.md"
+      ]
+    },
+    {
+      "id": "C",
+      "name": "Barcode Checksums & SKU Master Governance",
+      "directory": "evidence/barcodes",
+      "entry_script": "evidence/barcodes/validate_barcodes.js",
+      "sources": [
+        "GS1 US General Specifications (UPC-A Modulo-10 Algorithm)",
+        "Universe A 12-Variant Master Product Catalog"
+      ],
+      "outputs": [
+        "evidence/barcodes/results.json",
+        "evidence/barcodes/summary.md"
+      ]
+    },
+    {
+      "id": "D",
+      "name": "Transparent BOM & Unit Cost Sensitivity",
+      "directory": "evidence/costs",
+      "entry_script": "evidence/costs/run_cost_model.js",
+      "sources": [
+        "Component Procurement Ledger (Sticks $8.50, Tincture $12.50, Tumbler $7.00, Whisk $3.10)",
+        "Contract Assembly & Kitting Labor / Packaging Ledger ($0.40)",
+        "Parametric Contribution Margin & Breakeven Discount Model"
+      ],
+      "outputs": [
+        "evidence/costs/sensitivity.json",
+        "evidence/costs/summary.md"
+      ]
+    },
+    {
+      "id": "E",
+      "name": "UPS Intercept Contract & Recovery State Machine",
+      "directory": "evidence/carrier-recovery",
+      "entry_script": "evidence/carrier-recovery/test_recovery.js",
+      "sources": [
+        "UPS Delivery Intercept v2 OpenAPI Specification",
+        "Deterministic Carrier Recovery State Machine Engine"
+      ],
+      "outputs": [
+        "evidence/carrier-recovery/results.json",
+        "evidence/carrier-recovery/summary.md"
+      ]
+    }
+  ]
+}

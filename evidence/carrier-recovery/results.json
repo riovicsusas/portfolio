@@ -1,187 +1,363 @@
 {
-  "timestamp": "2026-11-09T16:34:01.402Z",
-  "environment": "UPS Delivery Intercept v2 OpenAPI Contract & FSM Harness",
-  "contract_spec": {
-    "title": "UPS Delivery Intercept API v2 Contract Specification",
-    "version": "2.0.0"
+  "run_id": "2026-11-09T18-21-14-457Z-59d713d1",
+  "started_at": "2026-11-09T18:21:15.751Z",
+  "finished_at": "2026-11-09T18:21:15.763Z",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "linux",
+    "arch": "x64"
   },
-  "summary": {
-    "scenarios_tested": 4,
-    "scenarios_passed": 4,
-    "fsm_conformance_rate": 1
+  "revision": "4cb20482de1c172efc89de7f09c5adbfdd204143",
+  "script_sha256": "afe627f353bf6eb217ceda3480fa740465fa61c55557191cad26849052e5c66c",
+  "input_sha256": {
+    "fixtures.json": "8b7b59d06de892f294367a60bb96da78f5a58903a87abb9b1b6a2bbdcb724b46",
+    "recovery.js": "79794a828074fdc61b20e4bbfcbfa08af20dd9b619c8399ef468d1b8dd4f4f3a",
+    "synapse_adapter_schema.json": "6b396ee55b52276d97f3a43af607931454de9b6a548eff82376ad807811e48b5",
+    "contracts/ups_delivery_intercept_v2.openapi.json": "6bf051ea964d3c74de18c30b87505d80f9ccf2056d6809fe9cecf700355ec33b",
+    "contracts/provenance.json": "76c739717a85e333cd46f8140afdabddc7a8f4f01990730c2ae1091eaefba9f0"
   },
-  "scenario_runs": [
+  "classification": "Focused offline UPS return-contract checks and local recovery-state simulation; no live CIE or physical execution",
+  "status": "passed",
+  "counts": {
+    "passed": 34,
+    "failed": 0,
+    "skipped": 2,
+    "total": 36
+  },
+  "checks": [
     {
-      "scenario_id": "SCENARIO-01-CLEAN-SUCCESS",
-      "name": "Mid-Transit Clean Depot Intercept",
-      "tracking_number": "1Z9999999999999991",
-      "initial_carrier_state": "IN_TRANSIT_HUB",
-      "fsm_outcome": "SUCCEEDED",
-      "carrier_fee_billed": 17.5,
-      "passed_assertion": true,
-      "fsm_state_history": [
-        {
-          "timestamp": "2026-11-09T16:34:01.401Z",
-          "state": "INITIAL",
-          "reason": "Order parcel active in carrier network",
-          "metadata": {
-            "tracking": "1Z9999999999999991"
-          }
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "SCHEMA_VALIDATED",
-          "reason": "Request adheres to UPS Delivery Intercept v2 OpenAPI contract",
-          "metadata": {}
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "CARRIER_REQUEST_ACCEPTED",
-          "reason": "UPS API returned HTTP 202 ACCEPTED. Intercept request queued at sorting hubs.",
-          "metadata": {
-            "http_code": 202,
-            "fee_authorized": 17.5,
-            "fee_settled": false
-          }
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "DEPOT_HUB_SCANNED",
-          "reason": "Terminal laser scan flagged parcel at Louisville KY hub",
-          "metadata": {}
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "RTS_OVERLABEL_APPLIED",
-          "reason": "Automated sorter redirected parcel to origin return loop",
-          "metadata": {}
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "SUCCEEDED",
-          "reason": "Parcel returned to warehouse. Intercept fee settled.",
-          "metadata": {
-            "fee": 17.5
-          }
-        }
-      ]
+      "name": "Pinned official JSON snapshot matches provenance hash",
+      "status": "passed"
     },
     {
-      "scenario_id": "SCENARIO-02-ALREADY-DELIVERED",
-      "name": "Post-Delivery Ineligible Attempt",
-      "tracking_number": "1Z9999999999999992",
-      "initial_carrier_state": "DELIVERED",
-      "fsm_outcome": "REJECTED_IMMEDIATELY",
-      "carrier_fee_billed": 0,
-      "passed_assertion": true,
-      "fsm_state_history": [
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "INITIAL",
-          "reason": "Order parcel active in carrier network",
-          "metadata": {
-            "tracking": "1Z9999999999999992"
-          }
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "SCHEMA_VALIDATED",
-          "reason": "Request adheres to UPS Delivery Intercept v2 OpenAPI contract",
-          "metadata": {}
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "CARRIER_REJECTED_INELIGIBLE",
-          "reason": "UPS API returned HTTP 422: Parcel already delivered",
-          "metadata": {
-            "http_code": 422
-          }
-        }
-      ]
+      "name": "Documented return fixture satisfies selected wire-contract checks",
+      "status": "passed"
     },
     {
-      "scenario_id": "SCENARIO-03-LAST-MILE-RACE-FAILURE",
-      "name": "Out-for-Delivery Hub Race (API Accepted but Physically Delivered)",
-      "tracking_number": "1Z9999999999999993",
-      "initial_carrier_state": "OUT_FOR_DELIVERY",
-      "fsm_outcome": "FAILED",
-      "carrier_fee_billed": 0,
-      "passed_assertion": true,
-      "fsm_state_history": [
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "INITIAL",
-          "reason": "Order parcel active in carrier network",
-          "metadata": {
-            "tracking": "1Z9999999999999993"
-          }
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "SCHEMA_VALIDATED",
-          "reason": "Request adheres to UPS Delivery Intercept v2 OpenAPI contract",
-          "metadata": {}
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "CARRIER_REQUEST_ACCEPTED",
-          "reason": "UPS API returned HTTP 202 ACCEPTED. Intercept request queued at sorting hubs.",
-          "metadata": {
-            "http_code": 202,
-            "fee_authorized": 17.5,
-            "fee_settled": false
-          }
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "OUT_FOR_DELIVERY_RACE",
-          "reason": "Parcel was loaded on final delivery vehicle before hub sorting flag propagated",
-          "metadata": {}
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "DELIVERY_COMPLETED_BEFORE_INTERCEPT",
-          "reason": "Driver delivered parcel to customer porch. Intercept physically failed.",
-          "metadata": {}
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "FAILED",
-          "reason": "Physical intercept unsuccessful. Fee waived ($0.00 charged).",
-          "metadata": {
-            "fee": 0
-          }
-        }
-      ]
+      "name": "Reject missing required transId",
+      "status": "passed"
     },
     {
-      "scenario_id": "SCENARIO-04-INVALID-TRACKING",
-      "name": "Malformed Tracking Number Schema Rejection",
-      "tracking_number": "1Z123SHORT",
-      "initial_carrier_state": "UNKNOWN",
-      "fsm_outcome": "VALIDATION_FAILED",
-      "carrier_fee_billed": 0,
-      "passed_assertion": true,
-      "fsm_state_history": [
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "INITIAL",
-          "reason": "Order parcel active in carrier network",
-          "metadata": {
-            "tracking": "1Z123SHORT"
-          }
-        },
-        {
-          "timestamp": "2026-11-09T16:34:01.402Z",
-          "state": "CLIENT_VALIDATION_ERROR",
-          "reason": "Request payload rejected by client-side schema validator",
-          "metadata": {
-            "errors": [
-              "Invalid tracking number: '1Z123SHORT'. Must match ^1Z[0-9A-Z]{16}$"
-            ]
-          }
-        }
-      ]
+      "name": "Reject invalid platformType",
+      "status": "passed"
+    },
+    {
+      "name": "Reject missing bearer authorization",
+      "status": "passed"
+    },
+    {
+      "name": "Reject invalid tracking syntax",
+      "status": "passed"
+    },
+    {
+      "name": "Reject invalid method",
+      "status": "passed"
+    },
+    {
+      "name": "Reject wrong API route",
+      "status": "passed"
+    },
+    {
+      "name": "Reject custom adapter body sent directly to UPS",
+      "status": "passed"
+    },
+    {
+      "name": "Reject invalid return reason",
+      "status": "passed"
+    },
+    {
+      "name": "Reject missing RS reason",
+      "status": "passed"
+    },
+    {
+      "name": "Reject invalid contact phone",
+      "status": "passed"
+    },
+    {
+      "name": "Reject malformed request JSON",
+      "status": "passed"
+    },
+    {
+      "name": "Reject unexpected UPS request field",
+      "status": "passed"
+    },
+    {
+      "name": "HTTP 200 success and failure examples both satisfy selected response constraints",
+      "status": "passed"
+    },
+    {
+      "name": "Missing business success field is an invalid response",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: accepted-pending",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: confirmed-return",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: failed-return",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: ineligible",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: 200-business-failure",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: timeout",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: authorization-failure",
+      "status": "passed"
+    },
+    {
+      "name": "Event-driven scenario: malformed-response",
+      "status": "passed"
+    },
+    {
+      "name": "Renaming the fixture cannot change the recovery outcome",
+      "status": "passed"
+    },
+    {
+      "name": "Duplicate accepted request returns existing state with one submission",
+      "status": "passed"
+    },
+    {
+      "name": "Duplicate rejected request preserves rejection",
+      "status": "passed"
+    },
+    {
+      "name": "Conflicting payload under an existing operation ID is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Timeout stays UNKNOWN on retry; lookup reconciles without another submission",
+      "status": "passed"
+    },
+    {
+      "name": "No physical event means accepted request does not become successful",
+      "status": "passed"
+    },
+    {
+      "name": "Wrong revision and non-increasing event sequence cannot advance state",
+      "status": "passed"
+    },
+    {
+      "name": "Duplicate physical event does not repeat fee or terminal transition",
+      "status": "passed"
+    },
+    {
+      "name": "A contradictory event cannot overwrite terminal success",
+      "status": "passed"
+    },
+    {
+      "name": "Modeled fee policy is configurable, not a hardcoded UPS guarantee",
+      "status": "passed"
+    },
+    {
+      "name": "Authenticated UPS CIE execution",
+      "status": "skipped",
+      "reason": "No network calls or credentialed sandbox execution are performed by this offline suite."
+    },
+    {
+      "name": "Physical carrier interception and billing verification",
+      "status": "skipped",
+      "reason": "Injected events and modeled fees do not establish carrier operations or invoices."
     }
-  ]
+  ],
+  "sources": [
+    {
+      "classification": "Public reference snapshot, not an executed API response",
+      "publisher": "UPS-API",
+      "source_url": "https://github.com/UPS-API/api-documentation/blob/fd57ca9fde3c26c4ec5c2c4f4831715a223daa85/DeliveryIntercept.yaml",
+      "upstream_commit": "fd57ca9fde3c26c4ec5c2c4f4831715a223daa85",
+      "source_yaml_sha256": "704e1993da72aa22790575a64e67e9f34e50e16e24af243e6ceeebdcc08e29d0",
+      "converted_json_sha256": "6bf051ea964d3c74de18c30b87505d80f9ccf2056d6809fe9cecf700355ec33b",
+      "converted_at_utc": "2026-11-09T17:48:50.232134+00:00",
+      "conversion": "Previously retrieved official YAML snapshot parsed with PyYAML, serialized to JSON; no runtime YAML dependency",
+      "documented_api_server_version": "v2",
+      "upstream_info_version": "1.0",
+      "live_cie_executed": false,
+      "validator_scope": "Selected schema constraints and return-operation field checks; not a complete OpenAPI validator or provider certification"
+    }
+  ],
+  "data": {
+    "scenarios": [
+      {
+        "fixture_id": "accepted-pending",
+        "state": "ACCEPTED",
+        "modeled_fee_cents": 0,
+        "submissions": 1,
+        "history": [
+          {
+            "state": "REQUESTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "ACCEPTED",
+            "reason": "Electronic acceptance only; no physical outcome established",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "fixture_id": "confirmed-return",
+        "state": "SUCCEEDED",
+        "modeled_fee_cents": 1750,
+        "submissions": 1,
+        "history": [
+          {
+            "state": "REQUESTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "ACCEPTED",
+            "reason": "Electronic acceptance only; no physical outcome established",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "SUCCEEDED",
+            "reason": "Injected carrier-event fixture; not real tracking",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "fixture_id": "failed-return",
+        "state": "FAILED",
+        "modeled_fee_cents": 0,
+        "submissions": 1,
+        "history": [
+          {
+            "state": "REQUESTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "ACCEPTED",
+            "reason": "Electronic acceptance only; no physical outcome established",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "FAILED",
+            "reason": "Injected carrier-event fixture; not real tracking",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "fixture_id": "ineligible",
+        "state": "REJECTED",
+        "modeled_fee_cents": 0,
+        "submissions": 0,
+        "history": [
+          {
+            "state": "REJECTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "fixture_id": "200-business-failure",
+        "state": "REJECTED",
+        "modeled_fee_cents": 0,
+        "submissions": 1,
+        "history": [
+          {
+            "state": "REQUESTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "REJECTED",
+            "reason": "Business failure in HTTP 200 response",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "fixture_id": "timeout",
+        "state": "UNKNOWN",
+        "modeled_fee_cents": 0,
+        "submissions": 1,
+        "history": [
+          {
+            "state": "REQUESTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "UNKNOWN",
+            "reason": "Ambiguous remote outcome; reconcile before resubmission",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "fixture_id": "authorization-failure",
+        "state": "REJECTED",
+        "modeled_fee_cents": 0,
+        "submissions": 1,
+        "history": [
+          {
+            "state": "REQUESTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "REJECTED",
+            "reason": "Synthetic authorization failure",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      },
+      {
+        "fixture_id": "malformed-response",
+        "state": "UNKNOWN",
+        "modeled_fee_cents": 0,
+        "submissions": 1,
+        "history": [
+          {
+            "state": "REQUESTED",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          },
+          {
+            "state": "UNKNOWN",
+            "reason": "Invalid response contract",
+            "at": "2026-11-09T18:21:15.756Z",
+            "simulated": true
+          }
+        ]
+      }
+    ],
+    "fee_assumptions": {
+      "currency": "USD",
+      "success_fee_cents": 1750,
+      "failure_fee_cents": 0,
+      "provenance": "Scenario assumptions only. Not an invoice, verified current tariff, or asserted universal UPS billing policy."
+    },
+    "contract_scope": "Focused checks for method/path, selected documented parameters, return-request properties and HTTP-200 response properties. Conditional RS reason is enforced by the adapter. Does not implement every OpenAPI keyword or establish entitlement/eligibility.",
+    "live_cie_executed": false,
+    "physical_recovery_observed": false,
+    "storage": "In-memory local recovery simulator; no persistence or distributed exactly-once guarantee claimed."
+  }
 }

@@ -20,3 +20,6 @@ interview-prep/
 
 # Hero component build dependencies
 node_modules/
+
+# Evidence run archives and local simulator databases
+evidence/runs/

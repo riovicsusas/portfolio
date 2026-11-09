@@ -1,0 +1,325 @@
+{
+  "run_id": "2026-11-09T18-21-14-457Z-59d713d1",
+  "started_at": "2026-11-09T18:21:14.494Z",
+  "finished_at": "2026-11-09T18:21:14.511Z",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "revision": "4cb20482de1c172efc89de7f09c5adbfdd204143",
+  "script_sha256": "e39c4d8c5a5f7e01edf2ddcb30fc5c8cdace9b86cab60f40036f96b949ab0ac6",
+  "input_sha256": {
+    "tariffs.json": "9e0922cbc6af104994091cdb8818e1b7091ebdf36b5f4a8ebad05a0b0f36d219"
+  },
+  "classification": "Calculated results from declared synthetic inventory, handling and freight inputs",
+  "status": "passed",
+  "counts": {
+    "passed": 13,
+    "failed": 0,
+    "skipped": 1,
+    "total": 14
+  },
+  "checks": [
+    {
+      "name": "All monetary inputs are nonnegative safe integer cents",
+      "status": "passed"
+    },
+    {
+      "name": "Three-pick parcel handling equals $4.10 under the declared model",
+      "status": "passed"
+    },
+    {
+      "name": "Three units split across two parcels cost $7.00 handling",
+      "status": "passed"
+    },
+    {
+      "name": "Both priced plans reserve the complete basket within fixture capacity",
+      "status": "passed"
+    },
+    {
+      "name": "Unavailable tincture cannot be allocated to Allentown",
+      "status": "passed"
+    },
+    {
+      "name": "Incomplete basket cannot be priced as successful fulfillment",
+      "status": "passed"
+    },
+    {
+      "name": "Reservations are aggregated across parcels at the same node",
+      "status": "passed"
+    },
+    {
+      "name": "Split $21.50 and consolidated $10.50 derive from parcel line items",
+      "status": "passed"
+    },
+    {
+      "name": "Changing a lane cost propagates into the plan total without a hidden surcharge",
+      "status": "passed"
+    },
+    {
+      "name": "Five-hundred-order fixture preserves paired units and parcel counts",
+      "status": "passed"
+    },
+    {
+      "name": "Cohort savings match handling formula and aggregate freight inputs",
+      "status": "passed"
+    },
+    {
+      "name": "Monthly and annual projections retain the exact cohort numerator",
+      "status": "passed"
+    },
+    {
+      "name": "Capstone fixture retains Philadelphia and its separate $7.20 freight assumption",
+      "status": "passed"
+    },
+    {
+      "name": "Dated carrier tariff and ZIP-zone verification",
+      "status": "skipped",
+      "reason": "No dated publication snapshot or independently checked quote is included; carrier amounts remain scenario inputs."
+    }
+  ],
+  "sources": [
+    {
+      "publisher": "USPS",
+      "title": "Notice 123",
+      "url": "https://pe.usps.com/text/dmm300/Notice123.htm",
+      "verification_status": "Not verified against a dated publication snapshot",
+      "effective_date": null,
+      "notes": "A changing publication URL does not substantiate the rates or zones in this scenario."
+    },
+    {
+      "publisher": "UPS",
+      "title": "Published Daily Rates",
+      "url": "https://www.ups.com/assets/resources/webcontent/en_US/daily_rates.pdf",
+      "verification_status": "Not verified against a dated publication snapshot",
+      "effective_date": null,
+      "notes": "No UPS rate or negotiated discount is claimed as verified by this calculation."
+    }
+  ],
+  "data": {
+    "inputs": {
+      "currency": "USD",
+      "classification": "Declared scenario inputs; carrier tariffs and negotiated charges are not source-verified",
+      "reference_candidates": [
+        {
+          "publisher": "USPS",
+          "title": "Notice 123",
+          "url": "https://pe.usps.com/text/dmm300/Notice123.htm",
+          "verification_status": "Not verified against a dated publication snapshot",
+          "effective_date": null,
+          "notes": "A changing publication URL does not substantiate the rates or zones in this scenario."
+        },
+        {
+          "publisher": "UPS",
+          "title": "Published Daily Rates",
+          "url": "https://www.ups.com/assets/resources/webcontent/en_US/daily_rates.pdf",
+          "verification_status": "Not verified against a dated publication snapshot",
+          "effective_date": null,
+          "notes": "No UPS rate or negotiated discount is claimed as verified by this calculation."
+        }
+      ],
+      "handling": {
+        "classification": "Scenario input, not a ShipBob quotation",
+        "base_per_parcel_cents": 250,
+        "corrugate_per_parcel_cents": 80,
+        "first_pick_included": true,
+        "additional_pick_cents": 40
+      },
+      "lane_scenario": {
+        "id": "D2-THREE-UNIT-CONTROLLED-COMPARISON",
+        "destination": "Denver, CO (scenario destination; actual ZIP-pair zones not verified)",
+        "basket": [
+          {
+            "sku": "SYN-FSTK-MY",
+            "quantity": 2
+          },
+          {
+            "sku": "SYN-TNCT-AM",
+            "quantity": 1
+          }
+        ],
+        "available_to_promise_fixture": {
+          "LOC-PA-01": {
+            "SYN-FSTK-MY": 2,
+            "SYN-TNCT-AM": 0
+          },
+          "LOC-NV-02": {
+            "SYN-FSTK-MY": 2,
+            "SYN-TNCT-AM": 1
+          }
+        },
+        "inventory_scope": "Synthetic reservation-capacity fixture for this comparison; not a recorded warehouse stock snapshot or permanent exclusivity claim",
+        "lanes": {
+          "LOC-PA-01": {
+            "modeled_bucket": "6",
+            "freight_per_parcel_cents": 810
+          },
+          "LOC-NV-02": {
+            "modeled_bucket": "4",
+            "freight_per_parcel_cents": 640
+          }
+        },
+        "split_plan": [
+          {
+            "node": "LOC-PA-01",
+            "items": [
+              {
+                "sku": "SYN-FSTK-MY",
+                "quantity": 2
+              }
+            ]
+          },
+          {
+            "node": "LOC-NV-02",
+            "items": [
+              {
+                "sku": "SYN-TNCT-AM",
+                "quantity": 1
+              }
+            ]
+          }
+        ],
+        "consolidated_plan": [
+          {
+            "node": "LOC-NV-02",
+            "items": [
+              {
+                "sku": "SYN-FSTK-MY",
+                "quantity": 2
+              },
+              {
+                "sku": "SYN-TNCT-AM",
+                "quantity": 1
+              }
+            ]
+          }
+        ],
+        "scope": "Controlled feasible-plan comparison. It does not establish that closest-node routing would split this basket; Reno can already supply the full basket. Fixed per-parcel scenario freight excludes billable-weight changes and surcharges."
+      },
+      "cohort_scenario": {
+        "orders_with_two_units": 310,
+        "orders_with_three_plus_units": 190,
+        "assumed_units_per_three_plus_order": 3,
+        "assumption": "Exactly three units are assigned to every three-plus order to make this cost model reproducible. This is not a reconstruction of an original per-order ledger.",
+        "alpha": {
+          "split_orders": 157,
+          "parcels": 657,
+          "aggregate_freight_input_cents": 519020
+        },
+        "beta": {
+          "split_orders": 41,
+          "parcels": 541,
+          "aggregate_freight_input_cents": 452920
+        },
+        "max_parcels_per_split_order": 2,
+        "monthly_projection_orders": 1700,
+        "planning_orders_per_day": 1000,
+        "planning_days_per_year": 365,
+        "scope": "Conditional paired-basket cost model. Carrier totals and split counts are supplied scenario inputs, not outputs of a carrier quote or routing engine."
+      },
+      "capstone_context": {
+        "order": "#1070",
+        "original_destination": "Philadelphia, PA 19102",
+        "requested_destination": "San Francisco, CA 94102",
+        "outbound_freight_scenario_cents": 720,
+        "scope": "The Capstone uses its separate $7.20 freight assumption. This file does not relabel a Brooklyn example as evidence for #1070, establish a carrier quote, or prove that Reno routing was erroneous."
+      }
+    },
+    "split_plan": {
+      "parcels": [
+        {
+          "node": "LOC-PA-01",
+          "items": [
+            {
+              "sku": "SYN-FSTK-MY",
+              "quantity": 2
+            }
+          ],
+          "units": 2,
+          "freight_cents": 810,
+          "handling_cents": 370,
+          "total_cents": 1180
+        },
+        {
+          "node": "LOC-NV-02",
+          "items": [
+            {
+              "sku": "SYN-TNCT-AM",
+              "quantity": 1
+            }
+          ],
+          "units": 1,
+          "freight_cents": 640,
+          "handling_cents": 330,
+          "total_cents": 970
+        }
+      ],
+      "units": 3,
+      "total_cents": 2150
+    },
+    "consolidated_plan": {
+      "parcels": [
+        {
+          "node": "LOC-NV-02",
+          "items": [
+            {
+              "sku": "SYN-FSTK-MY",
+              "quantity": 2
+            },
+            {
+              "sku": "SYN-TNCT-AM",
+              "quantity": 1
+            }
+          ],
+          "units": 3,
+          "freight_cents": 640,
+          "handling_cents": 410,
+          "total_cents": 1050
+        }
+      ],
+      "units": 3,
+      "total_cents": 1050
+    },
+    "cohort_model": {
+      "orders": 500,
+      "units": 1190,
+      "alpha": {
+        "split_orders": 157,
+        "parcels": 657,
+        "aggregate_freight_input_cents": 519020,
+        "handling_cents": 238130,
+        "total_cents": 757150
+      },
+      "beta": {
+        "split_orders": 41,
+        "parcels": 541,
+        "aggregate_freight_input_cents": 452920,
+        "handling_cents": 204490,
+        "total_cents": 657410
+      },
+      "eliminated_split_orders": 116,
+      "relative_split_reduction_percent": 73.89,
+      "absolute_split_reduction_percentage_points": 23.200000000000003,
+      "handling_savings_cents": 33640,
+      "freight_savings_cents": 66100,
+      "total_savings_cents": 99740,
+      "savings_per_order_exact": {
+        "numerator_cents": 99740,
+        "denominator_orders": 500
+      },
+      "monthly_projection": {
+        "orders": 1700,
+        "saving_cents": 339116
+      },
+      "matching_12_month_projection": {
+        "orders": 20400,
+        "saving_cents": 4069392
+      },
+      "separate_planning_projection": {
+        "orders": 365000,
+        "saving_cents": 72810200
+      }
+    }
+  }
+}

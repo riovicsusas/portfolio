@@ -5,8 +5,8 @@
       "sku": "SYN-FSTK-MY",
       "name": "Focus Stick Packs 30-Pack (Matcha Yuzu)",
       "category": "Drink Mix",
-      "retail_price": 42.00,
-      "cogs": 8.50,
+      "retail_price": 42.0,
+      "cogs": 8.5,
       "upc": "850041234014",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 1"
@@ -15,8 +15,8 @@
       "sku": "SYN-FSTK-BO",
       "name": "Focus Stick Packs 30-Pack (Blood Orange)",
       "category": "Drink Mix",
-      "retail_price": 42.00,
-      "cogs": 8.50,
+      "retail_price": 42.0,
+      "cogs": 8.5,
       "upc": "850041234021",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 1"
@@ -25,8 +25,8 @@
       "sku": "SYN-FSTK-WB",
       "name": "Focus Stick Packs 30-Pack (Wild Blueberry)",
       "category": "Drink Mix",
-      "retail_price": 42.00,
-      "cogs": 8.50,
+      "retail_price": 42.0,
+      "cogs": 8.5,
       "upc": "850041234038",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 1"
@@ -35,8 +35,8 @@
       "sku": "SYN-FSTK-GA",
       "name": "Focus Stick Packs 30-Pack (Crisp Green Apple)",
       "category": "Drink Mix",
-      "retail_price": 42.00,
-      "cogs": 8.50,
+      "retail_price": 42.0,
+      "cogs": 8.5,
       "upc": "850041234045",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 1"
@@ -45,8 +45,8 @@
       "sku": "SYN-TNCT-AM",
       "name": "Adaptogen Tincture 60ml (AM Focus / Lion's Mane)",
       "category": "Tincture",
-      "retail_price": 38.00,
-      "cogs": 12.50,
+      "retail_price": 38.0,
+      "cogs": 12.5,
       "upc": "850041234052",
       "primary_node": "LOC-NV-02 (Reno Exclusive)",
       "hazard_tier": "Tier 1"
@@ -55,8 +55,8 @@
       "sku": "SYN-TNCT-PM",
       "name": "Adaptogen Tincture 60ml (PM Restore / Reishi)",
       "category": "Tincture",
-      "retail_price": 38.00,
-      "cogs": 12.50,
+      "retail_price": 38.0,
+      "cogs": 12.5,
       "upc": "850041234069",
       "primary_node": "LOC-NV-02 (Reno Exclusive)",
       "hazard_tier": "Tier 1"
@@ -65,8 +65,8 @@
       "sku": "SYN-BNDL-MAO",
       "name": "Starter Bundle (Matcha / AM / Obsidian)",
       "category": "Product Bundles",
-      "retail_price": 98.00,
-      "cogs": 28.40,
+      "retail_price": 98.0,
+      "cogs": 28.4,
       "upc": "850041234076",
       "primary_node": "LOC-NV-02 (Reno)",
       "hazard_tier": "Tier 1"
@@ -75,8 +75,8 @@
       "sku": "SYN-BNDL-BAB",
       "name": "Starter Bundle (Orange / AM / Bone White)",
       "category": "Product Bundles",
-      "retail_price": 98.00,
-      "cogs": 28.40,
+      "retail_price": 98.0,
+      "cogs": 28.4,
       "upc": "850041234083",
       "primary_node": "LOC-NV-02 (Reno)",
       "hazard_tier": "Tier 1"
@@ -85,8 +85,8 @@
       "sku": "SYN-TMBL-MO",
       "name": "Precision Insulated Tumbler 500ml (Matte Obsidian)",
       "category": "Drinkware / Merch",
-      "retail_price": 34.00,
-      "cogs": 7.00,
+      "retail_price": 34.0,
+      "cogs": 7.0,
       "upc": "850041234090",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 4"
@@ -95,8 +95,8 @@
       "sku": "SYN-TMBL-BW",
       "name": "Precision Insulated Tumbler 500ml (Bone White)",
       "category": "Drinkware / Merch",
-      "retail_price": 34.00,
-      "cogs": 7.00,
+      "retail_price": 34.0,
+      "cogs": 7.0,
       "upc": "850041234106",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 4"
@@ -105,8 +105,8 @@
       "sku": "SYN-TMBL-SG",
       "name": "Precision Insulated Tumbler 500ml (Sage Green)",
       "category": "Drinkware / Merch",
-      "retail_price": 34.00,
-      "cogs": 7.00,
+      "retail_price": 34.0,
+      "cogs": 7.0,
       "upc": "850041234113",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 4"
@@ -115,8 +115,8 @@
       "sku": "SYN-ACC-WHSK",
       "name": "Micro-Foam Electric Whisk",
       "category": "Kitchen Tool / Merch",
-      "retail_price": 16.00,
-      "cogs": 3.10,
+      "retail_price": 16.0,
+      "cogs": 3.1,
       "upc": "850041234120",
       "primary_node": "LOC-PA-01 / LOC-NV-02",
       "hazard_tier": "Tier 4"
@@ -139,14 +139,14 @@
     },
     {
       "id": "ERR-TRUNC-01",
-      "name": "Missing Leading Zero / 11-Digit Truncation",
+      "name": "Eleven-digit truncation; no missing digit is inferred",
       "input_upc": "50041234014",
       "sku": "SYN-FSTK-MY",
       "expected_error": "INVALID_LENGTH_NOT_12_DIGITS"
     },
     {
       "id": "ERR-CHKSUM-01",
-      "name": "Single-Bit Checksum Corruption (7 instead of 4)",
+      "name": "Incorrect check digit",
       "input_upc": "850041234017",
       "sku": "SYN-FSTK-MY",
       "expected_error": "CHECKSUM_MODULO_10_MISMATCH"
@@ -171,6 +171,70 @@
       "input_upc": "85004123401A",
       "sku": "SYN-FSTK-MY",
       "expected_error": "NON_NUMERIC_CHARACTERS"
+    },
+    {
+      "id": "ERR-WRONG-PRODUCT",
+      "name": "Another approved SKU barcode",
+      "input_upc": "850041234021",
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "SKU_BARCODE_MISMATCH"
+    },
+    {
+      "id": "ERR-ZERO-PLACEHOLDER",
+      "name": "All-zero placeholder",
+      "input_upc": "000000000000",
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "PLACEHOLDER_BARCODE"
+    },
+    {
+      "id": "ERR-BLANK",
+      "name": "Empty text identifier",
+      "input_upc": "",
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "BLANK_BARCODE"
+    },
+    {
+      "id": "ERR-NUMERIC",
+      "name": "Numeric input requiring text",
+      "input_upc": 850041234014,
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "BARCODE_TEXT_REQUIRED"
+    },
+    {
+      "id": "ERR-NULL",
+      "name": "Null input",
+      "input_upc": null,
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "BARCODE_TEXT_REQUIRED"
+    },
+    {
+      "id": "ERR-WHITESPACE",
+      "name": "Whitespace surrounding digits",
+      "input_upc": " 850041234014 ",
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "NON_NUMERIC_CHARACTERS"
+    },
+    {
+      "id": "ERR-APOSTROPHE",
+      "name": "Literal spreadsheet apostrophe",
+      "input_upc": "'850041234014",
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "NON_NUMERIC_CHARACTERS"
+    },
+    {
+      "id": "ERR-FORMULA",
+      "name": "Spreadsheet formula export",
+      "input_upc": "=\"850041234014\"",
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "NON_NUMERIC_CHARACTERS"
+    },
+    {
+      "id": "ERR-LONG",
+      "name": "Overlong numeric text",
+      "input_upc": "8500412340140",
+      "sku": "SYN-FSTK-MY",
+      "expected_error": "INVALID_LENGTH_NOT_12_DIGITS"
     }
-  ]
+  ],
+  "identifier_provenance": "Synthetic twelve-variant portfolio fixtures; no GS1 registration or licensed product assignment is asserted."
 }

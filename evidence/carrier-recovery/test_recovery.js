@@ -1,230 +1,141 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { createSuite, hash } from '../lib/report.js';
+import { validateReturnRequest, validateSuccessResponse, RecoveryCoordinator } from './recovery.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const directory = path.dirname(fileURLToPath(import.meta.url));
+const read = name => JSON.parse(fs.readFileSync(path.join(directory, name), 'utf8'));
+const fixtures = read('fixtures.json');
+const spec = read('contracts/ups_delivery_intercept_v2.openapi.json');
+const provenance = read('contracts/provenance.json');
+const suite = createSuite('carrier-recovery', {
+  classification: 'Focused offline UPS return-contract checks and local recovery-state simulation; no live CIE or physical execution',
+  inputs: ['fixtures.json', 'recovery.js', 'synapse_adapter_schema.json', 'contracts/ups_delivery_intercept_v2.openapi.json', 'contracts/provenance.json']
+});
+const request = () => structuredClone(fixtures.return_request);
+const coordinator = () => new RecoveryCoordinator(spec, { successFeeCents: fixtures.fee_assumptions.success_fee_cents, failureFeeCents: fixtures.fee_assumptions.failure_fee_cents });
+const success = { httpStatus: 200, body: fixtures.success_response };
+const confirmations = [];
 
-const schemaRaw = fs.readFileSync(path.join(__dirname, 'ups_intercept_schema.json'), 'utf8');
-const schema = JSON.parse(schemaRaw);
-
-const fixturesRaw = fs.readFileSync(path.join(__dirname, 'fixtures.json'), 'utf8');
-const fixtures = JSON.parse(fixturesRaw);
-
-console.log('--- Executing Workstream E: UPS Intercept Contract & Recovery State Machine ---');
-
-// Lightweight JSON schema validator for offline verification
-function validateTrackingNumber(str) {
-  return typeof str === 'string' && /^1Z[0-9A-Z]{16}$/.test(str);
+await suite.check('Pinned official JSON snapshot matches provenance hash', () => {
+  assert.equal(hash(fs.readFileSync(path.join(directory, 'contracts/ups_delivery_intercept_v2.openapi.json'))), provenance.converted_json_sha256);
+  assert.equal(spec.openapi, '3.1.0');
+  assert.equal(spec.servers[0].variables.version.default, 'v2');
+  assert.match(spec.info.description, /stubbed success response/);
+});
+await suite.check('Documented return fixture satisfies selected wire-contract checks', () => {
+  assert.deepEqual(validateReturnRequest(request(), spec), []);
+});
+for (const [name, change] of [
+  ['missing required transId', r => delete r.headers.transId],
+  ['invalid platformType', r => r.headers.platformType = 'INVENTED'],
+  ['missing bearer authorization', r => delete r.headers.Authorization],
+  ['invalid tracking syntax', r => r.path = '/api/deliveryintercept/v2/return/1ZSHORT'],
+  ['invalid method', r => r.method = 'GET'],
+  ['wrong API route', r => r.path = '/api/packageintercept/v1/intercept'],
+  ['custom adapter body sent directly to UPS', r => r.body = { request_type: 'RETURN_TO_SENDER', reason_code: 'ORDER_MUTATION' }],
+  ['invalid return reason', r => r.body.reasonForReturn = 'ORDER_MUTATION'],
+  ['missing RS reason', r => delete r.body.reasonForReturn],
+  ['invalid contact phone', r => r.body.requesterContactInfo.telephone = 'not-a-phone'],
+  ['malformed request JSON', r => r.body = '{'],
+  ['unexpected UPS request field', r => r.body.madeUp = true]
+]) {
+  await suite.check(`Reject ${name}`, () => { const r = request(); change(r); assert.ok(validateReturnRequest(r, spec).length); });
 }
+await suite.check('HTTP 200 success and failure examples both satisfy selected response constraints', () => {
+  assert.deepEqual(validateSuccessResponse(fixtures.success_response, spec).errors, []);
+  assert.deepEqual(validateSuccessResponse(fixtures.business_failure_response, spec).errors, []);
+});
+await suite.check('Missing business success field is an invalid response', () => {
+  const body = structuredClone(fixtures.success_response); delete body.success;
+  assert.ok(validateSuccessResponse(body, spec).errors.length);
+});
 
-function validateShipperAccount(str) {
-  return typeof str === 'string' && /^[0-9A-Z]{6}$/.test(str);
-}
-
-function validateInterceptRequest(payload) {
-  const errors = [];
-  if (!payload.tracking_number || !validateTrackingNumber(payload.tracking_number)) {
-    errors.push(`Invalid tracking number: '${payload.tracking_number}'. Must match ^1Z[0-9A-Z]{16}$`);
-  }
-  if (!payload.shipper_account_number || !validateShipperAccount(payload.shipper_account_number)) {
-    errors.push(`Invalid shipper account number: '${payload.shipper_account_number}'. Must match ^[0-9A-Z]{6}$`);
-  }
-  const validRequestTypes = ['RETURN_TO_SENDER', 'HOLD_FOR_PICKUP', 'REDIRECT_ADDRESS'];
-  if (!validRequestTypes.includes(payload.request_type)) {
-    errors.push(`Invalid request_type: '${payload.request_type}'. Must be one of: ${validRequestTypes.join(', ')}`);
-  }
-  const validReasons = ['CUSTOMER_CANCELLATION', 'FRAUD_SUSPECTED', 'INCORRECT_ADDRESS', 'ORDER_MUTATION'];
-  if (!validReasons.includes(payload.reason_code)) {
-    errors.push(`Invalid reason_code: '${payload.reason_code}'. Must be one of: ${validReasons.join(', ')}`);
-  }
-  return { valid: errors.length === 0, errors };
-}
-
-// Carrier Recovery Finite State Machine
-class CarrierRecoveryFSM {
-  constructor(scenario) {
-    this.scenario = scenario;
-    this.state = 'INITIAL';
-    this.feeCharged = 0.00;
-    this.history = [];
-    this.logTransition('INITIAL', 'Order parcel active in carrier network', { tracking: scenario.tracking_number });
-  }
-
-  logTransition(nextState, reason, metadata = {}) {
-    this.state = nextState;
-    this.history.push({
-      timestamp: new Date().toISOString(),
-      state: nextState,
-      reason,
-      metadata
-    });
-  }
-
-  run() {
-    // Stage 1: Client Schema Validation
-    const validation = validateInterceptRequest({
-      tracking_number: this.scenario.tracking_number,
-      shipper_account_number: this.scenario.shipper_account,
-      request_type: this.scenario.request_type,
-      reason_code: this.scenario.reason_code
-    });
-
-    if (!validation.valid) {
-      this.logTransition('CLIENT_VALIDATION_ERROR', 'Request payload rejected by client-side schema validator', { errors: validation.errors });
-      return {
-        status: 400,
-        fsm_outcome: 'VALIDATION_FAILED',
-        fee: 0.00,
-        errors: validation.errors
-      };
-    }
-
-    this.logTransition('SCHEMA_VALIDATED', 'Request adheres to UPS Delivery Intercept v2 OpenAPI contract');
-
-    // Stage 2: Eligibility Check
-    if (this.scenario.initial_carrier_state === 'DELIVERED') {
-      this.logTransition('CARRIER_REJECTED_INELIGIBLE', 'UPS API returned HTTP 422: Parcel already delivered', { http_code: 422 });
-      return {
-        status: 422,
-        fsm_outcome: 'REJECTED_IMMEDIATELY',
-        fee: 0.00,
-        reason: 'ALREADY_DELIVERED'
-      };
-    }
-
-    // Stage 3: Carrier API Acceptance
-    this.logTransition('CARRIER_REQUEST_ACCEPTED', 'UPS API returned HTTP 202 ACCEPTED. Intercept request queued at sorting hubs.', {
-      http_code: 202,
-      fee_authorized: 17.50,
-      fee_settled: false
-    });
-
-    // Stage 4: Downstream Sorting Hub Simulation
-    if (this.scenario.id === 'SCENARIO-01-CLEAN-SUCCESS') {
-      this.logTransition('DEPOT_HUB_SCANNED', 'Terminal laser scan flagged parcel at Louisville KY hub');
-      this.logTransition('RTS_OVERLABEL_APPLIED', 'Automated sorter redirected parcel to origin return loop');
-      this.feeCharged = 17.50; // Fee settles ONLY upon physical interception
-      this.logTransition('SUCCEEDED', 'Parcel returned to warehouse. Intercept fee settled.', { fee: 17.50 });
-      return {
-        status: 200,
-        fsm_outcome: 'SUCCEEDED',
-        fee: 17.50,
-        final_delivery_node: 'ORIGIN_WAREHOUSE'
-      };
-    }
-
-    if (this.scenario.id === 'SCENARIO-03-LAST-MILE-RACE-FAILURE') {
-      this.logTransition('OUT_FOR_DELIVERY_RACE', 'Parcel was loaded on final delivery vehicle before hub sorting flag propagated');
-      this.logTransition('DELIVERY_COMPLETED_BEFORE_INTERCEPT', 'Driver delivered parcel to customer porch. Intercept physically failed.');
-      this.feeCharged = 0.00; // UPS policy: fee waived on failed physical intercept
-      this.logTransition('FAILED', 'Physical intercept unsuccessful. Fee waived ($0.00 charged).', { fee: 0.00 });
-      return {
-        status: 200,
-        fsm_outcome: 'FAILED',
-        fee: 0.00,
-        final_delivery_node: 'CUSTOMER_RESIDENCE'
-      };
-    }
-
-    return { status: 500, fsm_outcome: 'UNKNOWN_SCENARIO', fee: 0.00 };
-  }
-}
-
-// Run all test scenarios
-const scenarioResults = [];
-for (const scenario of fixtures.scenarios) {
-  const fsm = new CarrierRecoveryFSM(scenario);
-  const result = fsm.run();
-
-  const passed = (result.fsm_outcome === scenario.expected_outcome && result.fee === scenario.expected_carrier_fee);
-  if (!passed) {
-    throw new Error(`Scenario ${scenario.id} failed assertion: expected ${scenario.expected_outcome} ($${scenario.expected_carrier_fee}), got ${result.fsm_outcome} ($${result.fee})`);
-  }
-
-  scenarioResults.push({
-    scenario_id: scenario.id,
-    name: scenario.name,
-    tracking_number: scenario.tracking_number,
-    initial_carrier_state: scenario.initial_carrier_state,
-    fsm_outcome: result.fsm_outcome,
-    carrier_fee_billed: result.fee,
-    passed_assertion: passed,
-    fsm_state_history: fsm.history
+for (const fixture of fixtures.scenarios) {
+  await suite.check(`Event-driven scenario: ${fixture.id}`, () => {
+    const c = coordinator();
+    c.request(fixture.id, request(), { eligible: fixture.eligible });
+    const responses = {
+      success,
+      failure: { httpStatus: 200, body: fixtures.business_failure_response },
+      timeout: { timeout: true },
+      unauthorized: { httpStatus: 401 },
+      malformed: { httpStatus: 200, body: '{' }
+    };
+    if (fixture.response) c.response(fixture.id, responses[fixture.response]);
+    for (const event of fixture.events) c.event(fixture.id, event);
+    const result = c.snapshot(fixture.id);
+    assert.equal(result.state, fixture.expected_state);
+    assert.equal(result.modeled_fee_cents, fixture.expected_fee_cents);
+    assert.equal(c.submissions, fixture.eligible ? 1 : 0);
+    confirmations.push({ fixture_id: fixture.id, state: result.state, modeled_fee_cents: result.modeled_fee_cents, submissions: c.submissions, history: result.history });
   });
 }
+await suite.check('Renaming the fixture cannot change the recovery outcome', () => {
+  const c = coordinator(); c.request('arbitrary-new-name', request()); c.response('arbitrary-new-name', success);
+  c.event('arbitrary-new-name', { id: 'event', sequence: 1, revision: 1, type: 'INTERCEPT_CONFIRMED' });
+  assert.equal(c.snapshot('arbitrary-new-name').state, 'SUCCEEDED');
+});
+await suite.check('Duplicate accepted request returns existing state with one submission', () => {
+  const c = coordinator(); c.request('dup', request()); c.response('dup', success); c.request('dup', request());
+  assert.equal(c.submissions, 1); assert.equal(c.snapshot('dup').state, 'ACCEPTED');
+});
+await suite.check('Duplicate rejected request preserves rejection', () => {
+  const c = coordinator(); c.request('reject', request(), { eligible: false }); c.request('reject', request());
+  assert.equal(c.submissions, 0); assert.equal(c.snapshot('reject').state, 'REJECTED');
+});
+await suite.check('Conflicting payload under an existing operation ID is rejected', () => {
+  const c = coordinator(); c.request('conflict', request()); const altered = request(); altered.body.reasonForReturn = 'AN';
+  assert.equal(c.request('conflict', altered).state, 'CONFLICT'); assert.equal(c.submissions, 1);
+});
+await suite.check('Timeout stays UNKNOWN on retry; lookup reconciles without another submission', () => {
+  const c = coordinator(); c.request('unknown', request()); c.response('unknown', { timeout: true });
+  assert.equal(c.request('unknown', request()).state, 'UNKNOWN'); assert.equal(c.submissions, 1);
+  c.reconcile('unknown', 'ACCEPTED'); assert.equal(c.snapshot('unknown').state, 'ACCEPTED');
+  c.event('unknown', { id: 'confirmed', sequence: 1, revision: 1, type: 'INTERCEPT_CONFIRMED' });
+  assert.equal(c.snapshot('unknown').state, 'SUCCEEDED'); assert.equal(c.submissions, 1);
+});
+await suite.check('No physical event means accepted request does not become successful', () => {
+  const c = coordinator(); c.request('pending', request()); c.response('pending', success);
+  assert.equal(c.snapshot('pending').state, 'ACCEPTED'); assert.equal(c.snapshot('pending').modeled_fee_cents, 0);
+});
+await suite.check('Wrong revision and non-increasing event sequence cannot advance state', () => {
+  const c = coordinator(); c.request('stale', request(), { revision: 2 }); c.response('stale', success);
+  c.event('stale', { id: 'old', sequence: 1, revision: 1, type: 'INTERCEPT_CONFIRMED' });
+  c.event('stale', { id: 'old-seq', sequence: 0, revision: 2, type: 'INTERCEPT_CONFIRMED' });
+  assert.equal(c.snapshot('stale').state, 'ACCEPTED');
+});
+await suite.check('Duplicate physical event does not repeat fee or terminal transition', () => {
+  const c = coordinator(); c.request('event-dup', request()); c.response('event-dup', success);
+  const event = { id: 'scan', sequence: 1, revision: 1, type: 'INTERCEPT_CONFIRMED' };
+  c.event('event-dup', event); const size = c.snapshot('event-dup').history.length; c.event('event-dup', event);
+  assert.equal(c.snapshot('event-dup').history.length, size); assert.equal(c.snapshot('event-dup').modeled_fee_cents, 1750);
+});
+await suite.check('A contradictory event cannot overwrite terminal success', () => {
+  const c = coordinator(); c.request('terminal', request()); c.response('terminal', success);
+  c.event('terminal', { id: 'good', sequence: 1, revision: 1, type: 'INTERCEPT_CONFIRMED' });
+  c.event('terminal', { id: 'late', sequence: 2, revision: 1, type: 'INTERCEPT_FAILED' });
+  assert.equal(c.snapshot('terminal').state, 'SUCCEEDED');
+});
+await suite.check('Modeled fee policy is configurable, not a hardcoded UPS guarantee', () => {
+  const c = new RecoveryCoordinator(spec, { successFeeCents: 1900, failureFeeCents: 250 });
+  c.request('fee', request()); c.response('fee', success); c.event('fee', { id: 'failed', sequence: 1, revision: 1, type: 'INTERCEPT_FAILED' });
+  assert.equal(c.snapshot('fee').modeled_fee_cents, 250);
+});
+suite.skip('Authenticated UPS CIE execution', 'No network calls or credentialed sandbox execution are performed by this offline suite.');
+suite.skip('Physical carrier interception and billing verification', 'Injected events and modeled fees do not establish carrier operations or invoices.');
 
-const finalResults = {
-  timestamp: new Date().toISOString(),
-  environment: 'UPS Delivery Intercept v2 OpenAPI Contract & FSM Harness',
-  contract_spec: {
-    title: schema.title,
-    version: schema.version
+suite.finish({
+  data: {
+    scenarios: confirmations,
+    fee_assumptions: fixtures.fee_assumptions,
+    contract_scope: 'Focused checks for method/path, selected documented parameters, return-request properties and HTTP-200 response properties. Conditional RS reason is enforced by the adapter. Does not implement every OpenAPI keyword or establish entitlement/eligibility.',
+    live_cie_executed: false,
+    physical_recovery_observed: false,
+    storage: 'In-memory local recovery simulator; no persistence or distributed exactly-once guarantee claimed.'
   },
-  summary: {
-    scenarios_tested: scenarioResults.length,
-    scenarios_passed: scenarioResults.filter(s => s.passed_assertion).length,
-    fsm_conformance_rate: 1.0
-  },
-  scenario_runs: scenarioResults
-};
-
-// Write results.json
-const resultsPath = path.join(__dirname, 'results.json');
-fs.writeFileSync(resultsPath, JSON.stringify(finalResults, null, 2), 'utf8');
-console.log(`Saved carrier recovery results to ${resultsPath}`);
-
-// Write summary.md
-const lines = [
-  '# Workstream E: UPS Intercept Contract & Recovery Evidence',
-  '',
-  `**Generated:** ${finalResults.timestamp}  `,
-  '**Classification:** Official Carrier OpenAPI Specification Validation & Finite State Machine Simulation  ',
-  '**Contract Pinned:** UPS Delivery Intercept API v2 Contract Specification (`ups_intercept_schema.json`)',
-  '',
-  '---',
-  '',
-  '## 1. Test Scenario Execution Matrix',
-  '',
-  '| Scenario ID | Test Scenario Description | Initial State | API Response | Final FSM State | Carrier Fee Billed | Assertion Result |',
-  '| :--- | :--- | :---: | :---: | :---: | :---: | :---: |'
-];
-
-for (const s of scenarioResults) {
-  lines.push(`| **${s.scenario_id}** | ${s.name} | \`${s.initial_carrier_state}\` | HTTP ${s.fsm_state_history.find(h => h.metadata?.http_code)?.metadata.http_code || 400} | **${s.fsm_outcome}** | **$${s.carrier_fee_billed.toFixed(2)}** | **PASS** |`);
-}
-
-lines.push(
-  '',
-  '---',
-  '',
-  '## 2. Finite State Machine (FSM) Lifecycle Details',
-  ''
-);
-
-for (const s of scenarioResults) {
-  lines.push(`### ${s.scenario_id}: ${s.name}`);
-  lines.push(`- **Tracking Number**: \`${s.tracking_number}\``);
-  lines.push(`- **Outcome**: **${s.fsm_outcome}** (Carrier Fee Billed: **$${s.carrier_fee_billed.toFixed(2)}**)`);
-  lines.push('- **State Transition Log**:');
-  for (const step of s.fsm_state_history) {
-    lines.push(`  1. \`${step.state}\` — *${step.reason}*`);
-  }
-  lines.push('');
-}
-
-lines.push(
-  '---',
-  '',
-  '## 3. The Critical Evidentiary Boundary',
-  '- **Electronic Acceptance vs. Physical Depot Containment**:',
-  '  - Receiving HTTP 202 `ACCEPTED` from UPS confirms only that the intercept request was received and routed to regional sorting facilities.',
-  '  - It **does not guarantee** physical parcel recovery. If the package has already entered a final delivery vehicle (Scenario 03), courier delivery may occur before the digital flag reaches the driver manifest.',
-  '- **Fee Settlement Rule**:',
-  '  - The **$17.50 intercept fee** is contingent on physical diversion at the hub. If the parcel is delivered despite the intercept request, UPS waives the fee ($0.00 billed).',
-  '- **What remains outside scope**: Physical carrier sorting hub optical conveyor performance and real-world package interception success rate across UPS domestic hubs.'
-);
-
-const summaryPath = path.join(__dirname, 'summary.md');
-fs.writeFileSync(summaryPath, lines.join('\n'), 'utf8');
-console.log(`Saved summary markdown to ${summaryPath}`);
+  sources: [provenance],
+  markdown: `# Workstream E — Carrier Recovery Evidence\n\n**Scope:** Focused offline checks against a pinned official UPS Delivery Intercept v2 JSON snapshot, plus an event-driven local recovery simulator. No authenticated CIE calls, real tracking events, physical recovery or billing verification occurred.\n\n## Contract boundaries\n\nThe \`synapse_adapter_schema.json\` file describes a custom normalized application model. The separate \`contracts/ups_delivery_intercept_v2.openapi.json\` snapshot is converted from the pinned UPS YAML. The suite checks selected constraints from that snapshot and the return operation; it is not a complete OpenAPI validator or provider certification. Bearer-token syntax is checked without authenticating it. The return fixture uses \`requestType: RS\` and the documented canceled-fixture reason \`AM\`; actual recovery requires eligible shipment options and account access.\n\nUPS documents stubbed CIE responses for known fixtures. HTTP 200 with \`success:false\` is a business failure; electronic acceptance never establishes physical recovery.\n\n## Event-driven scenarios\n\n| Fixture | Result | Modeled fee |\n|---|---|---:|\n${confirmations.map(r => `| ${r.fixture_id} | ${r.state} | $${(r.modeled_fee_cents / 100).toFixed(2)} |`).join('\n')}\n\nThe scenario name does not choose the outcome. Eligibility, structured response and injected carrier events drive transitions. Duplicate operation IDs return the existing state; conflicting payloads are rejected. Unknown responses require reconciliation. Stale or duplicate events cannot repeat a fee or overwrite a terminal outcome.\n\n## Fee assumptions\n\nSuccessful modeled recovery costs $${(fixtures.fee_assumptions.success_fee_cents / 100).toFixed(2)}; failed recovery costs $${(fixtures.fee_assumptions.failure_fee_cents / 100).toFixed(2)} in these fixtures. These are configurable scenario inputs, not verified current UPS tariffs or a universal fee-waiver policy.\n\n## Reproduction\n\nRun \`node evidence/carrier-recovery/test_recovery.js\` from the portfolio root. The archived report records runtime, source/input hashes, executed checks and the explicit out-of-scope checks.\n`.replaceAll('\`','`')
+});

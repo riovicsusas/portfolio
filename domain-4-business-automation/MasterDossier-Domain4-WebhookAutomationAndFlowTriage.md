@@ -126,6 +126,8 @@ flowchart TD
 
 ## 4. The Negative Check Rule: Eliminating Runaway Tag Loops
 
+Retry policy determines when a request may be attempted again; duplicate prevention determines whether that attempt represents new work. Tag checks address sequential retriggering, while durable operation records handle concurrent duplicates.
+
 The foundational baseline in Shopify Flow engineering is the **Negative Condition Guard**. While negative condition checks prevent sequential re-trigger loops within single-threaded workflow execution, they are not atomic concurrency locks. True distributed idempotency requires pairing tag guards with durable operation identifiers (`operation_id`), payload request hashes, and optimistic order version checks.
 
 ```
@@ -164,7 +166,9 @@ flowchart TD
 
 ## 5. Empirical Incident Autopsy: Order #1048 Telemetry
 
-To validate this triage framework under production stress, an empirical simulation was executed analyzing a real-world runaway recursion incident on Order #1048.
+The controls above define how repeated events should be handled. The incident walkthrough below connects those safeguards to a failure scenario before presenting the local coordinator’s verification results.
+
+Order #1048 is a controlled failure scenario illustrating repeated event delivery. Its narrative telemetry is distinct from the executed local coordinator tests below; the harness does not establish actual platform throttling or production performance.
 
 ### 5.1 Incident Parameters
 - **Order ID**: `#1048`
@@ -190,12 +194,14 @@ To validate this triage framework under production stress, an empirical simulati
 ### 5.3 Remediation & DLQ Buffer Implementation
 1. **Circuit Breaker Deployment**: Injected mandatory `tags_do_not_contain` conditions and trigger-tag filters across all active flows.
 2. **Dead-Letter Queue Buffering**: Routed transient `HTTP 504` timeouts to an Amazon SQS work queue with a separate dead-letter queue (DLQ) for exhausted attempts (maximum 3 receives; exponential backoff with jitter).
-3. **Post-Fix Staging Verification**: In a 1,000-order staging benchmark run with idempotency guards and SQS buffering, no duplicate webhook executions were observed, with median webhook processing latency stabilizing at **180ms**.
+3. **Verification Scope**: Local SQLite coordinator tests exercise duplicate identity, conditional holds and recovery. SQS deployment and Shopify Flow configuration remain separate integration acceptance tasks; no 1,000-order/180ms vendor benchmark is inferred from this suite.
 
 ### 5.4 Measured Deduplication & Gateway Timeout Resilience
 
-The automated webhook idempotency and fault-handling architecture was validated in our staging simulation suite ([`evidence/latency/`](../evidence/latency/summary.md)):
-- **Idempotency Deduplication**: 20 duplicate webhook events with identical `idempotency_key` were evaluated under concurrency. Secondary events returned cached 200 OK responses in **15.97 ms** (median), executing **0 downstream API calls** and preventing queue flooding.
-- **HTTP 504 Timeout Recovery**: Simulated 3PL webhook gateway timeouts triggered immediate state rollback, error tagging, and automated dead-letter routing to Tier 3 technical triage without thread starvation.
+The [local coordinator suite](../evidence/latency/summary.md) asserts one WMS-simulator effect for matching duplicate requests, preserved rejection outcomes, conflict detection when a key is reused for a different payload, and a pending response while the first worker is active.
+
+A lost response after the simulator commits the hold produces UNKNOWN. Reconciliation reads the existing effect and avoids applying it twice. A separate-process crash test terminates after a persisted effect and verifies recovery from SQLite after restart. A pending operation without an established effect is not automatically stolen from a potentially active worker.
+
+Raw records and per-outcome timing statistics accompany each run. These checks do not establish distributed exactly-once delivery, deployed SQS behavior, physical warehouse state or universal race freedom.
 
 ---

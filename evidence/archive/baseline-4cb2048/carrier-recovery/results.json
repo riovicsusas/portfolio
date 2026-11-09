@@ -1,0 +1,187 @@
+{
+  "timestamp": "2026-11-09T16:34:01.402Z",
+  "environment": "UPS Delivery Intercept v2 OpenAPI Contract & FSM Harness",
+  "contract_spec": {
+    "title": "UPS Delivery Intercept API v2 Contract Specification",
+    "version": "2.0.0"
+  },
+  "summary": {
+    "scenarios_tested": 4,
+    "scenarios_passed": 4,
+    "fsm_conformance_rate": 1
+  },
+  "scenario_runs": [
+    {
+      "scenario_id": "SCENARIO-01-CLEAN-SUCCESS",
+      "name": "Mid-Transit Clean Depot Intercept",
+      "tracking_number": "1Z9999999999999991",
+      "initial_carrier_state": "IN_TRANSIT_HUB",
+      "fsm_outcome": "SUCCEEDED",
+      "carrier_fee_billed": 17.5,
+      "passed_assertion": true,
+      "fsm_state_history": [
+        {
+          "timestamp": "2026-11-09T16:34:01.401Z",
+          "state": "INITIAL",
+          "reason": "Order parcel active in carrier network",
+          "metadata": {
+            "tracking": "1Z9999999999999991"
+          }
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "SCHEMA_VALIDATED",
+          "reason": "Request adheres to UPS Delivery Intercept v2 OpenAPI contract",
+          "metadata": {}
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "CARRIER_REQUEST_ACCEPTED",
+          "reason": "UPS API returned HTTP 202 ACCEPTED. Intercept request queued at sorting hubs.",
+          "metadata": {
+            "http_code": 202,
+            "fee_authorized": 17.5,
+            "fee_settled": false
+          }
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "DEPOT_HUB_SCANNED",
+          "reason": "Terminal laser scan flagged parcel at Louisville KY hub",
+          "metadata": {}
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "RTS_OVERLABEL_APPLIED",
+          "reason": "Automated sorter redirected parcel to origin return loop",
+          "metadata": {}
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "SUCCEEDED",
+          "reason": "Parcel returned to warehouse. Intercept fee settled.",
+          "metadata": {
+            "fee": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "SCENARIO-02-ALREADY-DELIVERED",
+      "name": "Post-Delivery Ineligible Attempt",
+      "tracking_number": "1Z9999999999999992",
+      "initial_carrier_state": "DELIVERED",
+      "fsm_outcome": "REJECTED_IMMEDIATELY",
+      "carrier_fee_billed": 0,
+      "passed_assertion": true,
+      "fsm_state_history": [
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "INITIAL",
+          "reason": "Order parcel active in carrier network",
+          "metadata": {
+            "tracking": "1Z9999999999999992"
+          }
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "SCHEMA_VALIDATED",
+          "reason": "Request adheres to UPS Delivery Intercept v2 OpenAPI contract",
+          "metadata": {}
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "CARRIER_REJECTED_INELIGIBLE",
+          "reason": "UPS API returned HTTP 422: Parcel already delivered",
+          "metadata": {
+            "http_code": 422
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "SCENARIO-03-LAST-MILE-RACE-FAILURE",
+      "name": "Out-for-Delivery Hub Race (API Accepted but Physically Delivered)",
+      "tracking_number": "1Z9999999999999993",
+      "initial_carrier_state": "OUT_FOR_DELIVERY",
+      "fsm_outcome": "FAILED",
+      "carrier_fee_billed": 0,
+      "passed_assertion": true,
+      "fsm_state_history": [
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "INITIAL",
+          "reason": "Order parcel active in carrier network",
+          "metadata": {
+            "tracking": "1Z9999999999999993"
+          }
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "SCHEMA_VALIDATED",
+          "reason": "Request adheres to UPS Delivery Intercept v2 OpenAPI contract",
+          "metadata": {}
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "CARRIER_REQUEST_ACCEPTED",
+          "reason": "UPS API returned HTTP 202 ACCEPTED. Intercept request queued at sorting hubs.",
+          "metadata": {
+            "http_code": 202,
+            "fee_authorized": 17.5,
+            "fee_settled": false
+          }
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "OUT_FOR_DELIVERY_RACE",
+          "reason": "Parcel was loaded on final delivery vehicle before hub sorting flag propagated",
+          "metadata": {}
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "DELIVERY_COMPLETED_BEFORE_INTERCEPT",
+          "reason": "Driver delivered parcel to customer porch. Intercept physically failed.",
+          "metadata": {}
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "FAILED",
+          "reason": "Physical intercept unsuccessful. Fee waived ($0.00 charged).",
+          "metadata": {
+            "fee": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "SCENARIO-04-INVALID-TRACKING",
+      "name": "Malformed Tracking Number Schema Rejection",
+      "tracking_number": "1Z123SHORT",
+      "initial_carrier_state": "UNKNOWN",
+      "fsm_outcome": "VALIDATION_FAILED",
+      "carrier_fee_billed": 0,
+      "passed_assertion": true,
+      "fsm_state_history": [
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "INITIAL",
+          "reason": "Order parcel active in carrier network",
+          "metadata": {
+            "tracking": "1Z123SHORT"
+          }
+        },
+        {
+          "timestamp": "2026-11-09T16:34:01.402Z",
+          "state": "CLIENT_VALIDATION_ERROR",
+          "reason": "Request payload rejected by client-side schema validator",
+          "metadata": {
+            "errors": [
+              "Invalid tracking number: '1Z123SHORT'. Must match ^1Z[0-9A-Z]{16}$"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,58 +1,25 @@
 {
   "currency": "USD",
-  "component_costs": {
-    "focus_stick_packs": {
-      "sku_pattern": "SYN-FSTK-*",
-      "name": "Focus Stick Packs 30-Pack (All Flavors)",
-      "component_cogs": 8.50,
-      "retail_price": 42.00,
-      "source_type": "Scenario Input (Procurement Benchmark)"
-    },
-    "adaptogen_tincture": {
-      "sku_pattern": "SYN-TNCT-*",
-      "name": "Adaptogen Tincture 60ml (AM/PM)",
-      "component_cogs": 12.50,
-      "retail_price": 38.00,
-      "source_type": "Scenario Input (Procurement Benchmark)"
-    },
-    "precision_tumbler": {
-      "sku_pattern": "SYN-TMBL-*",
-      "name": "Precision Insulated Tumbler 500ml",
-      "component_cogs": 7.00,
-      "retail_price": 34.00,
-      "source_type": "Scenario Input (Procurement Benchmark)"
-    },
-    "micro_foam_whisk": {
-      "sku_pattern": "SYN-ACC-WHSK",
-      "name": "Micro-Foam Electric Whisk",
-      "component_cogs": 3.10,
-      "retail_price": 16.00,
-      "source_type": "Scenario Input (Procurement Benchmark)"
-    }
+  "monetary_unit": "integer cents",
+  "classification": "Declared scenario inputs; no procurement invoice or historical contract is represented",
+  "components": {
+    "sticks": { "sku": "SYN-FSTK-MY", "name": "Focus Stick Packs 30-Pack", "unit_cost_cents": 850, "retail_cents": 4200 },
+    "tincture": { "sku": "SYN-TNCT-AM", "name": "AM Adaptogen Tincture 60ml", "unit_cost_cents": 1250, "retail_cents": 3800 },
+    "tumbler": { "sku": "SYN-TMBL-MO", "name": "Precision Tumbler, Matte Obsidian", "unit_cost_cents": 700, "retail_cents": 3400 }
   },
-  "starter_bundle_breakdown": {
-    "components": [
-      { "item": "Focus Stick Packs 30-Pack", "cogs": 8.50 },
-      { "item": "Adaptogen Tincture 60ml", "cogs": 12.50 },
-      { "item": "Precision Insulated Tumbler", "cogs": 7.00 }
-    ],
-    "raw_component_sum": 28.00,
-    "kitting_packaging_and_inserts": 0.40,
-    "capstone_scenario_cogs": 28.40,
-    "historical_benchmarks": {
-      "unbundled_bulk_procurement": 24.50,
-      "landed_overseas_bulk_run": 26.50
-    }
+  "bundle": {
+    "sku": "SYN-BNDL-MAO",
+    "components": [{ "component": "sticks", "quantity": 1 }, { "component": "tincture", "quantity": 1 }, { "component": "tumbler", "quantity": 1 }],
+    "kitting_material_cents": 40,
+    "note": "Kitting material is an assumed product-material allowance, distinct from outbound handling."
   },
-  "operational_costs": {
-    "payment_gateway_rate": 0.029,
-    "payment_gateway_fixed": 0.30,
-    "handling_pick_pack": 4.90,
-    "outbound_freight_standard": 6.50
-  },
-  "retail_price_points": {
-    "standard_msrp": 98.00,
-    "promotional_entry": 82.00,
-    "cohort_observed_average": 82.40
-  }
+  "processing": { "rate_numerator": 29, "rate_denominator": 1000, "fixed_cents": 30, "rounding": "half up to the nearest cent" },
+  "scenarios": [
+    { "id": "capstone", "label": "Capstone retained-sale baseline", "merchandise_cents": 9800, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 450, "freight_cents": 720 },
+    { "id": "alternative_standard", "label": "Separate benchmark: standard price, alternative fulfillment inputs", "merchandise_cents": 9800, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 490, "freight_cents": 650 },
+    { "id": "alternative_promo", "label": "Separate benchmark: promotional price", "merchandise_cents": 8200, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 490, "freight_cents": 650 },
+    { "id": "reference_price_82_40", "label": "Separate representative-price sensitivity; not a measured cohort margin", "merchandise_cents": 8240, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 490, "freight_cents": 650 }
+  ],
+  "recovery": { "intercept_cents": 1750, "return_freight_cents": 840, "replacement_handling_cents": 450, "replacement_freight_cents": 1480, "goodwill_expense_cents": 2500, "dispute_fee_cents": 1500, "note": "Sale retained, fresh replacement, no salvage, goodwill fully expensed; chargeback is a separate branch." },
+  "sensitivity": { "component_basis_points": [-2000, -1000, 0, 1000, 2000], "kitting_cents": [20, 40, 60, 80, 100], "freight_cents": [450, 650, 850, 1050, 1460, 1780], "note": "Chosen sensitivity ranges; values do not establish carrier zones or supplier quotes." }
 }

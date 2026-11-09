@@ -1,339 +1,501 @@
 {
-  "generated_at": "2026-11-09T16:33:42.639Z",
-  "environment": {
-    "node_version": "v24.18.0",
-    "architecture": "x64",
-    "harness": "In-Process Monotonic Microsecond Instrumented Simulator",
-    "timing_source": "node:perf_hooks.performance.now()"
+  "run_id": "2026-11-09T18-21-14-457Z-59d713d1",
+  "started_at": "2026-11-09T18:21:14.558Z",
+  "finished_at": "2026-11-09T18:21:15.588Z",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "linux",
+    "arch": "x64"
   },
-  "workloads": [
+  "revision": "4cb20482de1c172efc89de7f09c5adbfdd204143",
+  "script_sha256": "44909ddd7fe205f1b81bf206efe67b3c104868810a29c4e89effc01ef124d278",
+  "input_sha256": {
+    "workloads.json": "772c15f44acd9715413e4621b1bb79ca6477ece7be2b7a864dc8ae83be46545e",
+    "coordinator.js": "35a60b0f407c5cc7a70228fbb39f821950fd672e49203fd2daef40a71a119e67",
+    "restart_worker.js": "edf19e74da571134727021baf819c4da242f5ebc7cc49cd8eff3f9f265248fa1"
+  },
+  "classification": "Measured local SQLite coordinator and fault-injected WMS simulator; no vendor or SQS calls",
+  "status": "passed",
+  "counts": {
+    "passed": 34,
+    "failed": 0,
+    "skipped": 0,
+    "total": 34
+  },
+  "checks": [
     {
-      "id": "workload_1_baseline_sequential",
-      "name": "Baseline Sequential Flow",
-      "description": "50 sequential customer hold requests under standard staging network conditions.",
-      "iterations": 50,
-      "concurrency": 1,
-      "status_breakdown": {
-        "200": 50,
-        "409": 0,
-        "504": 0,
-        "other": 0
-      },
-      "percentiles_ms": {
-        "durable_lock": {
-          "count": 50,
-          "min": 9.59,
-          "p50": 15.54,
-          "p90": 16.04,
-          "p95": 16.14,
-          "p99": 16.38,
-          "max": 16.38,
-          "mean": 15.48
-        },
-        "shopify_hold": {
-          "count": 50,
-          "min": 14.56,
-          "p50": 15.93,
-          "p90": 31,
-          "p95": 31.15,
-          "p99": 32.06,
-          "max": 32.06,
-          "mean": 20.47
-        },
-        "wms_lock": {
-          "count": 50,
-          "min": 15.03,
-          "p50": 30.39,
-          "p90": 31.48,
-          "p95": 31.7,
-          "p99": 32.37,
-          "max": 32.37,
-          "mean": 24.55
-        },
-        "total_e2e": {
-          "count": 50,
-          "min": 45.97,
-          "p50": 62.08,
-          "p90": 77.22,
-          "p95": 77.73,
-          "p99": 78.7,
-          "max": 78.7,
-          "mean": 60.54
-        }
-      }
+      "name": "Eligible hold commits one WMS-simulator effect",
+      "status": "passed"
     },
     {
-      "id": "workload_2_concurrency_burst",
-      "name": "High-Concurrency Flash-Sale Burst",
-      "description": "50 simultaneous hold requests arriving in parallel to evaluate lock contention and event-loop queueing.",
-      "iterations": 50,
-      "concurrency": 50,
-      "status_breakdown": {
-        "200": 50,
-        "409": 0,
-        "504": 0,
-        "other": 0
-      },
-      "percentiles_ms": {
-        "durable_lock": {
-          "count": 50,
-          "min": 15.13,
-          "p50": 15.34,
-          "p90": 15.56,
-          "p95": 15.62,
-          "p99": 15.73,
-          "max": 15.73,
-          "mean": 15.36
-        },
-        "shopify_hold": {
-          "count": 50,
-          "min": 14.93,
-          "p50": 30.82,
-          "p90": 46.28,
-          "p95": 46.44,
-          "p99": 46.53,
-          "max": 46.53,
-          "mean": 32.32
-        },
-        "wms_lock": {
-          "count": 50,
-          "min": 15.3,
-          "p50": 31.37,
-          "p90": 46.52,
-          "p95": 46.67,
-          "p99": 46.78,
-          "max": 46.78,
-          "mean": 37.02
-        },
-        "total_e2e": {
-          "count": 50,
-          "min": 61.39,
-          "p50": 77.26,
-          "p90": 92.59,
-          "p95": 108.05,
-          "p99": 108.06,
-          "max": 108.06,
-          "mean": 84.72
-        }
-      }
+      "name": "Concurrent same-order duplicate returns pending; later replay returns confirmed",
+      "status": "passed"
     },
     {
-      "id": "workload_3_delayed_wms_spike",
-      "name": "Downstream 3PL Latency Degradation",
-      "description": "Simulates 3PL WMS webhook slow responses under warehouse wave batch load.",
-      "iterations": 20,
-      "concurrency": 5,
-      "status_breakdown": {
-        "200": 20,
-        "409": 0,
-        "504": 0,
-        "other": 0
-      },
-      "percentiles_ms": {
-        "durable_lock": {
-          "count": 20,
-          "min": 15.39,
-          "p50": 15.63,
-          "p90": 15.95,
-          "p95": 15.95,
-          "p99": 15.96,
-          "max": 15.96,
-          "mean": 15.66
-        },
-        "shopify_hold": {
-          "count": 20,
-          "min": 15.2,
-          "p50": 17.66,
-          "p90": 31.63,
-          "p95": 31.7,
-          "p99": 31.7,
-          "max": 31.7,
-          "mean": 22.88
-        },
-        "wms_lock": {
-          "count": 20,
-          "min": 1011.98,
-          "p50": 1447.08,
-          "p90": 1775.19,
-          "p95": 1784.65,
-          "p99": 1966.22,
-          "max": 1966.22,
-          "mean": 1445.79
-        },
-        "total_e2e": {
-          "count": 20,
-          "min": 1043.15,
-          "p50": 1493.95,
-          "p90": 1806,
-          "p95": 1816.13,
-          "p99": 2013.37,
-          "max": 2013.37,
-          "mean": 1484.37
-        }
-      }
+      "name": "Reconciliation cannot steal an active pending operation",
+      "status": "passed"
     },
     {
-      "id": "workload_4_idempotent_duplicate",
-      "name": "Duplicate Webhook Re-Delivery",
-      "description": "Evaluates idempotency key deduplication: second delivery returns cached 200 OK immediately with 0 downstream calls.",
-      "iterations": 20,
-      "concurrency": 5,
-      "status_breakdown": {
-        "200": 20,
-        "409": 0,
-        "504": 0,
-        "other": 0
-      },
-      "percentiles_ms": {
-        "durable_lock": {
-          "count": 20,
-          "min": 14.61,
-          "p50": 15.29,
-          "p90": 15.59,
-          "p95": 15.62,
-          "p99": 15.64,
-          "max": 15.64,
-          "mean": 15.26
-        },
-        "shopify_hold": {
-          "count": 10,
-          "min": 14.29,
-          "p50": 15,
-          "p90": 15.48,
-          "p95": 30.97,
-          "p99": 30.97,
-          "max": 30.97,
-          "mean": 16.55
-        },
-        "wms_lock": {
-          "count": 10,
-          "min": 15.5,
-          "p50": 16.31,
-          "p90": 32.19,
-          "p95": 32.48,
-          "p99": 32.48,
-          "max": 32.48,
-          "mean": 23.97
-        },
-        "total_e2e": {
-          "count": 20,
-          "min": 14.66,
-          "p50": 15.64,
-          "p90": 62.85,
-          "p95": 62.85,
-          "p99": 62.88,
-          "max": 62.88,
-          "mean": 35.55
-        }
-      }
+      "name": "Rejected cutoff outcome is preserved on duplicate delivery",
+      "status": "passed"
     },
     {
-      "id": "workload_5_cutoff_race_ponr",
-      "name": "Warehouse Cutoff Race (PONR Breach)",
-      "description": "Simulates request arriving after warehouse wave picking has commenced; verifies fast 409 Conflict rejection.",
-      "iterations": 20,
-      "concurrency": 5,
-      "status_breakdown": {
-        "200": 0,
-        "409": 20,
-        "504": 0,
-        "other": 0
-      },
-      "percentiles_ms": {
-        "durable_lock": {
-          "count": 20,
-          "min": 14.45,
-          "p50": 14.87,
-          "p90": 15.95,
-          "p95": 15.96,
-          "p99": 16.08,
-          "max": 16.08,
-          "mean": 15.08
-        },
-        "shopify_hold": {
-          "min": 0,
-          "p50": 0,
-          "p90": 0,
-          "p95": 0,
-          "p99": 0,
-          "max": 0,
-          "mean": 0
-        },
-        "wms_lock": {
-          "min": 0,
-          "p50": 0,
-          "p90": 0,
-          "p95": 0,
-          "p99": 0,
-          "max": 0,
-          "mean": 0
-        },
-        "total_e2e": {
-          "count": 20,
-          "min": 14.47,
-          "p50": 14.89,
-          "p90": 15.95,
-          "p95": 15.96,
-          "p99": 16.1,
-          "max": 16.1,
-          "mean": 15.1
-        }
-      }
+      "name": "Reusing a key for a different order rejects the conflicting payload",
+      "status": "passed"
     },
     {
-      "id": "workload_6_timeout_fault_recovery",
-      "name": "WMS Gateway Timeout & Rollback",
-      "description": "Simulates HTTP 504 Gateway Timeout from 3PL; tests graceful failure and escalation queue tagging.",
-      "iterations": 10,
-      "concurrency": 2,
-      "status_breakdown": {
-        "200": 0,
-        "409": 0,
-        "504": 10,
-        "other": 0
-      },
-      "percentiles_ms": {
-        "durable_lock": {
-          "count": 10,
-          "min": 14.39,
-          "p50": 15.34,
-          "p90": 16.06,
-          "p95": 16.1,
-          "p99": 16.1,
-          "max": 16.1,
-          "mean": 15.36
-        },
-        "shopify_hold": {
-          "count": 10,
-          "min": 15.23,
-          "p50": 15.43,
-          "p90": 16.09,
-          "p95": 16.09,
-          "p99": 16.09,
-          "max": 16.09,
-          "mean": 15.55
-        },
-        "wms_lock": {
-          "count": 10,
-          "min": 1502.99,
-          "p50": 1507.85,
-          "p90": 1510.15,
-          "p95": 1510.18,
-          "p99": 1510.18,
-          "max": 1510.18,
-          "mean": 1507.17
-        },
-        "total_e2e": {
-          "count": 10,
-          "min": 1532.96,
-          "p50": 1540.02,
-          "p90": 1541.13,
-          "p95": 1541.18,
-          "p99": 1541.18,
-          "max": 1541.18,
-          "mean": 1538.1
-        }
-      }
+      "name": "Reusing a key with a changed address rejects the conflicting payload",
+      "status": "passed"
+    },
+    {
+      "name": "Competing operation IDs serialize the same shipment while pending",
+      "status": "passed"
+    },
+    {
+      "name": "Wave release between initial read and conditional hold rejects mutation",
+      "status": "passed"
+    },
+    {
+      "name": "Timeout after remote success reconciles without a second effect",
+      "status": "passed"
+    },
+    {
+      "name": "Absent effect is reconciled before a safe same-key retry",
+      "status": "passed"
+    },
+    {
+      "name": "Stale order revision cannot apply a hold",
+      "status": "passed"
+    },
+    {
+      "name": "Reconciliation detects revision change after an uncertain effect",
+      "status": "passed"
+    },
+    {
+      "name": "Selective release preserves the unrelated hold",
+      "status": "passed"
+    },
+    {
+      "name": "New process recovers effect persisted before worker termination",
+      "status": "passed"
+    },
+    {
+      "name": "Seed reproduces injected delays, not observed wall-clock timings",
+      "status": "passed"
+    },
+    {
+      "name": "Nearest-rank percentile implementation matches known values",
+      "status": "passed"
+    },
+    {
+      "name": "baseline: actual result count equals configured attempts",
+      "status": "passed"
+    },
+    {
+      "name": "baseline: WMS-simulator business-effect count",
+      "status": "passed"
+    },
+    {
+      "name": "baseline: every result matches the workload safety outcome",
+      "status": "passed"
+    },
+    {
+      "name": "burst: actual result count equals configured attempts",
+      "status": "passed"
+    },
+    {
+      "name": "burst: WMS-simulator business-effect count",
+      "status": "passed"
+    },
+    {
+      "name": "burst: every result matches the workload safety outcome",
+      "status": "passed"
+    },
+    {
+      "name": "delayed: actual result count equals configured attempts",
+      "status": "passed"
+    },
+    {
+      "name": "delayed: WMS-simulator business-effect count",
+      "status": "passed"
+    },
+    {
+      "name": "delayed: every result matches the workload safety outcome",
+      "status": "passed"
+    },
+    {
+      "name": "duplicates: actual result count equals configured attempts",
+      "status": "passed"
+    },
+    {
+      "name": "duplicates: WMS-simulator business-effect count",
+      "status": "passed"
+    },
+    {
+      "name": "duplicates: every result matches the workload safety outcome",
+      "status": "passed"
+    },
+    {
+      "name": "cutoff: actual result count equals configured attempts",
+      "status": "passed"
+    },
+    {
+      "name": "cutoff: WMS-simulator business-effect count",
+      "status": "passed"
+    },
+    {
+      "name": "cutoff: every result matches the workload safety outcome",
+      "status": "passed"
+    },
+    {
+      "name": "unknown: actual result count equals configured attempts",
+      "status": "passed"
+    },
+    {
+      "name": "unknown: WMS-simulator business-effect count",
+      "status": "passed"
+    },
+    {
+      "name": "unknown: every result matches the workload safety outcome",
+      "status": "passed"
     }
-  ]
+  ],
+  "sources": [],
+  "data": {
+    "profile": "smoke",
+    "seed": 1070,
+    "quantile_method": "nearest-rank, ceil(p*N)-1, no interpolation",
+    "measurement": "Local request-response elapsed time, all outcomes; disaggregated by outcome. Injected delays are test parameters.",
+    "functional_cases": [
+      {
+        "name": "Eligible hold commits one WMS-simulator effect",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Concurrent same-order duplicate returns pending; later replay returns confirmed",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Reconciliation cannot steal an active pending operation",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Rejected cutoff outcome is preserved on duplicate delivery",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Reusing a key for a different order rejects the conflicting payload",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Reusing a key with a changed address rejects the conflicting payload",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Competing operation IDs serialize the same shipment while pending",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Wave release between initial read and conditional hold rejects mutation",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Timeout after remote success reconciles without a second effect",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Absent effect is reconciled before a safe same-key retry",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Stale order revision cannot apply a hold",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Reconciliation detects revision change after an uncertain effect",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "Selective release preserves the unrelated hold",
+        "outcome": "assertions passed"
+      },
+      {
+        "name": "New process recovers effect persisted before worker termination",
+        "outcome": {
+          "child_exit": 86,
+          "persisted_status_before_recovery": "PENDING",
+          "reconciled_status": "CONFIRMED",
+          "effects": 1
+        }
+      }
+    ],
+    "workloads": [
+      {
+        "id": "baseline",
+        "name": "Sequential local baseline",
+        "iterations": 50,
+        "concurrency": 1,
+        "shopify_delay_ms": [
+          1,
+          2
+        ],
+        "wms_delay_ms": [
+          1,
+          3
+        ],
+        "seed": 1070,
+        "attempts": 50,
+        "outcomes": {
+          "HOLD_CONFIRMED": 50
+        },
+        "effects": 50,
+        "reconciled": 0,
+        "request_response_all_outcomes_ms": {
+          "count": 50,
+          "min": 3.1625,
+          "p50": 5.1345,
+          "p95": 6.7102,
+          "p99": 6.8804,
+          "max": 6.8804,
+          "mean": 5.0389
+        },
+        "by_outcome_ms": {
+          "HOLD_CONFIRMED": {
+            "count": 50,
+            "min": 3.1625,
+            "p50": 5.1345,
+            "p95": 6.7102,
+            "p99": 6.8804,
+            "max": 6.8804,
+            "mean": 5.0389
+          }
+        }
+      },
+      {
+        "id": "burst",
+        "name": "Concurrent local burst",
+        "iterations": 200,
+        "concurrency": 25,
+        "shopify_delay_ms": [
+          1,
+          3
+        ],
+        "wms_delay_ms": [
+          1,
+          5
+        ],
+        "seed": 1071,
+        "attempts": 200,
+        "outcomes": {
+          "HOLD_CONFIRMED": 200
+        },
+        "effects": 200,
+        "reconciled": 0,
+        "request_response_all_outcomes_ms": {
+          "count": 200,
+          "min": 3.5456,
+          "p50": 13.9893,
+          "p95": 24.8837,
+          "p99": 28.2003,
+          "max": 30.0488,
+          "mean": 14.9208
+        },
+        "by_outcome_ms": {
+          "HOLD_CONFIRMED": {
+            "count": 200,
+            "min": 3.5456,
+            "p50": 13.9893,
+            "p95": 24.8837,
+            "p99": 28.2003,
+            "max": 30.0488,
+            "mean": 14.9208
+          }
+        }
+      },
+      {
+        "id": "delayed",
+        "name": "Injected WMS delay",
+        "iterations": 40,
+        "concurrency": 10,
+        "shopify_delay_ms": [
+          1,
+          2
+        ],
+        "wms_delay_ms": [
+          5,
+          15
+        ],
+        "seed": 1072,
+        "attempts": 40,
+        "outcomes": {
+          "HOLD_CONFIRMED": 40
+        },
+        "effects": 40,
+        "reconciled": 0,
+        "request_response_all_outcomes_ms": {
+          "count": 40,
+          "min": 8.0908,
+          "p50": 12.9691,
+          "p95": 19.3562,
+          "p99": 20.0467,
+          "max": 20.0467,
+          "mean": 13.8703
+        },
+        "by_outcome_ms": {
+          "HOLD_CONFIRMED": {
+            "count": 40,
+            "min": 8.0908,
+            "p50": 12.9691,
+            "p95": 19.3562,
+            "p99": 20.0467,
+            "max": 20.0467,
+            "mean": 13.8703
+          }
+        }
+      },
+      {
+        "id": "duplicates",
+        "name": "Same-payload duplicate pairs",
+        "iterations": 100,
+        "concurrency": 20,
+        "shopify_delay_ms": [
+          1,
+          2
+        ],
+        "wms_delay_ms": [
+          1,
+          3
+        ],
+        "duplicate_pairs": true,
+        "seed": 1073,
+        "attempts": 100,
+        "outcomes": {
+          "PENDING": 50,
+          "HOLD_CONFIRMED": 50
+        },
+        "effects": 50,
+        "reconciled": 0,
+        "request_response_all_outcomes_ms": {
+          "count": 100,
+          "min": 0.0353,
+          "p50": 0.1595,
+          "p95": 10.9373,
+          "p99": 14.309,
+          "max": 16.144,
+          "mean": 4.1904
+        },
+        "by_outcome_ms": {
+          "PENDING": {
+            "count": 50,
+            "min": 0.0353,
+            "p50": 0.0431,
+            "p95": 0.0703,
+            "p99": 0.1595,
+            "max": 0.1595,
+            "mean": 0.0476
+          },
+          "HOLD_CONFIRMED": {
+            "count": 50,
+            "min": 4.3695,
+            "p50": 8.0441,
+            "p95": 13.8956,
+            "p99": 16.144,
+            "max": 16.144,
+            "mean": 8.3332
+          }
+        }
+      },
+      {
+        "id": "cutoff",
+        "name": "Post-cutoff rejection",
+        "iterations": 20,
+        "concurrency": 5,
+        "initial_state": "WAVE_RELEASED",
+        "shopify_delay_ms": [
+          0,
+          0
+        ],
+        "wms_delay_ms": [
+          0,
+          0
+        ],
+        "seed": 1074,
+        "attempts": 20,
+        "outcomes": {
+          "CUTOFF_REJECTED": 20
+        },
+        "effects": 0,
+        "reconciled": 0,
+        "request_response_all_outcomes_ms": {
+          "count": 20,
+          "min": 0.4567,
+          "p50": 0.5863,
+          "p95": 0.7147,
+          "p99": 0.7348,
+          "max": 0.7348,
+          "mean": 0.5951
+        },
+        "by_outcome_ms": {
+          "CUTOFF_REJECTED": {
+            "count": 20,
+            "min": 0.4567,
+            "p50": 0.5863,
+            "p95": 0.7147,
+            "p99": 0.7348,
+            "max": 0.7348,
+            "mean": 0.5951
+          }
+        }
+      },
+      {
+        "id": "unknown",
+        "name": "Response loss after WMS-simulator success",
+        "iterations": 30,
+        "concurrency": 5,
+        "shopify_delay_ms": [
+          1,
+          2
+        ],
+        "wms_delay_ms": [
+          2,
+          5
+        ],
+        "timeout_after_apply": true,
+        "seed": 1075,
+        "attempts": 30,
+        "outcomes": {
+          "UNKNOWN": 30
+        },
+        "effects": 30,
+        "reconciled": 30,
+        "request_response_all_outcomes_ms": {
+          "count": 30,
+          "min": 3.8996,
+          "p50": 6.6056,
+          "p95": 12.9539,
+          "p99": 20.6654,
+          "max": 20.6654,
+          "mean": 7.0591
+        },
+        "by_outcome_ms": {
+          "UNKNOWN": {
+            "count": 30,
+            "min": 3.8996,
+            "p50": 6.6056,
+            "p95": 12.9539,
+            "p99": 20.6654,
+            "max": 20.6654,
+            "mean": 7.0591
+          }
+        }
+      }
+    ],
+    "attempts": 440,
+    "limitations": [
+      "SQLite is a local operation ledger and virtual WMS store, not Redis/Postgres/SQS or an authenticated provider.",
+      "Tests establish local process-restart recovery after a persisted effect, not power-loss, network-partition or multi-host failover. A pending operation with no known effect is not automatically stolen; owner-liveness/lease recovery requires a separate design.",
+      "One virtual shipment per case; no actual Shopify, ShipBob, carrier or physical warehouse calls.",
+      "Small-sample p99 may be the maximum; smoke measurements are not production or BFCM percentiles."
+    ]
+  }
 }
