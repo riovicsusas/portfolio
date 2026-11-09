@@ -14455,7 +14455,7 @@ var wd = (...e) => e.filter(Boolean).join(" "), Td = "focus-visible:ring-ring/60
 			]
 		}) : this.props.children;
 	}
-}, Qf = (0, d.lazy)(() => import("./mobile-portfolio-C9ryVHL-.js"));
+}, Qf = (0, d.lazy)(() => import("./mobile-portfolio-ClNXO8Ec.js"));
 function $f() {
 	let [e, t] = (0, d.useState)(() => window.matchMedia("(max-width: 767px)").matches);
 	return (0, d.useEffect)(() => {

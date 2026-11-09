@@ -832,7 +832,7 @@ export function PortfolioTemplate(props: PortfolioTemplateProps) {
       style={{
         background: "transparent",
         color: t.ink,
-        fontFamily: "'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
         letterSpacing: "-0.05em",
       }}
     >

@@ -5365,7 +5365,7 @@
     }
 
     html { scroll-behavior: smooth; }
-    body { font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+    body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
     a { text-decoration: none; color: inherit; }
     ul { list-style: none; }
 
@@ -5435,7 +5435,7 @@
       background: var(--linen); color: var(--bg); font-size: 13px; font-weight: 600;
       padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 8px;
       transition: transform 0.2s, box-shadow 0.2s; z-index: 2; cursor: pointer;
-      border: none; font-family: 'Manrope', sans-serif;
+      border: none; font-family: 'Poppins', sans-serif;
     }
     .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
 
@@ -5574,7 +5574,7 @@
     .file-link.disabled { background: var(--warm1); color: var(--muted); cursor: default; }
     .loom-frame + .file-link { margin-top: 10px; }
     @media (max-width: 720px) { .outcomes-list { grid-template-columns: 1fr; } .file-card { flex-wrap: wrap; } }
-    .back-btn { display: flex; align-items: center; gap: 8px; padding: 10px 18px; background: var(--navy); color: white; border: none; border-radius: 10px; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+    .back-btn { display: flex; align-items: center; gap: 8px; padding: 10px 18px; background: var(--navy); color: white; border: none; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
     .back-btn:hover { opacity: 0.85; }
     .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 4px; }
     .breadcrumb span { cursor: pointer; } .breadcrumb span:hover { color: var(--hunter); }
@@ -5666,10 +5666,10 @@
     .contact-form h3 { font-size: 18px; font-weight: 800; color: var(--linen); margin-bottom: 20px; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
-    .form-group input, .form-group textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--warm1); border-radius: 10px; font-family: 'Manrope', sans-serif; font-size: 13px; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.2s; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--warm1); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 13px; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.2s; }
     .form-group input:focus, .form-group textarea:focus { border-color: var(--navy); }
     .form-group textarea { resize: vertical; min-height: 110px; }
-    .form-submit { width: 100%; padding: 13px; background: var(--hunter); color: white; border: none; border-radius: 10px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s, transform 0.2s; }
+    .form-submit { width: 100%; padding: 13px; background: var(--hunter); color: white; border: none; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s, transform 0.2s; }
     .form-submit:hover { opacity: 0.88; transform: translateY(-1px); }
 
     /* ═══════════════════════ PROJECT MODAL ═══════════════════════ */
