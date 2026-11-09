@@ -2,7 +2,7 @@
 .mobile-portfolio-content { width: 100%; max-width: 450px; margin: 0 auto; }
 .mobile-intro { position: relative; padding-top: 220px; }
 .mobile-badge-zone { position: absolute; top: 0; left: 0; right: 0; height: 200px; overflow: hidden; }
-.mobile-skill-badge { position: absolute; top: 0; left: 0; display: flex; align-items: center; width: max-content; height: 32px; border: 1px solid; border-radius: 12px; padding: 0 12px; font: 500 11px/1 system-ui, sans-serif; letter-spacing: -.02em; touch-action: none; user-select: none; cursor: grab; }
+.mobile-skill-badge { position: absolute; top: 0; left: 0; display: flex; align-items: center; width: max-content; height: 32px; border: 1px solid; border-radius: 12px; padding: 0 12px; font: 500 11px/1 Manrope, sans-serif; letter-spacing: -.02em; touch-action: none; user-select: none; cursor: grab; }
 .mobile-badge-zone[data-reduced='true'] { display: flex; flex-wrap: wrap; gap: 8px; align-content: end; padding: 24px 20px 0; }
 .mobile-badge-zone[data-reduced='true'] .mobile-skill-badge { position: static; transform: none !important; visibility: visible !important; cursor: default; }
 .mobile-profile-body { position: relative; padding: 0 20px; }
