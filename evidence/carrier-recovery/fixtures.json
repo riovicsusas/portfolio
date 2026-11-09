@@ -1,64 +1,41 @@
 {
-  "scenarios": [
-    {
-      "id": "SCENARIO-01-CLEAN-SUCCESS",
-      "name": "Mid-Transit Clean Depot Intercept",
-      "tracking_number": "1Z9999999999999991",
-      "shipper_account": "SYN882",
-      "request_type": "RETURN_TO_SENDER",
-      "reason_code": "CUSTOMER_CANCELLATION",
-      "initial_carrier_state": "IN_TRANSIT_HUB",
-      "carrier_steps": [
-        { "event": "API_INTERCEPT_SUBMITTED", "api_status": "ACCEPTED", "http_code": 202 },
-        { "event": "DEPOT_HUB_SCAN", "scan_code": "INTERCEPT_FLAGGED", "location": "LOUISVILLE_KY_HUB" },
-        { "event": "LABEL_OVERLABEL_RTS", "scan_code": "RETURN_TO_SENDER_SORTED" },
-        { "event": "DELIVERED_ORIGIN", "final_state": "SUCCEEDED" }
-      ],
-      "expected_outcome": "SUCCEEDED",
-      "expected_carrier_fee": 17.50
+  "classification": "Synthetic local test fixtures based on selected fields of the pinned UPS return contract; no live API execution",
+  "return_request": {
+    "method": "POST",
+    "path": "/api/deliveryintercept/v2/return/1Z4096YY0316914058",
+    "headers": {
+      "Authorization": "Bearer OFFLINE-PLACEHOLDER-NOT-A-CREDENTIAL",
+      "Content-Type": "application/json",
+      "transId": "SIIReturn",
+      "platformType": "XOLT",
+      "inquiryType": "U"
     },
-    {
-      "id": "SCENARIO-02-ALREADY-DELIVERED",
-      "name": "Post-Delivery Ineligible Attempt",
-      "tracking_number": "1Z9999999999999992",
-      "shipper_account": "SYN882",
-      "request_type": "RETURN_TO_SENDER",
-      "reason_code": "CUSTOMER_CANCELLATION",
-      "initial_carrier_state": "DELIVERED",
-      "carrier_steps": [
-        { "event": "API_INTERCEPT_SUBMITTED", "api_status": "INELIGIBLE", "http_code": 422 }
-      ],
-      "expected_outcome": "REJECTED_IMMEDIATELY",
-      "expected_carrier_fee": 0.00
-    },
-    {
-      "id": "SCENARIO-03-LAST-MILE-RACE-FAILURE",
-      "name": "Out-for-Delivery Hub Race (API Accepted but Physically Delivered)",
-      "tracking_number": "1Z9999999999999993",
-      "shipper_account": "SYN882",
-      "request_type": "RETURN_TO_SENDER",
-      "reason_code": "ORDER_MUTATION",
-      "initial_carrier_state": "OUT_FOR_DELIVERY",
-      "carrier_steps": [
-        { "event": "API_INTERCEPT_SUBMITTED", "api_status": "ACCEPTED", "http_code": 202 },
-        { "event": "DRIVER_DELIVERY_SCAN", "scan_code": "DELIVERED_RESIDENTIAL_FRONT_PORCH", "final_state": "FAILED" }
-      ],
-      "expected_outcome": "FAILED",
-      "expected_carrier_fee": 0.00
-    },
-    {
-      "id": "SCENARIO-04-INVALID-TRACKING",
-      "name": "Malformed Tracking Number Schema Rejection",
-      "tracking_number": "1Z123SHORT",
-      "shipper_account": "SYN882",
-      "request_type": "RETURN_TO_SENDER",
-      "reason_code": "FRAUD_SUSPECTED",
-      "initial_carrier_state": "UNKNOWN",
-      "carrier_steps": [
-        { "event": "SCHEMA_VALIDATION_FAILURE", "error": "PATTERN_MISMATCH", "http_code": 400 }
-      ],
-      "expected_outcome": "VALIDATION_FAILED",
-      "expected_carrier_fee": 0.00
+    "body": {
+      "requestType": "RS",
+      "specialInstructions": "Offline canceled-shipment fixture",
+      "requesterContactInfo": {
+        "name": "Sandbox Operator",
+        "telephone": "+12010000000"
+      },
+      "reasonForReturn": "AM"
     }
+  },
+  "success_response": { "transactionId": "ASR1212", "statusCode": "000", "statusMsg": "Success", "success": true, "errors": null },
+  "business_failure_response": { "transactionId": "ASR1212", "statusCode": "000", "statusMsg": "Success", "success": false, "errors": [{ "errorCode": "500", "errorMessage": "System Error" }] },
+  "fee_assumptions": {
+    "currency": "USD",
+    "success_fee_cents": 1750,
+    "failure_fee_cents": 0,
+    "provenance": "Scenario assumptions only. Not an invoice, verified current tariff, or asserted universal UPS billing policy."
+  },
+  "scenarios": [
+    { "id": "accepted-pending", "eligible": true, "response": "success", "events": [], "expected_state": "ACCEPTED", "expected_fee_cents": 0 },
+    { "id": "confirmed-return", "eligible": true, "response": "success", "events": [{ "id": "scan-1", "sequence": 1, "revision": 1, "type": "INTERCEPT_CONFIRMED" }], "expected_state": "SUCCEEDED", "expected_fee_cents": 1750 },
+    { "id": "failed-return", "eligible": true, "response": "success", "events": [{ "id": "scan-2", "sequence": 1, "revision": 1, "type": "INTERCEPT_FAILED" }], "expected_state": "FAILED", "expected_fee_cents": 0 },
+    { "id": "ineligible", "eligible": false, "events": [], "expected_state": "REJECTED", "expected_fee_cents": 0 },
+    { "id": "200-business-failure", "eligible": true, "response": "failure", "events": [], "expected_state": "REJECTED", "expected_fee_cents": 0 },
+    { "id": "timeout", "eligible": true, "response": "timeout", "events": [], "expected_state": "UNKNOWN", "expected_fee_cents": 0 },
+    { "id": "authorization-failure", "eligible": true, "response": "unauthorized", "events": [], "expected_state": "REJECTED", "expected_fee_cents": 0 },
+    { "id": "malformed-response", "eligible": true, "response": "malformed", "events": [], "expected_state": "UNKNOWN", "expected_fee_cents": 0 }
   ]
 }

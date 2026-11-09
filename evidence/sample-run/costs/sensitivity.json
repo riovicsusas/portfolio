@@ -1,0 +1,607 @@
+{
+  "run_id": "2026-11-09T18-21-14-457Z-59d713d1",
+  "started_at": "2026-11-09T18:21:15.702Z",
+  "finished_at": "2026-11-09T18:21:15.710Z",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "revision": "4cb20482de1c172efc89de7f09c5adbfdd204143",
+  "script_sha256": "13ab125933d8b78b8e57e0cebbc18332936d95669208784f0bfce73f6c2c24d5",
+  "input_sha256": {
+    "bom_inputs.json": "6f6dcfba06f2e4de653db4345702f6e7de86ca06925e1fee07fe109578a19a35",
+    "money.js": "ec0e5f839c6693a4a7d7ad0e4c4c635c82efe94cf5ba9aabbb116a6af0f5d34e"
+  },
+  "classification": "Calculated scenario economics with executed invariant and regression checks",
+  "status": "passed",
+  "counts": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "total": 11
+  },
+  "checks": [
+    {
+      "name": "Input ledger uses nonnegative integer cents and valid component/scenario identities",
+      "status": "passed"
+    },
+    {
+      "name": "Half-up rational processing fees are correct at a half-cent boundary",
+      "status": "passed"
+    },
+    {
+      "name": "Money helpers reject negative, fractional, unsafe or invalid-rate inputs",
+      "status": "passed"
+    },
+    {
+      "name": "Fixture BOM contains exactly one of each approved bundle component",
+      "status": "passed"
+    },
+    {
+      "name": "Capstone baseline preserves the declared financial fixture",
+      "status": "passed"
+    },
+    {
+      "name": "Replacement and chargeback branches retain original costs without double-expensing COGS",
+      "status": "passed"
+    },
+    {
+      "name": "Alternative fulfillment inputs are a distinct scenario, not the Capstone baseline",
+      "status": "passed"
+    },
+    {
+      "name": "Every baseline and sensitivity row reconciles in cents",
+      "status": "passed"
+    },
+    {
+      "name": "Every discount floor passes and its immediately preceding cent fails",
+      "status": "passed"
+    },
+    {
+      "name": "Processing includes shipping and tax, but contribution excludes tax liability",
+      "status": "passed"
+    },
+    {
+      "name": "Increasing a declared cost cannot increase contribution or reduce its floor",
+      "status": "passed"
+    }
+  ],
+  "sources": [
+    {
+      "type": "scenario_input",
+      "file": "bom_inputs.json",
+      "verified_procurement_record": false
+    }
+  ],
+  "data": {
+    "monetary_unit": "integer cents",
+    "rounding": "half up to the nearest cent",
+    "raw_component_bom_cents": 2800,
+    "kitted_cogs_cents": 2840,
+    "component_rows": [
+      {
+        "sku": "SYN-FSTK-MY",
+        "name": "Focus Stick Packs 30-Pack",
+        "unit_cost_cents": 850,
+        "retail_cents": 4200,
+        "quantity": 1,
+        "extended_cost_cents": 850
+      },
+      {
+        "sku": "SYN-TNCT-AM",
+        "name": "AM Adaptogen Tincture 60ml",
+        "unit_cost_cents": 1250,
+        "retail_cents": 3800,
+        "quantity": 1,
+        "extended_cost_cents": 1250
+      },
+      {
+        "sku": "SYN-TMBL-MO",
+        "name": "Precision Tumbler, Matte Obsidian",
+        "unit_cost_cents": 700,
+        "retail_cents": 3400,
+        "quantity": 1,
+        "extended_cost_cents": 700
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "capstone",
+        "label": "Capstone retained-sale baseline",
+        "merchandise_cents": 9800,
+        "shipping_collected_cents": 0,
+        "tax_collected_cents": 0,
+        "handling_cents": 450,
+        "freight_cents": 720,
+        "cogs_cents": 2840,
+        "contribution_revenue_cents": 9800,
+        "payment_amount_cents": 9800,
+        "processing_cents": 314,
+        "variable_costs_cents": 4324,
+        "contribution_cents": 5476,
+        "contribution_margin_percent": 55.88,
+        "zero_contribution_floor": {
+          "payable_cents": 4161,
+          "processing_cents": 151,
+          "contribution_cents": 0,
+          "previous_cent_contribution_cents": -1
+        }
+      },
+      {
+        "id": "alternative_standard",
+        "label": "Separate benchmark: standard price, alternative fulfillment inputs",
+        "merchandise_cents": 9800,
+        "shipping_collected_cents": 0,
+        "tax_collected_cents": 0,
+        "handling_cents": 490,
+        "freight_cents": 650,
+        "cogs_cents": 2840,
+        "contribution_revenue_cents": 9800,
+        "payment_amount_cents": 9800,
+        "processing_cents": 314,
+        "variable_costs_cents": 4294,
+        "contribution_cents": 5506,
+        "contribution_margin_percent": 56.18,
+        "zero_contribution_floor": {
+          "payable_cents": 4130,
+          "processing_cents": 150,
+          "contribution_cents": 0,
+          "previous_cent_contribution_cents": -1
+        }
+      },
+      {
+        "id": "alternative_promo",
+        "label": "Separate benchmark: promotional price",
+        "merchandise_cents": 8200,
+        "shipping_collected_cents": 0,
+        "tax_collected_cents": 0,
+        "handling_cents": 490,
+        "freight_cents": 650,
+        "cogs_cents": 2840,
+        "contribution_revenue_cents": 8200,
+        "payment_amount_cents": 8200,
+        "processing_cents": 268,
+        "variable_costs_cents": 4248,
+        "contribution_cents": 3952,
+        "contribution_margin_percent": 48.2,
+        "zero_contribution_floor": {
+          "payable_cents": 4130,
+          "processing_cents": 150,
+          "contribution_cents": 0,
+          "previous_cent_contribution_cents": -1
+        }
+      },
+      {
+        "id": "reference_price_82_40",
+        "label": "Separate representative-price sensitivity; not a measured cohort margin",
+        "merchandise_cents": 8240,
+        "shipping_collected_cents": 0,
+        "tax_collected_cents": 0,
+        "handling_cents": 490,
+        "freight_cents": 650,
+        "cogs_cents": 2840,
+        "contribution_revenue_cents": 8240,
+        "payment_amount_cents": 8240,
+        "processing_cents": 269,
+        "variable_costs_cents": 4249,
+        "contribution_cents": 3991,
+        "contribution_margin_percent": 48.43,
+        "zero_contribution_floor": {
+          "payable_cents": 4130,
+          "processing_cents": 150,
+          "contribution_cents": 0,
+          "previous_cent_contribution_cents": -1
+        }
+      }
+    ],
+    "recovery": {
+      "lines": [
+        {
+          "name": "Intercept scenario charge",
+          "cents": 1750
+        },
+        {
+          "name": "Return freight",
+          "cents": 840
+        },
+        {
+          "name": "Fresh replacement COGS",
+          "cents": 2840
+        },
+        {
+          "name": "Replacement handling",
+          "cents": 450
+        },
+        {
+          "name": "Replacement freight",
+          "cents": 1480
+        },
+        {
+          "name": "Goodwill expense",
+          "cents": 2500
+        }
+      ],
+      "incremental_cost_cents": 9860,
+      "retained_sale_contribution_cents": -4384,
+      "lost_chargeback_contribution_cents": -15684,
+      "chargeback_principal_cents": 9800,
+      "dispute_fee_cents": 1500
+    },
+    "sensitivity_sweeps": {
+      "components": [
+        {
+          "change_basis_points": -2000,
+          "raw_bom_cents": 2240,
+          "cogs_cents": 2280,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 3688,
+          "contribution_cents": 4512,
+          "contribution_margin_percent": 55.02,
+          "zero_contribution_floor": {
+            "payable_cents": 3553,
+            "processing_cents": 133,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "change_basis_points": -1000,
+          "raw_bom_cents": 2520,
+          "cogs_cents": 2560,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 3968,
+          "contribution_cents": 4232,
+          "contribution_margin_percent": 51.61,
+          "zero_contribution_floor": {
+            "payable_cents": 3841,
+            "processing_cents": 141,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "change_basis_points": 0,
+          "raw_bom_cents": 2800,
+          "cogs_cents": 2840,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4248,
+          "contribution_cents": 3952,
+          "contribution_margin_percent": 48.2,
+          "zero_contribution_floor": {
+            "payable_cents": 4130,
+            "processing_cents": 150,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "change_basis_points": 1000,
+          "raw_bom_cents": 3080,
+          "cogs_cents": 3120,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4528,
+          "contribution_cents": 3672,
+          "contribution_margin_percent": 44.78,
+          "zero_contribution_floor": {
+            "payable_cents": 4418,
+            "processing_cents": 158,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "change_basis_points": 2000,
+          "raw_bom_cents": 3360,
+          "cogs_cents": 3400,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4808,
+          "contribution_cents": 3392,
+          "contribution_margin_percent": 41.37,
+          "zero_contribution_floor": {
+            "payable_cents": 4706,
+            "processing_cents": 166,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        }
+      ],
+      "kitting": [
+        {
+          "kitting_material_cents": 20,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "cogs_cents": 2820,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4228,
+          "contribution_cents": 3972,
+          "contribution_margin_percent": 48.44,
+          "zero_contribution_floor": {
+            "payable_cents": 4109,
+            "processing_cents": 149,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "kitting_material_cents": 40,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "cogs_cents": 2840,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4248,
+          "contribution_cents": 3952,
+          "contribution_margin_percent": 48.2,
+          "zero_contribution_floor": {
+            "payable_cents": 4130,
+            "processing_cents": 150,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "kitting_material_cents": 60,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "cogs_cents": 2860,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4268,
+          "contribution_cents": 3932,
+          "contribution_margin_percent": 47.95,
+          "zero_contribution_floor": {
+            "payable_cents": 4150,
+            "processing_cents": 150,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "kitting_material_cents": 80,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "cogs_cents": 2880,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4288,
+          "contribution_cents": 3912,
+          "contribution_margin_percent": 47.71,
+          "zero_contribution_floor": {
+            "payable_cents": 4171,
+            "processing_cents": 151,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "kitting_material_cents": 100,
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "cogs_cents": 2900,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4308,
+          "contribution_cents": 3892,
+          "contribution_margin_percent": 47.46,
+          "zero_contribution_floor": {
+            "payable_cents": 4192,
+            "processing_cents": 152,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        }
+      ],
+      "freight": [
+        {
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 450,
+          "cogs_cents": 2840,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4048,
+          "contribution_cents": 4152,
+          "contribution_margin_percent": 50.63,
+          "zero_contribution_floor": {
+            "payable_cents": 3924,
+            "processing_cents": 144,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 650,
+          "cogs_cents": 2840,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4248,
+          "contribution_cents": 3952,
+          "contribution_margin_percent": 48.2,
+          "zero_contribution_floor": {
+            "payable_cents": 4130,
+            "processing_cents": 150,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 850,
+          "cogs_cents": 2840,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4448,
+          "contribution_cents": 3752,
+          "contribution_margin_percent": 45.76,
+          "zero_contribution_floor": {
+            "payable_cents": 4336,
+            "processing_cents": 156,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 1050,
+          "cogs_cents": 2840,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 4648,
+          "contribution_cents": 3552,
+          "contribution_margin_percent": 43.32,
+          "zero_contribution_floor": {
+            "payable_cents": 4542,
+            "processing_cents": 162,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 1460,
+          "cogs_cents": 2840,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 5058,
+          "contribution_cents": 3142,
+          "contribution_margin_percent": 38.32,
+          "zero_contribution_floor": {
+            "payable_cents": 4964,
+            "processing_cents": 174,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        },
+        {
+          "id": "alternative_promo",
+          "label": "Separate benchmark: promotional price",
+          "merchandise_cents": 8200,
+          "shipping_collected_cents": 0,
+          "tax_collected_cents": 0,
+          "handling_cents": 490,
+          "freight_cents": 1780,
+          "cogs_cents": 2840,
+          "contribution_revenue_cents": 8200,
+          "payment_amount_cents": 8200,
+          "processing_cents": 268,
+          "variable_costs_cents": 5378,
+          "contribution_cents": 2822,
+          "contribution_margin_percent": 34.41,
+          "zero_contribution_floor": {
+            "payable_cents": 5293,
+            "processing_cents": 183,
+            "contribution_cents": 0,
+            "previous_cent_contribution_cents": -1
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,47 +1,23 @@
-# Synapse Botanicals — Reproducible Evidence Package
+# Synapse Botanicals — reproducible evidence
 
-This directory contains executable test suites, deterministic models, and empirical benchmark runners that validate the technical architectures, economic models, and logistics claims in the Synapse Botanicals portfolio dossiers.
+These dependency-free Node.js tools exercise financial models, identifier validation, a local order coordinator, and carrier-recovery contracts. They test the declared fixtures and simulator implementation. They do not establish production Shopify/ShipBob latency, negotiated carrier prices, physical scanning, or successful parcel interception.
 
-## Evidence Classification Hierarchy
+## Run
 
-Every technical claim in the portfolio is categorized by its evidentiary boundary:
-1. **Public Reference**: Third-party published tariffs, GS1 standards, or carrier API contracts.
-2. **Scenario Input**: Explicit, transparent operational assumptions (e.g. $0.40 kitting material, $17.50 intercept fee).
-3. **Calculated Result**: Deterministic, reproducible mathematical outputs computed from documented inputs.
-4. **Measured Staging Result**: Monotonically timed executions recorded on a local test harness under controlled load and fault injection.
-5. **Authenticated Vendor-Sandbox Result**: Recorded responses from vendor developer sandboxes.
-6. **Physical Operational Result**: Physical depot or carrier facility events (demarcated as requiring real-world warehouse operations).
+Use Node.js 24 or later with built-in SQLite support. No npm install, credentials, or network connection is required to execute the suites.
 
----
-
-## Directory Structure & Workstreams
-
-- **`freight/` (Workstream A)**:
-  - Validates single-node vs split-node shipping economics using USPS Notice 123 (Ground Advantage Commercial) and UPS Daily Rates tariffs.
-  - Script: `calculate_freight.js`
-- **`latency/` (Workstream B)**:
-  - Measures execution latency, queue contention, and idempotent deduplication across a simulated Coordinator middleware, Shopify Hold API, and ShipBob WMS queue.
-  - Script: `coordinator_simulator.js`
-- **`barcodes/` (Workstream C)**:
-  - Validates GS1 Modulo-10 checksums, tests Excel scientific notation corruption rejection, and proves 100% software round-trip barcode generation and decode across all 12 Universe A SKUs.
-  - Script: `validate_barcodes.js`
-- **`costs/` (Workstream D)**:
-  - Transparently breaks down Starter Bundle unit economics ($28.00 component BOM + $0.40 kitting materials = $28.40) and executes sensitivity sweeps across component costs, kitting labor, and parcel freight.
-  - Script: `run_cost_model.js`
-- **`carrier-recovery/` (Workstream E)**:
-  - Validates UPS Delivery Intercept v2 OpenAPI payloads and simulates carrier recovery state transitions (`REQUESTED` → `ACCEPTED` → `IN_TRANSIT` → `SUCCEEDED`/`FAILED`).
-  - Script: `test_recovery.js`
-
----
-
-## Reproduction Commands
-
-Run all evidence verification suites in one command:
 ```bash
 node evidence/run_all.js
 ```
 
-Or execute individual test suites:
+For a larger latency workload:
+
+```bash
+node evidence/run_all.js --full
+```
+
+Individual commands remain available:
+
 ```bash
 node evidence/freight/calculate_freight.js
 node evidence/latency/coordinator_simulator.js
@@ -49,3 +25,34 @@ node evidence/barcodes/validate_barcodes.js
 node evidence/costs/run_cost_model.js
 node evidence/carrier-recovery/test_recovery.js
 ```
+
+All commands run from the repository root on Windows, macOS or Linux. The checked-in workstream summaries identify the runtime actually used; execution times will vary by machine. SQLite may produce Node's experimental-feature notice on supported Node 24 versions.
+
+## What is checked
+
+| Workstream | Evidence | Scope |
+|---|---|---|
+| [Freight](freight/summary.md) | Reserve-feasible modeled parcel plans, handling, cohort and scale arithmetic | Declared scenario rates; public source candidates are not certified tariffs |
+| [Coordinator](latency/summary.md) | Operation identity, duplicate outcomes, cutoff/reconciliation behavior and local restart recovery; seeded timing workloads | Local SQLite and WMS/Shopify simulation, not Redis, SQS or vendor performance |
+| [Barcodes](barcodes/summary.md) | Exact SKU mapping, checksum, invalid-input rejection and shared-table bitstream round trips | Synthetic UPC fixtures; no GS1 ownership, independent optical reader or warehouse scanner claim |
+| [Costs](costs/summary.md) | Component BOM, cent-rounded processing, contribution branches and sensitivity | Scenario costs; not historical procurement invoices |
+| [Carrier recovery](carrier-recovery/summary.md) | Focused offline checks against the pinned UPS contract plus event-driven local recovery tests | Not a complete OpenAPI validator, authenticated CIE execution or physical carrier operation |
+
+Every executed check is counted. Skips and failures are separate. A failed check produces a nonzero exit status; the runner also rejects missing, stale and inconsistent suite reports. The reported number of passing checks is a count of fixture assertions, not a universal correctness guarantee.
+
+## Results and provenance
+
+- Each workstream's JSON report and `summary.md` show its latest execution.
+- `latest_run.json` records the whole-suite status, runtime, assertion totals, source hashes and output hashes.
+- Every execution creates a separate `evidence/runs/<run-id>/` directory with the reports and additional raw records. These local archives are ignored by Git so repeated runs do not bloat the repository.
+- `sample-run/` contains a checked-in representative execution, including the operation records underlying its latency summary. Regenerate new archives with the commands above; compare method and outcomes rather than expecting identical wall-clock timings.
+- `archive/baseline-4cb2048/` preserves the earlier committed outputs. Those reports predate these validation corrections and do not certify their old claims.
+- Source/code and input hashes identify the tested content even before a new Git commit exists. The base revision alone is not proof that the working tree was clean.
+
+Rates, commercial costs and injected delays are inputs. Financial totals are calculations. Timer samples are actual measurements of the local simulator. Recorded vendor examples remain public references; they are not vendor responses observed by this execution.
+
+## Changing inputs
+
+Change a declared fixture or model input and rerun its suite. The results must recalculate from those inputs. Integrity assertions reject inconsistent BOM declarations, impossible routing allocations, broken SKU mappings and invalid contract examples. An intentional scenario change may require updating its expected invariants; investigate failures before changing expected values.
+
+Keep test data synthetic and secrets out of these files. Vendor sandbox and physical tests require their own authorized environment and recorded evidence.

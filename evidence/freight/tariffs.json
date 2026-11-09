@@ -1,49 +1,74 @@
 {
-  "source_metadata": {
-    "usps": {
-      "title": "USPS Notice 123 Price List",
-      "service": "USPS Ground Advantage - Commercial",
-      "effective_date": "2024-01-21",
-      "published_url": "https://pe.usps.com/text/dmm300/Notice123.htm",
-      "notes": "Published commercial tariff rates for domestic parcel delivery up to 70 lbs. Excludes private volume discounts."
+  "currency": "USD",
+  "classification": "Declared scenario inputs; carrier tariffs and negotiated charges are not source-verified",
+  "reference_candidates": [
+    {
+      "publisher": "USPS",
+      "title": "Notice 123",
+      "url": "https://pe.usps.com/text/dmm300/Notice123.htm",
+      "verification_status": "Not verified against a dated publication snapshot",
+      "effective_date": null,
+      "notes": "A changing publication URL does not substantiate the rates or zones in this scenario."
     },
-    "ups": {
-      "title": "UPS Daily Rates Schedule",
-      "service": "UPS Ground - Commercial",
-      "effective_date": "2024-01-01",
-      "published_url": "https://www.ups.com/assets/resources/webcontent/en_US/daily_rates.pdf",
-      "notes": "Published daily commercial rates. Excludes fuel surcharges and private customized contract pricing."
-    },
-    "3pl_handling": {
-      "provider": "ShipBob WMS Benchmark Standard Rate Card",
-      "base_pick_pack": 3.70,
-      "additional_pick_pack": 1.20,
-      "notes": "Standard standard DTC pick and pack handling fee covering parcel box, custom inserts, and labor."
+    {
+      "publisher": "UPS",
+      "title": "Published Daily Rates",
+      "url": "https://www.ups.com/assets/resources/webcontent/en_US/daily_rates.pdf",
+      "verification_status": "Not verified against a dated publication snapshot",
+      "effective_date": null,
+      "notes": "No UPS rate or negotiated discount is claimed as verified by this calculation."
     }
+  ],
+  "handling": {
+    "classification": "Scenario input, not a ShipBob quotation",
+    "base_per_parcel_cents": 250,
+    "corrugate_per_parcel_cents": 80,
+    "first_pick_included": true,
+    "additional_pick_cents": 40
   },
-  "usps_ground_advantage_commercial": {
-    "4oz": { "zone1_2": 3.79, "zone3": 3.84, "zone4": 3.90, "zone5": 4.01, "zone6": 4.13, "zone7": 4.27, "zone8": 4.48 },
-    "8oz": { "zone1_2": 4.15, "zone3": 4.22, "zone4": 4.30, "zone5": 4.45, "zone6": 4.60, "zone7": 4.80, "zone8": 5.05 },
-    "12oz": { "zone1_2": 4.70, "zone3": 4.80, "zone4": 4.95, "zone5": 5.15, "zone6": 5.40, "zone7": 5.70, "zone8": 6.05 },
-    "15.999oz": { "zone1_2": 5.55, "zone3": 5.70, "zone4": 5.90, "zone5": 6.20, "zone6": 6.55, "zone7": 6.95, "zone8": 7.40 },
-    "1lb": { "zone1_2": 5.80, "zone3": 6.05, "zone4": 6.30, "zone5": 6.65, "zone6": 7.15, "zone7": 7.65, "zone8": 8.25 },
-    "2lb": { "zone1_2": 6.50, "zone3": 7.20, "zone4": 7.90, "zone5": 8.80, "zone6": 10.15, "zone7": 12.10, "zone8": 14.60 },
-    "3lb": { "zone1_2": 7.30, "zone3": 8.15, "zone4": 9.20, "zone5": 10.65, "zone6": 12.80, "zone7": 15.45, "zone8": 18.90 }
-  },
-  "ups_ground_commercial": {
-    "1lb": { "zone2": 8.10, "zone3": 8.45, "zone4": 8.90, "zone5": 9.40, "zone6": 9.85, "zone7": 10.35, "zone8": 10.85 },
-    "2lb": { "zone2": 8.95, "zone3": 9.45, "zone4": 10.15, "zone5": 10.95, "zone6": 11.75, "zone7": 13.50, "zone8": 17.80 }
-  },
-  "zone_matrix": {
-    "PA_Allentown": {
-      "Brooklyn_NY_11201": "zone1_2",
-      "Denver_CO_80202": "zone5",
-      "Irvine_CA_92602": "zone8"
+  "lane_scenario": {
+    "id": "D2-THREE-UNIT-CONTROLLED-COMPARISON",
+    "destination": "Denver, CO (scenario destination; actual ZIP-pair zones not verified)",
+    "basket": [
+      { "sku": "SYN-FSTK-MY", "quantity": 2 },
+      { "sku": "SYN-TNCT-AM", "quantity": 1 }
+    ],
+    "available_to_promise_fixture": {
+      "LOC-PA-01": { "SYN-FSTK-MY": 2, "SYN-TNCT-AM": 0 },
+      "LOC-NV-02": { "SYN-FSTK-MY": 2, "SYN-TNCT-AM": 1 }
     },
-    "NV_Reno": {
-      "Brooklyn_NY_11201": "zone8",
-      "Denver_CO_80202": "zone3",
-      "Irvine_CA_92602": "zone1_2"
-    }
+    "inventory_scope": "Synthetic reservation-capacity fixture for this comparison; not a recorded warehouse stock snapshot or permanent exclusivity claim",
+    "lanes": {
+      "LOC-PA-01": { "modeled_bucket": "6", "freight_per_parcel_cents": 810 },
+      "LOC-NV-02": { "modeled_bucket": "4", "freight_per_parcel_cents": 640 }
+    },
+    "split_plan": [
+      { "node": "LOC-PA-01", "items": [{ "sku": "SYN-FSTK-MY", "quantity": 2 }] },
+      { "node": "LOC-NV-02", "items": [{ "sku": "SYN-TNCT-AM", "quantity": 1 }] }
+    ],
+    "consolidated_plan": [
+      { "node": "LOC-NV-02", "items": [{ "sku": "SYN-FSTK-MY", "quantity": 2 }, { "sku": "SYN-TNCT-AM", "quantity": 1 }] }
+    ],
+    "scope": "Controlled feasible-plan comparison. It does not establish that closest-node routing would split this basket; Reno can already supply the full basket. Fixed per-parcel scenario freight excludes billable-weight changes and surcharges."
+  },
+  "cohort_scenario": {
+    "orders_with_two_units": 310,
+    "orders_with_three_plus_units": 190,
+    "assumed_units_per_three_plus_order": 3,
+    "assumption": "Exactly three units are assigned to every three-plus order to make this cost model reproducible. This is not a reconstruction of an original per-order ledger.",
+    "alpha": { "split_orders": 157, "parcels": 657, "aggregate_freight_input_cents": 519020 },
+    "beta": { "split_orders": 41, "parcels": 541, "aggregate_freight_input_cents": 452920 },
+    "max_parcels_per_split_order": 2,
+    "monthly_projection_orders": 1700,
+    "planning_orders_per_day": 1000,
+    "planning_days_per_year": 365,
+    "scope": "Conditional paired-basket cost model. Carrier totals and split counts are supplied scenario inputs, not outputs of a carrier quote or routing engine."
+  },
+  "capstone_context": {
+    "order": "#1070",
+    "original_destination": "Philadelphia, PA 19102",
+    "requested_destination": "San Francisco, CA 94102",
+    "outbound_freight_scenario_cents": 720,
+    "scope": "The Capstone uses its separate $7.20 freight assumption. This file does not relabel a Brooklyn example as evidence for #1070, establish a carrier quote, or prove that Reno routing was erroneous."
   }
 }

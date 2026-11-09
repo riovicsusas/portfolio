@@ -102,9 +102,13 @@ Hazard Score = (Physical State Weight x 0.4) + (Consumable Hazard Weight x 0.3) 
 
 | Physical Warehouse State | Weight | Permitted Mutations | Automated Response |
 |---|---|---|---|
-| **Pre-Batch (Queue)** | 1.0 | Address, Line Items, Cancellation | Instant Hold $ightarrow$ Mutate $ightarrow$ Release |
-| **Wave Assigned** | 2.5 | Address Only | Priority Hold $ightarrow$ Re-queue |
-| **Picked** | 4.0 | None (Supervisor Override Only) | Reject Mutation $ightarrow$ Alert Floor Manager |
+| **Pre-Batch (Queue)** | 1.0 | Address, Line Items, Cancellation | Instant Hold $
+ightarrow$ Mutate $
+ightarrow$ Release |
+| **Wave Assigned** | 2.5 | Address Only | Priority Hold $
+ightarrow$ Re-queue |
+| **Picked** | 4.0 | None (Supervisor Override Only) | Reject Mutation $
+ightarrow$ Alert Floor Manager |
 | **Packed / Labeled** | 5.0 | **ABSOLUTE HARD LOCKOUT** | Automatic Failover to Post-Delivery Return / Intercept |
 
 ### 4.2 Regulatory Governance: FDA 21 CFR Part 111 & Quality Disposal Policy
@@ -175,9 +179,10 @@ At 10:14:00 EDT (11 minutes post-checkout, within the 15-minute 3PL polling buff
 
 ### 5.5 Staging Latency & Rejection Benchmark Verification
 
-The timing characteristics of the hold coordinator were independently benchmarked across 200 executions in a controlled staging harness ([`evidence/latency/`](../evidence/latency/summary.md)):
-- **Baseline Hold Latency**: Median (p50) end-to-end execution of **61.92 ms** (p95: **78.42 ms**; p99: **85.15 ms**) under sequential flow.
-- **High-Concurrency Burst (50 concurrent holds)**: Median of **92.66 ms** (p95: **108.54 ms**).
-- **Warehouse Cutoff Race (PONR Breach)**: When order status transitions to `picked` or `manifested`, the coordinator rejects the mutation in **15.56 ms** (p50) with HTTP 409 Conflict, halting execution before Shopify or downstream records are modified.
+The [local coordinator suite](../evidence/latency/summary.md) separates functional safety assertions from timing workloads. It exercises pending and completed duplicates, preserved cutoff rejections, conflicting payloads, stale revisions, a wave release during the request, reconciliation after response loss, selective hold release and recovery after a worker terminates following a persisted effect.
+
+The coordinator and virtual WMS use local SQLite. Seeded delays are injected into Shopify/WMS simulators; elapsed request-response times are measured with a monotonic clock. The report records actual sample counts, concurrency, runtime and nearest-rank percentiles, with raw per-delivery records in the run archive. Pending, rejected and unknown responses are reported separately from confirmed holds.
+
+The default profile is a small local benchmark; `node evidence/run_all.js --full` runs 10,000 attempts per workload. These results do not establish provider-network latency, a physical warehouse stop or an authenticated Shopify/ShipBob integration. The Order #1004 chronology above is a separate scenario trace, not a timing sample from this harness.
 
 ---

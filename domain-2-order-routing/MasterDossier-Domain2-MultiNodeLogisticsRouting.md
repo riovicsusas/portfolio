@@ -29,8 +29,8 @@ flowchart TD
 
 ## 2. Fulfillment Economics & Carrier Rate Modeling
 
-### 2.1 3PL Handling Fee Structure (ShipBob Benchmark)
-Every time a physical package is inducted into a fulfillment stream, standard 3PL contracts assess base handling fees:
+### 2.1 Scenario Handling Fee Structure
+The model assigns the following handling fees to each parcel. These are scenario inputs, not a verified ShipBob quotation:
 
 | Fee Component | Single Package Order | Split Shipment (Package 1) | Split Shipment (Package 2) | Total Split Cost |
 |---|---|---|---|---|
@@ -39,7 +39,9 @@ Every time a physical package is inducted into a fulfillment stream, standard 3P
 | **Packaging & Corrugate** | $0.80 | $0.80 | $0.80 | $1.60 |
 | **Total 3PL Handling** | **$4.10** | **$3.30** | **$3.70** | **$7.00 (+$2.90 penalty)** |
 
-### 2.2 Commercial Plus Carrier Rate Card (Under 1 lb / 16 oz Parcel)
+### 2.2 Scenario Carrier Cost Inputs
+
+The values below are fixed model inputs, not verified current tariffs or actual Denver ZIP-pair quotes. A carrier quotation additionally requires service, origin/destination ZIPs, packed weight, dimensions, effective date and surcharge treatment.
 
 | Destination Zone | Distance from Origin | Standard USPS Ground Advantage | Priority Mail Commercial |
 |---|---|---|---|
@@ -68,7 +70,7 @@ Basket: 2 Units Focus Stick Packs (stocked at Allentown & Reno) + 1 Unit AM Focu
   - Single Package from Reno (Zone 4): $6.40 (Carrier) + $4.10 (3PL: $2.50 base + $0.80 packaging + 2×$0.40 extra picks) = **$10.50**
   - **Net Financial Advantage**: **$11.00 SAVED** ($21.50 split vs. $10.50 consolidated) by shipping from Reno in a single box!
 
-> **Core Axiom**: Under standard rate cards, a single consolidated package across higher zones (e.g. Zone 8 consolidated at $14.60) remains cheaper than two split packages in lower zones (e.g. two Zone 2 shipments totaling $17.80, saving $3.20).
+> **Core Axiom**: Under the printed scenario inputs, a single consolidated package across higher model buckets (e.g. Zone 8 consolidated at $14.60) remains cheaper than two split packages in lower zones (e.g. two Zone 2 shipments totaling $17.80, saving $3.20).
 
 ---
 
@@ -128,7 +130,7 @@ flowchart LR
 ## 4. Empirical A/B Simulation: 500-Order Cohort
 
 > [!NOTE] **Scenario Inputs & Modeling Context:**  
-> The 500-order cohort ($41,200 GMV, average order value $82.40) models fulfillment under published commercial rate cards and regional zone maps. Results reflect conditional model calculations comparing naive independent-line proximity against consolidated multi-node waterfall rules.
+> The 500-order cohort ($41,200 GMV, average order value $82.40) uses fixed freight inputs and a declared parcel-handling model. Published tariff and actual ZIP-zone verification are outside this execution. Results reflect conditional model calculations comparing naive independent-line proximity against consolidated multi-node waterfall rules.
 
 ### 4.1 Cohort Parameters & Geography
 - **Cohort Size**: 500 multi-item orders
@@ -142,29 +144,28 @@ flowchart LR
 
 ### 4.2 Benchmark Results: Model Alpha (Naive) vs. Model Beta (Optimized)
 
-| Metric | Model Alpha (Naive Proximity) | Model Beta (Waterfall Optimized) | Variance / Delta |
-|---|---|---|---|
-| **Total Split Shipments** | 157 orders (31.4%) | 41 orders (8.2%) | **-23.2 pp (-73.9% Relative Reduction)** |
-| **Total Boxes Dispatched** | 657 parcels | 541 parcels | **-116 fewer cartons** |
-| **Total 3PL Handling Cost** | $2,481.50 | $2,036.10 | **-$445.40 saved** (Scenario ledger)* |
-| **Total Carrier Freight Spend** | $5,190.20 | $4,529.20 | **-$661.00 saved** |
-| **Total Fulfillment Cost** | **$7,671.70** | **$6,565.30** | **-$1,106.40 NET SAVINGS** |
-| **Average Cost Per Order** | **$15.34** | **$13.13** | **-$2.21 per order** ($2.2128 exact) |
+The reproducible paired-basket model assigns exactly three units to each of the 190 three-plus orders. Together with 310 two-unit orders, this yields 1,190 picked units in both alternatives. Split counts and aggregate freight totals are scenario inputs; no per-order routing engine result or historical ledger is inferred.
 
-*Handling formula reconciliation: At standard base handling ($2.90/parcel) for identical item baskets, eliminating 116 parcels yields direct handling savings of $336.40 ($2.90 × 116). Combined with $661.00 carrier savings, formula-consistent savings equal **$997.40 ($1.9948/order)**. The reported scenario ledger total of $1,106.40 ($2.2128/order) incorporates an additional $109.00 in packaging material and box dimensional surcharges.
+| Metric | Model Alpha | Model Beta | Difference |
+|---|---:|---:|---:|
+| Split orders | 157 (31.4%) | 41 (8.2%) | 116 fewer; 23.2 percentage points |
+| Parcels | 657 | 541 | 116 fewer |
+| Picked units | 1,190 | 1,190 | Same baskets |
+| Handling: $2.90P + $0.40U | $2,381.30 | $2,044.90 | $336.40 |
+| Aggregate freight input | $5,190.20 | $4,529.20 | $661.00 |
+| Total modeled fulfillment | $7,571.50 | $6,574.10 | **$997.40** |
+| Cost/order | $15.1430 | $13.1482 | **$1.9948** |
+
+Relative split reduction is 116/157 = 73.89%. The same-basket handling difference is 116 × $2.90 = $336.40. No unitemized packaging surcharge is included.
 
 ### 4.3 Annualized Business Impact
-For a direct-to-consumer store operating at Synapse Botanicals' projected scale (1,000 orders/day = 365,000 orders/year):
-```
-Annual Savings (Model-Consistent Combined):  365,000 orders × $1.9948/order = $728,102 / year
-Annual Savings (Historical Scenario Ledger): 365,000 orders × $2.2128/order = $807,672 / year
-```
 
-### 4.4 Traceable Tariff Grounding & Evidence Summary
+At a separate planning scale of 1,000 orders/day for 365 days, $1.9948 × 365,000 = **$728,102/year**. At 1,700 orders/month, the same unrounded cohort average gives **$3,391.16/month**, or **$40,693.92** over twelve identical months. These are separate scale scenarios, not realized savings.
 
-The freight models applied throughout this dossier are verified against dated public rate cards in [`evidence/freight/`](../evidence/freight/summary.md):
-- **USPS Notice 123 (Effective Jan 21, 2024)**: Ground Advantage Commercial rate tables validate the exact single-vs-split rates ($6.20 Zone 5 15.999 oz single vs $4.45 + $4.22 split freight).
-- **UPS Daily Rates (2024)**: Commercial Ground rate cards validate the $8.95 (Zone 2) vs $17.80 (Zone 8) rate structure, confirming the **$8.85 penalty** for cross-country misrouting.
-- **Handling Fee Schedule**: Standard 3PL pick/pack cards ($3.70 base + $1.20 incremental pick) establish the **$11.00 net saving** on the Denver basket consolidation.
+### 4.4 Reproducible Routing-Cost Evidence
+
+The [freight suite](../evidence/freight/summary.md) asserts feasible fixture reservations, complete baskets, parcel-level handling, the $21.50 versus $10.50 controlled comparison, and the cohort/scale calculations. The three-unit comparison forces a split against feasible Reno consolidation; it does not establish that a closest-node policy would choose the split.
+
+The tariff file identifies public reference candidates, but lacks a verified dated tariff snapshot or ZIP-zone quote. Its monetary values remain scenario inputs. Source verification is reported as skipped, rather than passed. No carrier invoice, negotiated discount or physical misrouting outcome is established.
 
 ---

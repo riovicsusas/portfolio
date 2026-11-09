@@ -1,0 +1,63 @@
+[
+  {
+    "name": "Eligible hold commits one WMS-simulator effect",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Concurrent same-order duplicate returns pending; later replay returns confirmed",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Reconciliation cannot steal an active pending operation",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Rejected cutoff outcome is preserved on duplicate delivery",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Reusing a key for a different order rejects the conflicting payload",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Reusing a key with a changed address rejects the conflicting payload",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Competing operation IDs serialize the same shipment while pending",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Wave release between initial read and conditional hold rejects mutation",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Timeout after remote success reconciles without a second effect",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Absent effect is reconciled before a safe same-key retry",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Stale order revision cannot apply a hold",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Reconciliation detects revision change after an uncertain effect",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "Selective release preserves the unrelated hold",
+    "outcome": "assertions passed"
+  },
+  {
+    "name": "New process recovers effect persisted before worker termination",
+    "outcome": {
+      "child_exit": 86,
+      "persisted_status_before_recovery": "PENDING",
+      "reconciled_status": "CONFIRMED",
+      "effects": 1
+    }
+  }
+]

@@ -1,0 +1,531 @@
+{
+  "run_id": "2026-11-09T18-21-14-457Z-59d713d1",
+  "started_at": "2026-11-09T18:21:15.645Z",
+  "finished_at": "2026-11-09T18:21:15.651Z",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "revision": "4cb20482de1c172efc89de7f09c5adbfdd204143",
+  "script_sha256": "39c7702efcaa2193b3657565cc853b4bd9a06b5af2b0a0b1a7a521ec8e73ab77",
+  "input_sha256": {
+    "fixtures.json": "1883e0db793e85be1698eb6a0466c6b87354a02343df68790cf0fd55cd16345d"
+  },
+  "classification": "Local identifier-validation tests and shared-table UPC-A bitstream self-consistency",
+  "status": "passed",
+  "counts": {
+    "passed": 58,
+    "failed": 0,
+    "skipped": 0,
+    "total": 58
+  },
+  "checks": [
+    {
+      "name": "Fixture mapping has twelve unique SKU and UPC identities",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-MY: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-MY: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-MY: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-BO: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-BO: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-BO: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-WB: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-WB: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-WB: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-GA: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-GA: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-FSTK-GA: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TNCT-AM: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TNCT-AM: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TNCT-AM: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TNCT-PM: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TNCT-PM: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TNCT-PM: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-BNDL-MAO: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-BNDL-MAO: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-BNDL-MAO: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-BNDL-BAB: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-BNDL-BAB: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-BNDL-BAB: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-MO: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-MO: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-MO: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-BW: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-BW: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-BW: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-SG: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-SG: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-TMBL-SG: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-ACC-WHSK: approved text, checksum and product match",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-ACC-WHSK: shared-table 95-bit round trip",
+      "status": "passed"
+    },
+    {
+      "name": "SYN-ACC-WHSK: another approved product UPC is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-SCINOT-01: Excel Standard Scientific Notation",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-SCINOT-02: Excel Extended Scientific Notation",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-TRUNC-01: Eleven-digit truncation; no missing digit is inferred",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-CHKSUM-01: Incorrect check digit",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-CHKSUM-02: Transposed Digits Checksum Failure",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-UNAPPROVED-SKU: Unapproved Extraneous SKU Code",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-NON-NUMERIC: Alphanumeric Character Corruption",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-WRONG-PRODUCT: Another approved SKU barcode",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-ZERO-PLACEHOLDER: All-zero placeholder",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-BLANK: Empty text identifier",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-NUMERIC: Numeric input requiring text",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-NULL: Null input",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-WHITESPACE: Whitespace surrounding digits",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-APOSTROPHE: Literal spreadsheet apostrophe",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-FORMULA: Spreadsheet formula export",
+      "status": "passed"
+    },
+    {
+      "name": "ERR-LONG: Overlong numeric text",
+      "status": "passed"
+    },
+    {
+      "name": "A valid leading-zero fixture remains exact text",
+      "status": "passed"
+    },
+    {
+      "name": "Decoder rejects truncated bitstreams",
+      "status": "passed"
+    },
+    {
+      "name": "Decoder rejects corrupted edge guards",
+      "status": "passed"
+    },
+    {
+      "name": "Decoder rejects corrupted center guards",
+      "status": "passed"
+    },
+    {
+      "name": "Encoder does not silently repair a wrong check digit",
+      "status": "passed"
+    }
+  ],
+  "sources": [
+    {
+      "classification": "Scenario input",
+      "path": "fixtures.json",
+      "description": "Synthetic twelve-variant portfolio fixtures; no GS1 registration or licensed product assignment is asserted."
+    }
+  ],
+  "data": {
+    "catalog_scope": "Universe A (12-Variant Master Product Catalog)",
+    "identifier_provenance": "Synthetic twelve-variant portfolio fixtures; no GS1 registration or licensed product assignment is asserted.",
+    "summary_metrics": {
+      "canonical_skus_tested": 12,
+      "canonical_skus_passed": 12,
+      "round_trips_passed": 12,
+      "negative_fixtures_tested": 16,
+      "negative_fixtures_trapped": 16
+    },
+    "canonical_sku_verifications": [
+      {
+        "sku": "SYN-FSTK-MY",
+        "name": "Focus Stick Packs 30-Pack (Matcha Yuzu)",
+        "upc": "850041234014",
+        "checksum": 4,
+        "valid": true,
+        "round_trip_decoded": "850041234014",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-FSTK-BO",
+        "name": "Focus Stick Packs 30-Pack (Blood Orange)",
+        "upc": "850041234021",
+        "checksum": 1,
+        "valid": true,
+        "round_trip_decoded": "850041234021",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-FSTK-WB",
+        "name": "Focus Stick Packs 30-Pack (Wild Blueberry)",
+        "upc": "850041234038",
+        "checksum": 8,
+        "valid": true,
+        "round_trip_decoded": "850041234038",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-FSTK-GA",
+        "name": "Focus Stick Packs 30-Pack (Crisp Green Apple)",
+        "upc": "850041234045",
+        "checksum": 5,
+        "valid": true,
+        "round_trip_decoded": "850041234045",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-TNCT-AM",
+        "name": "Adaptogen Tincture 60ml (AM Focus / Lion's Mane)",
+        "upc": "850041234052",
+        "checksum": 2,
+        "valid": true,
+        "round_trip_decoded": "850041234052",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-TNCT-PM",
+        "name": "Adaptogen Tincture 60ml (PM Restore / Reishi)",
+        "upc": "850041234069",
+        "checksum": 9,
+        "valid": true,
+        "round_trip_decoded": "850041234069",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-BNDL-MAO",
+        "name": "Starter Bundle (Matcha / AM / Obsidian)",
+        "upc": "850041234076",
+        "checksum": 6,
+        "valid": true,
+        "round_trip_decoded": "850041234076",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-BNDL-BAB",
+        "name": "Starter Bundle (Orange / AM / Bone White)",
+        "upc": "850041234083",
+        "checksum": 3,
+        "valid": true,
+        "round_trip_decoded": "850041234083",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-TMBL-MO",
+        "name": "Precision Insulated Tumbler 500ml (Matte Obsidian)",
+        "upc": "850041234090",
+        "checksum": 0,
+        "valid": true,
+        "round_trip_decoded": "850041234090",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-TMBL-BW",
+        "name": "Precision Insulated Tumbler 500ml (Bone White)",
+        "upc": "850041234106",
+        "checksum": 6,
+        "valid": true,
+        "round_trip_decoded": "850041234106",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-TMBL-SG",
+        "name": "Precision Insulated Tumbler 500ml (Sage Green)",
+        "upc": "850041234113",
+        "checksum": 3,
+        "valid": true,
+        "round_trip_decoded": "850041234113",
+        "round_trip_match": true
+      },
+      {
+        "sku": "SYN-ACC-WHSK",
+        "name": "Micro-Foam Electric Whisk",
+        "upc": "850041234120",
+        "checksum": 0,
+        "valid": true,
+        "round_trip_decoded": "850041234120",
+        "round_trip_match": true
+      }
+    ],
+    "negative_fixture_rejections": [
+      {
+        "id": "ERR-SCINOT-01",
+        "name": "Excel Standard Scientific Notation",
+        "input_upc": "8.50041E+11",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "SCIENTIFIC_NOTATION_DETECTED",
+        "actual_error": "SCIENTIFIC_NOTATION_DETECTED",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-SCINOT-02",
+        "name": "Excel Extended Scientific Notation",
+        "input_upc": "8.5004123401E+11",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "SCIENTIFIC_NOTATION_DETECTED",
+        "actual_error": "SCIENTIFIC_NOTATION_DETECTED",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-TRUNC-01",
+        "name": "Eleven-digit truncation; no missing digit is inferred",
+        "input_upc": "50041234014",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "INVALID_LENGTH_NOT_12_DIGITS",
+        "actual_error": "INVALID_LENGTH_NOT_12_DIGITS",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-CHKSUM-01",
+        "name": "Incorrect check digit",
+        "input_upc": "850041234017",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "CHECKSUM_MODULO_10_MISMATCH",
+        "actual_error": "CHECKSUM_MODULO_10_MISMATCH",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-CHKSUM-02",
+        "name": "Transposed Digits Checksum Failure",
+        "input_upc": "850041234107",
+        "sku": "SYN-TMBL-BW",
+        "expected_error": "CHECKSUM_MODULO_10_MISMATCH",
+        "actual_error": "CHECKSUM_MODULO_10_MISMATCH",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-UNAPPROVED-SKU",
+        "name": "Unapproved Extraneous SKU Code",
+        "input_upc": "850041234014",
+        "sku": "SYN-FAKE-999",
+        "expected_error": "SKU_NOT_IN_UNIVERSE_A_MASTER",
+        "actual_error": "SKU_NOT_IN_UNIVERSE_A_MASTER",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-NON-NUMERIC",
+        "name": "Alphanumeric Character Corruption",
+        "input_upc": "85004123401A",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "NON_NUMERIC_CHARACTERS",
+        "actual_error": "NON_NUMERIC_CHARACTERS",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-WRONG-PRODUCT",
+        "name": "Another approved SKU barcode",
+        "input_upc": "850041234021",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "SKU_BARCODE_MISMATCH",
+        "actual_error": "SKU_BARCODE_MISMATCH",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-ZERO-PLACEHOLDER",
+        "name": "All-zero placeholder",
+        "input_upc": "000000000000",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "PLACEHOLDER_BARCODE",
+        "actual_error": "PLACEHOLDER_BARCODE",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-BLANK",
+        "name": "Empty text identifier",
+        "input_upc": "",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "BLANK_BARCODE",
+        "actual_error": "BLANK_BARCODE",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-NUMERIC",
+        "name": "Numeric input requiring text",
+        "input_upc": 850041234014,
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "BARCODE_TEXT_REQUIRED",
+        "actual_error": "BARCODE_TEXT_REQUIRED",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-NULL",
+        "name": "Null input",
+        "input_upc": null,
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "BARCODE_TEXT_REQUIRED",
+        "actual_error": "BARCODE_TEXT_REQUIRED",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-WHITESPACE",
+        "name": "Whitespace surrounding digits",
+        "input_upc": " 850041234014 ",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "NON_NUMERIC_CHARACTERS",
+        "actual_error": "NON_NUMERIC_CHARACTERS",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-APOSTROPHE",
+        "name": "Literal spreadsheet apostrophe",
+        "input_upc": "'850041234014",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "NON_NUMERIC_CHARACTERS",
+        "actual_error": "NON_NUMERIC_CHARACTERS",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-FORMULA",
+        "name": "Spreadsheet formula export",
+        "input_upc": "=\"850041234014\"",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "NON_NUMERIC_CHARACTERS",
+        "actual_error": "NON_NUMERIC_CHARACTERS",
+        "trapped_successfully": true
+      },
+      {
+        "id": "ERR-LONG",
+        "name": "Overlong numeric text",
+        "input_upc": "8500412340140",
+        "sku": "SYN-FSTK-MY",
+        "expected_error": "INVALID_LENGTH_NOT_12_DIGITS",
+        "actual_error": "INVALID_LENGTH_NOT_12_DIGITS",
+        "trapped_successfully": true
+      }
+    ]
+  }
+}

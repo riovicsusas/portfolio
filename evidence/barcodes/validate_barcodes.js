@@ -1,255 +1,173 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { createSuite } from '../lib/report.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const directory = path.dirname(fileURLToPath(import.meta.url));
 
-const fixturesRaw = fs.readFileSync(path.join(__dirname, 'fixtures.json'), 'utf8');
-const fixtures = JSON.parse(fixturesRaw);
-
-console.log('--- Executing Workstream C: Barcode Checksums & SKU Governance ---');
-
-// Standard GS1 UPC-A Modulo-10 calculation
-function calculateModulo10CheckDigit(elevenDigits) {
-  let oddSum = 0;
-  let evenSum = 0;
-  for (let i = 0; i < 11; i++) {
-    const digit = parseInt(elevenDigits[i], 10);
-    if (i % 2 === 0) {
-      oddSum += digit; // 1st, 3rd, 5th, 7th, 9th, 11th (1-based index)
-    } else {
-      evenSum += digit; // 2nd, 4th, 6th, 8th, 10th
-    }
+// UPC-A checksum validates syntax. Product identity is checked separately.
+export function calculateModulo10CheckDigit(elevenDigits) {
+  if (typeof elevenDigits !== 'string' || !/^[0-9]{11}$/.test(elevenDigits)) {
+    throw new TypeError('CHECK_DIGIT_REQUIRES_ELEVEN_DIGIT_TEXT');
   }
-  const total = (oddSum * 3) + evenSum;
-  return (10 - (total % 10)) % 10;
+  const sum = [...elevenDigits].reduce((total, digit, index) =>
+    total + Number(digit) * (index % 2 === 0 ? 3 : 1), 0);
+  return (10 - sum % 10) % 10;
 }
 
-// Validation Pipeline Function
-function validateBarcodeRecord(inputUpc, sku, canonicalSkuSet) {
-  const upcStr = String(inputUpc).trim();
-
-  // Rule 1: Check for scientific notation
-  if (/[eE][+-]?\d+/.test(String(inputUpc))) {
-    return { valid: false, error: 'SCIENTIFIC_NOTATION_DETECTED', details: `Raw input '${inputUpc}' coerced to float` };
-  }
-
-  // Rule 2: Check for non-numeric characters
-  if (!/^\d+$/.test(upcStr)) {
-    return { valid: false, error: 'NON_NUMERIC_CHARACTERS', details: `Input '${inputUpc}' contains illegal characters or whitespace` };
-  }
-
-  // Rule 3: Check strict 12-digit length
-  if (upcStr.length !== 12) {
-    return { valid: false, error: 'INVALID_LENGTH_NOT_12_DIGITS', details: `Length is ${upcStr.length}, expected exactly 12` };
-  }
-
-  // Rule 4: Validate Modulo-10 Checksum
-  const base11 = upcStr.substring(0, 11);
-  const statedCheckDigit = parseInt(upcStr[11], 10);
-  const computedCheckDigit = calculateModulo10CheckDigit(base11);
-  if (statedCheckDigit !== computedCheckDigit) {
-    return {
-      valid: false,
-      error: 'CHECKSUM_MODULO_10_MISMATCH',
-      details: `Stated check digit ${statedCheckDigit} does not match computed ${computedCheckDigit}`
-    };
-  }
-
-  // Rule 5: Approved SKU Master Mapping
-  if (!canonicalSkuSet.has(sku)) {
-    return { valid: false, error: 'SKU_NOT_IN_UNIVERSE_A_MASTER', details: `SKU '${sku}' is not authorized in Universe A catalog` };
-  }
-
-  return { valid: true, upc: upcStr, sku, computedCheckDigit };
+export function validateBarcodeRecord(inputUpc, sku, approvedMapping) {
+  const reject = (error, details) => ({ valid: false, error, details });
+  if (typeof inputUpc !== 'string') return reject('BARCODE_TEXT_REQUIRED', 'Numeric and other non-string identifiers are rejected before coercion.');
+  if (inputUpc.length === 0) return reject('BLANK_BARCODE', 'A barcode is required.');
+  if (/[eE][+-]?\d+/.test(inputUpc)) return reject('SCIENTIFIC_NOTATION_DETECTED', 'Restore from the approved variant mapping; no precision recovery is inferred.');
+  if (!/^[0-9]+$/.test(inputUpc)) return reject('NON_NUMERIC_CHARACTERS', 'Export exact digits without whitespace, formulas or apostrophes.');
+  if (inputUpc.length !== 12) return reject('INVALID_LENGTH_NOT_12_DIGITS', `Received ${inputUpc.length} digits.`);
+  if (/^0{12}$/.test(inputUpc)) return reject('PLACEHOLDER_BARCODE', 'All-zero placeholders are prohibited.');
+  const computedCheckDigit = calculateModulo10CheckDigit(inputUpc.slice(0, 11));
+  if (Number(inputUpc[11]) !== computedCheckDigit) return reject('CHECKSUM_MODULO_10_MISMATCH', `Expected check digit ${computedCheckDigit}.`);
+  const approved = approvedMapping.get(sku);
+  if (!approved) return reject('SKU_NOT_IN_UNIVERSE_A_MASTER', `No approved fixture mapping for ${sku}.`);
+  if (approved.upc !== inputUpc) return reject('SKU_BARCODE_MISMATCH', 'Checksum-valid barcode does not match this SKU.');
+  return { valid: true, upc: inputUpc, sku, computedCheckDigit };
 }
 
-// GS1 UPC-A Encoding Table
 const L_PATTERNS = {
   '0': '0001101', '1': '0011001', '2': '0010011', '3': '0111101', '4': '0100011',
   '5': '0110001', '6': '0101111', '7': '0111011', '8': '0110111', '9': '0001011'
 };
-
 const R_PATTERNS = {
   '0': '1110010', '1': '1100110', '2': '1101100', '3': '1000010', '4': '1011100',
   '5': '1001110', '6': '1010000', '7': '1000100', '8': '1001000', '9': '1110100'
 };
 
-// Software Barcode Generator (UPC-A 95-bit guard stream)
-function encodeUpcA(upc12) {
-  let stream = '101'; // Left Guard
-  // 6 Left Digits
-  for (let i = 0; i < 6; i++) {
-    stream += L_PATTERNS[upc12[i]];
-  }
-  stream += '01010'; // Center Guard
-  // 6 Right Digits
-  for (let i = 6; i < 12; i++) {
-    stream += R_PATTERNS[upc12[i]];
-  }
-  stream += '101'; // Right Guard
-  return stream;
+export function encodeUpcA(upc12) {
+  if (typeof upc12 !== 'string' || !/^[0-9]{12}$/.test(upc12)) throw new TypeError('EXACT_TWELVE_DIGIT_TEXT_REQUIRED');
+  if (calculateModulo10CheckDigit(upc12.slice(0, 11)) !== Number(upc12[11])) throw new Error('INVALID_CHECK_DIGIT');
+  return '101' + [...upc12.slice(0, 6)].map(d => L_PATTERNS[d]).join('') + '01010' +
+    [...upc12.slice(6)].map(d => R_PATTERNS[d]).join('') + '101';
 }
 
-// Independent Software Barcode Decoder
-function decodeUpcA(stream) {
-  if (stream.length !== 95) throw new Error(`Invalid bitstream length: ${stream.length}`);
-  if (!stream.startsWith('101') || !stream.endsWith('101')) throw new Error('Guard pattern corrupted');
-  if (stream.substring(45, 50) !== '01010') throw new Error('Center guard corrupted');
-
-  const reverseL = Object.fromEntries(Object.entries(L_PATTERNS).map(([k, v]) => [v, k]));
-  const reverseR = Object.fromEntries(Object.entries(R_PATTERNS).map(([k, v]) => [v, k]));
-
+// This decoder deliberately shares the encoder's pattern tables. It establishes
+// bitstream self-consistency, not independent optical/image-decoder agreement.
+export function decodeUpcA(stream) {
+  if (typeof stream !== 'string' || !/^[01]{95}$/.test(stream)) throw new Error('INVALID_95_BIT_STREAM');
+  if (!stream.startsWith('101') || !stream.endsWith('101')) throw new Error('GUARD_PATTERN_CORRUPTED');
+  if (stream.slice(45, 50) !== '01010') throw new Error('CENTER_GUARD_CORRUPTED');
+  const reverseL = Object.fromEntries(Object.entries(L_PATTERNS).map(([digit, pattern]) => [pattern, digit]));
+  const reverseR = Object.fromEntries(Object.entries(R_PATTERNS).map(([digit, pattern]) => [pattern, digit]));
   let decoded = '';
-  // Left 6 digits
-  for (let i = 0; i < 6; i++) {
-    const chunk = stream.substring(3 + (i * 7), 3 + ((i + 1) * 7));
-    const digit = reverseL[chunk];
-    if (digit === undefined) throw new Error(`Unrecognized left pattern: ${chunk}`);
+  for (let index = 0; index < 12; index++) {
+    const start = index < 6 ? 3 + index * 7 : 50 + (index - 6) * 7;
+    const digit = (index < 6 ? reverseL : reverseR)[stream.slice(start, start + 7)];
+    if (digit === undefined) throw new Error('UNRECOGNIZED_DIGIT_PATTERN');
     decoded += digit;
   }
-  // Right 6 digits
-  for (let i = 0; i < 6; i++) {
-    const chunk = stream.substring(50 + (i * 7), 50 + ((i + 1) * 7));
-    const digit = reverseR[chunk];
-    if (digit === undefined) throw new Error(`Unrecognized right pattern: ${chunk}`);
-    decoded += digit;
-  }
-
-  // Checksum verification
-  const checkDigit = calculateModulo10CheckDigit(decoded.substring(0, 11));
-  if (parseInt(decoded[11], 10) !== checkDigit) throw new Error('Decoded barcode checksum failure');
-
+  if (calculateModulo10CheckDigit(decoded.slice(0, 11)) !== Number(decoded[11])) throw new Error('DECODED_CHECKSUM_FAILURE');
   return decoded;
 }
 
-// Execute Validations
-const canonicalSkuMap = new Map(fixtures.canonical_skus.map(s => [s.sku, s]));
-const canonicalSkuSet = new Set(fixtures.canonical_skus.map(s => s.sku));
-
-// 1. Validate Canonical SKUs
-const canonicalResults = [];
-for (const skuRecord of fixtures.canonical_skus) {
-  const val = validateBarcodeRecord(skuRecord.upc, skuRecord.sku, canonicalSkuSet);
-  if (!val.valid) {
-    throw new Error(`Canonical SKU ${skuRecord.sku} failed validation: ${val.error}`);
+async function main() {
+  const fixtures = JSON.parse(fs.readFileSync(path.join(directory, 'fixtures.json'), 'utf8'));
+  const suite = createSuite('barcodes', {
+    classification: 'Local identifier-validation tests and shared-table UPC-A bitstream self-consistency',
+    inputs: ['fixtures.json']
+  });
+  const approved = new Map(fixtures.canonical_skus.map(record => [record.sku, record]));
+  const canonicalResults = [];
+  const negativeResults = [];
+  await suite.check('Fixture mapping has twelve unique SKU and UPC identities', () => {
+    assert.equal(fixtures.canonical_skus.length, 12);
+    assert.equal(approved.size, 12);
+    assert.equal(new Set(fixtures.canonical_skus.map(record => record.upc)).size, 12);
+  });
+  for (const [index, record] of fixtures.canonical_skus.entries()) {
+    const validation = validateBarcodeRecord(record.upc, record.sku, approved);
+    await suite.check(`${record.sku}: approved text, checksum and product match`, () => {
+      assert.equal(validation.valid, true, validation.error);
+      assert.equal(validation.upc, record.upc);
+    });
+    let decoded;
+    await suite.check(`${record.sku}: shared-table 95-bit round trip`, () => {
+      const stream = encodeUpcA(record.upc);
+      assert.equal(stream.length, 95);
+      decoded = decodeUpcA(stream);
+      assert.equal(decoded, record.upc);
+    });
+    await suite.check(`${record.sku}: another approved product UPC is rejected`, () => {
+      const other = fixtures.canonical_skus[(index + 1) % fixtures.canonical_skus.length];
+      const actual = validateBarcodeRecord(other.upc, record.sku, approved);
+      assert.equal(actual.valid, false);
+      assert.equal(actual.error, 'SKU_BARCODE_MISMATCH');
+    });
+    canonicalResults.push({ sku: record.sku, name: record.name, upc: record.upc,
+      checksum: validation.computedCheckDigit, valid: validation.valid,
+      round_trip_decoded: decoded, round_trip_match: decoded === record.upc });
   }
-
-  // Test round-trip encode -> decode
-  const bitstream = encodeUpcA(skuRecord.upc);
-  const decoded = decodeUpcA(bitstream);
-  const roundTripMatch = (decoded === skuRecord.upc);
-
-  if (!roundTripMatch) {
-    throw new Error(`Round-trip mismatch for SKU ${skuRecord.sku}: ${skuRecord.upc} vs ${decoded}`);
+  for (const fixture of fixtures.negative_test_fixtures) {
+    const actual = validateBarcodeRecord(fixture.input_upc, fixture.sku, approved);
+    await suite.check(`${fixture.id}: ${fixture.name}`, () => {
+      assert.equal(actual.valid, false);
+      assert.equal(actual.error, fixture.expected_error);
+    });
+    negativeResults.push({ ...fixture, actual_error: actual.error,
+      trapped_successfully: actual.valid === false && actual.error === fixture.expected_error });
   }
+  await suite.check('A valid leading-zero fixture remains exact text', () => {
+    const mapping = new Map([['LEADING-ZERO-TEST', { upc: '085001234562' }]]);
+    assert.equal(validateBarcodeRecord('085001234562', 'LEADING-ZERO-TEST', mapping).upc, '085001234562');
+    assert.equal(decodeUpcA(encodeUpcA('085001234562')), '085001234562');
+    assert.equal(validateBarcodeRecord(85001234562, 'LEADING-ZERO-TEST', mapping).error, 'BARCODE_TEXT_REQUIRED');
+  });
+  const validStream = encodeUpcA(fixtures.canonical_skus[0].upc);
+  await suite.check('Decoder rejects truncated bitstreams', () => assert.throws(() => decodeUpcA(validStream.slice(1)), /INVALID_95_BIT_STREAM/));
+  await suite.check('Decoder rejects corrupted edge guards', () => assert.throws(() => decodeUpcA('000' + validStream.slice(3)), /GUARD_PATTERN_CORRUPTED/));
+  await suite.check('Decoder rejects corrupted center guards', () => assert.throws(() => decodeUpcA(validStream.slice(0, 45) + '11111' + validStream.slice(50)), /CENTER_GUARD_CORRUPTED/));
+  await suite.check('Encoder does not silently repair a wrong check digit', () => assert.throws(() => encodeUpcA('850041234017'), /INVALID_CHECK_DIGIT/));
 
-  canonicalResults.push({
-    sku: skuRecord.sku,
-    name: skuRecord.name,
-    upc: skuRecord.upc,
-    checksum: val.computedCheckDigit,
-    bitstream_length: bitstream.length,
-    round_trip_decoded: decoded,
-    status: 'VERIFIED_VALID'
+  const passedCanonical = canonicalResults.filter(record => record.valid).length;
+  const passedRoundTrips = canonicalResults.filter(record => record.round_trip_match).length;
+  const rejected = negativeResults.filter(record => record.trapped_successfully).length;
+  const markdown = `# Workstream C: Barcode Identity and Bitstream Verification
+
+**Classification:** Executed local validation and shared-table UPC-A bitstream round-trip checks.
+
+The included mappings are synthetic portfolio fixtures. Checksum validity and fixture approval do not establish GS1 registration, product ownership or an operational warehouse catalog.
+
+## Approved fixture results
+
+| SKU | Expected UPC-A text | Checksum / product match | Shared-table round trip |
+|---|---|---|---|
+${canonicalResults.map(record => `| ${record.sku} | \`${record.upc}\` | ${record.valid ? 'PASS' : 'FAIL'} | ${record.round_trip_match ? 'PASS' : 'FAIL'} |`).join('\n')}
+
+${passedCanonical}/${canonicalResults.length} approved mappings passed; ${passedRoundTrips}/${canonicalResults.length} bitstreams returned the original identifier. Each product also rejects a different approved product's checksum-valid UPC.
+
+## Rejection cases
+
+| Case | Expected rejection | Actual rejection |
+|---|---|---|
+${negativeResults.map(record => `| ${record.id} | ${record.expected_error} | ${record.actual_error || 'NONE'} |`).join('\n')}
+
+${rejected}/${negativeResults.length} negative fixtures produced the expected rejection. Inputs remain text; the validator does not trim or numerically coerce identifiers. Blank, all-zero, numeric, scientific-notation and wrong-product values are rejected.
+
+## Scope
+
+The encoder and decoder share pattern tables, so this checks bitstream self-consistency and identifier preservation. It does not verify an independent image decoder, printed-label quality, physical scanner performance or ShipBob terminal acceptance. No external dependencies or network calls are used.
+`;
+  suite.finish({
+    outputName: 'results.json',
+    data: {
+      catalog_scope: fixtures.catalog_universe,
+      identifier_provenance: fixtures.identifier_provenance,
+      summary_metrics: { canonical_skus_tested: canonicalResults.length, canonical_skus_passed: passedCanonical,
+        round_trips_passed: passedRoundTrips, negative_fixtures_tested: negativeResults.length, negative_fixtures_trapped: rejected },
+      canonical_sku_verifications: canonicalResults,
+      negative_fixture_rejections: negativeResults
+    },
+    markdown,
+    sources: [{ classification: 'Scenario input', path: 'fixtures.json', description: fixtures.identifier_provenance }]
   });
 }
-
-// 2. Validate Negative Test Fixtures
-const negativeResults = [];
-for (const testCase of fixtures.negative_test_fixtures) {
-  const val = validateBarcodeRecord(testCase.input_upc, testCase.sku, canonicalSkuSet);
-  const passedTrap = (!val.valid && val.error === testCase.expected_error);
-
-  negativeResults.push({
-    id: testCase.id,
-    name: testCase.name,
-    input_upc: testCase.input_upc,
-    sku: testCase.sku,
-    expected_error: testCase.expected_error,
-    actual_error: val.error,
-    trapped_successfully: passedTrap,
-    details: val.details
-  });
-
-  if (!passedTrap) {
-    throw new Error(`Negative test ${testCase.id} failed to trap error: expected ${testCase.expected_error}, got ${val.error}`);
-  }
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch(error => { console.error(error); process.exitCode = 1; });
 }
-
-const finalResults = {
-  timestamp: new Date().toISOString(),
-  environment: 'GS1 UPC-A Software Encode/Decode & Checksum Harness',
-  catalog_scope: 'Universe A 12-Variant Master Product Catalog',
-  summary_metrics: {
-    canonical_skus_tested: canonicalResults.length,
-    canonical_skus_passed: canonicalResults.filter(r => r.status === 'VERIFIED_VALID').length,
-    round_trip_accuracy_rate: 1.0,
-    negative_fixtures_tested: negativeResults.length,
-    negative_fixtures_trapped: negativeResults.filter(r => r.trapped_successfully).length,
-    rejection_accuracy_rate: 1.0
-  },
-  canonical_sku_verifications: canonicalResults,
-  negative_fixture_rejections: negativeResults
-};
-
-// Write results.json
-const resultsPath = path.join(__dirname, 'results.json');
-fs.writeFileSync(resultsPath, JSON.stringify(finalResults, null, 2), 'utf8');
-console.log(`Saved barcode results to ${resultsPath}`);
-
-// Write summary.md
-const lines = [
-  '# Workstream C: Barcode Governance & SKU Master Evidence',
-  '',
-  `**Generated:** ${finalResults.timestamp}  `,
-  '**Classification:** Software Round-Trip Verification & Checksum Validator  ',
-  '**Standards Applied:** GS1 General Specifications for UPC-A (12-Digit Modulo-10 Checksum Algorithm)',
-  '',
-  '---',
-  '',
-  '## 1. Canonical 12-SKU Verification & Software Round-Trip Decode',
-  '',
-  'All 12 SKUs in Universe A were validated through the Modulo-10 checksum engine, synthesized into a standard 95-bit UPC-A optical bar pattern, and decoded by an independent software scanner with **100.0% round-trip fidelity**:',
-  '',
-  '| SKU Code | Product / Variant Name | Canonical UPC-A | Modulo-10 Check | Bitstream (95-bit) | Round-Trip Match |',
-  '| :--- | :--- | :---: | :---: | :---: | :---: |'
-];
-
-for (const r of canonicalResults) {
-  lines.push(`| \`${r.sku}\` | ${r.name} | \`${r.upc}\` | **${r.checksum} (PASS)** | 95 bits | **100% Bit-Exact** |`);
-}
-
-lines.push(
-  '',
-  '---',
-  '',
-  '## 2. Negative Anomaly Rejection Suite (Preventing Data Corruption)',
-  '',
-  'The ingestion sanitization filter was subjected to 7 edge-case corrupted inputs, successfully trapping **100.0% of defect modes** before database commitment:',
-  '',
-  '| Test ID | Defect Category | Malformed Input | Expected Trap Rule | Result |',
-  '| :--- | :--- | :---: | :--- | :---: |'
-);
-
-for (const r of negativeResults) {
-  lines.push(`| **${r.id}** | ${r.name} | \`${r.input_upc}\` | \`${r.expected_error}\` | **TRAPPED (${r.actual_error})** |`);
-}
-
-lines.push(
-  '',
-  '---',
-  '',
-  '## 3. Evidentiary Boundary',
-  '- **What this proves**:',
-  '  - Validates the mathematical Modulo-10 checksum validity of all 12 Universe A SKUs.',
-  '  - Proves software encode/decode round-trip fidelity with zero data loss.',
-  '  - Verifies that scientific notation (e.g. 8.50041E+11), truncated digits, transposed digits, and unapproved SKUs are programmatically trapped.',
-  '- **What remains outside scope**: Physical barcode laser scanning performance on specific handheld warehouse terminals (Zebra TC52, Honeywell CT60) under low-light or damaged label conditions.',
-  ''
-);
-
-const summaryPath = path.join(__dirname, 'summary.md');
-fs.writeFileSync(summaryPath, lines.join('\n'), 'utf8');
-console.log(`Saved summary markdown to ${summaryPath}`);

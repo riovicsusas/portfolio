@@ -190,14 +190,16 @@ flowchart TD
 ```
 
 ### 6.1 Weekly Defect Review Metrics (Key Performance Indicators)
+
+The following FRT and monthly incident figures are separate scenario-planning inputs. The offline evidence harness does not measure helpdesk response times or establish achieved monthly support savings.
 - **First-Response Time (FRT)**: Reduced from **4.2 hours (252 minutes)** to **14 minutes** (**94.44% reduction**). (Note: Automated Shopify hold acknowledgment occurs in 8.4 seconds; 14 minutes reflects human agent resolution time).
 - **Race Condition Incidents**: Reduced from 18 incidents/month to **0 incidents/month** in tested staging order cohorts.
 - **Avoided Scrap Cost Ledger**: Averting 18 mis-delivery incidents per month yields approximately **$4,200/month** in modeled savings (~$233.33 per avoided event, derived from avoiding dual carrier freight $15.30, replacement reshipment $14.80, consumable scrap COGS $28.40, carrier intercept fee $17.50, and customer concession credits/chargeback avoidance).
 
 ### 6.2 Carrier Intercept Contract & Staging Verification
 
-The carrier intercept workflow invoked in Macro M-04 is verified in [`evidence/carrier-recovery/`](../evidence/carrier-recovery/summary.md):
-- **API Acceptance vs. Depot Intercept**: The UPS Delivery Intercept v2 OpenAPI contract and state machine verify that HTTP 202 `ACCEPTED` acknowledges the request, while physical parcel diversion requires depot optical scanning (`SUCCEEDED`).
-- **Fee Protection**: If a parcel is physically delivered before hub containment occurs (Scenario 03), the $17.50 fee is waived ($0.00 billed).
+The [carrier-recovery suite](../evidence/carrier-recovery/summary.md) separates the custom Synapse adapter contract from focused checks against a pinned official UPS return-operation specification. It tests method, route, selected headers/body fields and structured success/failure response handling offline.
+
+The event-driven local simulator keeps electronic acceptance separate from successful recovery. It rejects conflicting requests, preserves duplicate outcomes, reconciles unknown responses and ignores stale or duplicate events. Fee amounts and settlement behavior are configurable scenario inputs, not verified UPS billing rules. No authenticated UPS CIE call, live shipment, depot event or physical interception is represented.
 
 ---

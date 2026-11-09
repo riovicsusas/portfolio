@@ -1,7 +1,7 @@
 # Synapse Botanicals — Operations & Technical Architecture Blueprint
 
 > [!NOTE] **Architectural Sandbox & Benchmark Context:**  
-> Synapse Botanicals is an engineered reference architecture and technical operations sandbox built to model, stress-test, and benchmark distributed direct-to-consumer (DTC) systems. All customer profiles, order cohorts (e.g., the 500-order routing cohort, 300-order promo cohort), and telemetry logs are synthetically generated from real Shopify Plus JSON schemas, ShipBob WMS rate cards, and UPS Zone 1–8 ground freight matrices. This controlled environment enables verifiable failure-mode testing without exposing customer PII or proprietary merchant data.
+> Synapse Botanicals is an engineered reference architecture and technical operations sandbox built to model, stress-test, and benchmark distributed direct-to-consumer (DTC) systems. Customer identities and order fixtures are synthetic. Commercial costs are scenario inputs; calculations are reproducible. Local simulator measurements and pinned public API references are identified separately from supplied narrative telemetry. No carrier contract rate or production provider latency is established by the offline suite. This controlled environment enables verifiable failure-mode testing without exposing customer PII or proprietary merchant data.
 
 ---
 
@@ -36,7 +36,7 @@ classDiagram
         Micro-Foam Electric Whisk - $16.00 [COGS: $3.10]
     }
     class Bundled_Kits {
-        The Daily Protocol Starter Bundle - $82.00 List / $98.00 Retail [COGS: $28.00 Component BOM / $28.40 Kitted Scenario]
+        The Daily Protocol Starter Bundle - $82.00 Promotional Scenario / $98.00 Standard Scenario [COGS: $28.00 Component BOM / $28.40 Kitted Scenario]
     }
     SynapseCatalog --> Consumables
     SynapseCatalog --> Hardware_Merch
@@ -47,11 +47,11 @@ classDiagram
 | :--- | :--- | :--- | :---: | :---: | :---: |
 | **Adaptogen Tincture (60ml)** | `synapse-adaptogen-tincture-60ml` | AM Focus (Lion's Mane)<br/>PM Restore (Reishi & Ashwagandha) | \$38.00 | \$12.50 | 67.1% |
 | **Focus Stick Packs (30-Pack)** | `synapse-focus-stick-packs-30-pack` | Matcha Yuzu, Blood Orange,<br/>Wild Blueberry, Crisp Green Apple | \$42.00 *(Comp \$48)* | \$8.50 | 79.8% |
-| **Daily Protocol Starter Bundle** | `the-daily-protocol-starter-bundle` | AM/PM Routine Kit (`SYN-BNDL-MAO` / `BAB`) | \$82.00 *(List)* / \$98.00 *(GMV)* | \$28.00 *(Component BOM)*<br/>\$28.40 *(Kitted Scenario)* | 65.4% – 71.4% |
+| **Daily Protocol Starter Bundle** | `the-daily-protocol-starter-bundle` | AM/PM Routine Kit (`SYN-BNDL-MAO` / `BAB`) | \$82.00 *(Promotional Scenario)* / \$98.00 *(Standard Scenario)* | \$28.00 *(Component BOM)*<br/>\$28.40 *(Kitted Scenario)* | 65.4% – 71.0% |
 | **Precision Insulated Tumbler** | `precision-insulated-tumbler-durable-merchandise` | Matte Obsidian, Bone White, Sage Green | \$34.00 | \$7.00 | 79.4% |
 | **Micro-Foam Electric Whisk** | `micro-foam-electric-whisk` | Single Variant (`SYN-ACC-WHSK`) | \$16.00 | \$3.10 | 80.6% |
 
-*(Note on Bundle Accounting: Raw component BOM cost is \$28.00: Focus Sticks \$8.50 + AM Tincture \$12.50 + Tumbler \$7.00. The \$28.40 Capstone scenario cost incorporates \$0.40 dedicated packaging and kitting materials. Historical manufacturing procurement contracts cited \$24.50 unkitted / \$26.50 landed).*
+*(Note on Bundle Accounting: Raw component BOM cost is \$28.00: Focus Sticks \$8.50 + AM Tincture \$12.50 + Tumbler \$7.00. The \$28.40 Capstone scenario cost incorporates \$0.40 dedicated packaging and kitting materials. These are declared cost assumptions, not historical procurement contract values).*
 
 ---
 
@@ -118,15 +118,16 @@ Because Synapse Botanicals operates at the intersection of perishable health sup
 
 ## 6. Reproducible Technical Evidence Package
 
-All operational assumptions, freight tariffs, integration latencies, barcode checksums, and carrier contracts across these technical dossiers are grounded in an executable, reproducible evidence suite located in [`evidence/`](evidence/README.md):
+The [offline Node.js suite](evidence/README.md) separates assumptions, computed outputs, measured simulator timings and public references. It records executed checks, failures and skips, runtime and source/input hashes. The retained sample run supplies detailed local execution records.
 
-* **Workstream A (Freight Tariffs & Routing)**: [`evidence/freight/`](evidence/freight/summary.md) — Grounded in published USPS Notice 123 (Ground Advantage Commercial) and UPS Daily Rates tariffs.
-* **Workstream B (Measured Staging Latency)**: [`evidence/latency/`](evidence/latency/summary.md) — High-resolution monotonic timing benchmarks of the Coordinator middleware under baseline, burst, duplicate, and cutoff race conditions.
-* **Workstream C (Barcode Governance & SKU Master)**: [`evidence/barcodes/`](evidence/barcodes/summary.md) — GS1 Modulo-10 checksum validation, Excel scientific notation anomaly trapping, and software optical round-trip decoding across all 12 Universe A variants.
-* **Workstream D (Transparent BOM & Cost Sensitivity)**: [`evidence/costs/`](evidence/costs/summary.md) — Multi-tier component BOM reconciliation ($28.00 raw components + $0.40 kitting materials = $28.40) and parametric contribution margin sweeps.
-* **Workstream E (UPS Intercept Contract & Recovery FSM)**: [`evidence/carrier-recovery/`](evidence/carrier-recovery/summary.md) — Official UPS Delivery Intercept v2 OpenAPI schema validation and finite state machine transition simulation.
+- [Freight](evidence/freight/summary.md): feasible synthetic shipment plans, conditional handling/cohort calculations and scale projections. Tariff verification is explicitly outside the executed checks.
+- [Coordinator](evidence/latency/summary.md): local SQLite operation identity, cutoff, reconciliation, owned-hold release and post-effect process-restart assertions, with separately measured seeded workloads.
+- [Barcodes](evidence/barcodes/summary.md): twelve synthetic SKU mappings, checksum and invalid-input tests, and shared-table UPC bitstream self-consistency. No physical or independent optical scan is asserted.
+- [Costs](evidence/costs/summary.md): explicit $28.00 component BOM plus assumed $0.40 kitting material; integer-cent contribution branches and discount-floor sensitivity.
+- [Recovery](evidence/carrier-recovery/summary.md): focused checks against a pinned official UPS contract and an event-driven local recovery model. No authenticated CIE request or actual interception is represented.
 
-To execute the entire verification suite in a single step:
 ```bash
 node evidence/run_all.js
 ```
+
+Use `--full` for a larger local timing workload. Offline tests do not certify the merchant's private costs, actual provider latency, configured helpdesk automations, SQS deployment, warehouse actions or carrier billing.

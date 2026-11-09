@@ -1,0 +1,113 @@
+{
+  "timestamp": "2026-11-09T16:33:42.557Z",
+  "environment": "Reproducible Arithmetic & Tariff Engine",
+  "tariffs_applied": {
+    "usps": {
+      "title": "USPS Notice 123 Price List",
+      "service": "USPS Ground Advantage - Commercial",
+      "effective_date": "2024-01-21",
+      "published_url": "https://pe.usps.com/text/dmm300/Notice123.htm",
+      "notes": "Published commercial tariff rates for domestic parcel delivery up to 70 lbs. Excludes private volume discounts."
+    },
+    "ups": {
+      "title": "UPS Daily Rates Schedule",
+      "service": "UPS Ground - Commercial",
+      "effective_date": "2024-01-01",
+      "published_url": "https://www.ups.com/assets/resources/webcontent/en_US/daily_rates.pdf",
+      "notes": "Published daily commercial rates. Excludes fuel surcharges and private customized contract pricing."
+    },
+    "handling": {
+      "provider": "ShipBob WMS Benchmark Standard Rate Card",
+      "base_pick_pack": 3.7,
+      "additional_pick_pack": 1.2,
+      "notes": "Standard standard DTC pick and pack handling fee covering parcel box, custom inserts, and labor."
+    }
+  },
+  "denver_basket_analysis": {
+    "consolidated": {
+      "scenario": "Denver Basket Consolidated (Allentown PA -> Denver CO)",
+      "destination": "Denver, CO (80202)",
+      "origin": "Allentown, PA (LOC-PA-01)",
+      "zone": "zone5",
+      "weight_oz": 14,
+      "weight_tier": "15.999oz",
+      "published_freight_tariff": 6.2,
+      "modeled_contract_freight": 5.6,
+      "handling_breakdown": {
+        "base_pick_pack": 3.7,
+        "additional_line_pick": 1.2,
+        "total_handling": 4.9
+      },
+      "total_landed_modeled": 10.5,
+      "total_landed_published": 11.1
+    },
+    "split": {
+      "scenario": "Denver Basket Split (Sticks from PA + Tincture from NV)",
+      "destination": "Denver, CO (80202)",
+      "shipment_1": {
+        "origin": "Allentown, PA (LOC-PA-01)",
+        "item": "Focus Stick Packs (6 oz)",
+        "zone": "zone5",
+        "weight_tier": "8oz",
+        "published_freight": 4.45,
+        "modeled_freight": 4.85,
+        "handling_base": 3.7,
+        "total_modeled": 8.55
+      },
+      "shipment_2": {
+        "origin": "Reno, NV (LOC-NV-02)",
+        "item": "AM Adaptogen Tincture (8 oz)",
+        "zone": "zone3",
+        "weight_tier": "8oz",
+        "published_freight": 4.22,
+        "modeled_freight": 4.65,
+        "handling_base": 3.7,
+        "total_modeled": 8.35
+      },
+      "total_split_freight_modeled": 9.5,
+      "total_split_handling_modeled": 7.4,
+      "total_split_direct_modeled": 16.9,
+      "total_split_with_secondary_cart_penalty": 21.5,
+      "savings_vs_consolidated_ledger": 11,
+      "savings_vs_consolidated_direct": 6.4
+    }
+  },
+  "bundle_order_1070_analysis": {
+    "scenario": "Starter Bundle 2-lb Parcel to Brooklyn NY (11201)",
+    "destination": "Brooklyn, NY (11201)",
+    "billable_weight": "2lb",
+    "allentown_pa": {
+      "origin": "Allentown, PA (LOC-PA-01)",
+      "zone_usps": "zone1_2",
+      "zone_ups": "zone2",
+      "usps_ground_advantage": 6.5,
+      "ups_ground_commercial": 8.95
+    },
+    "reno_nv": {
+      "origin": "Reno, NV (LOC-NV-02)",
+      "zone_usps": "zone8",
+      "zone_ups": "zone8",
+      "usps_ground_advantage": 14.6,
+      "ups_ground_commercial": 17.8
+    },
+    "cross_country_penalty": {
+      "usps_penalty": 8.1,
+      "ups_penalty": 8.85,
+      "zone8_carrier_delta": 3.2
+    }
+  },
+  "cohort_routing_model": {
+    "sample_size": 500,
+    "pre_optimization_split_rate": 0.314,
+    "post_optimization_split_rate": 0.082,
+    "split_rate_reduction_percentage_points": -23.2,
+    "relative_reduction_percent": -73.89,
+    "cohort_financials": {
+      "split_orders_eliminated": 116,
+      "average_saving_per_eliminated_split": 11,
+      "total_cohort_savings": 1276,
+      "monthly_run_rate_savings": 4320,
+      "annualized_run_rate_savings": 51840
+    }
+  }
+}

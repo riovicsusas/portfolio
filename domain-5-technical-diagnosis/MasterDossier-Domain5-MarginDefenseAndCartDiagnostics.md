@@ -55,7 +55,9 @@ flowchart TD
 ```
 
 ### 2.1 Layer 1: Storefront Network Tab Inspection
-- Open Chrome DevTools (`F12`) $ightarrow$ Select **Network** tab $ightarrow$ Filter by `Fetch/XHR`.
+- Open Chrome DevTools (`F12`) $
+ightarrow$ Select **Network** tab $
+ightarrow$ Filter by `Fetch/XHR`.
 - Replicate the cart action and observe `POST /cart/add.js` or `POST /cart/change.js`.
 - **Raw Error Payload Telemetry**:
   ```json
@@ -168,11 +170,11 @@ FINANCIAL DISASTER AUDIT — Order #1063 (PRE-FIX):
   3PL Warehouse Handling:       −$4.10 (Base + pick + box)
   Carrier Outbound Freight:     −$6.50 (Merchant-absorbed under FREESHIP)
   Standard Gateway Fee:         −$1.12 (round(2.9% × $28.20 + $0.30))
-  Gateway Tolls / Auth Fee:     −$0.28 (Merchant gateway network toll)
+  Gateway Tolls / Auth Fee:     −$0.28 (Optional scenario fee; no invoice represented)
   ─────────────────────────────────────────────────────────────────────
   NET ORDER CONTRIBUTION:       $28.20 − $21.00 − $4.10 − $6.50 − $1.40 = −$4.80 (LOSS!)
 ```
-*Audit Result*: The store **lost $4.80 in cash** fulfilling this order (-$4.52 under standard gateway fees alone; -$4.80 including gateway auth tolls).
+*Scenario result*: Contribution is **−$4.52** under the standard gateway rate, or **−$4.80** if the optional $0.28 fee assumption applies. This is a modeled contribution calculation, not a record of merchant cash loss.
 
 ### 5.3 Post-Remediation Execution (With Matrix Protection Applied)
 With combinatorial discount exclusivity enforced:
@@ -187,14 +189,15 @@ With combinatorial discount exclusivity enforced:
    - 3PL Handling: -$4.10
    - Carrier Freight: -$6.50
    - Gateway Fee: -$2.16 (round(2.9% × $64.00 + $0.30) = $2.16)
-   - **Final Net Contribution Margin**: **+$30.24 (47.25% net profit margin on $64.00 collected)**.
+   - **Final Net Contribution Margin**: **+$30.24 (47.25% contribution margin on $64.00 collected)**.
    *(Note: Under an alternative policy where customer pays $6.50 shipping on discounted carts, collected payment is $70.50, gateway is $2.34, yielding +$36.56 net contribution).*
 
 ### 5.4 Parametric Breakeven Discount Floor Verification
 
-The algebraic boundary where discounted carts collapse into negative contribution is verified in [`evidence/costs/`](../evidence/costs/summary.md):
-- **Dynamic Breakeven Discount Floor Formula**:
-  $P' = \frac{\text{COGS} + \text{3PL} + \text{Freight} + \$0.30}{1 - 0.029}$
-- For the Starter Bundle ($28.40 COGS, $4.90 handling, $6.50 freight), the absolute floor is **$41.30** under Zone 1–2 delivery, and rises to **$49.54** if misrouted to Zone 8. Any promotional campaign discounting the cart below this threshold causes guaranteed operational cash loss.
+The [cost suite](../evidence/costs/summary.md) calculates component BOM, processing and contribution in integer cents. The processing base includes customer shipping and tax collected; contribution revenue excludes remitted tax. Fees use half-up rounding.
+
+Before rounding, the zero-contribution payable threshold is `(COGS + handling + freight + $0.30)/(1−0.029)`. The implementation searches whole-cent amounts and asserts that the selected amount has nonnegative contribution while its immediately preceding cent is negative.
+
+For the separate $28.40 COGS / $4.90 handling scenario, minimum payable is **$41.30** at $6.50 freight and **$49.64** at $14.60 freight. These freight amounts are sensitivity inputs, not verified zone quotes. The Capstone instead uses $4.50 handling and $7.20 freight, producing its own boundary. A production policy requires a positive margin buffer and basket-level costs; these limits are not a universal profitability guarantee.
 
 ---

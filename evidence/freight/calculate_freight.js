@@ -1,184 +1,182 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { createSuite } from '../lib/report.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const tariffsRaw = fs.readFileSync(path.join(__dirname, 'tariffs.json'), 'utf8');
-const tariffs = JSON.parse(tariffsRaw);
-
-console.log('--- Executing Workstream A: Freight Tariffs & Routing Calculations ---');
-
-// 1. Denver Basket Routing Calculation
-const denverConsolidated = {
-  scenario: 'Denver Basket Consolidated (Allentown PA -> Denver CO)',
-  destination: 'Denver, CO (80202)',
-  origin: 'Allentown, PA (LOC-PA-01)',
-  zone: 'zone5',
-  weight_oz: 14.0,
-  weight_tier: '15.999oz',
-  published_freight_tariff: tariffs.usps_ground_advantage_commercial['15.999oz'].zone5, // $6.20
-  modeled_contract_freight: 5.60,
-  handling_breakdown: {
-    base_pick_pack: tariffs.source_metadata['3pl_handling'].base_pick_pack, // $3.70
-    additional_line_pick: tariffs.source_metadata['3pl_handling'].additional_pick_pack, // $1.20
-    total_handling: +(tariffs.source_metadata['3pl_handling'].base_pick_pack + tariffs.source_metadata['3pl_handling'].additional_pick_pack).toFixed(2) // $4.90
-  },
-  total_landed_modeled: +(5.60 + 4.90).toFixed(2), // $10.50
-  total_landed_published: +(6.20 + 4.90).toFixed(2) // $11.10
+const directory = path.dirname(fileURLToPath(import.meta.url));
+const inputArgument = process.argv.indexOf('--input');
+const inputPath = inputArgument < 0 ? path.join(directory, 'tariffs.json') : path.resolve(process.argv[inputArgument + 1]);
+const input = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+const suite = createSuite('freight', {
+  classification: 'Calculated results from declared synthetic inventory, handling and freight inputs',
+  inputs: [path.relative(directory, inputPath)]
+});
+const money = cents => `${cents < 0 ? '-' : ''}$${(Math.abs(cents) / 100).toFixed(2)}`;
+const roundRatio = (numerator, denominator) => {
+  assert.ok(Number.isSafeInteger(numerator) && numerator >= 0);
+  assert.ok(Number.isSafeInteger(denominator) && denominator > 0);
+  return Math.floor((numerator + denominator / 2) / denominator);
 };
-
-const denverSplit = {
-  scenario: 'Denver Basket Split (Sticks from PA + Tincture from NV)',
-  destination: 'Denver, CO (80202)',
-  shipment_1: {
-    origin: 'Allentown, PA (LOC-PA-01)',
-    item: 'Focus Stick Packs (6 oz)',
-    zone: 'zone5',
-    weight_tier: '8oz',
-    published_freight: tariffs.usps_ground_advantage_commercial['8oz'].zone5, // $4.45
-    modeled_freight: 4.85,
-    handling_base: tariffs.source_metadata['3pl_handling'].base_pick_pack, // $3.70
-    total_modeled: +(4.85 + 3.70).toFixed(2) // $8.55
-  },
-  shipment_2: {
-    origin: 'Reno, NV (LOC-NV-02)',
-    item: 'AM Adaptogen Tincture (8 oz)',
-    zone: 'zone3',
-    weight_tier: '8oz',
-    published_freight: tariffs.usps_ground_advantage_commercial['8oz'].zone3, // $4.22
-    modeled_freight: 4.65,
-    handling_base: tariffs.source_metadata['3pl_handling'].base_pick_pack, // $3.70
-    total_modeled: +(4.65 + 3.70).toFixed(2) // $8.35
-  },
-  total_split_freight_modeled: +(4.85 + 4.65).toFixed(2), // $9.50
-  total_split_handling_modeled: +(3.70 + 3.70).toFixed(2), // $7.40
-  total_split_direct_modeled: +(8.55 + 8.35).toFixed(2), // $16.90
-  total_split_with_secondary_cart_penalty: 21.50, // Modeled ledger penalty in Domain 2 with packaging surcharge
-  savings_vs_consolidated_ledger: +(21.50 - 10.50).toFixed(2), // $11.00
-  savings_vs_consolidated_direct: +(16.90 - 10.50).toFixed(2)  // $6.40
-};
-
-// 2. Starter Bundle #1070 Cross-Country Routing Comparison
-const bundleOrder1070 = {
-  scenario: 'Starter Bundle 2-lb Parcel to Brooklyn NY (11201)',
-  destination: 'Brooklyn, NY (11201)',
-  billable_weight: '2lb',
-  allentown_pa: {
-    origin: 'Allentown, PA (LOC-PA-01)',
-    zone_usps: 'zone1_2',
-    zone_ups: 'zone2',
-    usps_ground_advantage: tariffs.usps_ground_advantage_commercial['2lb'].zone1_2, // $6.50
-    ups_ground_commercial: tariffs.ups_ground_commercial['2lb'].zone2 // $8.95
-  },
-  reno_nv: {
-    origin: 'Reno, NV (LOC-NV-02)',
-    zone_usps: 'zone8',
-    zone_ups: 'zone8',
-    usps_ground_advantage: tariffs.usps_ground_advantage_commercial['2lb'].zone8, // $14.60
-    ups_ground_commercial: tariffs.ups_ground_commercial['2lb'].zone8 // $17.80
-  },
-  cross_country_penalty: {
-    usps_penalty: +(tariffs.usps_ground_advantage_commercial['2lb'].zone8 - tariffs.usps_ground_advantage_commercial['2lb'].zone1_2).toFixed(2), // $8.10
-    ups_penalty: +(tariffs.ups_ground_commercial['2lb'].zone8 - tariffs.ups_ground_commercial['2lb'].zone2).toFixed(2), // $8.85
-    zone8_carrier_delta: +(tariffs.ups_ground_commercial['2lb'].zone8 - tariffs.usps_ground_advantage_commercial['2lb'].zone8).toFixed(2) // $3.20 ($17.80 vs $14.60)
+const { handling: fees, lane_scenario: lane, cohort_scenario: cohort } = input;
+function handling(parcels, units) {
+  assert.ok(Number.isSafeInteger(parcels) && parcels > 0);
+  assert.ok(Number.isSafeInteger(units) && units >= parcels);
+  return parcels * (fees.base_per_parcel_cents + fees.corrugate_per_parcel_cents)
+    + (units - parcels) * fees.additional_pick_cents;
+}
+function quantities(items) {
+  const totals = {};
+  for (const item of items) {
+    assert.ok(Number.isSafeInteger(item.quantity) && item.quantity > 0, 'Positive whole-unit quantity required');
+    totals[item.sku] = (totals[item.sku] || 0) + item.quantity;
   }
-};
-
-// 3. Cohort Aggregate Statistics (500-order sample from Domain 2)
-const cohortRoutingModel = {
-  sample_size: 500,
-  pre_optimization_split_rate: 0.314, // 31.4% split rate
-  post_optimization_split_rate: 0.082, // 8.2% split rate
-  split_rate_reduction_percentage_points: -23.2,
-  relative_reduction_percent: -73.89,
-  cohort_financials: {
-    split_orders_eliminated: Math.round(500 * (0.314 - 0.082)), // 116 orders
-    average_saving_per_eliminated_split: 11.00,
-    total_cohort_savings: +(116 * 11.00).toFixed(2), // $1,276.00
-    monthly_run_rate_savings: 4320.00,
-    annualized_run_rate_savings: 51840.00
+  return Object.fromEntries(Object.entries(totals).sort(([a], [b]) => a.localeCompare(b)));
+}
+function pricePlan(plan) {
+  assert.ok(plan.length > 0);
+  assert.deepEqual(quantities(plan.flatMap(parcel => parcel.items)), quantities(lane.basket), 'Plan must contain exactly the requested basket');
+  const reservedByNode = {};
+  const parcels = plan.map(parcel => {
+    const node = lane.available_to_promise_fixture[parcel.node];
+    assert.ok(node, `Unknown node: ${parcel.node}`);
+    reservedByNode[parcel.node] ||= {};
+    for (const [sku, quantity] of Object.entries(quantities(parcel.items))) {
+      reservedByNode[parcel.node][sku] = (reservedByNode[parcel.node][sku] || 0) + quantity;
+      assert.ok(reservedByNode[parcel.node][sku] <= (node[sku] || 0), `Insufficient ${sku} at ${parcel.node}`);
+    }
+    const units = parcel.items.reduce((n, i) => n + i.quantity, 0);
+    const freight = lane.lanes[parcel.node].freight_per_parcel_cents;
+    return { node: parcel.node, items: parcel.items, units, freight_cents: freight, handling_cents: handling(1, units), total_cents: freight + handling(1, units) };
+  });
+  return { parcels, units: parcels.reduce((n, p) => n + p.units, 0), total_cents: parcels.reduce((n, p) => n + p.total_cents, 0) };
+}
+let split, consolidated, modeledCohort;
+await suite.check('All monetary inputs are nonnegative safe integer cents', () => {
+  function inspect(value) {
+    for (const [key, v] of Object.entries(value)) {
+      if (key.endsWith('_cents')) assert.ok(Number.isSafeInteger(v) && v >= 0, `${key} must be nonnegative integer cents`);
+      else if (v && typeof v === 'object') inspect(v);
+    }
   }
-};
+  inspect(input); assert.equal(fees.first_pick_included, true);
+});
+await suite.check('Three-pick parcel handling equals $4.10 under the declared model', () => assert.equal(handling(1, 3), 410));
+await suite.check('Three units split across two parcels cost $7.00 handling', () => assert.equal(handling(2, 3), 700));
+await suite.check('Both priced plans reserve the complete basket within fixture capacity', () => {
+  split = pricePlan(lane.split_plan); consolidated = pricePlan(lane.consolidated_plan);
+  assert.equal(split.units, consolidated.units); assert.equal(split.units, 3);
+});
+await suite.check('Unavailable tincture cannot be allocated to Allentown', () => {
+  assert.throws(() => pricePlan([{ node: 'LOC-PA-01', items: lane.basket }]), /Insufficient/);
+});
+await suite.check('Incomplete basket cannot be priced as successful fulfillment', () => {
+  assert.throws(() => pricePlan([{ node: 'LOC-NV-02', items: [{ sku: 'SYN-FSTK-MY', quantity: 2 }] }]), /exactly/);
+});
+await suite.check('Reservations are aggregated across parcels at the same node', () => {
+  const capacity = lane.available_to_promise_fixture['LOC-PA-01']['SYN-FSTK-MY'];
+  try {
+    lane.available_to_promise_fixture['LOC-PA-01']['SYN-FSTK-MY'] = 1;
+    assert.throws(() => pricePlan([
+      { node: 'LOC-PA-01', items: [{ sku: 'SYN-FSTK-MY', quantity: 1 }] },
+      { node: 'LOC-PA-01', items: [{ sku: 'SYN-FSTK-MY', quantity: 1 }] },
+      { node: 'LOC-NV-02', items: [{ sku: 'SYN-TNCT-AM', quantity: 1 }] }
+    ]), /Insufficient/);
+  } finally { lane.available_to_promise_fixture['LOC-PA-01']['SYN-FSTK-MY'] = capacity; }
+});
+await suite.check('Split $21.50 and consolidated $10.50 derive from parcel line items', () => {
+  assert.equal(split.total_cents, 2150); assert.equal(consolidated.total_cents, 1050);
+  assert.equal(split.total_cents - consolidated.total_cents, 1100);
+  for (const p of [...split.parcels, ...consolidated.parcels]) assert.equal(p.total_cents, p.freight_cents + p.handling_cents);
+});
+await suite.check('Changing a lane cost propagates into the plan total without a hidden surcharge', () => {
+  const prior = lane.lanes['LOC-NV-02'].freight_per_parcel_cents;
+  try {
+    lane.lanes['LOC-NV-02'].freight_per_parcel_cents += 37;
+    assert.equal(pricePlan(lane.consolidated_plan).total_cents, consolidated.total_cents + 37);
+  } finally { lane.lanes['LOC-NV-02'].freight_per_parcel_cents = prior; }
+});
+await suite.check('Five-hundred-order fixture preserves paired units and parcel counts', () => {
+  const orders = cohort.orders_with_two_units + cohort.orders_with_three_plus_units;
+  const units = cohort.orders_with_two_units * 2 + cohort.orders_with_three_plus_units * cohort.assumed_units_per_three_plus_order;
+  assert.equal(orders, 500); assert.equal(units, 1190); assert.equal(cohort.max_parcels_per_split_order, 2);
+  for (const plan of [cohort.alpha, cohort.beta]) {
+    assert.ok(Number.isSafeInteger(plan.split_orders) && plan.split_orders >= 0 && plan.split_orders <= orders);
+    assert.equal(plan.parcels, orders + plan.split_orders);
+  }
+  const calculate = plan => {
+    const handlingCents = handling(plan.parcels, units);
+    return { ...plan, handling_cents: handlingCents, total_cents: handlingCents + plan.aggregate_freight_input_cents };
+  };
+  const alpha = calculate(cohort.alpha), beta = calculate(cohort.beta);
+  const saving = alpha.total_cents - beta.total_cents;
+  const eliminated = alpha.parcels - beta.parcels;
+  const annualOrders = cohort.planning_orders_per_day * cohort.planning_days_per_year;
+  modeledCohort = {
+    orders, units, alpha, beta,
+    eliminated_split_orders: eliminated,
+    relative_split_reduction_percent: Number((eliminated / cohort.alpha.split_orders * 100).toFixed(2)),
+    absolute_split_reduction_percentage_points: (cohort.alpha.split_orders - cohort.beta.split_orders) / orders * 100,
+    handling_savings_cents: alpha.handling_cents - beta.handling_cents,
+    freight_savings_cents: alpha.aggregate_freight_input_cents - beta.aggregate_freight_input_cents,
+    total_savings_cents: saving,
+    savings_per_order_exact: { numerator_cents: saving, denominator_orders: orders },
+    monthly_projection: { orders: cohort.monthly_projection_orders, saving_cents: roundRatio(saving * cohort.monthly_projection_orders, orders) },
+    matching_12_month_projection: { orders: cohort.monthly_projection_orders * 12, saving_cents: roundRatio(saving * cohort.monthly_projection_orders * 12, orders) },
+    separate_planning_projection: { orders: annualOrders, saving_cents: roundRatio(saving * annualOrders, orders) }
+  };
+});
+await suite.check('Cohort savings match handling formula and aggregate freight inputs', () => {
+  assert.equal(modeledCohort.handling_savings_cents, 33640);
+  assert.equal(modeledCohort.freight_savings_cents, 66100);
+  assert.equal(modeledCohort.total_savings_cents, 99740);
+  assert.equal(modeledCohort.total_savings_cents, modeledCohort.handling_savings_cents + modeledCohort.freight_savings_cents);
+});
+await suite.check('Monthly and annual projections retain the exact cohort numerator', () => {
+  assert.equal(modeledCohort.monthly_projection.saving_cents, 339116);
+  assert.equal(modeledCohort.matching_12_month_projection.saving_cents, 4069392);
+  assert.equal(modeledCohort.separate_planning_projection.saving_cents, 72810200);
+});
+await suite.check('Capstone fixture retains Philadelphia and its separate $7.20 freight assumption', () => {
+  assert.equal(input.capstone_context.original_destination, 'Philadelphia, PA 19102');
+  assert.equal(input.capstone_context.outbound_freight_scenario_cents, 720);
+});
+suite.skip('Dated carrier tariff and ZIP-zone verification', 'No dated publication snapshot or independently checked quote is included; carrier amounts remain scenario inputs.');
+const planRows = plan => plan.parcels.map(p => `| ${p.node} | ${p.units} | ${money(p.freight_cents)} | ${money(p.handling_cents)} | ${money(p.total_cents)} |`).join('\n');
+const markdown = split && consolidated && modeledCohort ? `# Workstream A — Freight and Handling Scenario Evidence
 
-const results = {
-  timestamp: new Date().toISOString(),
-  environment: 'Reproducible Arithmetic & Tariff Engine',
-  tariffs_applied: {
-    usps: tariffs.source_metadata.usps,
-    ups: tariffs.source_metadata.ups,
-    handling: tariffs.source_metadata['3pl_handling']
-  },
-  denver_basket_analysis: {
-    consolidated: denverConsolidated,
-    split: denverSplit
-  },
-  bundle_order_1070_analysis: bundleOrder1070,
-  cohort_routing_model: cohortRoutingModel
-};
+All amounts are declared scenario inputs calculated in integer cents. The listed USPS/UPS URLs identify possible reference sources; no current tariff, dated historical tariff, ShipBob quotation, ZIP-zone assignment or invoice is verified by this suite.
 
-// Write results.json
-const resultsPath = path.join(__dirname, 'results.json');
-fs.writeFileSync(resultsPath, JSON.stringify(results, null, 2), 'utf8');
-console.log(`Saved calculation results to ${resultsPath}`);
+## Controlled three-unit comparison
 
-// Write summary.md
-const summaryMd = `# Workstream A: Freight Tariffs & Logistics Routing Evidence
+Basket: two SYN-FSTK-MY units and one SYN-TNCT-AM unit. The synthetic reservation fixture allows the full basket at Reno and sticks only at Allentown. Model buckets 4/6 are pricing inputs, not verified Denver postal zones. A forced split is compared with feasible consolidation; the comparison does not demonstrate that a closest-node rule would select the split.
 
-**Generated:** ${results.timestamp}  
-**Classification:** Public Reference Tariffs & Deterministic Mathematical Calculation  
-**Sources:**
-- **USPS Notice 123** (Effective January 21, 2024): USPS Ground Advantage Commercial Price List
-- **UPS Daily Rates** (2024): UPS Ground Commercial Rate Schedule
-- **ShipBob 3PL Standard Rate Card**: Base Pick/Pack ($3.70) + Additional Unit Pick ($1.20)
+| Split parcel node | Picked units | Freight | Handling | Total |
+|---|---:|---:|---:|---:|
+${planRows(split)}
 
----
+Split total: **${money(split.total_cents)}**. Reno consolidated total: **${money(consolidated.total_cents)}**. Difference: **${money(split.total_cents - consolidated.total_cents)}**.
 
-## 1. Denver Basket Fulfillment Comparison (Domain 2 §4)
-- **Basket Contents**: 1x Focus Stick Packs (6 oz) + 1x AM Adaptogen Tincture (8 oz) = 14 oz parcel.
-- **Destination**: Denver, CO (80202).
+Handling is $2.50 base + $0.80 corrugate per parcel + $0.40 per pick after the first. There is no extra cart penalty. Weights, service-specific surcharges and re-rating are excluded from this fixed-input comparison.
 
-| Metric | Consolidated (Allentown PA) | Split (PA + NV) | Variance / Delta |
-| :--- | :---: | :---: | :---: |
-| **Zone Allocation** | Zone 5 | PA: Zone 5 / NV: Zone 3 | Multi-node split |
-| **Published Freight (USPS)** | $6.20 (15.999 oz tier) | $4.45 (PA) + $4.22 (NV) = $8.67 | +$2.47 (+39.8%) |
-| **Modeled Base Freight** | $5.60 | $4.85 (PA) + $4.65 (NV) = $9.50 | +$3.90 (+69.6%) |
-| **3PL Pick/Pack Handling** | $4.90 ($3.70 base + $1.20 addl) | $7.40 ($3.70 PA + $3.70 NV) | +$2.50 (+51.0%) |
-| **Landed Direct Cost** | **$10.50** | **$16.90** | **+$6.40** |
-| **Landed Ledger Cost (with packaging surcharge)** | **$10.50** | **$21.50** | **+$11.00 saved** |
+## Paired-basket cohort model
 
----
+The fixture assigns ${cohort.orders_with_two_units} two-unit orders and ${cohort.orders_with_three_plus_units} exactly-three-unit orders: **${modeledCohort.units} units**. This explicit assumption makes a conditional model reproducible; it is not a reconstructed historical ledger. Aggregate carrier totals and split counts are supplied inputs, not generated routing or quoting results.
 
-## 2. Order #1070 Starter Bundle Routing Penalty (Capstone §9 & Domain 2 §3)
-- **Parcel Weight**: 30 oz billable at 2 lbs.
-- **Destination**: Brooklyn, NY (11201).
+| Cost | Alpha (${modeledCohort.alpha.parcels} parcels) | Beta (${modeledCohort.beta.parcels} parcels) | Saving |
+|---|---:|---:|---:|
+| Handling | ${money(modeledCohort.alpha.handling_cents)} | ${money(modeledCohort.beta.handling_cents)} | ${money(modeledCohort.handling_savings_cents)} |
+| Freight input | ${money(modeledCohort.alpha.aggregate_freight_input_cents)} | ${money(modeledCohort.beta.aggregate_freight_input_cents)} | ${money(modeledCohort.freight_savings_cents)} |
+| Total | ${money(modeledCohort.alpha.total_cents)} | ${money(modeledCohort.beta.total_cents)} | **${money(modeledCohort.total_savings_cents)}** |
 
-| Carrier & Service | Optimal (Allentown, PA - Zone 2) | Sub-Optimal (Reno, NV - Zone 8) | Cross-Country Penalty |
-| :--- | :---: | :---: | :---: |
-| **USPS Ground Advantage** | **$6.50** | **$14.60** | **+$8.10 (+124.6%)** |
-| **UPS Ground Commercial** | **$8.95** | **$17.80** | **+$8.85 (+98.9%)** |
-| **Carrier Differential (UPS vs USPS)** | +$2.45 | +$3.20 ($17.80 vs $14.60) | — |
+Split reduction: ${modeledCohort.eliminated_split_orders} orders, ${modeledCohort.relative_split_reduction_percent}% relative and ${modeledCohort.absolute_split_reduction_percentage_points.toFixed(1)} percentage points absolute. Handling savings are 116 × $2.90 = ${money(modeledCohort.handling_savings_cents)}. Per-order saving is ${money(modeledCohort.total_savings_cents)} / ${modeledCohort.orders} = $${(modeledCohort.total_savings_cents / modeledCohort.orders / 100).toFixed(4)}.
 
-*Key Takeaway*: Misrouting an East Coast customer order to Reno incurs an immediate **$8.10 to $8.85 cash freight penalty**, perfectly explaining the unit economic collapse of Order #1070 prior to intelligent multi-node routing rules.
+At ${modeledCohort.monthly_projection.orders} orders/month: **${money(modeledCohort.monthly_projection.saving_cents)}/month** and **${money(modeledCohort.matching_12_month_projection.saving_cents)}** for twelve identical months. The separate ${cohort.planning_orders_per_day}-orders/day, ${cohort.planning_days_per_year}-day scale yields **${money(modeledCohort.separate_planning_projection.saving_cents)}/year**. These scales are distinct sensitivity scenarios.
 
----
+The dossier's previously reported $445.40 handling delta and $1,106.40 total do not follow this handling model. This execution validates the conditional arithmetic; it does not certify those reported totals or replace them with new observed savings.
 
-## 3. Cohort Aggregate Model (500 Orders)
-- **Pre-Optimization Split Rate**: 31.4% (157 split orders / 500)
-- **Post-Optimization Split Rate**: 8.2% (41 split orders / 500)
-- **Split Rate Reduction**: **-23.2 percentage points** (**-73.89% relative reduction**)
-- **Split Orders Eliminated**: 116 orders in cohort
-- **Direct Cohort Cost Avoidance**: 116 orders × $11.00 = **$1,276.00**
-- **Monthly Scaled Avoidance (at 1,700 orders/mo)**: **$4,320.00 / month**
+## Capstone boundary
 
----
-
-## 4. Evidentiary Boundary
-- **What this proves**: Validates the mathematical mechanics of multi-node logistics routing, the tariff penalties of cross-country misrouting, and the exact $11.00 split-consolidation delta using traceable public rate cards.
-- **What remains outside scope**: Synapse Botanicals' proprietary, negotiated volume discounts with USPS/UPS/ShipBob.
-`;
-
-const summaryPath = path.join(__dirname, 'summary.md');
-fs.writeFileSync(summaryPath, summaryMd, 'utf8');
-console.log(`Saved summary markdown to ${summaryPath}`);
+Order #1070's original destination is **${input.capstone_context.original_destination}**, requested destination **${input.capstone_context.requested_destination}**. Its ${money(input.capstone_context.outbound_freight_scenario_cents)} original freight is a separate declared input. No Brooklyn routing example, carrier invoice, physical shipment or misrouting outcome is inferred from these calculations.
+` : '# Workstream A — Calculation failed\n\nSee failed assertions; incomplete results must not be cited as verified.';
+suite.finish({ data: { inputs: input, split_plan: split, consolidated_plan: consolidated, cohort_model: modeledCohort }, markdown, sources: input.reference_candidates });

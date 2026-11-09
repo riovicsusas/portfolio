@@ -1,83 +1,81 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "Synapse Botanicals Reproducible Evidence Package",
-  "version": "1.0.0",
-  "generated_at": "2026-11-10T00:20:00Z",
+  "version": "2.0.0",
   "repository": "riovicsusas/portfolio",
-  "environment": "Staging / Offline Test Harness",
+  "environment": "Offline local models and simulator; no vendor credentials or network required",
   "workstreams": [
     {
       "id": "A",
-      "name": "Carrier Rates & Freight Routing",
+      "name": "Scenario freight and routing calculations",
       "directory": "evidence/freight",
       "entry_script": "evidence/freight/calculate_freight.js",
       "sources": [
-        "USPS Notice 123 (Price List, Ground Advantage Commercial, Jan 21 2024)",
-        "UPS Published Daily Rates (Commercial Ground, 2024)",
-        "ShipBob WMS Standard 3PL Handling Fee Schedule (2024)"
+        "Declared rate and handling inputs; public carrier publications remain unverified reference candidates"
       ],
       "outputs": [
         "evidence/freight/results.json",
         "evidence/freight/summary.md"
-      ]
+      ],
+      "classification": "Calculated scenario results"
     },
     {
       "id": "B",
-      "name": "Measured Staging Latency & Fault Tolerances",
+      "name": "Local coordinator safety and timing",
       "directory": "evidence/latency",
       "entry_script": "evidence/latency/coordinator_simulator.js",
       "sources": [
-        "Instrumented Node.js Coordinator Middleware Test Harness",
-        "Shopify Admin API Fulfillment Orders Hold Specification (v2026-01)",
-        "ShipBob Webhook v1.0 Hold Contract"
+        "Local SQLite operation ledger and controlled Shopify/WMS simulator"
       ],
       "outputs": [
         "evidence/latency/metrics.json",
         "evidence/latency/summary.md"
-      ]
+      ],
+      "classification": "Measured local simulator results and functional assertions"
     },
     {
       "id": "C",
-      "name": "Barcode Checksums & SKU Master Governance",
+      "name": "Barcode identity and bitstream validation",
       "directory": "evidence/barcodes",
       "entry_script": "evidence/barcodes/validate_barcodes.js",
       "sources": [
-        "GS1 US General Specifications (UPC-A Modulo-10 Algorithm)",
-        "Universe A 12-Variant Master Product Catalog"
+        "Synthetic 12-variant fixture catalog; UPC-A Modulo-10 and shared pattern tables"
       ],
       "outputs": [
         "evidence/barcodes/results.json",
         "evidence/barcodes/summary.md"
-      ]
+      ],
+      "classification": "Local identifier and bitstream tests"
     },
     {
       "id": "D",
-      "name": "Transparent BOM & Unit Cost Sensitivity",
+      "name": "BOM and contribution sensitivity",
       "directory": "evidence/costs",
       "entry_script": "evidence/costs/run_cost_model.js",
       "sources": [
-        "Component Procurement Ledger (Sticks $8.50, Tincture $12.50, Tumbler $7.00, Whisk $3.10)",
-        "Contract Assembly & Kitting Labor / Packaging Ledger ($0.40)",
-        "Parametric Contribution Margin & Breakeven Discount Model"
+        "Declared component costs and packaging assumptions"
       ],
       "outputs": [
         "evidence/costs/sensitivity.json",
         "evidence/costs/summary.md"
-      ]
+      ],
+      "classification": "Calculated scenario results; no procurement history asserted"
     },
     {
       "id": "E",
-      "name": "UPS Intercept Contract & Recovery State Machine",
+      "name": "Carrier contract subset and recovery simulation",
       "directory": "evidence/carrier-recovery",
       "entry_script": "evidence/carrier-recovery/test_recovery.js",
       "sources": [
-        "UPS Delivery Intercept v2 OpenAPI Specification",
-        "Deterministic Carrier Recovery State Machine Engine"
+        "Pinned official UPS specification for focused offline checks; custom Synapse operation contract"
       ],
       "outputs": [
         "evidence/carrier-recovery/results.json",
         "evidence/carrier-recovery/summary.md"
-      ]
+      ],
+      "classification": "Offline contract subset checks and local event-driven simulation; no live CIE"
     }
-  ]
+  ],
+  "runtime": "Node.js 24+ with built-in SQLite support",
+  "execution_manifest": "latest_run.json",
+  "representative_run": "sample-run/run.json"
 }
