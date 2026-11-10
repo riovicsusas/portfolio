@@ -985,15 +985,17 @@
       var tocEl = qs('#toc-links');
       var fragment = document.createDocumentFragment();
       var idx = 0;
+      var preserveSectionNumbers = filePath.split('/').pop() === 'MasterDossier-Capstone-AsynchronousOrderMutation.md';
 
       headings.forEach(function (h) {
+        if (preserveSectionNumbers) h.style.scrollMarginTop = '72px';
         // Give each heading an id
         if (!h.id) {
           h.id = 'section-' + (idx++);
         }
         var a = document.createElement('a');
         a.href = '#' + h.id;
-        a.textContent = h.textContent.replace(/^[\d.]+\s*/, ''); // strip leading numbers
+        a.textContent = preserveSectionNumbers ? h.textContent : h.textContent.replace(/^[\d.]+\s*/, '');
         if (h.tagName === 'H3') a.classList.add('toc-h3');
         a.addEventListener('click', function (e) {
           e.preventDefault();
