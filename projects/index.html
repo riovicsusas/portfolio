@@ -31,6 +31,63 @@
       border-color: var(--hunter);
       transform: translateY(-1px);
     }
+    .fulfillment-map {
+      margin: 16px 0 0;
+    }
+    .fulfillment-map img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #122436;
+      border: 1px solid var(--warm1);
+      border-radius: 10px;
+    }
+    .fulfillment-map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      list-style: none;
+      padding: 0;
+      margin: 14px 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .fulfillment-map-legend li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .fulfillment-map-legend small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .fulfillment-node {
+      width: 10px;
+      height: 10px;
+      margin-top: 5px;
+      flex-shrink: 0;
+      border: 1px solid #566746;
+    }
+    .fulfillment-node-west {
+      background: #AFC477;
+      border-radius: 50%;
+    }
+    .fulfillment-node-east {
+      background: #FAEEE5;
+      transform: rotate(45deg);
+    }
+    .fulfillment-map figcaption {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .fulfillment-map-distance {
+      display: block;
+      margin-bottom: 8px;
+    }
   </style>
   <link rel="stylesheet" href="../css/mobile-pages.css" />
   <link rel="stylesheet" href="../css/typography.css" />
@@ -54,7 +111,7 @@
       <div class="company-dropdown-wrapper" id="companyOverviewDropdown">
         <button class="company-dropdown-toggle" onclick="toggleCompanyDropdown()" aria-expanded="false" id="companyDropdownBtn">
           <div class="company-toggle-left">
-            <span class="company-badge"><i class="ph ph-buildings"></i> Production Architecture</span>
+            <span class="company-badge"><i class="ph ph-buildings"></i> Engineered Sandbox</span>
             <span class="company-toggle-name">Target Storefront: Synapse Botanicals (DTC)</span>
           </div>
           <div class="company-toggle-right">
@@ -65,7 +122,7 @@
 
         <div class="company-dropdown-content" id="companyDropdownContent" style="display:none;">
           <h3 class="company-title">Synapse Botanicals — Enterprise Operational Architecture</h3>
-          <p class="company-desc">High-growth direct-to-consumer health and wellness merchant operating on Shopify Plus. The operational engineering and technical case studies below solve mission-critical failure modes across bi-coastal fulfillment and asynchronous automations.</p>
+          <p class="company-desc">Synapse Botanicals is an engineered sandbox for modeling the operations of a direct-to-consumer health and wellness brand. Built around a Shopify Plus reference architecture, its case studies explore distributed fulfillment, data integrity, and asynchronous automation through controlled simulations and reproducible local tests.</p>
 
           <div class="company-details-grid">
             <div class="company-detail-item">
@@ -73,12 +130,23 @@
               <p><strong>12 Master Variants</strong> across 5 product lines (Focus Stick Packs, Adaptogen Tinctures, Starter Bundles, Precision Tumblers, and Whisks). High average unit volume requiring strict lot controls, expiration tracking, and multi-node routing.</p>
             </div>
             <div class="company-detail-item">
-              <div class="detail-label"><i class="ph ph-chart-line-up"></i> Order Velocity &amp; GMV</div>
-              <p><strong>800–1,200 orders/day</strong> peak volume ($3.2M annual run-rate). High proportion of customer address modifications and coupon combinations requiring automated triage.</p>
+              <div class="detail-label"><i class="ph ph-chart-line-up"></i> Order Volume Scenario</div>
+              <p><strong>800–1,200 orders/day</strong> is the modeled peak workload. Customer address changes and discount combinations provide controlled test cases for automated triage.</p>
             </div>
             <div class="company-detail-item">
               <div class="detail-label"><i class="ph ph-truck"></i> Multi-Node Fulfillment</div>
-              <p>Bi-coastal 3PL warehouse network (<strong>Allentown, PA</strong> &amp; <strong>Reno, NV</strong>) powered by ShipBob WMS with regional carrier routing waterfalls.</p>
+              <p>Modeled fulfillment network spanning <strong>Allentown, PA</strong> and <strong>Reno, NV</strong>, used to test inventory-aware routing and Shopify-to-WMS coordination.</p>
+              <figure class="fulfillment-map">
+                <img src="../images/fulfillment-network.svg" width="720" height="430" alt="Map of the contiguous United States with a circle at Reno in the west and a diamond at Allentown in the east, joined by a dotted line showing geographic separation." loading="lazy" decoding="async" />
+                <ul class="fulfillment-map-legend" aria-label="Modeled fulfillment locations">
+                  <li><span class="fulfillment-node fulfillment-node-west" aria-hidden="true"></span><span><strong>Reno, NV</strong><small>LOC-NV-02</small></span></li>
+                  <li><span class="fulfillment-node fulfillment-node-east" aria-hidden="true"></span><span><strong>Allentown, PA</strong><small>LOC-PA-01</small></span></li>
+                </ul>
+                <figcaption>
+                  <span class="fulfillment-map-distance"><strong>≈2,320 miles</strong> · Approximate straight-line distance between city centers.</span>
+                  Modeled fulfillment locations. Inventory availability and destination determine which node can fulfill an order.
+                </figcaption>
+              </figure>
             </div>
             <div class="company-detail-item">
               <div class="detail-label"><i class="ph ph-cpu"></i> Integrated Tech Stack</div>
