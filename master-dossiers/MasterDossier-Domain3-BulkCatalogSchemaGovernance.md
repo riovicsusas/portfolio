@@ -6,15 +6,11 @@
 
 ## 1. The Hook: The Spreadsheet That Rewrote Production
 
-In direct-to-consumer e-commerce, the most dangerous operational tool is not a rogue script or a corrupted database migration. It is an everyday spreadsheet. 
+A spreadsheet is built to present data to a human, not to protect the integrity of a relational record. That design choice is harmless when the data is a budget, but dangerous when the data is an e-commerce product catalog. 
 
-A product catalog is not merely a list of marketing descriptions. It is the central relational schema that powers storefront checkout, programmatic Google and Meta advertising feeds, robotic warehouse picking systems, and 3PL optical barcode verification. A spreadsheet program—whether Microsoft Excel, Google Sheets, or Apple Numbers—is designed for human visual presentation, not data integrity. When opened by an operator, spreadsheet software quietly and aggressively reinterprets text: coercing 12-digit barcodes into floating-point numbers, truncating leading zeros, and formatting long strings into scientific notation.
+A catalog is the relational schema behind storefront checkout, advertising feeds, warehouse optical scanners, and canonical product URLs. The moment an operator opens a catalog export in Excel or Google Sheets, the application quietly begins making typing decisions on their behalf. A UPC-A barcode—the 12-digit retail code whose last digit is a check digit computed from the first eleven—looks like a number, so the spreadsheet treats it as one: an IEEE 754 floating-point value it is free to convert to scientific notation, round, or strip of leading zeros. No warning dialog appears. The file opens normally, looks visually tidy, and passes casual human review.
 
-At 09:15:10 EDT on October 24, 2026, an automated pre-flight linting scanner initiated an audit on `Catalog_Mutation_v2.xlsx`, a bulk catalog update file covering 12 product variants across Synapse Botanicals' five core lines. Within five seconds, the scanner trapped three catastrophic, production-breaking defects:
-* Two barcodes had been permanently corrupted by spreadsheet math: one converted to floating-point scientific notation (`8.40001E+11`) and one truncated to 11 digits (`84000103000`), stripping its Modulo-10 check digit.
-* One canonical product handle had been renamed from `precision-insulated-tumbler-durable-merchandise` to `precision-insulated-tumbler-new`, a cosmetic "cleanup" that would instantly sever every live URL on the storefront.
-
-At 09:15:15 EDT—exactly five seconds after ingestion—the circuit breaker tripped. The import was aborted. Zero bytes reached Shopify Admin, and zero corrupted records touched the warehouse floor.
+This dossier documents a bulk update to Synapse Botanicals' 12-variant catalog, where each variant is identified by a stock-keeping unit (SKU) such as `SYN-FSTK-MY` (Focus Sticks Matcha Yuzu). The update file had been silently rewritten by exactly that spreadsheet coercion mechanism. It also documents the pre-flight gate that intercepted the file in five seconds, before a single row was committed to production.
 
 ```
        09:15:10 EDT                                             09:15:15 EDT
@@ -29,26 +25,34 @@ At 09:15:15 EDT—exactly five seconds after ingestion—the circuit breaker tri
                                 [ZERO BYTES COMMITTED]
 ```
 
-Had that file been imported via standard native CSV tooling, two flagship SKUs would have failed optical laser verification on warehouse pack benches, and a core product page would have returned HTTP 404 errors to thousands of dollars in live advertising traffic.
+### The Five-Second Stop
+
+At 09:15:10 EDT on October 24, 2026, an automated pre-flight linter began scanning `Catalog_Mutation_v2.xlsx`, a 12-variant update spanning 5 core product lines. Within four seconds it identified three blocking defects:
+* **Row 2 (`SYN-FSTK-MY`):** The barcode had been coerced to scientific notation: `8.40001E+11`.
+* **Row 6 (`SYN-TNCT-AM`):** The barcode had lost its check digit and was truncated to 11 digits: `84000103000`.
+* **Row 10 (`SYN-TMBL-MO`):** The canonical product handle had been renamed from `precision-insulated-tumbler-durable-merchandise` to `precision-insulated-tumbler-new`.
+
+At 09:15:15 EDT, the circuit breaker tripped and aborted the import. Zero rows reached the Shopify database.
+
+Had the file gone through, two products would have carried barcodes that the warehouse management system (WMS) could not match to physical inventory, and a core product page would have returned HTTP 404 to every ad click, search result, and customer bookmark pointing to the old address. Section 3 models that failure at a **$3,900.00 cash blast radius** for a single unmitigated release.
 
 > [!CAUTION]
-> **Staging Sandbox Disclosure**: This case study documents an empirical catalog mutation audit conducted within an isolated staging environment. The pre-flight audit log in §5 represents a verified execution trace across the 12-variant Synapse Botanicals SKU catalog. The barcode validation engine in §4 was verified via our reproducible test suite against GS1 UPC-A Modulo-10 specifications. All financial figures represent unit-economic cost modeling. §11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Staging Sandbox Disclosure**: Every result in this dossier was produced in a staging environment: an in-memory/SQLite-backed test suite, synthetic GTIN fixtures (test identifiers, not GS1-licensed codes), and deterministic pricing and cost models. No production store, live Matrixify import, or physical warehouse scanner was exercised. §11 separates what was verified in staging from what is only specified.
 
 | Incident Parameter | Baseline Parameter Value | Architectural Significance |
 |---|---|---|
-| **Catalog Scope** | `Catalog_Mutation_v2.xlsx` (12 variants across 5 product lines) | Foundational catalog master powering checkout, 3PL WMS, and ad channels. |
-| **Silent Coercion Defects** | Row 2 (`8.40001E+11`) and Row 6 (`84000103000`) | Mathematical coercion renders barcodes unreadable by optical warehouse scanners. |
-| **Canonical URL Defect** | Row 10 (`precision-insulated-tumbler-new`) | Renaming live handle creates immediate HTTP 404s and severs active paid ad spend. |
-| **The Circuit Breaker** | Automated 5-gate pre-flight linter | Stopped import in 5 seconds (09:15:10 to 09:15:15 EDT); zero database writes. |
-| **Prevented Financial Toll** | $3,900.00 out-of-pocket blast radius | Prevents 3PL warehouse relabeling fees, wasted PPC ad clicks, and SEO recovery. |
+| **Catalog Scope** | `Catalog_Mutation_v2.xlsx`: 12 variants across 5 product lines (Focus Sticks, Adaptogen Tinctures, Bundles, Tumblers, Whisks) | Foundational catalog master powering checkout, 3PL WMS, and ad channels. |
+| **The Silent Coercion Defects** | Two barcodes destroyed by numeric coercion (scientific notation, 11-digit truncation) and one handle rename | Three blocking errors, none visible to a human viewing the spreadsheet. |
+| **The Potential Blast Radius** | $3,900.00 modeled out-of-pocket toll per release; $7,800/year at 8 bulk updates and a 25% error rate (§3) | Relabeling fees, wasted paid media clicks, and emergency TechOps intervention. |
+| **The 5-Second Circuit Breaker** | 09:15:10 to 09:15:15 EDT; import aborted with zero database commits | Automated linter terminated execution before Shopify Admin was contacted. |
 
 ---
 
 ## 2. The Four Hazard Tiers: Role-Based Catalog Governance
 
-In enterprise e-commerce, not all catalog fields carry equal risk. Changing a marketing subtitle typo is harmless; changing a primary-key handle or a warehouse barcode can paralyze an entire fulfillment center. 
+Every column in a catalog file is a lever on the live store, and the levers are not equally heavy. 
 
-To enforce the principle of least privilege, every attribute in Synapse Botanicals' catalog is mapped to a strict **Field Mutation Risk Taxonomy**.
+The `Variant ID` and the `Handle` are the primary keys other systems use to locate a product. The `Barcode` is the physical label the warehouse uses to pick and pack it. The `SKU` joins them. Change a product `Title` and a page reads awkwardly. Change a barcode and a pack bench can no longer verify the carton. Synapse Botanicals therefore assigns every field in the 12-variant catalog to one of four hazard tiers, ranked by the operational damage a wrong value causes, and restricts each tier to the smallest role with a legitimate reason to edit it.
 
 ```mermaid
 flowchart TD
@@ -67,66 +71,75 @@ flowchart TD
 
 ### 2.1 Field Mutation Risk Taxonomy
 
-| Hazard Tier | Risk Level | Fields Included | Permitted Operators | Automated Validation Rule | Operational Impact of Failure |
+| Hazard Tier | Risk Level | Fields Included | Permitted Operators | Validation Rule | Impact of Failure |
 |---|---|---|---|---|---|
-| **Tier 1** | **Catastrophic** | `Barcode (UPC-A)`, `Handle`, `Variant ID`, `Inventory Quantity` | **Lead TechOps Only** | Strict regex (`^\d{12}$`), Modulo-10 checksum, immutable primary-key lock | Halts physical warehouse picking; triggers emergency relabeling; destroys SEO ranking; corrupts inventory. |
-| **Tier 2** | **Financial** | `Variant Price`, `Compare At Price`, `Cost per Item`, `Variant Weight` | **TechOps + Financial Controller** | Decimal precision (`^\d+\.\d{2}$`); invariant: $\text{Price} > \text{Cost}$ | Negative gross margins; carrier dimensional-weight freight penalties and chargebacks. |
-| **Tier 3** | **Functional** | `Metafields`, `Product Tags`, `Category / Type`, `Status` | **Merchandisers (Supervised)** | Namespace schema linting; controlled dictionary tag validation | Breaks storefront faceted filtering, bundle logic, and automated Shopify Flow triggers. |
-| **Tier 4** | **Cosmetic** | `Title`, `Body (HTML)`, `Image Alt Text`, `SEO Description` | **Marketing & Content Team** | HTML syntax linting; character limit validation | Broken layout formatting, typos (zero operational or physical fulfillment impact). |
+| **Tier 1** | **Catastrophic** | `Barcode (UPC-A)`, `Handle`, `Variant ID`, `Inventory Quantity` | **Lead TechOps only** | Strict regex (`^\d{12}$` for barcodes), immutable primary-key check | Halts warehouse picking; destroys search ranking; causes physical inventory drift. |
+| **Tier 2** | **Financial** | `Variant Price`, `Compare At Price`, `Cost per Item`, `Variant Weight` | **TechOps + Financial Controller** | Decimal precision (`^\d+\.\d{2}$`); price must exceed cost | Negative gross margins; carrier dimensional-weight freight chargebacks. |
+| **Tier 3** | **Functional** | `Metafields`, `Product Tags`, `Category / Type`, `Status` | **Merchandisers (supervised)** | Namespace schema linting; controlled tag taxonomy | Breaks storefront filtering, bundle logic, and automated Shopify Flow triggers. |
+| **Tier 4** | **Cosmetic** | `Title`, `Body (HTML)`, `Image Alt Text`, `SEO Description` | **Marketing & Content Team** | HTML syntax linting; character-limit checks | Broken layout formatting, typos (zero operational or physical fulfillment impact). |
 
-The hierarchy establishes two operational rules:
-1. **Access Boundaries**: A copywriter updating seasonal promotional copy must never have write access to a spreadsheet column containing barcodes or URL handles.
-2. **Triage Priority**: When a pre-flight linter encounters defects across multiple tiers simultaneously, Tier 1 and Tier 2 errors are hard blocking stops that terminate the execution loop immediately.
+### 2.2 Least Privilege: In Bulk Imports, the File Is the Permission
+
+The tiers apply the principle of least privilege directly to catalog administration: each role receives the minimum write access its work requires and nothing more. 
+
+The principle is usually discussed in terms of user accounts and IAM permissions, but in a bulk-import workflow **the file itself is the permission**. Matrixify, the Shopify bulk-import application Synapse uses, accepts a `Command` column on every row. Under `MERGE`, it updates only the cells that row populates and leaves every other column untouched. A marketing import file containing only `ID`, `Title`, `Body (HTML)`, `Image Alt Text`, and `SEO Description` is therefore physically incapable of altering a barcode, a price, or a URL handle.
+
+The same logic protects against spreadsheet coercion: silent mathematical conversion can only damage columns that actually exist in the file. Tier 1 columns appear in an import file only as match keys, and the linter verifies every match key against the canonical registry before execution proceeds. When the linter reports defects in more than one tier, the lowest-numbered tier is resolved first, because it carries the largest blast radius.
 
 ---
 
-## 3. What a Corrupted Catalog Costs (The $3,900 Blast Radius)
+## 3. What a Corrupted Catalog Costs: The $3,900 Blast Radius
 
-To understand why a 5-second circuit breaker is essential, one must calculate the physical, commercial, and technical costs of an unmitigated catalog error reaching production.
+An engineering control is only worth building if the failure it prevents carries a real financial cost. The model below prices an unmitigated release of the corrupted file that the gate intercepted. The model is deterministic: every input is a stated operational assumption, and every output is reproducible arithmetic.
 
-When a corrupted spreadsheet containing scientific notation barcodes and a renamed handle bypasses pre-flight checks, the damage radiates across three distinct operational centers:
+### 3.1 Model Inputs
+
+| Input | Value | Operational Domain |
+|---|---|---|
+| Units in inventory exposed to corrupted barcode values | 1,000 across Reno and Allentown fulfillment nodes | Trap A: barcode corruption |
+| 3PL manual thermal over-labeling fee | $2.20 per unit | Trap A: barcode corruption |
+| Daily paid-media spend (Meta & Google Shopping) | $450.00 per day | Trap B: handle mutation |
+| Duration of HTTP 404 on the product URL | 48 hours (2 days) | Trap B: handle mutation |
+| Emergency TechOps and SEO recovery | $800.00 fixed allocation | Trap B: handle mutation |
+| Bulk catalog updates per year | 8 (2 per quarter, seasonal updates) | Annualization |
+| Human error rate per bulk update | 25% | Annualization |
+
+### 3.2 Incident Ledger: One Unmitigated Release
+
+| # | Cost Line | Operational Driver | Calculation | Cost | Share |
+|:---:|---|---|---|:---:|:---:|
+| **1** | **Warehouse emergency relabeling** | Manual thermal over-labeling by 3PL on units in bins at Reno and Allentown | 1,000 units × $2.20 | **$2,200.00** | 56.4% |
+| **2** | **Wasted paid media (404 ad traffic)** | Meta and Google Shopping campaigns sending clicks to old handle returning HTTP 404 | 2 days × $450.00/day | **$900.00** | 23.1% |
+| **3** | **Emergency TechOps and SEO recovery** | Forensic manual 301 redirect mapping, XML sitemap re-indexing, and cache re-submission | Fixed allocation | **$800.00** | 20.5% |
+| | **TOTAL OUT-OF-POCKET INCIDENT TOLL** | | $2,200 + $900 + $800 | **$3,900.00** | **100.0%** |
+
+Line 1 is the price of the barcode trap. Lines 2 and 3—totaling $1,700.00—are the price of the handle trap. 
+
+Notice an essential operational difference: **the ad-spend line is the only one that grows with detection time**. Every additional day the 404 persists adds $450.00 ($18.75 per hour). The relabeling and technical recovery lines are fixed once the bad file commits. That asymmetry is why the control sits *in front* of the import and not behind it.
+
+### 3.3 Annualized Exposure
 
 ```text
-1. WAREHOUSE OPERATIONS (Allentown & Reno Fulfillment Hubs):
-   • 1,000 units of physical inventory in active bins
-   • Laser scanners reject barcodes at packing stations
-   • 3PL emergency manual over-labeling fee ($2.20 / unit):         $2,200.00
-
-2. PAID MEDIA & REVENUE ACQUISITION (Google Shopping & Meta Ads):
-   • Mutated URL handle returns HTTP 404 on live ads
-   • 48 hours of un-intercepted paid clicks ($450.00 / day):         $900.00
-
-3. TECHNICAL OPERATIONS & SEARCH ENGINE RECOVERY:
-   • Senior DevOps forensic triage & emergency rollback:              $400.00
-   • Manual 301 URL redirect mapping & Google Search Console re-index: $400.00
-   ──────────────────────────────────────────────────────────────────────────
-   TOTAL OUT-OF-POCKET CASH BLAST RADIUS PER INCIDENT:             $3,900.00
+Bulk updates per year        = 2 per quarter x 4 quarters      = 8
+Expected corrupted releases  = 8 x 25% human error rate        = 2
+Annual unmitigated exposure  = 2 x $3,900.00                   = $7,800.00 per year
 ```
 
-```
-                     ┌──────────────────────────────────────────────┐
-  3PL Relabeling     │ $2,200.00  (1,000 units @ $2.20 over-label)  │
-  ───────────────────┼──────────────────────────────────────────────┤
-  Dead Ad Spend      │ $900.00    (48 hrs @ $450/day traffic burn)  │
-  DevOps Recovery    │ $800.00    (Forensic rollback & 301 mapping) │
-  ───────────────────┼──────────────────────────────────────────────┤
-  Total Cash Drain   │ $3,900.00  (Per un-intercepted spreadsheet)  │
-                     └──────────────────────────────────────────────┘
-```
+| Human Error Rate | Corrupted Releases per Year | Annual Exposure |
+|---|:---:|:---:|
+| 12.5% | 1 | $3,900.00 |
+| **25.0% (Model Baseline)** | **2** | **$7,800.00** |
+| 50.0% | 4 | $15,600.00 |
 
-### The Anatomy of the Loss
+### 3.4 What the Ledger Does Not Count
 
-1. **Warehouse Emergency Relabeling ($2,200.00)**: At the Reno and Allentown distribution centers, packing technicians use handheld laser scanners (Zebra TC52) to verify product items against pick totes. When an 11-digit or scientific notation barcode is imported, the scanner emits an error beep and shunts the tote to an exception lane. The 3PL must freeze the SKU, pull 1,000 physical cartons from racking, print new thermal adhesive labels, and manually over-label each unit at a contract exception rate of $2.20 per unit.
-2. **Wasted Paid Media Spend ($900.00)**: Product handles define live canonical URLs (`synapsebotanicals.com/products/precision-insulated-tumbler-durable-merchandise`). Meta and Google Shopping campaigns dynamically point directly to this handle. Renaming the handle in a bulk import severs the URL, routing high-intent paid traffic to a 404 "Page Not Found" screen. Over a typical 48-hour detection window, $900.00 in ad budget is completely vaporized.
-3. **SEO Equity Destruction ($800.00)**: Inbound links, customer bookmarks, and organic Google rankings accumulated over years are tied to the canonical handle. Without an immediate 301 redirect, search engine crawlers de-index the page. Restoring organic ranking requires hours of manual SEO and DevOps intervention.
-
-At an enterprise scale of 8 seasonal catalog updates per year with an unmitigated 25% human error rate, catalog corruption represents an annualized financial risk of **$7,800.00 in direct cash waste**, excluding lost top-line revenue.
+The $3,900.00 figure is a conservative financial floor. It prices only the three cost lines that arrive as direct invoices and payroll. It excludes lost sales contribution: every Focus Sticks Matcha Yuzu order lost to a scan failure or a dead landing page forfeits **$33.50 of gross margin** at the $42.00 retail price and $8.50 COGS (§8). It also excludes carrier chargebacks, customer support ticket volume, and the search ranking lag that persists after 301 redirects are deployed.
 
 ---
 
 ## 4. The Anatomy of Two Spreadsheet Traps
 
-Why do these errors happen in the first place? They are not caused by reckless typing; they are caused by spreadsheet software functioning exactly as it was designed.
+Both failures in this file begin with a software tool doing precisely what it was designed to do.
 
 ```mermaid
 flowchart TD
@@ -152,65 +165,78 @@ flowchart TD
     style B5 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
 ```
 
-### 4.1 Trap A: Floating-Point Coercion and Optical Barcode Physics
+### 4.1 Trap A: Numeric Coercion and Optical Scanner Physics
 
-A 12-digit UPC-A barcode is not a quantity. It is not an amount of money. It is an **alphanumeric identifier that happens to consist of digits**.
+A UPC is an identifier that happens to be made of digits, and a spreadsheet cannot tell the difference. When Excel or Google Sheets parses a bare `850041234014`, it stores a binary floating-point value (IEEE 754 double precision), because that is how both applications represent every number. Three consequences follow:
 
-When an operator opens a CSV file in Excel or Google Sheets, the application's type-inference engine parses any sequence of digits as a standard integer or floating-point number:
-* **The 11-Digit Scientific Notation Trap**: Standard column widths cause Excel to display numbers with 11 or more digits in scientific notation (`8.50041E+11`). When re-saved to CSV, the application frequently writes the literal string `"8.50041E+11"` to disk. The precision of the final six digits is permanently lost.
-* **The Dropped Leading-Zero Trap**: A barcode beginning with zero (common in North American retail UPCs, e.g., `012345678901`) has its leading zero stripped because zero has no mathematical value in arithmetic (`12345678901`).
+1. **Display Rounding**: In a General-format column, a 12-digit number is rendered as `8.50041E+11`, a six-significant-digit summary. Whether the full digits survive underneath depends on the application, which is why the exported CSV file, not the on-screen sheet, is the artifact to inspect.
+2. **Export of the Display Form**: A CSV export frequently writes the rendered text instead of the underlying value. At that moment display rounding becomes permanent data loss: `8.50041E+11` in the file carries only six significant digits, and the remaining digits are gone. A rounded string cannot recreate them.
+3. **Leading-Zero Stripping**: A number has no leading zero in arithmetic. `012345678901` is stored as `12345678901`, eleven digits, and no later formatting step can know what was removed.
 
-**The Physical Warehouse Consequence**: A UPC-A barcode encodes digits into an exact **95-bit binary optical pattern** consisting of two quiet zones, left guard bars (`101`), six left-hand digits, a center guard pattern (`01010`), six right-hand digits, and right guard bars (`101`). When an 11-digit string is sent to a thermal label printer, the encoder either crashes or produces an invalid pattern. Handheld warehouse laser scanners reject the carton instantly.
+**The Physical Warehouse Consequence**: A UPC-A symbol is an exact **95-module optical pattern**: a 3-module start guard (`101`), six left-hand digits at 7 modules each (42), a 5-module center guard (`01010`), six right-hand digits (42), and a 3-module end guard (`101`). The pattern has no slot for an eleventh or thirteenth digit. A warehouse laser scanner (Zebra TC52) decodes exactly twelve digits, verifies the Modulo-10 check digit, and looks up the string in the WMS database. An 11-digit catalog value cannot be printed as a valid UPC-A symbol, triggering hard scanner read errors at the pack bench.
 
-### 4.2 Trap B: Handle Mutation and Search Engine Collapse
+### 4.2 Trap B: Handle Mutation and SEO Destruction
 
-In Shopify's architecture, the `Handle` is the primary human-readable URL slug for every product:
-```text
-https://synapsebotanicals.com/products/precision-insulated-tumbler-durable-merchandise
-```
+A Shopify handle is the unique URL slug of a product page, served at `/products/{handle}`. For `SYN-TMBL-MO`, the canonical handle is `precision-insulated-tumbler-durable-merchandise`. Everything outside the store knows the product by that address: search engines, Meta ad campaigns, Google Shopping, influencer affiliate links, and customer bookmarks.
 
-When a merchandiser edits an export spreadsheet, they frequently look at a long handle and decide to "clean it up" for readability (e.g., editing it to `precision-insulated-tumbler-new`). 
+Rename the handle in a bulk file, and the old address stops resolving. Three losses follow immediately:
+* **Traffic**: Live links to the old URL dead-end into HTTP 404, while paid clicks continue billing.
+* **Search Equity**: Accumulated PageRank authority stops accruing to a URL that no longer exists until a 301 redirect is configured and re-crawled.
+* **Conversion History**: Analytics platforms attribute performance by landing page slug, so the new slug resets historical conversion tracking.
 
-When imported:
-* Shopify treats the new handle as the primary address.
-* The original URL immediately ceases to exist.
-* Live Meta dynamic ads, Google Shopping feeds, and influencer affiliate links pointing to the old URL instantly return **HTTP 404 Not Found**.
-* Years of accumulated Google Search Console backlinks, authority, and ranking history are wiped out.
+Unless a redirect is created deliberately, a handle change delivered through a bulk file carries none. That is why a handle rename is an approved redirect project, never a catalog edit (Law 2, §10).
 
-### 4.3 Field-Level Spreadsheet Validation Formulas
+### 4.3 Field-Level Validation Formulas
 
-To provide immediate visual feedback before an export is generated, template spreadsheets must enforce column-level validation rules:
+The first line of defense is a column of Google Sheets formulas that flag bad values on screen:
 
-| Field Name | Data Type | Hazard Tier | Mandatory Automated Validation Formula (Google Sheets) |
+| Field Name | Data Type | Hazard Tier | Validation Formula (Google Sheets) |
 |---|---|---|---|
 | **ID** | Integer | Tier 1 | `=IF(ISNUMBER(A2), "VALID", "ERROR-INVALID-PRIMARY-KEY")` |
 | **Handle** | String | Tier 1 (Lock) | `=IF(REGEXMATCH(B2, "^[a-z0-9-]+$"), "VALID", "ERROR-INVALID-HANDLE")` |
 | **Title** | String | Tier 4 | `=IF(LEN(C2)>0, "VALID", "ERROR-BLANK-TITLE")` |
 | **Variant Price** | Decimal | Tier 2 | `=IF(AND(ISNUMBER(D2), D2>0), "VALID", "ERROR-PRICE")` |
 | **Cost per Item** | Decimal | Tier 2 | `=IF(AND(ISNUMBER(E2), E2<D2), "VALID", "ERROR-NEGATIVE-MARGIN")` |
-| **Variant Barcode** | String | Tier 1 | `=IF(REGEXMATCH(TO_TEXT(F2), "^[0-9]{12}$"), "VALID", "ERROR-BARCODE")` |
+| **Variant Barcode** | String | Tier 1 | `=IF(AND(ISTEXT(F2), REGEXMATCH(F2, "^[0-9]{12}$")), "VALID", "ERROR-BARCODE")` |
 | **Variant Weight** | Decimal | Tier 2 | `=IF(AND(ISNUMBER(G2), G2>0), "VALID", "ERROR-WEIGHT")` |
+| **Inventory Quantity**| Integer | Tier 1 | *None. Omitted from import file by design (Schema by Omission)* |
 
-> [!IMPORTANT]
-> **Schema by Omission (Protecting Inventory Quantity)**:  
-> Notice that `Inventory Quantity` is classified as Tier 1 but has no formula above. In our architecture, inventory levels are never updated via bulk product spreadsheets. They are protected by **omission**: Gate 1 strips the inventory column entirely from the import file. If a column does not exist in the CSV, it cannot overwrite live warehouse stock.
+The barcode formula explicitly tests `ISTEXT` before evaluating the regex. Converting with `TO_TEXT` first would hide the coercion, because a coerced number converted back to text looks identical to text that was never coerced.
+
+### 4.4 Schema by Omission
+
+`Inventory Quantity` is Tier 1 and has no formula because no spreadsheet formula can make it safe to import. It is protected by being absent. A field that is not being updated must not exist in the import file, ensuring there is nothing to coerce, overwrite, or desynchronize from the warehouse. Gate 1 in §9 enforces this rule on every release.
 
 ---
 
-## 5. The Pre-Flight Validator: Modulo-10 Checksum & Mapping Engine
+## 5. The Pre-Flight Validator: Checksum and Mapping Engine
 
-Formulas inside a spreadsheet can help human operators, but they cannot be trusted as an enterprise gate. The real defensive perimeter is an automated, standalone pre-flight linting engine executed against the exported text file.
+The validator performs two functions: it proves a barcode is internally mathematically consistent, and it proves it belongs to the product it is attached to. The first uses the Modulo-10 algorithm. The second uses the approved SKU-to-UPC master mapping.
 
-The validator below is the exact software engine exercised in our verified evidence suite ([`evidence/barcodes/validate_barcodes.js`](../evidence/barcodes/summary.md)):
+### 5.1 The Approved Master Mapping
+
+These twelve fixtures represent the canonical Universe A mapping. Each UPC-A passed the Modulo-10 engine and a 95-bit software round-trip decode ([`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md)):
+
+| SKU Code | Product / Variant Name | Canonical UPC-A | Check Digit |
+|---|---|---|:---:|
+| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack (Matcha Yuzu) | `850041234014` | **4** |
+| `SYN-FSTK-BO` | Focus Stick Packs 30-Pack (Blood Orange) | `850041234021` | **1** |
+| `SYN-FSTK-WB` | Focus Stick Packs 30-Pack (Wild Blueberry) | `850041234038` | **8** |
+| `SYN-FSTK-GA` | Focus Stick Packs 30-Pack (Crisp Green Apple) | `850041234045` | **5** |
+| `SYN-TNCT-AM` | Adaptogen Tincture 60ml (AM Focus / Lion's Mane) | `850041234052` | **2** |
+| `SYN-TNCT-PM` | Adaptogen Tincture 60ml (PM Restore / Reishi) | `850041234069` | **9** |
+| `SYN-BNDL-MAO` | Starter Bundle (Matcha / AM / Obsidian) | `850041234076` | **6** |
+| `SYN-BNDL-BAB` | Starter Bundle (Orange / AM / Bone White) | `850041234083` | **3** |
+| `SYN-TMBL-MO` | Precision Insulated Tumbler 500ml (Matte Obsidian) | `850041234090` | **0** |
+| `SYN-TMBL-BW` | Precision Insulated Tumbler 500ml (Bone White) | `850041234106` | **6** |
+| `SYN-TMBL-SG` | Precision Insulated Tumbler 500ml (Sage Green) | `850041234113` | **3** |
+| `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | `850041234120` | **0** |
+
+### 5.2 The JavaScript Implementation
 
 ```javascript
 /**
- * Computes the GS1 Modulo-10 Check Digit for an 11-digit UPC-A prefix.
- * Algorithm:
- * 1. Multiply digits in odd positions (1st, 3rd, 5th, etc.) by 3.
- * 2. Multiply digits in even positions (2nd, 4th, 6th, etc.) by 1.
- * 3. Sum all products.
- * 4. Check digit is the smallest number needed to round sum up to nearest multiple of 10.
+ * Computes the GS1 Modulo-10 Check Digit for an 11-digit UPC-A string.
  */
 function calculateModulo10CheckDigit(elevenDigits) {
   if (typeof elevenDigits !== 'string' || !/^[0-9]{11}$/.test(elevenDigits)) {
@@ -222,83 +248,100 @@ function calculateModulo10CheckDigit(elevenDigits) {
 }
 
 /**
- * Validates a single barcode record against GS1 mathematical standards
- * and authoritative SKU catalog mappings.
+ * Validates a barcode string against GS1 math and authoritative SKU mappings.
  */
 function validateBarcodeRecord(inputUpc, sku, approvedMapping) {
   const reject = (error, details) => ({ valid: false, error, details });
-
-  // Gate 1: Type & Primitive Integrity
-  if (typeof inputUpc !== 'string') {
-    return reject('BARCODE_TEXT_REQUIRED', 'Numeric primitives are rejected before floating-point coercion occurs.');
-  }
-  if (inputUpc.length === 0) {
-    return reject('BLANK_BARCODE', 'Barcode string cannot be empty.');
-  }
-
-  // Gate 2: Floating-Point & Formatting Traps
-  if (/[eE][+-]?\d+/.test(inputUpc)) {
-    return reject('SCIENTIFIC_NOTATION_DETECTED', 'Floating-point notation detected. Restore from authoritative mapping.');
-  }
-  if (!/^[0-9]+$/.test(inputUpc)) {
-    return reject('NON_NUMERIC_CHARACTERS', 'Input contains whitespace, formulas, or non-numeric artifacts.');
-  }
-  if (inputUpc.length !== 12) {
-    return reject('INVALID_LENGTH_NOT_12_DIGITS', `Expected 12 digits, received ${inputUpc.length}.`);
-  }
-  if (/^0{12}$/.test(inputUpc)) {
-    return reject('PLACEHOLDER_BARCODE', 'All-zero dummy barcodes are strictly prohibited in production.');
-  }
-
-  // Gate 3: Mathematical Modulo-10 Checksum Verification
+  if (typeof inputUpc !== 'string') return reject('BARCODE_TEXT_REQUIRED', 'Numeric primitives rejected before coercion.');
+  if (inputUpc.length === 0) return reject('BLANK_BARCODE', 'Barcode is required.');
+  if (/[eE][+-]?\d+/.test(inputUpc)) return reject('SCIENTIFIC_NOTATION_DETECTED', 'Floating-point notation detected.');
+  if (!/^[0-9]+$/.test(inputUpc)) return reject('NON_NUMERIC_CHARACTERS', 'Contains non-numeric artifacts or whitespace.');
+  if (inputUpc.length !== 12) return reject('INVALID_LENGTH_NOT_12_DIGITS', `Received ${inputUpc.length} digits.`);
+  if (/^0{12}$/.test(inputUpc)) return reject('PLACEHOLDER_BARCODE', 'All-zero placeholders are prohibited.');
+  
   const computedCheckDigit = calculateModulo10CheckDigit(inputUpc.slice(0, 11));
   if (Number(inputUpc[11]) !== computedCheckDigit) {
-    return reject('CHECKSUM_MODULO_10_MISMATCH', `Check digit ${inputUpc[11]} is invalid. Expected ${computedCheckDigit}.`);
+    return reject('CHECKSUM_MODULO_10_MISMATCH', `Expected check digit ${computedCheckDigit}.`);
   }
-
-  // Gate 4: Authoritative Master SKU Mapping
+  
   const approved = approvedMapping.get(sku);
-  if (!approved) {
-    return reject('SKU_NOT_IN_UNIVERSE_A_MASTER', `SKU ${sku} is not recognized in authoritative master catalog.`);
-  }
-  if (approved.upc !== inputUpc) {
-    return reject('SKU_BARCODE_MISMATCH', `Valid UPC ${inputUpc} belongs to another SKU. Expected ${approved.upc}.`);
-  }
-
+  if (!approved) return reject('SKU_NOT_IN_UNIVERSE_A_MASTER', `No approved fixture mapping for ${sku}.`);
+  if (approved.upc !== inputUpc) return reject('SKU_BARCODE_MISMATCH', 'Checksum-valid barcode does not match this SKU.');
+  
   return { valid: true, upc: inputUpc, sku, computedCheckDigit };
 }
 ```
+
+### 5.3 A Worked Check
+
+For `SYN-FSTK-MY` (`850041234014`):
+```text
+First 11 digits :   8   5   0   0   4   1   2   3   4   0   1
+GS1 Weights     :   3   1   3   1   3   1   3   1   3   1   3
+Products        :  24   5   0   0  12   1   6   3  12   0   3  -->  Sum = 66
+
+Check Digit = (10 - (66 mod 10)) mod 10 = (10 - 6) mod 10 = 4   [Matches 12th digit]
+```
+
+For `SYN-TNCT-AM` (`850041234052`), the weighted sum is 78 $\rightarrow$ check digit is 2. For `SYN-TMBL-MO` (`850041234090`), the weighted sum is 90 $\rightarrow$ check digit is 0.
+
+### 5.4 Calling the Validator
+
+```javascript
+const approvedMapping = new Map([
+  ['SYN-FSTK-MY',  { upc: '850041234014' }],
+  ['SYN-FSTK-BO',  { upc: '850041234021' }],
+  ['SYN-TNCT-AM',  { upc: '850041234052' }],
+  ['SYN-TMBL-MO',  { upc: '850041234090' }],
+]);
+
+// Valid Record
+validateBarcodeRecord('850041234014', 'SYN-FSTK-MY', approvedMapping);
+// Output: { valid: true, upc: '850041234014', sku: 'SYN-FSTK-MY', computedCheckDigit: 4 }
+
+// Corrupted Scientific Notation
+validateBarcodeRecord('8.40001E+11', 'SYN-FSTK-MY', approvedMapping);
+// Output: { valid: false, error: 'SCIENTIFIC_NOTATION_DETECTED', details: 'Floating-point notation detected.' }
+
+// Checksum Mismatch
+validateBarcodeRecord('850041234017', 'SYN-FSTK-MY', approvedMapping);
+// Output: { valid: false, error: 'CHECKSUM_MODULO_10_MISMATCH', details: 'Expected check digit 4.' }
+```
+
+### 5.5 Why Barcodes Are Strings, Never Numbers
+
+The first assertion in `validateBarcodeRecord` is a strict `typeof` check. A barcode that arrives as a JavaScript number is rejected with `BARCODE_TEXT_REQUIRED` even if its digits happen to be correct, because arriving as a number proves it was parsed through a numeric type—and numeric types cannot preserve leading zeros (`012345678905` becomes `12345678905`). `Number()` appears in the validator in only one place: converting single validated characters to compute the weighted sum.
 
 ---
 
 ## 6. The 9-Point Rejection Matrix: Trapping Malformed Identifiers
 
-The validation engine processes proposed mutations through an ordered sequence of nine definitive rejection tests. Cheaper string-primitive assertions execute first; expensive relational mapping lookups execute last:
+The validation engine processes proposed mutations through an ordered sequence of nine definitive rejection tests. Each test maps directly to our verified negative anomaly test suite ([`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md)):
 
-| Test ID | Defect Category | Malformed Sample Input | Programmatic Error Code | Architectural Explanation | Correct Remediation Action |
-|---|---|---|---|---|---|
-| **01** | Type Error | `850041234014` *(as number)* | `BARCODE_TEXT_REQUIRED` | Cell was parsed as numeric primitive; risk of precision loss. | Format column as Text (`@`) in spreadsheet and re-export. |
-| **02** | Missing Data | `""` *(empty string)* | `BLANK_BARCODE` | Mandatory identifier is missing from row. | Restore canonical UPC from authoritative master mapping. |
-| **03** | Coercion | `"8.40001E+11"` | `SCIENTIFIC_NOTATION_DETECTED` | Precision destroyed by spreadsheet floating-point formatting. | **Never infer digits.** Restore canonical UPC from master mapping. |
-| **04** | Artifacts | `"85004123401A"` / `"'85004..."` | `NON_NUMERIC_CHARACTERS` | Literal apostrophe, formula wrapper, or letter entered. | Strip text wrappers; export pure 12-digit string. |
-| **05** | Truncation | `"84000103000"` *(11 digits)* | `INVALID_LENGTH_NOT_12_DIGITS` | Missing leading zero or truncated check digit. | Restore exact 12-digit string from master mapping. |
-| **06** | Dummy Data | `"000000000000"` | `PLACEHOLDER_BARCODE` | Dummy placeholder used during product drafting. | Prohibit production release until live GS1 UPC is assigned. |
-| **07** | Typo | `"850041234017"` *(expected 4)* | `CHECKSUM_MODULO_10_MISMATCH` | Internal digit transposition or typo in payload. | Re-calculate check digit; verify against physical packaging. |
-| **08** | Unknown SKU | `"SYN-UNKNOWN-01"` | `SKU_NOT_IN_UNIVERSE_A_MASTER` | Mutating SKU does not exist in master catalog. | Abort import; verify SKU master registration. |
-| **09** | Identity Swap | `"850041234021"` on `SYN-FSTK-MY` | `SKU_BARCODE_MISMATCH` | Checksum is valid, but barcode belongs to another product! | Re-align product SKU with its dedicated canonical UPC. |
+| # | Error Code | Failure Mode | Ground-Truth Fixture Input | Architectural Meaning | Required Remediation Action |
+|:---:|---|---|---|---|---|
+| **1** | `BARCODE_TEXT_REQUIRED` | Numeric type coercion | `850041234014` *(numeric primitive)* | Coercion already occurred upstream. | Format column as Text (`@`) and re-export. |
+| **2** | `BLANK_BARCODE` | Missing identifier | `""` *(empty string)* | Required primary identifier is missing. | Restore from master mapping. |
+| **3** | `SCIENTIFIC_NOTATION_DETECTED` | Exported display rounding | `8.50041E+11` (`ERR-SCINOT-01`) | Digits permanently lost in floating-point conversion. | Restore from master mapping; never infer digits. |
+| **4** | `NON_NUMERIC_CHARACTERS` | Text artifact or typo | `85004123401A` (`ERR-NON-NUMERIC`) | Formula wrapper, apostrophe, or character leaked in. | Export exact 12 digits without wrappers. |
+| **5** | `INVALID_LENGTH_NOT_12_DIGITS` | Truncation / dropped zero | `50041234014` (`ERR-TRUNC-01`) | String is not a valid UPC-A. | Restore exact 12-digit string from mapping. |
+| **6** | `PLACEHOLDER_BARCODE` | All-zero stand-in | `000000000000` *(dummy string)* | Arithmetically valid dummy value. | Prohibit release until live GS1 UPC assigned. |
+| **7** | `CHECKSUM_MODULO_10_MISMATCH` | Damaged digit / typo | `850041234017` (`ERR-CHKSUM-01`) | Check digit disagrees with first 11 digits. | Re-calculate check digit; restore from mapping. |
+| **8** | `SKU_NOT_IN_UNIVERSE_A_MASTER` | Unknown catalog SKU | `850041234014` on unapproved SKU | SKU does not exist in master catalog. | Abort import; register SKU in master catalog. |
+| **9** | `SKU_BARCODE_MISMATCH` | Valid UPC on wrong SKU | `850041234021` on `SYN-FSTK-MY` | Checksum is valid, but barcode belongs to another product! | Re-align product SKU with dedicated UPC. |
 
 ### Two Critical Architectural Traps
 
-1. **The 12-Zero Trap (Test 06)**: Why do we need a dedicated rule for `000000000000`? Because twelve zeros mathematically pass a Modulo-10 checksum: the sum of eleven zeros is zero, and $(10 - 0) \pmod{10} = 0$. A naive validator that only checks the check digit will happily approve twelve zeros as a valid barcode.
-2. **The SKU Mismatch Trap (Test 09)**: A barcode can be 100% mathematically valid, properly formatted, and pass Modulo-10 checks—yet belong to the wrong product (e.g., Blood Orange stick packs labeled with Matcha Yuzu barcodes). Arithmetic checks prove internal consistency; only relational mapping proves physical product identity.
+* **The 12-Zero Trap (Rule 6)**: `000000000000` mathematically passes the Modulo-10 checksum: eleven zeros produce a weighted sum of 0, and $(10 - 0) \pmod{10} = 0$. A naive validator that checks only the check digit will happily approve twelve zeros. That is why `PLACEHOLDER_BARCODE` executes before the checksum.
+* **The SKU Mismatch Trap (Rule 9)**: `850041234021` is a valid UPC-A (check digit 1) belonging to Blood Orange stick packs (`SYN-FSTK-BO`). If assigned to Matcha Yuzu (`SYN-FSTK-MY`), every arithmetic check passes, the scanner reads it cleanly, and the WMS finds a real product—just the wrong one. Rule 9 enforces that only relational mapping proves product identity.
 
 ---
 
-## 7. Five Seconds to Abortion: The Audit of `Catalog_Mutation_v2.xlsx`
+## 7. Five Seconds to Abort: The Audit of `Catalog_Mutation_v2.xlsx`
 
-To demonstrate this architecture under simulated production pressure, an audit was executed against `Catalog_Mutation_v2.xlsx`, a planned bulk update file covering Synapse Botanicals' 12 core product variants.
+The audit evaluated all 12 variants of `Catalog_Mutation_v2.xlsx`, a seasonal bulk update touching barcodes, handles, prices, and costs.
 
-### 7.1 Pre-Flight Telemetry Log
+### 7.1 Telemetry Log
 
 ```text
 09:15:10.042 EDT [AUDIT-INIT] Ingesting Catalog_Mutation_v2.xlsx (12 variants, 7 attributes)
@@ -310,49 +353,59 @@ To demonstrate this architecture under simulated production pressure, an audit w
 09:15:15.015 EDT [AUDIT-STOP] Catalog deployment ABORTED. Zero bytes committed to Shopify Admin.
 ```
 
-In 4.97 seconds, the linter scanned the file, trapped two corrupted barcodes and an illegal handle rename, tripped the circuit breaker, and saved the company an estimated $3,900 in warehouse and media damage.
+### 7.2 Incident Chronology
+
+| Time (EDT) | Elapsed | Event Description | Rule That Fired |
+|---|:---:|---|---|
+| **09:15:10** | +0s | Pre-flight validation initiated; 12 rows queued | Gate 3 Linter |
+| **09:15:12** | +2s | Row 2 (`SYN-FSTK-MY`): Barcode coerced to `8.40001E+11` | `SCIENTIFIC_NOTATION_DETECTED` |
+| **09:15:13** | +3s | Row 6 (`SYN-TNCT-AM`): Barcode truncated to 11 digits (`84000103000`) | `INVALID_LENGTH_NOT_12_DIGITS` |
+| **09:15:14** | +4s | Row 10 (`SYN-TMBL-MO`): Handle mutated to `...-new` | `HANDLE_MUTATION_BREACH` (Handle Lock) |
+| **09:15:15** | +5s | **3 blocking errors trapped. Import aborted. Zero database commits.** | Circuit Breaker |
 
 ---
 
-## 8. Remediation & Master Diff: Exact-String Canonical Recovery
+## 8. Remediation and Master Diff: Exact-String Canonical Recovery
 
-A damaged barcode cannot be repaired by arithmetic. Once an application converts a barcode into `8.40001E+11`, the original trailing digits are gone. Any algorithm that attempts to "guess" the missing numbers will create silent, duplicate barcodes.
-
-The only acceptable remediation protocol is **Authoritative Recovery**: looking up the SKU in the master fixture catalog and restoring the verified string.
+A damaged barcode cannot be repaired by arithmetic. Once an application converts a barcode into `8.40001E+11`, the original trailing digits are gone. Any algorithm that attempts to "guess" the missing numbers will create duplicate, invalid barcodes.
 
 ### 8.1 Master Diff: Pre-Audit vs. Post-Sanitization
 
-The table below documents the exact master diff applied to `Catalog_Mutation_v2.xlsx`:
-
-| SKU Code | Variant Name | Field Mutated | Pre-Audit Raw Value | Post-Sanitization Canonical Value | Verification Status |
+| SKU Code | Variant Name | Field Mutated | Pre-Audit Value | Post-Sanitization Value | Verification Status |
 |---|---|---|---|---|---|
-| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Barcode` | `8.40001E+11` *(Scientific Notation)* | `850041234014` *(Restored)* | **PASSED** (Canonical Master Match) |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Barcode` | `84000103000` *(11 Digits Truncated)* | `850041234052` *(Restored)* | **PASSED** (Canonical Master Match) |
-| `SYN-TMBL-MO` | Tumbler Matte Obsidian | `Handle` | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | **PASSED** (Canonical Handle Restored) |
-| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Variant Price` | $40.00 | $42.00 | **PASSED** (Tier 2 Valid: 79.76% margin at $8.50 COGS) |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **PASSED** (Tier 2 Valid: Reconciled to BOM) |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Barcode` (Row 2) | `8.40001E+11` *(Scientific Notation)* | `850041234014` | **PASSED**: Resolved from master mapping; check digit 4 |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Barcode` (Row 6) | `84000103000` *(11 Digits, Truncated)* | `850041234052` | **PASSED**: Resolved from master mapping; check digit 2 |
+| `SYN-TMBL-MO` | Tumbler Matte Obsidian | `Handle` (Row 10) | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | **RESTORED**: Canonical handle reinstated from registry |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Variant Price` | $40.00 | $42.00 | **PASSED**: Tier 2 Valid (Gross margin: 79.76% at $8.50 COGS) |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **PASSED**: Tier 2 Valid (Reconciled to manufacturing BOM) |
 
 Notice rows 4 and 5: the file also carried legitimate, intentional Tier 2 price and cost changes. The linter cleanly validated the legitimate financial adjustments while arresting the catastrophic Tier 1 schema defects.
 
+### 8.2 Why Nothing Was Reconstructed
+
+`8.40001E+11` expands to $840,001,000,000$, not $850,041,234,014$. `84000103000` is not a prefix, suffix, or truncation of `850041234052`. No padding, rounding, or checksum arithmetic applied to either value leads back to the master. 
+
+Reconstruction is especially dangerous when it looks plausible: an 11-digit string can have a valid check digit computed for it, and a rounded string can be padded with zeros. Both results pass Modulo-10 checks, but assign a synthetic barcode that matches no physical packaging, creating silent warehouse inventory exceptions.
+
+> **Non-Negotiable Law: Never reconstruct a damaged barcode through arithmetic. Restore it only from the authoritative SKU master mapping.**
+
 ---
 
-## 9. The Safe MERGE Lifecycle: 5 Gates & 16.67% Canary
+## 9. The Safe MERGE Lifecycle: 5 Gates and a 16.67% Canary
 
-Validation proves that data values are safe; the execution lifecycle controls how those values are written to production.
-
-In standard native Shopify CSV imports, updating partial columns is destructive: blank cells in an imported spreadsheet can inadvertently erase existing product metafields, overwrite secondary images, or reset inventory quantities to zero. 
+In standard native Shopify CSV imports, partial updates are destructive: blank cells in an imported spreadsheet can inadvertently erase existing product metafields, overwrite secondary images, or reset inventory quantities to zero. 
 
 To prevent destructive writes, Synapse Botanicals standardizes on **Matrixify's Non-Destructive `MERGE` Architecture**:
 
 ```mermaid
 flowchart TD
-    G1["**Gate 1: Targeted Column Pruning**<br/>Strip unneeded columns; retain only primary keys<br/>(ID, Handle, SKU) and mutating fields."] --> G2
+    G1["**Gate 1: Targeted Column Pruning**<br/>Strip unneeded columns; retain only primary keys<br/>(ID, Handle, Variant SKU) and mutating fields."] --> G2
 
     G2["**Gate 2: Command Configuration**<br/>Set column header 'Command' to 'MERGE'.<br/>Ensures omitted fields & inventory remain untouched."] --> G3
 
-    G3["**Gate 3: Automated Pre-Flight Linter**<br/>Run 100% of rows through 9-point rejection suite.<br/>Zero blocking defects permitted."] --> G4
+    G3["**Gate 3: Automated Pre-Flight Schema Linter**<br/>Run checksum, mapping, and handle-lock checks<br/>against 100% of rows. Zero blocking errors allowed."] --> G4
 
-    G4["**Gate 4: 16.67% Canary Batch Deployment**<br/>Deploy 2 of 12 variants to production.<br/>Verify storefront HTTP 200 and test WMS laser scan."] --> G5
+    G4["**Gate 4: 16.67% Canary Batch Deployment**<br/>Deploy 2 of 12 variants.<br/>Verify storefront HTTP 200 and WMS laser scan."] --> G5
 
     G5["**Gate 5: Full Production Rollout (83.33%)**<br/>Deploy remaining 10 variants.<br/>Archive audit diff and validation logs."]
 
@@ -365,28 +418,34 @@ flowchart TD
     style G5 fill:#d4edda,stroke:#28a745,stroke-width:2px;
 ```
 
-### The Five Sequential Gates
+### 9.1 Targeted Column Pruning (The Pruned File Example)
 
-1. **Gate 1: Targeted Column Pruning**: Never import an entire catalog export. Delete every column that is not undergoing active modification. Retain only primary keys (`ID`, `Handle`, `Variant SKU`) and the specific target columns (e.g., `Variant Price`).
-2. **Gate 2: Matrixify Command Configuration**: Add a dedicated column header named `Command` with the literal row value `MERGE`. In a `MERGE` operation, Matrixify updates only the populated cells in each row. Untouched metafields, unlisted variants, and live inventory allocations are strictly preserved.
-3. **Gate 3: Automated Pre-Flight Linter**: Execute the standalone Node.js validation suite against 100% of rows in the export file. The file must achieve a zero-error score before proceeding.
-4. **Gate 4: The 16.67% Canary Batch Deployment**:
-   * Deploy exactly **2 of the 12 variants** (16.67% of the catalog) via Matrixify.
-   * **Verification Criteria**:
-     1. *Storefront URL Health*: Navigate to live product handles; assert HTTP 200 OK across desktop and mobile.
-     2. *WMS Optical Laser Scan*: Print test carton labels; scan barcodes on handheld WMS terminals to verify optical decoding.
-5. **Gate 5: Full Production Rollout (83.33%)**:
-   * Deploy the remaining 10 variants.
-   * Archive the validated CSV, JSON telemetry log, and Git diff in the permanent compliance repository.
+Under Matrixify's `MERGE` command, only populated cells are updated. An import file updating the price of Focus Sticks Matcha Yuzu contains only three columns:
+
+| Variant SKU | Command | Variant Price |
+|:---|:---:|:---:|
+| `SYN-FSTK-MY` | `MERGE` | `42.00` |
+
+Every omitted column (`Barcode`, `Handle`, `Inventory Quantity`, `Title`, `Metafields`) is absent, making it physically impossible to overwrite or desynchronize.
+
+### 9.2 The Five-Gate Enforcement Matrix
+
+| Gate | Engineering Control | Pass Condition | Action on Failure |
+|---|---|---|---|
+| **Gate 1: Targeted Column Pruning** | Remove every column not undergoing active mutation | File contains only primary keys and target mutation fields | Prune and resubmit. Never import an unpruned sheet. |
+| **Gate 2: Command Configuration** | Set `Command = MERGE` on every row | Every row carries an explicit command; match keys resolve | Correct command column. Never fall back to native CSV. |
+| **Gate 3: Pre-Flight Schema Linter** | Checksum, mapping, handle-lock, and Tier 2 rules on 100% of rows | Zero blocking errors trapped | Abort. Restore damaged values from master mapping and re-lint. |
+| **Gate 4: 16.67% Canary Batch** | Deploy 2 of 12 variants across two product lines | Storefront returns HTTP 200; WMS laser terminal scans barcode cleanly | Halt. 10 of 12 variants remain completely untouched. |
+| **Gate 5: Full Production Rollout** | Deploy remaining 10 variants (83.33%) | Post-import acceptance criteria met; audit diff archived | Halt and invoke rollback from authoritative mapping. |
 
 ---
 
 ## 10. The Four Operational Laws of Catalog Governance
 
-Looking across this engineering investigation, four non-negotiable laws govern catalog data across e-commerce architectures:
+Four non-negotiable laws govern catalog data across enterprise commerce:
 
-1. **The Law of Pure Text Identifiers**: A barcode is a label, not a mathematical number. It must be stored, exported, and validated strictly as a string primitive. Any identifier that has ever been treated as a floating-point number must be rejected. *(Closes the gap in §4: numeric coercion).*
-2. **The Law of Immutable Canonical Handles**: A product handle is a live URL address, not a marketing title. Renaming a handle requires a formal redirect project and marketing approval, never a casual bulk spreadsheet edit. *(Closes the gap in §3: 404 ad spend bleed).*
+1. **The Law of Pure Text Identifiers**: A barcode is a label, not a mathematical number. It must be stored, exported, and validated strictly as a string primitive. Any identifier that has ever passed through a numeric type must be rejected. *(Closes the gap in §4: numeric coercion).*
+2. **The Law of Immutable Canonical Handles**: A product handle is a live URL address, not a marketing title. Renaming a handle requires a formal redirect project and marketing approval, never a casual bulk spreadsheet edit. *(Closes the gap in §3: the 404 ad-spend bleed).*
 3. **The Law of Minimal Column Scope (Schema by Omission)**: If an attribute is not actively being modified, it must not exist in the import file. Blank cells must never be permitted near production databases. *(Closes the gap in §9: accidental data destruction).*
 4. **The Law of Authoritative Recovery**: Damaged barcodes must never be reconstructed through arithmetic guessing or truncation padding. They must be restored strictly from the authoritative master SKU catalog mapping. *(Closes the gap in §8: unrecoverable precision loss).*
 
@@ -406,33 +465,40 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 └──────────────────────────────┴─────────────────────────────────────────┘
 ```
 
-### Evidence Scope & Staging Verification Matrix
+### 11.1 Evidence Scope and Verification Status Matrix
 
-| System Component | Dossier Reference | Verification Status | Ground-Truth Evidence Source |
+| Deliverable | Section | Status | Ground-Truth Evidence Source |
 |---|---|---|---|
-| **Field Hazard Taxonomy** | §2.1 | Documented Specification | Role-based catalog governance schema mapping access tiers to field groups. |
-| **Modulo-10 Checksum Engine** | §5 | **Verified in Staging** | Tested against GS1 specifications across all 12 SKUs ([`evidence/barcodes/results.json`](../evidence/barcodes/summary.md)). |
-| **95-Bit Optical Bitstream Decoder** | §4.1, §5 | **Verified in Staging** | Software raster round-trip test ([`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md)) confirming 100% bit-exact decode. |
-| **Negative Anomaly Rejection** | §6 | **Verified in Staging** | Trapped 100% of 7 corrupted test inputs (scientific notation, truncation, invalid check digits). |
-| **Pre-Flight Audit Telemetry** | §7 | Scenario Audit | Reconstructed 5-second circuit breaker trace across `Catalog_Mutation_v2.xlsx`. |
-| **Canonical Master Diff** | §8.1 | **Verified in Staging** | Exact-string restoration verified against canonical fixtures (`SYN-FSTK-MY` $\rightarrow$ `850041234014`). |
-| **Matrixify Safe MERGE SOP** | §9 | Documented Specification | Standard operating procedure for targeted partial-column catalog updates. |
-| **Financial Blast Radius Model** | §3 | Scenario Model | Unit-economic cost model incorporating 3PL over-labeling fees and paid ad spend burn. |
+| **Modulo-10 Checksum Validity** (All 12 SKUs) | §5 | **Verified in Staging** | 12 of 12 pass: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
+| **95-Bit UPC-A Encode & Decode** | §4, §5 | **Verified in Staging** | 12 of 12 bit-exact software round-trip: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
+| **Negative Anomaly Rejection Suite** (7 Corrupted Inputs) | §6 | **Verified in Staging** | Trapped 100% of defect modes: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
+| **Tier 2 Price & Margin Verification** (79.76% at $8.50 COGS) | §8 | **Verified in Staging** | [`evidence/costs/summary.md`](../evidence/costs/summary.md) (Reproducible arithmetic in §8.3). |
+| **Pre-Flight Audit Telemetry** (`Catalog_Mutation_v2.xlsx`) | §7 | Scenario Audit | Reconstructed 5-second circuit breaker trace across 12 variants. |
+| **Field Hazard Taxonomy & RBAC** | §2 | Documented Specification | Role-based catalog governance schema mapping access tiers. |
+| **Unmitigated Cost Model** ($3,900.00 release / $7,800/yr) | §3 | Documented Specification | Deterministic model incorporating 3PL relabeling fees and paid ad spend. |
+| **Spreadsheet Validation Formulas** | §4 | Specified | Template formulas in this dossier; not executed against live sheet. |
+| **Matrixify Safe MERGE SOP & Canary Lifecycle** | §9 | Documented Specification | Standard operating procedure for non-destructive partial imports. |
+| **WMS Optical Scanner Acceptance Test** | §9.4 | Specified | Operational acceptance criteria; physical hardware test. |
 
-> [!NOTE]
-> **Evidentiary Boundary**: The local test suite proves mathematical Modulo-10 check-digit validity, programmatic trap handling, and software round-trip bitstream fidelity. Physical barcode scan performance on specific handheld warehouse terminals (Zebra TC52, Honeywell CT60) under low-light or damaged label conditions represents a physical acceptance test.
+### 11.2 Evidence Links
+
+- [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md): 100% Modulo-10 checksum validity, 95-bit optical round-trip decode across all 12 SKUs, and the 7-case negative rejection suite.
+- [`evidence/costs/summary.md`](../evidence/costs/summary.md): Tier 2 price, cost, and gross margin sensitivity verification.
+- [`evidence/README.md`](../evidence/README.md): Master evidence index.
+
+### 11.3 The Evidentiary Boundary
+
+Local software agreement is verified. The encoder and decoder agree on all twelve barcodes, every checksum passes, and every defect mode in the negative suite is trapped before commit. Physical warehouse performance on handheld laser terminals (Zebra TC52, Honeywell CT60) under low-light and damaged-label conditions represents an operational acceptance criterion. No licensed GTIN ownership or physical scanner hardware result is inferred from local software tests.
 
 ---
 
 ## 12. The Architectural Takeaway
 
-`Catalog_Mutation_v2.xlsx` never crashed a server. It did something far more dangerous: it quietly converted identifiers into floating-point numbers and disguised a broken storefront URL as a text edit.
+Three edits in one file looked completely routine to casual inspection: a barcode that displayed as a number, a barcode one digit short, and a URL handle that had been "tidied." 
 
-In e-commerce operations, the biggest risks rarely come from sophisticated zero-day exploits. They come from standard office productivity tools silently altering data models before an import button is pressed. 
+Each was a silent trigger for catastrophic operational failure: physical barcode read errors on warehouse pack benches, immediate HTTP 404 crashes on live advertising traffic, and thousands of dollars in emergency relabeling fees. The audit intercepted the file in five seconds because it refused to trust what a spreadsheet displayed and verified what the file had actually stored.
 
-Had Synapse Botanicals relied on native CSV imports, two products would have failed on the warehouse floor, over a thousand dollars in ad budget would have driven into a 404 dead end, and technicians would have spent days over-labeling boxes in Nevada and Pennsylvania.
-
-The law of catalog governance is simple: **A barcode is an identifier, not a number; a product handle is a permanent address, not a title. Build the pre-flight gate that enforces that boundary before anyone clicks import.**
+The ultimate law of catalog data is simple: **A barcode is an identifier, not a number; a product handle is a permanent address, not a title. Build the pre-flight gate that enforces that boundary before anyone clicks import.**
 
 ---
 
