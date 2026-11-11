@@ -20,7 +20,7 @@ Here is the incident in one frame: At 13:35 on October 17, 2026, a customer supp
 | **Order Profile** | #1070, The Daily Protocol Starter Bundle, $98.00 GMV |
 | **Customer** | Elena Vance (`elena.vance@example.com`) |
 | **The Trigger Failure** | Outbound 3PL fulfillment hold timed out (`504 Gateway Timeout`); upstream state remained unknown |
-| **The Point of No Return** | Reno warehouse wave picking released 6 minutes 48 seconds after the edit request |
+| **The Point of No Return** | Reno warehouse wave picking released 6 minutes 48 seconds after the first hold dispatch. |
 | **The Blast Radius** | Cross-country mis-shipment, $98.60 damage control toll, $113.00 chargeback exposure, and mandatory FDA quarantine |
 
 ---
@@ -239,14 +239,14 @@ An engineering flaw becomes an executive business case when you calculate its im
 
 ### 6.1 Baseline vs. Dual-Fulfillment Recovery Ledger
 
-Starter Bundle COGS is modeled at **$28.40** (reflecting $28.00 in raw ingredients—Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00—plus $0.40 dedicated packaging and insert material). Credit card gateway processing is calculated as `round($98.00 × 2.9% + $0.30, 2) = $3.14`.
+Starter Bundle COGS is modeled at **$28.40** (reflecting $28.00 in raw components—Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00—plus $0.40 dedicated packaging and insert material). Credit card gateway processing is calculated as `round($98.00 × 2.9% + $0.30, 2) = $3.14`.
 
 ```text
 NORMAL ORDER ECONOMICS (#1070 Baseline):
   Gross Merchandise Value (GMV):                +$98.00
   Cost of Goods Sold (BOM + Packaging):         -$28.40
   3PL Warehouse Fulfillment (Pick/Pack/Box):    -$4.50
-  Carrier Outbound Ground Freight (Zone 2):     -$7.20
+  Carrier Outbound Ground Freight: -$7.20
   Credit Card Gateway Processing (2.9% + $0.30):-$3.14
   ─────────────────────────────────────────────────────
   NET CONTRIBUTION MARGIN:                      +$54.76 (+55.9% Net Margin)
@@ -394,9 +394,9 @@ The legacy integration retried on a polite 15-minute polling curve, treating the
 
 ### 9.1 The Clock Collision
 
-* **The Warehouse Clock:** Wave release runs on an automated **7-minute cutoff interval**.
+* **The Warehouse Clock:** The relevant wave release was scheduled for **13:42:00**, leaving **6 minutes 48 seconds** after the first hold dispatch.
 * **The Legacy Retry Clock:** First retry at +5m (13:40:15); second retry at +15m (13:50:18).
-* **The Defect:** Attempt 2 arrived with only 1 minute and 45 seconds of buffer. When Attempt 2 timed out, Attempt 3 arrived **8 minutes after the box was packed**.
+* **The Defect:** Attempt 2 arrived with only 1 minute and 45 seconds of buffer. When Attempt 2 timed out, Attempt 3 arrived at **13:50:18—8 minutes 18 seconds after wave release**.
 
 ### 9.2 The SQS Work Queue & Dead-Letter Queue (DLQ) Architecture
 
