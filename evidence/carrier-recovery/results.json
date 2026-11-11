@@ -1,20 +1,20 @@
 {
-  "run_id": "2026-11-11T09-15-03-307Z-b5589401",
-  "started_at": "2026-11-11T09:15:11.611Z",
-  "finished_at": "2026-11-11T09:15:11.701Z",
+  "run_id": "2026-11-11T09-32-49-630Z-b8ae4167",
+  "started_at": "2026-11-11T09:32:50.825Z",
+  "finished_at": "2026-11-11T09:32:50.835Z",
   "runtime": {
-    "node": "v24.18.0",
-    "platform": "win32",
+    "node": "v24.22.1",
+    "platform": "linux",
     "arch": "x64"
   },
-  "revision": "5a9ff651dd2164a675f0e56a3c15b64d294253fc",
-  "script_sha256": "5dc407a4d79d6f5ade782b0c3538ccbeee7e40362af79a1641d011ef95e0af17",
+  "revision": "5497f4e2ede030ac04b43e2f3823413834ecb00b",
+  "script_sha256": "afe627f353bf6eb217ceda3480fa740465fa61c55557191cad26849052e5c66c",
   "input_sha256": {
-    "fixtures.json": "c3012e3766113b8a0dd45dac971ebef567112a947bb627e3a58d0bfe16112325",
-    "recovery.js": "7e6a4fc7d535b09af155457b9fedc0157a5fd7135ac205e72f404a513141dcd1",
-    "synapse_adapter_schema.json": "a58a93528acda59fb364f84f14c993b62676d1b5ccfcf4ab55b9e6df1e4778ef",
+    "fixtures.json": "8b7b59d06de892f294367a60bb96da78f5a58903a87abb9b1b6a2bbdcb724b46",
+    "recovery.js": "79794a828074fdc61b20e4bbfcbfa08af20dd9b619c8399ef468d1b8dd4f4f3a",
+    "synapse_adapter_schema.json": "6b396ee55b52276d97f3a43af607931454de9b6a548eff82376ad807811e48b5",
     "contracts/ups_delivery_intercept_v2.openapi.json": "6bf051ea964d3c74de18c30b87505d80f9ccf2056d6809fe9cecf700355ec33b",
-    "contracts/provenance.json": "d9b5f845b9cd79982c34d431ff07326b979a42ba4582be1c45fc6197745fa3ba"
+    "contracts/provenance.json": "76c739717a85e333cd46f8140afdabddc7a8f4f01990730c2ae1091eaefba9f0"
   },
   "classification": "Focused offline UPS return-contract checks and local recovery-state simulation; no live CIE or physical execution",
   "status": "passed",
@@ -198,13 +198,13 @@
         "history": [
           {
             "state": "REQUESTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "ACCEPTED",
             "reason": "Electronic acceptance only; no physical outcome established",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           }
         ]
@@ -217,19 +217,19 @@
         "history": [
           {
             "state": "REQUESTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "ACCEPTED",
             "reason": "Electronic acceptance only; no physical outcome established",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "SUCCEEDED",
             "reason": "Injected carrier-event fixture; not real tracking",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           }
         ]
@@ -242,19 +242,19 @@
         "history": [
           {
             "state": "REQUESTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "ACCEPTED",
             "reason": "Electronic acceptance only; no physical outcome established",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "FAILED",
             "reason": "Injected carrier-event fixture; not real tracking",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           }
         ]
@@ -267,7 +267,7 @@
         "history": [
           {
             "state": "REJECTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           }
         ]
@@ -280,13 +280,13 @@
         "history": [
           {
             "state": "REQUESTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "REJECTED",
             "reason": "Business failure in HTTP 200 response",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           }
         ]
@@ -299,13 +299,13 @@
         "history": [
           {
             "state": "REQUESTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "UNKNOWN",
             "reason": "Ambiguous remote outcome; reconcile before resubmission",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           }
         ]
@@ -318,13 +318,13 @@
         "history": [
           {
             "state": "REQUESTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           },
           {
             "state": "REJECTED",
             "reason": "Synthetic authorization failure",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.829Z",
             "simulated": true
           }
         ]
@@ -337,13 +337,13 @@
         "history": [
           {
             "state": "REQUESTED",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.830Z",
             "simulated": true
           },
           {
             "state": "UNKNOWN",
             "reason": "Invalid response contract",
-            "at": "2026-11-11T09:15:11.618Z",
+            "at": "2026-11-11T09:32:50.830Z",
             "simulated": true
           }
         ]

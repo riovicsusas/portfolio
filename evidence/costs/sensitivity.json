@@ -1,16 +1,16 @@
 {
-  "run_id": "2026-11-11T09-15-03-307Z-b5589401",
-  "started_at": "2026-11-11T09:15:11.408Z",
-  "finished_at": "2026-11-11T09:15:11.489Z",
+  "run_id": "2026-11-11T09-32-49-630Z-b8ae4167",
+  "started_at": "2026-11-11T09:32:50.773Z",
+  "finished_at": "2026-11-11T09:32:50.783Z",
   "runtime": {
-    "node": "v24.18.0",
-    "platform": "win32",
+    "node": "v24.22.1",
+    "platform": "linux",
     "arch": "x64"
   },
-  "revision": "5a9ff651dd2164a675f0e56a3c15b64d294253fc",
+  "revision": "5497f4e2ede030ac04b43e2f3823413834ecb00b",
   "script_sha256": "e808812b8041542779ad8e44b267d13099afef77d2ea5a6668a1b0c1432a4bd6",
   "input_sha256": {
-    "bom_inputs.json": "b458061b538de4e0a3501fce3c8293663bf35114c5197e7bca37bdc4aeae756c",
+    "bom_inputs.json": "6f6dcfba06f2e4de653db4345702f6e7de86ca06925e1fee07fe109578a19a35",
     "money.js": "24e3fbba01f0f1ac2d051b066dcf413b6dce0de3ea220d3220dcf60b7d6ff8a3"
   },
   "classification": "Calculated scenario economics with executed invariant and regression checks",

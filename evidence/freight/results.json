@@ -1,13 +1,13 @@
 {
-  "run_id": "2026-11-11T09-15-03-307Z-b5589401",
-  "started_at": "2026-11-11T09:15:03.386Z",
-  "finished_at": "2026-11-11T09:15:03.483Z",
+  "run_id": "2026-11-11T09-32-49-630Z-b8ae4167",
+  "started_at": "2026-11-11T09:32:49.669Z",
+  "finished_at": "2026-11-11T09:32:49.685Z",
   "runtime": {
-    "node": "v24.18.0",
-    "platform": "win32",
+    "node": "v24.22.1",
+    "platform": "linux",
     "arch": "x64"
   },
-  "revision": "5a9ff651dd2164a675f0e56a3c15b64d294253fc",
+  "revision": "5497f4e2ede030ac04b43e2f3823413834ecb00b",
   "script_sha256": "4c0e6524266181cceee5255e9385a61e8b0eadedeb30d6f932f1e20328660d76",
   "input_sha256": {
     "tariffs.json": "e699b03c80eff9b609f91579d42377ce6b9aa105eaa8f17c7fc10925d0ad35d5"
