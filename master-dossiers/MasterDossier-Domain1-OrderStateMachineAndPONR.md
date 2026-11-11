@@ -10,12 +10,12 @@ Elena Vance fixes her shipping address on her phone. It takes four seconds: one 
 
 Nothing on a warehouse floor in Allentown, Pennsylvania has heard about it.
 
-A database write is a statement of intent. A carton on a conveyor is a fact. The distance between the two is where Order **#1004** nearly became a $57.20 loss: a bottle-and-stick-pack carton bound for **Scranton, PA** when the customer actually lives in **Binghamton, NY**, a 49-mile interstate delta that no amount of storefront correctness could have closed on its own.
+A database write is a statement of intent. A carton on a conveyor is a fact. The distance between the two is where Order #1004—a $102 purchase comprising two $42 stick packs and $18 expedited shipping—nearly became a mis-shipment. The carton was bound for Scranton, PA when the customer actually lived in Binghamton, NY, a 49-mile interstate delta that no amount of storefront correctness could have closed on its own.
 
 The save did not stop the order. **Stopping it took 133 seconds** of coordinated freeze, verification, mutation, and release, and the order had to be found still standing in the queue when that work finished.
 
 ```text
-       10:14:00 EDT              10:14:18 EDT                 10:16:13 EDT   10:16:15 EDT
+       10:14:00 EST              10:14:18 EST                 10:16:13 EST   10:16:15 EST
   Customer Ticket Ingested   Warehouse Lock Confirmed     Release Confirmed   Order Resumed
   ───────────●─────────────────────────●──────────────────────────●──────────────●────────►
              │ ◄─ 18s: Native Hold ──►│ ◄─ 115s: CASS, Mutate, ─►│ ◄─── 2s ────►│
@@ -24,7 +24,7 @@ The save did not stop the order. **Stopping it took 133 seconds** of coordinated
              └──────────── 133 Seconds Total Freeze ────────────┘
 ```
 
-At 10:14:00 EDT, customer Elena Vance submitted an urgent ticket: she had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#1004** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. At 10:16:15 EDT—exactly **133 seconds** after ingestion—Order #1004 was safely re-injected into the Allentown wave queue with the correct Binghamton shipping label.
+At 10:14:00 EST, customer Elena Vance submitted an urgent ticket: she had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#1004** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #1004 re-entered the wave queue at 10:16:15 EST, 135 seconds after ingestion and into the Allentown wave queue with the correct Binghamton shipping label.
 
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
@@ -37,10 +37,10 @@ The wrong label never printed because the order was physically prevented from mo
 |---|---|---|
 | **Order Profile** | `#1004` · `gid://shopify/Order/5892114432104` · FO `gid://shopify/FulfillmentOrder/6710448123901` · 2× Focus Stick Packs 30-Pack ($84.00) + Expedited Shipping ($18.00) = **$102.00** | Ingestible product plus a paid priority SLA: the two attributes that shrink the safe edit window. |
 | **Origin & Route** | Origin `LOC-PA-01` (Allentown, PA). Wrong destination: Scranton, PA. Correct destination: Binghamton, NY. **49-mile interstate delta.** | The correction crosses a state line, so zone, node, and tax-jurisdiction inputs all change. |
-| **Ingestion Window** | Ticket received **10:14:00 EDT**, 11 minutes after checkout. The order had entered WMS at 10:04:12. | The order was already in the warehouse queue when the customer asked to change it. |
+| **Ingestion Window** | Ticket received **10:14:00 EST**, 11 minutes after checkout. The order had entered WMS at 10:04:12. | The order was already in the warehouse queue when the customer asked to change it. |
 | **Safety Invariant** | **Freeze-First**: confirm the *physical* queue lock before any mutation; release only the hold you placed. | An unconfirmed freeze is not a freeze. |
-| **Financial Exposure** | If missed: **$23.70** cash drain + **$33.50** forfeited margin = **$57.20** (136% of retail). | A 1-carton error costs more than the carton's price. |
-| **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Order resumed at **10:16:15 EDT** with the correct Binghamton label. **133 seconds** of freeze. | Zero scrap, zero reverse freight, zero customer-facing failure. |
+| **Financial Exposure** | Order #1004 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; §3 illustrates these using a separate one-pack example.. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
+| **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Release confirmed at **10:16:13 EST** after **133 seconds**; order resumed at **10:16:15 EST** after **135 seconds.** |
 
 ---
 
@@ -113,7 +113,7 @@ Stage 2 represents the narrow corridor between the two boundaries. In Stage 2, l
 
 ## 3. What One Mis-Shipped Carton Costs (Unit Economics & FDA Scrap)
 
-To understand why a 133-second technical hold protocol is necessary, one must look at the financial and regulatory consequence of failing to stop the carton.
+The 133-second protocol kept Order #1004’s two-pack shipment on the correct route. To show how mis-shipment costs accumulate, this section uses a separate single-pack illustration.
 
 ### 3.1 Regulatory Governance: FDA 21 CFR Part 111 cGMP
 
@@ -131,7 +131,7 @@ Because standard parcel tracking (USPS Ground Advantage, UPS Ground) provides **
 
 ### 3.2 The Mis-Shipment Loss Ledger
 
-The ledger below prices the total cost of a single runaway carton containing one 30-pack of Focus Stick Packs (`SYN-FSTK-MY`):
+This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FSTK-MY`), fully refunded after a mis-shipment, with no replacement or customer shipping revenue. Handling and payment fees not listed below are excluded:
 
 | Component | Cost Type | Amount |
 |---|---|---:|
@@ -142,8 +142,9 @@ The ledger below prices the total cost of a single runaway carton containing one
 | **Direct out-of-pocket cash drain** | | **$23.70** |
 | Retail price | | $42.00 |
 | Less COGS | | −$8.50 |
-| **Forfeited contribution margin** (sale that never completes) | Economic | **$33.50** |
-| **Total economic disruption per carton** | | **$57.20** |
+| Less normal outbound freight | -$6.50 |
+| **Normal contribution before unlisted fees** ($42.00 − $8.50 − $6.50) | Economic | **$27.00** |
+| **Contribution deterioration per carton** ($27.00 − (−$23.70))| | **$50.70** |
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -157,22 +158,22 @@ The ledger below prices the total cost of a single runaway carton containing one
 │                                                         ─────── │
 │                                              CASH:       $23.70  │
 │                                                                   │
-│  FORFEITED MARGIN  ($42.00 retail − $8.50 COGS) ........  $33.50 │
+│  NORMAL CONTRIBUTION ($42.00 − $8.50 − $6.50) ........  $27.00 │
 │                                                         ─────── │
-│  TOTAL ECONOMIC DISRUPTION ............................  $57.20  │
+│  CONTRIBUTION DETERIORATION ............................  $50.70  │
 │                                                                   │
-│  $57.20 ÷ $42.00 retail  =  136% of the carton's value           │
+│  $50.70 ÷ $42.00 retail = 120.7% of retail value          │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-The arithmetic: $\$8.50 + \$6.50 + \$7.20 + \$1.50 = \mathbf{\$23.70}$; $\$42.00 - \$8.50 = \mathbf{\$33.50}$; $\$23.70 + \$33.50 = \mathbf{\$57.20}$ (136.2% of retail value).
+The arithmetic: $\$8.50 + \$6.50 + \$7.20 + \$1.50 = \mathbf{\$23.70}$; $\$42.00 - \$8.50 = \mathbf{\$33.50}$; Normal contribution is **$27.00** ($42.00 − $8.50 − $6.50). Failed-order contribution after the full refund is **−$23.70**. The deterioration is **$50.70**, or **120.7%** of the $42.00 retail price.
 
 > [!NOTE]
 > **Evidence alignment.** The $8.50 COGS matches the declared Focus Stick Packs component cost in the executed BOM ledger (`evidence/costs/summary.md`), and $6.50 / $7.20 appear there as declared freight inputs in different scenarios. The remaining ledger lines (notably the $1.50 quarantine fee) are scenario inputs.
 
 ### 3.3 Scaled Monthly Exposure Model
 
-At scale, small integration seams generate significant financial bleed:
+For this projection, all 150 monthly exceptions are assumed to follow the single-pack refund scenario in §3.2:
 
 $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address Error Rate} \times \text{Unit Cost}$$
 
@@ -185,7 +186,7 @@ $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address E
 | If the freeze fails on every ticket | Cost Per Carton | Monthly Expense (×150) | Annualized Exposure (×12) |
 |---|---:|---:|---:|
 | **Direct cash drain** | $23.70 | **$3,555.00 / month** | **$42,660.00 / year** |
-| **Total economic disruption** | $57.20 | **$8,580.00 / month** | **$102,960.00 / year** |
+| **Contribution deterioration** | $50.70 | **7,605 / month** | **91,260 / year** |
 
 A robust integration protocol that freezes warehouse execution in under 18 seconds does not merely improve customer satisfaction—it protects over $100,000 in bottom-line margin.
 
@@ -204,8 +205,8 @@ A robust integration protocol that freezes warehouse execution in under 18 secon
 | Total Captured | **$102.00** |
 | Allocated Node | Allentown, PA (`LOC-PA-01`) |
 | Destination Route | Scranton, PA 18503 $\rightarrow$ Binghamton, NY 13901-3412 (49-mile interstate delta) |
-| Checkout Timestamp | ≈10:03:00 EDT (ticket arrived 11 minutes later) |
-| Customer Exception Ticket | 10:14:00 EDT (Gorgias `#T-10492`): *"URGENT: I entered my old apartment address in Scranton PA, but I just moved to Binghamton NY! Please update before shipping!"* |
+| Checkout Timestamp | ≈10:03:00 EST (ticket arrived 11 minutes later) |
+| Customer Exception Ticket | 10:14:00 EST (Gorgias `#T-10492`): *"URGENT: I entered my old apartment address in Scranton PA, but I just moved to Binghamton NY! Please update before shipping!"* |
 | Physical Stage at Ingestion | **Stage 1 · In Queue** |
 
 ### 4.2 Chronological Event Timeline
@@ -228,7 +229,7 @@ A robust integration protocol that freezes warehouse execution in under 18 secon
  10:16:15  order resumed to wave with Binghamton label ◄─────── +2s ──────────┘
 ```
 
-| Timestamp (EDT) | Elapsed | System / Domain | Event & Action | Clock Domain |
+| Timestamp (EST) | Elapsed | System / Domain | Event & Action | Clock Domain |
 |---|---:|---|---|---|
 | **10:04:12** | — | ShipBob WMS | Order drops to WMS queue (Stage 1 begins) | Warehouse |
 | **10:14:00** | T+0s | Gorgias | Support ticket `#T-10492` ingested via webhook | Software |
@@ -323,7 +324,7 @@ Authorization: Bearer <token>
   "queue_lock": "SHIPMENT_ON_HOLD",
   "wave_id": null,
   "pick_status": "NOT_PICKED",
-  "lock_timestamp": "2026-11-10T14:14:18Z"
+  "lock_timestamp": "2026-11-10T15:14:18Z"
 }
 ```
 
@@ -433,7 +434,7 @@ Order #1004 was not a standard ground shipment; the customer paid an **$18.00 pr
 1. **Standard Tier Orders**: Held in Shopify's Stage 0 buffer for 15 minutes to allow customer self-service edits and fraud risk scoring.
 2. **Expedited Tier Orders**: Tagged with `priority:expedited`. Upon passing automated risk analysis (Risk Level == `LOW`), the coordinator immediately dispatches the fulfillment request to the 3PL to ensure the parcel catches the earliest available picking wave.
 
-Order #1004 cleared fraud scoring at 10:04:10 EDT and was pushed to ShipBob two seconds later. By the time Elena Vance sent her ticket at 10:14:00 EDT, the order had been in the Allentown queue for nearly ten minutes (588 seconds).
+Order #1004 cleared fraud scoring at 10:04:10 EST and was pushed to ShipBob two seconds later. By the time Elena Vance sent her ticket at 10:14:00 EST, the order had been in the Allentown queue for nearly ten minutes (588 seconds).
 
 **The Rule**: In expedited fulfillment, the safe editing window does not last 15 minutes. It closes in **under 600 seconds** from WMS drop.
 
