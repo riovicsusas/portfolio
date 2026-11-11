@@ -14,16 +14,23 @@ const suite = createSuite('freight', {
 });
 const money = cents => `${cents < 0 ? '-' : ''}$${(Math.abs(cents) / 100).toFixed(2)}`;
 const roundRatio = (numerator, denominator) => {
-  assert.ok(Number.isSafeInteger(numerator) && numerator >= 0);
-  assert.ok(Number.isSafeInteger(denominator) && denominator > 0);
-  return Math.floor((numerator + denominator / 2) / denominator);
+  assert.ok(Number.isSafeInteger(numerator) && numerator >= 0, 'Numerator must be nonnegative safe integer');
+  assert.ok(Number.isSafeInteger(denominator) && denominator > 0, 'Denominator must be positive safe integer');
+  const n = BigInt(numerator), d = BigInt(denominator);
+  const rounded = (n * 2n + d) / (d * 2n);
+  const result = Number(rounded);
+  assert.ok(Number.isSafeInteger(result), 'Rounded result exceeds safe integer range');
+  return result;
 };
-const { handling: fees, lane_scenario: lane, cohort_scenario: cohort } = input;
+const { handling: fees, lane_scenario: lane, cohort_scenario: cohort, zone_tariffs: zones } = input;
 function handling(parcels, units) {
   assert.ok(Number.isSafeInteger(parcels) && parcels > 0);
   assert.ok(Number.isSafeInteger(units) && units >= parcels);
-  return parcels * (fees.base_per_parcel_cents + fees.corrugate_per_parcel_cents)
-    + (units - parcels) * fees.additional_pick_cents;
+  const baseCorrugate = parcels * (fees.base_per_parcel_cents + fees.corrugate_per_parcel_cents);
+  const additionalPicks = (units - parcels) * fees.additional_pick_cents;
+  const total = baseCorrugate + additionalPicks;
+  assert.ok(Number.isSafeInteger(total) && total >= 0, 'Handling calculation must produce safe integer cents');
+  return total;
 }
 function quantities(items) {
   const totals = {};
@@ -47,9 +54,15 @@ function pricePlan(plan) {
     }
     const units = parcel.items.reduce((n, i) => n + i.quantity, 0);
     const freight = lane.lanes[parcel.node].freight_per_parcel_cents;
-    return { node: parcel.node, items: parcel.items, units, freight_cents: freight, handling_cents: handling(1, units), total_cents: freight + handling(1, units) };
+    const handlingFee = handling(1, units);
+    const totalCents = freight + handlingFee;
+    assert.ok(Number.isSafeInteger(totalCents) && totalCents >= 0, 'Parcel total must be safe integer cents');
+    return { node: parcel.node, items: parcel.items, units, freight_cents: freight, handling_cents: handlingFee, total_cents: totalCents };
   });
-  return { parcels, units: parcels.reduce((n, p) => n + p.units, 0), total_cents: parcels.reduce((n, p) => n + p.total_cents, 0) };
+  const totalUnits = parcels.reduce((n, p) => n + p.units, 0);
+  const totalPlanCents = parcels.reduce((n, p) => n + p.total_cents, 0);
+  assert.ok(Number.isSafeInteger(totalPlanCents) && totalPlanCents >= 0, 'Plan total must be safe integer cents');
+  return { parcels, units: totalUnits, total_cents: totalPlanCents };
 }
 let split, consolidated, modeledCohort;
 await suite.check('All monetary inputs are nonnegative safe integer cents', () => {
@@ -106,7 +119,9 @@ await suite.check('Five-hundred-order fixture preserves paired units and parcel 
   }
   const calculate = plan => {
     const handlingCents = handling(plan.parcels, units);
-    return { ...plan, handling_cents: handlingCents, total_cents: handlingCents + plan.aggregate_freight_input_cents };
+    const totalCents = handlingCents + plan.aggregate_freight_input_cents;
+    assert.ok(Number.isSafeInteger(totalCents) && totalCents >= 0, 'Cohort plan total must be safe integer cents');
+    return { ...plan, handling_cents: handlingCents, total_cents: totalCents };
   };
   const alpha = calculate(cohort.alpha), beta = calculate(cohort.beta);
   const saving = alpha.total_cents - beta.total_cents;
@@ -141,6 +156,33 @@ await suite.check('Capstone fixture retains Philadelphia and its separate $7.20 
   assert.equal(input.capstone_context.original_destination, 'Philadelphia, PA 19102');
   assert.equal(input.capstone_context.outbound_freight_scenario_cents, 720);
 });
+await suite.check('Freight rational rounding avoids safe integer precision loss on large values', () => {
+  assert.equal(roundRatio(9007199254740988, 3), 3002399751580329);
+});
+await suite.check('Consolidation bound: Zone 8 single parcel saves at least $3.20 over two Zone 2 parcels', () => {
+  assert.ok(zones, 'Declared zone tariffs required');
+  const units = 3;
+  const twoParcelHandling = handling(2, units);
+  const twoParcelFreight = zones.zone_2_per_parcel_cents * 2;
+  const twoParcelTotal = twoParcelHandling + twoParcelFreight;
+
+  const oneParcelHandling = handling(1, units);
+  const oneParcelFreight = zones.zone_8_per_parcel_cents;
+  const oneParcelTotal = oneParcelHandling + oneParcelFreight;
+
+  const consolidationAdvantage = twoParcelTotal - oneParcelTotal;
+
+  assert.equal(twoParcelHandling, 700);
+  assert.equal(twoParcelFreight, 1080);
+  assert.equal(twoParcelTotal, 1780);
+
+  assert.equal(oneParcelHandling, 410);
+  assert.equal(oneParcelFreight, 1050);
+  assert.equal(oneParcelTotal, 1460);
+
+  assert.equal(consolidationAdvantage, 320);
+  assert.ok(oneParcelTotal < twoParcelTotal, 'Consolidated Zone 8 must be strictly cheaper than two Zone 2 parcels');
+});
 suite.skip('Dated carrier tariff and ZIP-zone verification', 'No dated publication snapshot or independently checked quote is included; carrier amounts remain scenario inputs.');
 const planRows = plan => plan.parcels.map(p => `| ${p.node} | ${p.units} | ${money(p.freight_cents)} | ${money(p.handling_cents)} | ${money(p.total_cents)} |`).join('\n');
 const markdown = split && consolidated && modeledCohort ? `# Workstream A — Freight and Handling Scenario Evidence
@@ -158,6 +200,15 @@ ${planRows(split)}
 Split total: **${money(split.total_cents)}**. Reno consolidated total: **${money(consolidated.total_cents)}**. Difference: **${money(split.total_cents - consolidated.total_cents)}**.
 
 Handling is $2.50 base + $0.80 corrugate per parcel + $0.40 per pick after the first. There is no extra cart penalty. Weights, service-specific surcharges and re-rating are excluded from this fixed-input comparison.
+
+## Consolidation bound inequality
+
+The theoretical lower bound compares two hypothetical local Zone 2 shipments against a single cross-country Zone 8 shipment for a 3-unit basket under declared commercial rate card rates:
+- Two Zone 2 parcels: ${money(zones.zone_2_per_parcel_cents * 2)} freight + ${money(handling(2, 3))} handling = **${money(zones.zone_2_per_parcel_cents * 2 + handling(2, 3))}**.
+- One Zone 8 parcel: ${money(zones.zone_8_per_parcel_cents)} freight + ${money(handling(1, 3))} handling = **${money(zones.zone_8_per_parcel_cents + handling(1, 3))}**.
+- Net consolidation advantage: **${money((zones.zone_2_per_parcel_cents * 2 + handling(2, 3)) - (zones.zone_8_per_parcel_cents + handling(1, 3)))}**.
+
+This confirms that even under an extreme theoretical assumption deliberately favoring the split, consolidating into a single parcel remains cheaper by at least $3.20 under the declared rate card. This theoretical comparison is distinct from the Denver comparison and the 500-order cohort model.
 
 ## Paired-basket cohort model
 
@@ -179,4 +230,4 @@ The dossier's previously reported $445.40 handling delta and $1,106.40 total do 
 
 Order #1070's original destination is **${input.capstone_context.original_destination}**, requested destination **${input.capstone_context.requested_destination}**. Its ${money(input.capstone_context.outbound_freight_scenario_cents)} original freight is a separate declared input. No Brooklyn routing example, carrier invoice, physical shipment or misrouting outcome is inferred from these calculations.
 ` : '# Workstream A — Calculation failed\n\nSee failed assertions; incomplete results must not be cited as verified.';
-suite.finish({ data: { inputs: input, split_plan: split, consolidated_plan: consolidated, cohort_model: modeledCohort }, markdown, sources: input.reference_candidates });
+suite.finish({ data: { inputs: input, split_plan: split, consolidated_plan: consolidated, cohort_model: modeledCohort, consolidation_bound: { two_parcel_zone_2_cents: zones.zone_2_per_parcel_cents * 2 + handling(2, 3), one_parcel_zone_8_cents: zones.zone_8_per_parcel_cents + handling(1, 3), savings_cents: (zones.zone_2_per_parcel_cents * 2 + handling(2, 3)) - (zones.zone_8_per_parcel_cents + handling(1, 3)) } }, markdown, sources: input.reference_candidates });

@@ -26,6 +26,11 @@
     "first_pick_included": true,
     "additional_pick_cents": 40
   },
+  "zone_tariffs": {
+    "classification": "Declared commercial postal tariffs for the consolidation-bound inequality check",
+    "zone_2_per_parcel_cents": 540,
+    "zone_8_per_parcel_cents": 1050
+  },
   "lane_scenario": {
     "id": "D2-THREE-UNIT-CONTROLLED-COMPARISON",
     "destination": "Denver, CO (scenario destination; actual ZIP-pair zones not verified)",

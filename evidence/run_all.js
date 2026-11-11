@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
-import { hash } from './lib/report.js';
+import { hash, validateSuiteReport } from './lib/report.js';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const runId = `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`;
 const archive = path.join(root, 'runs', runId);
@@ -31,16 +31,13 @@ for (const [id, entry, output] of suites) {
   try {
     if (child.error) throw child.error;
     const filename = path.join(root, id, output);
+    if (!fs.existsSync(filename)) throw new Error(`Suite report not found: ${id}/${output}`);
     const report = JSON.parse(fs.readFileSync(filename, 'utf8'));
-    if (report.run_id !== runId) throw new Error('Suite did not produce a fresh report for this run');
-    if (!report.checks?.length || !report.counts || report.counts.total !== report.checks.length) throw new Error('Missing or inconsistent check accounting');
-    for (const status of ['passed', 'failed', 'skipped']) {
-      if (report.counts[status] !== report.checks.filter(c => c.status === status).length) throw new Error(`Incorrect ${status} check count`);
-    }
+    validateSuiteReport(report, runId);
     record.counts = report.counts;
     for (const key of Object.keys(summary.counts)) summary.counts[key] += report.counts[key];
     if (child.status !== 0) throw new Error(`Suite process exited ${child.status ?? child.signal}; see counted check failures`);
-    if (report.status !== 'passed' || report.counts.failed) throw new Error('A safety or financial check failed');
+    if (report.status !== 'passed' || report.counts.failed > 0) throw new Error('A safety or financial check failed');
     if (!report.counts.passed) throw new Error('Suite executed no passing checks');
     record.status = 'passed';
     record.report = `${id}/${output}`; record.report_sha256 = hash(fs.readFileSync(filename));

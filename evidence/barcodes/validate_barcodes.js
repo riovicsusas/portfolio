@@ -128,7 +128,7 @@ async function main() {
   const passedCanonical = canonicalResults.filter(record => record.valid).length;
   const passedRoundTrips = canonicalResults.filter(record => record.round_trip_match).length;
   const rejected = negativeResults.filter(record => record.trapped_successfully).length;
-  const markdown = `# Workstream C: Barcode Identity and Bitstream Verification
+  const markdown = `# Barcode Identity and Bitstream Verification
 
 **Classification:** Executed local validation and shared-table UPC-A bitstream round-trip checks.
 

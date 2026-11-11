@@ -15,6 +15,15 @@ Split total: **$21.50**. Reno consolidated total: **$10.50**. Difference: **$11.
 
 Handling is $2.50 base + $0.80 corrugate per parcel + $0.40 per pick after the first. There is no extra cart penalty. Weights, service-specific surcharges and re-rating are excluded from this fixed-input comparison.
 
+## Consolidation bound inequality
+
+The theoretical lower bound compares two hypothetical local Zone 2 shipments against a single cross-country Zone 8 shipment for a 3-unit basket under declared commercial rate card rates:
+- Two Zone 2 parcels: $10.80 freight + $7.00 handling = **$17.80**.
+- One Zone 8 parcel: $10.50 freight + $4.10 handling = **$14.60**.
+- Net consolidation advantage: **$3.20**.
+
+This confirms that even under an extreme theoretical assumption deliberately favoring the split, consolidating into a single parcel remains cheaper by at least $3.20 under the declared rate card. This theoretical comparison is distinct from the Denver comparison and the 500-order cohort model.
+
 ## Paired-basket cohort model
 
 The fixture assigns 310 two-unit orders and 190 exactly-three-unit orders: **1190 units**. This explicit assumption makes a conditional model reproducible; it is not a reconstructed historical ledger. Aggregate carrier totals and split counts are supplied inputs, not generated routing or quoting results.
@@ -37,9 +46,9 @@ Order #1070's original destination is **Philadelphia, PA 19102**, requested dest
 
 ## Executed checks
 
-Run: `2026-11-11T07-58-46-329Z-14408` · Node v24.18.0
+Run: `2026-11-11T09-15-03-307Z-b5589401` · Node v24.18.0
 
-Passed: 13; failed: 0; skipped: 1.
+Passed: 15; failed: 0; skipped: 1.
 
 | Check | Status | Detail |
 |---|---|---|
@@ -56,4 +65,6 @@ Passed: 13; failed: 0; skipped: 1.
 | Cohort savings match handling formula and aggregate freight inputs | passed |  |
 | Monthly and annual projections retain the exact cohort numerator | passed |  |
 | Capstone fixture retains Philadelphia and its separate $7.20 freight assumption | passed |  |
+| Freight rational rounding avoids safe integer precision loss on large values | passed |  |
+| Consolidation bound: Zone 8 single parcel saves at least $3.20 over two Zone 2 parcels | passed |  |
 | Dated carrier tariff and ZIP-zone verification | skipped | No dated publication snapshot or independently checked quote is included; carrier amounts remain scenario inputs. |

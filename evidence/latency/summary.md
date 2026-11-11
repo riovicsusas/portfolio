@@ -1,25 +1,25 @@
 # Coordinator functional checks and measured local simulation
 
-The coordinator uses Node v24.22.1 built-in SQLite for a local persistent operation ledger and virtual WMS state. SQLite is experimental in this Node release. Atomic claims and conditional shipment updates are exercised locally; no vendor API or queue service is contacted.
+The coordinator uses Node v24.18.0 built-in SQLite for a local persistent operation ledger and virtual WMS state. SQLite is experimental in this Node release. Atomic claims and conditional shipment updates are exercised locally; no vendor API or queue service is contacted.
 
 Functional checks cover preserved rejections, payload conflicts, pending duplicates, a cutoff changing during the request, uncertain side effects, selective release, and recovery after a separate worker exits at the post-effect boundary.
 
 | Workload | Attempts | Concurrency | p50 response ms | p95 | p99 | Business effects |
 |---|---:|---:|---:|---:|---:|---:|
-| Sequential local baseline | 50 | 1 | 5.1345 | 6.7102 | 6.8804 | 50 |
-| Concurrent local burst | 200 | 25 | 13.9893 | 24.8837 | 28.2003 | 200 |
-| Injected WMS delay | 40 | 10 | 12.9691 | 19.3562 | 20.0467 | 40 |
-| Same-payload duplicate pairs | 100 | 20 | 0.1595 | 10.9373 | 14.309 | 50 |
-| Post-cutoff rejection | 20 | 5 | 0.5863 | 0.7147 | 0.7348 | 0 |
-| Response loss after WMS-simulator success | 30 | 5 | 6.6056 | 12.9539 | 20.6654 | 30 |
+| Sequential local baseline | 50 | 1 | 30.793 | 33.1739 | 51.6055 | 50 |
+| Concurrent local burst | 200 | 25 | 140.7762 | 334.8928 | 435.0911 | 200 |
+| Injected WMS delay | 40 | 10 | 55.5159 | 87.4465 | 89.0359 | 40 |
+| Same-payload duplicate pairs | 100 | 20 | 0.8426 | 94.8255 | 105.1862 | 50 |
+| Post-cutoff rejection | 20 | 5 | 5.2542 | 7.6477 | 8.402 | 0 |
+| Response loss after WMS-simulator success | 30 | 5 | 43.8975 | 62.7997 | 67.6393 | 30 |
 
-Timings use performance.now(). Percentiles use nearest-rank, ceil(p*N)-1, no interpolation. All request outcomes are retained; per-outcome statistics are available in metrics.json. Response latency includes pending, rejected and unknown results and must not be described as confirmation latency. The seed reproduces injected delays, not operating-system scheduling or measured durations. Raw per-delivery records are archived as operations.jsonl in this run's latency directory.
+Timings use performance.now(). Percentiles use nearest-rank, ceil(p*N)-1, no interpolation. All request outcomes are retained; per-outcome statistics are available in metrics.json. Response latency includes pending, rejected and unknown results and must not be described as confirmation latency. The seed reproduces injected delays, not operating-system scheduling or measured durations. Raw per-delivery records are archived as operations.jsonl in each archived execution directory (evidence/runs/<run-id>/latency/operations.jsonl), not in the working tree.
 
 The default smoke profile is a small local benchmark. Run --full for 10000 attempts per workload. No production latency, durable distributed locking, physical stop, SQS delivery, or vendor SLA is established.
 
 ## Executed checks
 
-Run: `2026-11-09T18-21-14-457Z-59d713d1` · Node v24.22.1
+Run: `2026-11-11T09-15-03-307Z-b5589401` · Node v24.18.0
 
 Passed: 34; failed: 0; skipped: 0.
 

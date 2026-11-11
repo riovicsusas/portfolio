@@ -1,18 +1,18 @@
 {
-  "run_id": "2026-11-09T18-21-14-457Z-59d713d1",
-  "started_at": "2026-11-09T18:21:14.558Z",
-  "finished_at": "2026-11-09T18:21:15.588Z",
+  "run_id": "2026-11-11T09-15-03-307Z-b5589401",
+  "started_at": "2026-11-11T09:15:03.567Z",
+  "finished_at": "2026-11-11T09:15:10.932Z",
   "runtime": {
-    "node": "v24.22.1",
-    "platform": "linux",
+    "node": "v24.18.0",
+    "platform": "win32",
     "arch": "x64"
   },
-  "revision": "4cb20482de1c172efc89de7f09c5adbfdd204143",
-  "script_sha256": "44909ddd7fe205f1b81bf206efe67b3c104868810a29c4e89effc01ef124d278",
+  "revision": "5a9ff651dd2164a675f0e56a3c15b64d294253fc",
+  "script_sha256": "0f70189c98fa7228a7c2e8750d43ea1a4c7d7c7d8ba894c6c5691400e2a66f85",
   "input_sha256": {
-    "workloads.json": "772c15f44acd9715413e4621b1bb79ca6477ece7be2b7a864dc8ae83be46545e",
-    "coordinator.js": "35a60b0f407c5cc7a70228fbb39f821950fd672e49203fd2daef40a71a119e67",
-    "restart_worker.js": "edf19e74da571134727021baf819c4da242f5ebc7cc49cd8eff3f9f265248fa1"
+    "workloads.json": "0b07f48ff592b99f83aef797a58644c48097a435878b2cfb12ed39d1814c4f48",
+    "coordinator.js": "626bdfd22f913b9882e7eb3c21ef20c6188a3a05e6fe149fece24e6fc8742add",
+    "restart_worker.js": "4d51e5f1eb8ccbf505a380bb9253ee22b8f0f441d822cc5e1308aad823f4aeb8"
   },
   "classification": "Measured local SQLite coordinator and fault-injected WMS simulator; no vendor or SQS calls",
   "status": "passed",
@@ -252,22 +252,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 50,
-          "min": 3.1625,
-          "p50": 5.1345,
-          "p95": 6.7102,
-          "p99": 6.8804,
-          "max": 6.8804,
-          "mean": 5.0389
+          "min": 17.9109,
+          "p50": 30.793,
+          "p95": 33.1739,
+          "p99": 51.6055,
+          "max": 51.6055,
+          "mean": 30.7732
         },
         "by_outcome_ms": {
           "HOLD_CONFIRMED": {
             "count": 50,
-            "min": 3.1625,
-            "p50": 5.1345,
-            "p95": 6.7102,
-            "p99": 6.8804,
-            "max": 6.8804,
-            "mean": 5.0389
+            "min": 17.9109,
+            "p50": 30.793,
+            "p95": 33.1739,
+            "p99": 51.6055,
+            "max": 51.6055,
+            "mean": 30.7732
           }
         }
       },
@@ -293,22 +293,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 200,
-          "min": 3.5456,
-          "p50": 13.9893,
-          "p95": 24.8837,
-          "p99": 28.2003,
-          "max": 30.0488,
-          "mean": 14.9208
+          "min": 28.3958,
+          "p50": 140.7762,
+          "p95": 334.8928,
+          "p99": 435.0911,
+          "max": 481.2209,
+          "mean": 155.203
         },
         "by_outcome_ms": {
           "HOLD_CONFIRMED": {
             "count": 200,
-            "min": 3.5456,
-            "p50": 13.9893,
-            "p95": 24.8837,
-            "p99": 28.2003,
-            "max": 30.0488,
-            "mean": 14.9208
+            "min": 28.3958,
+            "p50": 140.7762,
+            "p95": 334.8928,
+            "p99": 435.0911,
+            "max": 481.2209,
+            "mean": 155.203
           }
         }
       },
@@ -334,22 +334,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 40,
-          "min": 8.0908,
-          "p50": 12.9691,
-          "p95": 19.3562,
-          "p99": 20.0467,
-          "max": 20.0467,
-          "mean": 13.8703
+          "min": 26.5041,
+          "p50": 55.5159,
+          "p95": 87.4465,
+          "p99": 89.0359,
+          "max": 89.0359,
+          "mean": 62.4721
         },
         "by_outcome_ms": {
           "HOLD_CONFIRMED": {
             "count": 40,
-            "min": 8.0908,
-            "p50": 12.9691,
-            "p95": 19.3562,
-            "p99": 20.0467,
-            "max": 20.0467,
-            "mean": 13.8703
+            "min": 26.5041,
+            "p50": 55.5159,
+            "p95": 87.4465,
+            "p99": 89.0359,
+            "max": 89.0359,
+            "mean": 62.4721
           }
         }
       },
@@ -377,31 +377,31 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 100,
-          "min": 0.0353,
-          "p50": 0.1595,
-          "p95": 10.9373,
-          "p99": 14.309,
-          "max": 16.144,
-          "mean": 4.1904
+          "min": 0.128,
+          "p50": 0.8426,
+          "p95": 94.8255,
+          "p99": 105.1862,
+          "max": 114.597,
+          "mean": 29.9295
         },
         "by_outcome_ms": {
           "PENDING": {
             "count": 50,
-            "min": 0.0353,
-            "p50": 0.0431,
-            "p95": 0.0703,
-            "p99": 0.1595,
-            "max": 0.1595,
-            "mean": 0.0476
+            "min": 0.128,
+            "p50": 0.2271,
+            "p95": 0.5169,
+            "p99": 0.8426,
+            "max": 0.8426,
+            "mean": 0.2664
           },
           "HOLD_CONFIRMED": {
             "count": 50,
-            "min": 4.3695,
-            "p50": 8.0441,
-            "p95": 13.8956,
-            "p99": 16.144,
-            "max": 16.144,
-            "mean": 8.3332
+            "min": 29.2414,
+            "p50": 56.9889,
+            "p95": 101.3931,
+            "p99": 114.597,
+            "max": 114.597,
+            "mean": 59.5926
           }
         }
       },
@@ -428,22 +428,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 20,
-          "min": 0.4567,
-          "p50": 0.5863,
-          "p95": 0.7147,
-          "p99": 0.7348,
-          "max": 0.7348,
-          "mean": 0.5951
+          "min": 4.4473,
+          "p50": 5.2542,
+          "p95": 7.6477,
+          "p99": 8.402,
+          "max": 8.402,
+          "mean": 5.7819
         },
         "by_outcome_ms": {
           "CUTOFF_REJECTED": {
             "count": 20,
-            "min": 0.4567,
-            "p50": 0.5863,
-            "p95": 0.7147,
-            "p99": 0.7348,
-            "max": 0.7348,
-            "mean": 0.5951
+            "min": 4.4473,
+            "p50": 5.2542,
+            "p95": 7.6477,
+            "p99": 8.402,
+            "max": 8.402,
+            "mean": 5.7819
           }
         }
       },
@@ -470,22 +470,22 @@
         "reconciled": 30,
         "request_response_all_outcomes_ms": {
           "count": 30,
-          "min": 3.8996,
-          "p50": 6.6056,
-          "p95": 12.9539,
-          "p99": 20.6654,
-          "max": 20.6654,
-          "mean": 7.0591
+          "min": 24.3747,
+          "p50": 43.8975,
+          "p95": 62.7997,
+          "p99": 67.6393,
+          "max": 67.6393,
+          "mean": 43.8188
         },
         "by_outcome_ms": {
           "UNKNOWN": {
             "count": 30,
-            "min": 3.8996,
-            "p50": 6.6056,
-            "p95": 12.9539,
-            "p99": 20.6654,
-            "max": 20.6654,
-            "mean": 7.0591
+            "min": 24.3747,
+            "p50": 43.8975,
+            "p95": 62.7997,
+            "p99": 67.6393,
+            "max": 67.6393,
+            "mean": 43.8188
           }
         }
       }

@@ -1,9 +1,9 @@
 {
-  "run_id": "2026-11-09T18-21-14-457Z-59d713d1",
-  "started_at": "2026-11-09T18:21:14.459Z",
+  "run_id": "2026-11-11T09-15-03-307Z-b5589401",
+  "started_at": "2026-11-11T09:15:03.310Z",
   "runtime": {
-    "node": "v24.22.1",
-    "platform": "linux",
+    "node": "v24.18.0",
+    "platform": "win32",
     "arch": "x64"
   },
   "mode": "smoke",
@@ -12,20 +12,20 @@
     {
       "id": "freight",
       "status": "passed",
-      "duration_ms": 57,
+      "duration_ms": 184,
       "counts": {
-        "passed": 13,
+        "passed": 15,
         "failed": 0,
         "skipped": 1,
-        "total": 14
+        "total": 16
       },
       "report": "freight/results.json",
-      "report_sha256": "dadc3bbae50d64b4fccc97f27797e9f2b36c95cf06cc6b78f9f428f1a01b0ca8"
+      "report_sha256": "c5b98b23015f7da90fd92aafe88c3b9c0987d7f15d8d51af71abf6fa29359bbc"
     },
     {
       "id": "latency",
       "status": "passed",
-      "duration_ms": 1081,
+      "duration_ms": 7482,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -33,12 +33,12 @@
         "total": 34
       },
       "report": "latency/metrics.json",
-      "report_sha256": "dd31f7cc636116cbcc8903929c05715ec4e80103e00d6496e831cb28be14d09b"
+      "report_sha256": "769403f33896c3f487ca65f094ec2691a82fb1181e4d19653389d829d23896f5"
     },
     {
       "id": "barcodes",
       "status": "passed",
-      "duration_ms": 57,
+      "duration_ms": 305,
       "counts": {
         "passed": 58,
         "failed": 0,
@@ -46,12 +46,12 @@
         "total": 58
       },
       "report": "barcodes/results.json",
-      "report_sha256": "502468abfc777b149fe68c26df3913a7b21e92821fde5b7f154535c28ba97d48"
+      "report_sha256": "202e36af2dd18404ac8b56a4cde285b4364a19397aba5bf29edfefe17d3ed603"
     },
     {
       "id": "costs",
       "status": "passed",
-      "duration_ms": 59,
+      "duration_ms": 206,
       "counts": {
         "passed": 11,
         "failed": 0,
@@ -59,12 +59,12 @@
         "total": 11
       },
       "report": "costs/sensitivity.json",
-      "report_sha256": "d1e9885ab66045246b89fcafd7bb8b46b371bf3cbfca997018b2681bcf6210eb"
+      "report_sha256": "7980c78de8acfa737329dfe046d20c6dbbb7fc02d5cd1369560e039fc5db81c6"
     },
     {
       "id": "carrier-recovery",
       "status": "passed",
-      "duration_ms": 51,
+      "duration_ms": 209,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -72,36 +72,37 @@
         "total": 36
       },
       "report": "carrier-recovery/results.json",
-      "report_sha256": "dd4a717343bc440e99543d212c29f4812722d188406c93e91e34c8faa5db218a"
+      "report_sha256": "ccf1052bdaeaf6db0fdfa3d3b8c8657de3b267d644202162787ef5b68ca723ef"
     }
   ],
   "counts": {
-    "passed": 150,
+    "passed": 152,
     "failed": 0,
     "skipped": 3,
-    "total": 153
+    "total": 155
   },
   "sources_sha256": {
-    "barcodes/fixtures.json": "1883e0db793e85be1698eb6a0466c6b87354a02343df68790cf0fd55cd16345d",
-    "barcodes/validate_barcodes.js": "39c7702efcaa2193b3657565cc853b4bd9a06b5af2b0a0b1a7a521ec8e73ab77",
-    "carrier-recovery/contracts/provenance.json": "76c739717a85e333cd46f8140afdabddc7a8f4f01990730c2ae1091eaefba9f0",
+    "barcodes/fixtures.json": "b98415ae855ac01fbf3eb79f8418d5dda3225c5c84c93b68ac9fc53d8b6dc237",
+    "barcodes/validate_barcodes.js": "c85193b977c2251833edb7d40ea5e1d344a8726d3470694632be81fedcd53552",
+    "carrier-recovery/contracts/provenance.json": "d9b5f845b9cd79982c34d431ff07326b979a42ba4582be1c45fc6197745fa3ba",
     "carrier-recovery/contracts/ups_delivery_intercept_v2.openapi.json": "6bf051ea964d3c74de18c30b87505d80f9ccf2056d6809fe9cecf700355ec33b",
-    "carrier-recovery/fixtures.json": "8b7b59d06de892f294367a60bb96da78f5a58903a87abb9b1b6a2bbdcb724b46",
-    "carrier-recovery/recovery.js": "79794a828074fdc61b20e4bbfcbfa08af20dd9b619c8399ef468d1b8dd4f4f3a",
-    "carrier-recovery/synapse_adapter_schema.json": "6b396ee55b52276d97f3a43af607931454de9b6a548eff82376ad807811e48b5",
-    "carrier-recovery/test_recovery.js": "afe627f353bf6eb217ceda3480fa740465fa61c55557191cad26849052e5c66c",
-    "costs/bom_inputs.json": "6f6dcfba06f2e4de653db4345702f6e7de86ca06925e1fee07fe109578a19a35",
-    "costs/money.js": "ec0e5f839c6693a4a7d7ad0e4c4c635c82efe94cf5ba9aabbb116a6af0f5d34e",
-    "costs/run_cost_model.js": "13ab125933d8b78b8e57e0cebbc18332936d95669208784f0bfce73f6c2c24d5",
-    "freight/calculate_freight.js": "e39c4d8c5a5f7e01edf2ddcb30fc5c8cdace9b86cab60f40036f96b949ab0ac6",
-    "freight/tariffs.json": "9e0922cbc6af104994091cdb8818e1b7091ebdf36b5f4a8ebad05a0b0f36d219",
-    "latency/coordinator.js": "35a60b0f407c5cc7a70228fbb39f821950fd672e49203fd2daef40a71a119e67",
-    "latency/coordinator_simulator.js": "44909ddd7fe205f1b81bf206efe67b3c104868810a29c4e89effc01ef124d278",
-    "latency/restart_worker.js": "edf19e74da571134727021baf819c4da242f5ebc7cc49cd8eff3f9f265248fa1",
-    "latency/workloads.json": "772c15f44acd9715413e4621b1bb79ca6477ece7be2b7a864dc8ae83be46545e",
-    "lib/report.js": "6028fdb7a93182d93f2f828a0cb81e8d11ae705310b73391903c45a00a2a29dd",
-    "run_all.js": "0367a92849d7b9eeb916590f42407c66fd1704e9a4a4f8aa52c57f942665b5f3"
+    "carrier-recovery/fixtures.json": "c3012e3766113b8a0dd45dac971ebef567112a947bb627e3a58d0bfe16112325",
+    "carrier-recovery/recovery.js": "7e6a4fc7d535b09af155457b9fedc0157a5fd7135ac205e72f404a513141dcd1",
+    "carrier-recovery/synapse_adapter_schema.json": "a58a93528acda59fb364f84f14c993b62676d1b5ccfcf4ab55b9e6df1e4778ef",
+    "carrier-recovery/test_recovery.js": "5dc407a4d79d6f5ade782b0c3538ccbeee7e40362af79a1641d011ef95e0af17",
+    "costs/bom_inputs.json": "b458061b538de4e0a3501fce3c8293663bf35114c5197e7bca37bdc4aeae756c",
+    "costs/money.js": "24e3fbba01f0f1ac2d051b066dcf413b6dce0de3ea220d3220dcf60b7d6ff8a3",
+    "costs/run_cost_model.js": "e808812b8041542779ad8e44b267d13099afef77d2ea5a6668a1b0c1432a4bd6",
+    "freight/calculate_freight.js": "4c0e6524266181cceee5255e9385a61e8b0eadedeb30d6f932f1e20328660d76",
+    "freight/tariffs.json": "e699b03c80eff9b609f91579d42377ce6b9aa105eaa8f17c7fc10925d0ad35d5",
+    "latency/coordinator.js": "626bdfd22f913b9882e7eb3c21ef20c6188a3a05e6fe149fece24e6fc8742add",
+    "latency/coordinator_simulator.js": "0f70189c98fa7228a7c2e8750d43ea1a4c7d7c7d8ba894c6c5691400e2a66f85",
+    "latency/restart_worker.js": "4d51e5f1eb8ccbf505a380bb9253ee22b8f0f441d822cc5e1308aad823f4aeb8",
+    "latency/workloads.json": "0b07f48ff592b99f83aef797a58644c48097a435878b2cfb12ed39d1814c4f48",
+    "lib/report.js": "8ca7b24b4e53d93698957ac1f04a74ae6c1a01928eb831f43e9b07254e4dc110",
+    "run_all.js": "78b6d7a42247fe8e7d8917dcb61497f4edd866571bd2c4b07c90dc012ee6889d",
+    "test_report_accounting.js": "5975ef29627904922d908a35e52a045696ebe2a1e765980baae27608b197eb9f"
   },
-  "finished_at": "2026-11-09T18:21:15.769Z",
+  "finished_at": "2026-11-11T09:15:11.743Z",
   "status": "passed"
 }

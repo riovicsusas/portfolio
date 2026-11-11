@@ -1,24 +1,24 @@
 {
-  "run_id": "2026-11-11T07-58-46-329Z-14408",
-  "started_at": "2026-11-11T07:58:46.329Z",
-  "finished_at": "2026-11-11T07:58:46.420Z",
+  "run_id": "2026-11-11T09-15-03-307Z-b5589401",
+  "started_at": "2026-11-11T09:15:03.386Z",
+  "finished_at": "2026-11-11T09:15:03.483Z",
   "runtime": {
     "node": "v24.18.0",
     "platform": "win32",
     "arch": "x64"
   },
-  "revision": "21cbaa1542cb38a3de5b72864c6ac03e5efcdd0a",
-  "script_sha256": "d275c08012d525909395c7e8fb9aa959eb49012f06fc5591628af2f4d0102e91",
+  "revision": "5a9ff651dd2164a675f0e56a3c15b64d294253fc",
+  "script_sha256": "4c0e6524266181cceee5255e9385a61e8b0eadedeb30d6f932f1e20328660d76",
   "input_sha256": {
-    "tariffs.json": "880b1d957992dcae2871f8ad430c7a8959623e600ff97065df9655cb372e6c7d"
+    "tariffs.json": "e699b03c80eff9b609f91579d42377ce6b9aa105eaa8f17c7fc10925d0ad35d5"
   },
   "classification": "Calculated results from declared synthetic inventory, handling and freight inputs",
   "status": "passed",
   "counts": {
-    "passed": 13,
+    "passed": 15,
     "failed": 0,
     "skipped": 1,
-    "total": 14
+    "total": 16
   },
   "checks": [
     {
@@ -74,6 +74,14 @@
       "status": "passed"
     },
     {
+      "name": "Freight rational rounding avoids safe integer precision loss on large values",
+      "status": "passed"
+    },
+    {
+      "name": "Consolidation bound: Zone 8 single parcel saves at least $3.20 over two Zone 2 parcels",
+      "status": "passed"
+    },
+    {
       "name": "Dated carrier tariff and ZIP-zone verification",
       "status": "skipped",
       "reason": "No dated publication snapshot or independently checked quote is included; carrier amounts remain scenario inputs."
@@ -125,6 +133,11 @@
         "corrugate_per_parcel_cents": 80,
         "first_pick_included": true,
         "additional_pick_cents": 40
+      },
+      "zone_tariffs": {
+        "classification": "Declared commercial postal tariffs for the consolidation-bound inequality check",
+        "zone_2_per_parcel_cents": 540,
+        "zone_8_per_parcel_cents": 1050
       },
       "lane_scenario": {
         "id": "D2-THREE-UNIT-CONTROLLED-COMPARISON",
@@ -320,6 +333,11 @@
         "orders": 365000,
         "saving_cents": 72810200
       }
+    },
+    "consolidation_bound": {
+      "two_parcel_zone_2_cents": 1780,
+      "one_parcel_zone_8_cents": 1460,
+      "savings_cents": 320
     }
   }
 }

@@ -33,7 +33,7 @@ Run `node evidence/carrier-recovery/test_recovery.js` from the portfolio root. T
 
 ## Executed checks
 
-Run: `2026-11-09T18-21-14-457Z-59d713d1` · Node v24.22.1
+Run: `2026-11-11T09-15-03-307Z-b5589401` · Node v24.18.0
 
 Passed: 34; failed: 0; skipped: 2.
 

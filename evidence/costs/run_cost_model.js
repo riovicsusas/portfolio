@@ -85,10 +85,14 @@ if (!valid) {
   };
   await suite.check('Half-up rational processing fees are correct at a half-cent boundary', () => {
     assert.equal(feeCents(500), 45); assert.equal(feeCents(9800), 314); assert.equal(feeCents(2820), 112); assert.equal(roundRatio(-15, 10), -2);
+    assert.equal(roundRatio(9007199254740988, 3), 3002399751580329);
+    assert.equal(feeCents(0), 30);
   });
   await suite.check('Money helpers reject negative, fractional, unsafe or invalid-rate inputs', () => {
     for (const n of [-1, 1.2, Number.NaN, Number.MAX_SAFE_INTEGER + 1]) assert.throws(() => feeCents(n));
-    assert.throws(() => feeCents(100, 1000, 1000)); assert.equal(usd(-1), '-$0.01');
+    assert.throws(() => feeCents(100, 1000, 1000));
+    assert.throws(() => feeCents(100, 29, 1000, Number.MAX_SAFE_INTEGER), RangeError);
+    assert.equal(usd(-1), '-$0.01');
   });
   await suite.check('Fixture BOM contains exactly one of each approved bundle component', () => {
     assert.deepEqual(inputs.bundle.components, [{ component: 'sticks', quantity: 1 }, { component: 'tincture', quantity: 1 }, { component: 'tumbler', quantity: 1 }]);
