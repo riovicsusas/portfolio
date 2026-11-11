@@ -2,27 +2,6 @@
 
 *Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Compiled 2026-11-10*
 
-> **Classification:** Architecture dossier · staged incident narrative + offline evidence  
-> **Evidence run:** `2026-11-09T18-21-14-457Z-59d713d1` · Node v24.22.1  
-> **Scope reminder:** Every number in this document is one of three things: a *staged scenario input*, a *calculated result*, or an *executed offline check*. §11 states which is which. Nothing here is a production measurement.
-
----
-
-## Contents
-
-1. [The Hook: The 49-Mile Desynchronization](#1-the-hook-the-49-mile-desynchronization)
-2. [The Illusion of "In Progress" (Five Physical Stages, Two Clocks)](#2-the-illusion-of-in-progress-five-physical-stages-two-clocks)
-3. [What One Mis-Shipped Carton Costs (Unit Economics & FDA Scrap)](#3-what-one-mis-shipped-carton-costs-unit-economics--fda-scrap)
-4. [The 133-Second Trace: Dissecting Order #1004](#4-the-133-second-trace-dissecting-order-1004)
-5. [The Priority Bypass Seam: Why T+11 Was Already in Queue](#5-the-priority-bypass-seam-why-t11-was-already-in-queue)
-6. [The Freeze-First Protocol (The 4-Step Lock)](#6-the-freeze-first-protocol-the-4-step-lock)
-7. [The Deterministic PONR Gate & Hazard Engine](#7-the-deterministic-ponr-gate--hazard-engine)
-8. [Reading the Telemetry: "I Don't Know" vs. "Too Late"](#8-reading-the-telemetry-i-dont-know-vs-too-late)
-9. [Three Operational Playbooks: One Gate](#9-three-operational-playbooks-one-gate)
-10. [The Four Operational Laws of Order Lifecycle](#10-the-four-operational-laws-of-order-lifecycle)
-11. [What Is Proven, and What Is Only Designed](#11-what-is-proven-and-what-is-only-designed)
-12. [The Architectural Takeaway](#12-the-architectural-takeaway)
-
 ---
 
 ## 1. The Hook: The 49-Mile Desynchronization
