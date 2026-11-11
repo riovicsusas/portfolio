@@ -64,7 +64,12 @@
       height: 56px;
     }
 
+    .label-short { display: none; }
+    .btn-print:disabled, .btn-copy:disabled { cursor: wait; opacity: 0.6; }
+
     .topbar-left {
+      min-width: 0;
+      flex: 1 1 auto;
       display: flex;
       align-items: center;
       gap: 14px;
@@ -225,6 +230,7 @@
       color: var(--muted);
       font-family: 'JetBrains Mono', monospace;
       margin-top: 6px;
+      overflow-wrap: anywhere;
     }
     .doc-date {
       font-size: 11px;
@@ -235,7 +241,8 @@
     /* ═══════════════════════════════════════════
        MARKDOWN CONTENT STYLES
     ═══════════════════════════════════════════ */
-    .md-body { color: var(--text); }
+    .md-body { color: var(--text); min-width: 0; }
+    .md-body p, .md-body li, .md-body a { overflow-wrap: anywhere; }
 
     .md-body h1 {
       font-size: 26px;
@@ -290,6 +297,8 @@
     /* Inline code */
     .md-body code {
       font-family: 'JetBrains Mono', monospace;
+      font-variant-ligatures: none;
+      font-feature-settings: 'liga' 0, 'calt' 0;
       font-size: 12px;
       background: rgba(201,183,159,0.1);
       border: 1px solid rgba(201,183,159,0.2);
@@ -317,6 +326,20 @@
       color: inherit;
       border-radius: 0;
     }
+
+    /* Technical tables scroll locally without widening the document. */
+    .table-scroll {
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 16px 0 24px;
+      scrollbar-width: thin;
+    }
+    .table-scroll:focus-visible, .mermaid-wrap:focus-visible, .md-body pre:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+    .table-scroll table { margin: 0; min-width: 560px; }
+    .md-body :not(pre) > code { overflow-wrap: anywhere; }
 
     /* Tables */
     .md-body table {
@@ -403,14 +426,26 @@
       text-align: center;
     }
     .mermaid {
-      display: inline-block;
+      display: block;
+      width: var(--diagram-width, 100%);
       min-width: 260px;
+      margin-inline: auto;
       text-align: center;
     }
     .mermaid svg {
-      max-width: 100% !important;
+      display: block;
+      width: 100% !important;
+      max-width: none !important;
       height: auto !important;
     }
+    .mermaid-light-node .label,
+    .mermaid-light-node .nodeLabel,
+    .mermaid-light-node span,
+    .mermaid-light-node text {
+      color: #142536 !important;
+      fill: #142536 !important;
+    }
+    .diagram-print-pages { display: none; }
 
     /* ═══════════════════════════════════════════
        TABLE OF CONTENTS SIDEBAR (optional)
@@ -457,10 +492,10 @@
     }
     .toc-sidebar a.toc-h3 { font-size: 10.5px; padding-left: 20px; margin-left: -10px; }
 
-    @media (min-width: 1024px) {
+    @media screen and (min-width: 1024px) {
       .toc-sidebar { display: block; }
     }
-    @media (max-width: 1024px) {
+    @media screen and (max-width: 1024px) {
       .viewer-main {
         padding: 24px 16px 80px 16px;
         gap: 0;
@@ -495,7 +530,11 @@
       /* Page setup */
       @page {
         size: A4 portrait;
-        margin: 18mm 20mm 18mm 20mm;
+        margin: 18mm 20mm 23mm 20mm;
+      }
+      @page diagram-landscape {
+        size: A4 landscape;
+        margin: 18mm 20mm 23mm;
       }
 
       /* Reset backgrounds for print */
@@ -518,6 +557,13 @@
         line-height: 1.6;
       }
 
+      .viewer-main {
+        display: block;
+        width: 100%;
+        min-height: 0;
+        padding: 0;
+        margin: 0;
+      }
       .doc-wrap {
         max-width: 100%;
         padding: 0;
@@ -546,18 +592,19 @@
 
       /* Print footer */
       .print-footer {
-        display: block !important;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        display: flex !important;
+        gap: 8pt;
+        align-items: flex-start;
+        position: static;
+        margin-top: 18pt;
         font-size: 7pt;
-        color: #999;
+        color: #666;
         border-top: 1pt solid #ddd;
         padding-top: 6pt;
-        display: flex;
         justify-content: space-between;
       }
+      .print-footer span { overflow-wrap: anywhere; }
+      #print-url { display: none; }
 
       /* Headings */
       .md-body h1 {
@@ -591,7 +638,13 @@
       .md-body em { color: #333 !important; }
 
       /* Tables */
-      .md-body table { font-size: 8.5pt; page-break-inside: avoid; }
+      .table-scroll { overflow: visible; margin: 12pt 0 16pt; }
+      .md-body table { width: 100%; min-width: 0; table-layout: fixed; font-size: 8.5pt; break-inside: auto; page-break-inside: auto; }
+      .md-body thead { display: table-header-group; }
+      .md-body tbody { display: table-row-group; }
+      .md-body tr { break-inside: avoid; page-break-inside: avoid; }
+      .md-body th, .md-body td { overflow-wrap: anywhere; word-break: normal; }
+      .md-body th code, .md-body td code { white-space: normal; overflow-wrap: anywhere; }
       .md-body th {
         background: #18334B !important;
         color: #fff !important;
@@ -609,23 +662,78 @@
         border-radius: 4pt;
         padding: 10pt;
         font-size: 7.5pt;
-        page-break-inside: avoid;
+        break-inside: auto;
+        page-break-inside: auto;
         overflow: visible;
         white-space: pre-wrap;
-        word-break: break-all;
+        overflow-wrap: anywhere;
+        word-break: normal;
       }
-      .md-body pre code { color: #333 !important; font-size: 7.5pt; }
+      .md-body pre code { color: #333 !important; font-size: 7.5pt; white-space: inherit; }
+      .md-body pre code * { color: #333 !important; }
+      .md-body pre.ascii-block,
+      .md-body pre.ascii-block code,
+      .md-body pre.ascii-block code * {
+        font-size: var(--print-ascii-size, 7.5pt) !important;
+        white-space: pre;
+        overflow-wrap: normal;
+        word-break: normal;
+      }
+      .md-body pre.ascii-block { break-inside: avoid; page-break-inside: avoid; }
       .md-body code { color: #566746 !important; background: #f0ede8 !important; border: none; }
 
       /* Mermaid diagram in print */
       .mermaid-wrap {
-        background: #fdfdfd !important;
-        border: 1pt solid #ddd !important;
-        border-radius: 4pt;
-        padding: 12pt;
+        background: transparent !important;
+        border: 0 !important;
+        padding: 0;
         margin: 14pt 0;
+        break-inside: auto;
+        page-break-inside: auto;
+        overflow: visible;
+      }
+      .mermaid { display: none; }
+      .diagram-print-pages { display: block; }
+      .print-diagram-page {
+        border: 1pt solid #ddd;
+        border-radius: 4pt;
+        padding: 10pt;
+        margin: 12pt 0;
+        break-inside: avoid;
         page-break-inside: avoid;
       }
+      .print-diagram-page.is-landscape {
+        page: diagram-landscape;
+        break-before: page;
+        break-after: page;
+      }
+      .print-diagram-page.is-tiled:not(:last-child) { break-after: page; }
+      .print-diagram-caption { font-size: 8pt; color: #34495e; text-align: left; margin-bottom: 8pt; }
+      .print-diagram-page svg {
+        display: block;
+        width: var(--print-diagram-width) !important;
+        max-width: 100% !important;
+        height: auto !important;
+        margin-inline: auto;
+      }
+      .mermaid-wrap svg text, .mermaid-wrap svg tspan,
+      .mermaid-wrap svg .label, .mermaid-wrap svg .nodeLabel,
+      .mermaid-wrap svg .edgeLabel, .mermaid-wrap svg foreignObject * {
+        color: #172634 !important;
+        fill: #172634 !important;
+      }
+      .mermaid-wrap svg .node rect, .mermaid-wrap svg .node polygon,
+      .mermaid-wrap svg .node circle, .mermaid-wrap svg .node ellipse,
+      .mermaid-wrap svg .node path, .mermaid-wrap svg .actor,
+      .mermaid-wrap svg .labelBox, .mermaid-wrap svg .cluster rect {
+        fill: #f1f4f6 !important;
+        stroke: #34495e !important;
+      }
+      .mermaid-wrap svg .flowchart-link, .mermaid-wrap svg .edgePath path,
+      .mermaid-wrap svg .messageLine0, .mermaid-wrap svg .messageLine1,
+      .mermaid-wrap svg .actor-line { stroke: #34495e !important; }
+      .mermaid-wrap svg marker path { fill: #34495e !important; stroke: #34495e !important; }
+      .mermaid-wrap svg .edgeLabel, .mermaid-wrap svg .edgeLabel * { background: #fff !important; }
 
       /* Blockquotes */
       .md-body blockquote {
@@ -644,7 +752,8 @@
       .md-body hr { border-top: 0.5pt solid #ddd; margin: 16pt 0; }
 
       /* Links: show URL in parens */
-      .md-body a::after { content: " (" attr(href) ")"; font-size: 7pt; color: #666; }
+      .md-body a::after { content: " (" attr(href) ")"; font-size: 7pt; color: #666; overflow-wrap: anywhere; }
+      .md-body a[href^="../"]::after { content: none; }
       .md-body a[href^="#"]::after { content: ""; } /* skip anchor links */
 
       /* Avoid orphan headings */
@@ -664,11 +773,18 @@
     /* ═══════════════════════════════════════════
        RESPONSIVE
     ═══════════════════════════════════════════ */
-    @media (max-width: 640px) {
-      .topbar { padding: 0 16px; }
-      .topbar-title { display: none; }
-      .doc-wrap { padding: 24px 16px 64px; }
+    @media screen and (max-width: 640px) {
+      .topbar { padding: 0 12px; gap: 8px; }
+      .topbar-left { flex: 0 1 auto; }
+      .topbar-title, .label-full { display: none; }
+      .label-short { display: inline; }
+      .topbar-actions { gap: 6px; }
+      .back-btn, .btn-copy, .btn-print { min-height: 44px; padding: 8px 10px; gap: 5px; font-size: 12px; }
+      .viewer-main { padding: 24px 16px 64px; }
+      .doc-wrap { padding: 0; }
       .doc-meta { flex-direction: column; gap: 8px; }
+      .mermaid-wrap { padding: 16px; }
+      .md-body pre { padding: 16px; }
     }
   </style>
   <link rel="stylesheet" href="../css/typography.css" />
@@ -684,25 +800,25 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
-        Back to Projects
+        <span class="label-full">Back to Projects</span><span class="label-short">Projects</span>
       </a>
       <span class="topbar-title" id="topbar-title">Loading dossier…</span>
     </div>
     <div class="topbar-actions">
-      <button class="btn-copy" id="btn-copy" title="Copy GitHub link">
+      <button class="btn-copy" id="btn-copy" title="Copy dossier link" aria-label="Copy dossier link" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
-        Copy Link
+        <span class="label-full">Copy Link</span><span class="label-short">Copy</span>
       </button>
-      <button class="btn-print" id="btn-print" onclick="window.print()">
+      <button class="btn-print" id="btn-print" aria-label="Save dossier as PDF" title="Preparing document…" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 6 2 18 2 18 9"></polyline>
           <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
           <rect x="6" y="14" width="12" height="8"></rect>
         </svg>
-        Save as PDF
+        <span class="label-full">Save as PDF</span><span class="label-short">PDF</span>
       </button>
     </div>
   </header>
@@ -714,15 +830,10 @@
     <div class="print-name">Riovic Matthew G. Susas — Technical Operations Portfolio</div>
     <div class="print-doc-title" id="print-doc-title"></div>
   </div>
-  <div class="print-footer">
-    <span>Riovic Matthew G. Susas — Synapse Botanicals Case Studies</span>
-    <span id="print-url"></span>
-  </div>
-
   <!-- ══════════════════════════════════════
        MAIN CONTENT (FLEX LAYOUT)
   ══════════════════════════════════════ -->
-  <main class="viewer-main">
+  <main class="viewer-main" aria-busy="true">
     <!-- Loading -->
     <div id="loading">
       <div class="spinner"></div>
@@ -758,6 +869,11 @@
     </nav>
   </main>
 
+  <div class="print-footer">
+    <span>Riovic Matthew G. Susas — Synapse Botanicals Case Studies</span>
+    <span id="print-url"></span>
+  </div>
+
   <script>
   (function () {
     'use strict';
@@ -765,6 +881,112 @@
     /* ── Helpers ── */
     function qs(sel, ctx) { return (ctx || document).querySelector(sel); }
     function qsa(sel, ctx) { return [...(ctx || document).querySelectorAll(sel)]; }
+
+    document.documentElement.dataset.documentState = 'loading';
+
+    function preparePrintLayout() {
+      // Match the A4 page's 20mm side margins, independently of the screen width.
+      var printableWidth = 170 * 96 / 25.4;
+      var context = document.createElement('canvas').getContext('2d');
+      if (!context) return;
+      qsa('pre.ascii-block', qs('#md-body')).forEach(function (pre) {
+        var code = qs('code', pre);
+        context.font = '10px ' + getComputedStyle(code).fontFamily;
+        var widest = Math.max.apply(null, code.textContent.split('\n').map(function (line) {
+          return context.measureText(line).width;
+        }));
+        var size = widest ? Math.min(7.5, 7.5 * (printableWidth - 32) / widest) : 7.5;
+        pre.style.setProperty('--print-ascii-size', size.toFixed(2) + 'pt');
+      });
+    }
+
+    window.addEventListener('beforeprint', preparePrintLayout);
+    qs('#btn-print').addEventListener('click', function () {
+      if (document.documentElement.dataset.documentState !== 'ready') return;
+      preparePrintLayout();
+      window.print();
+    });
+
+    function copyDiagramSvg(svg, prefix) {
+      var ids = new Map([svg].concat(qsa('[id]', svg)).filter(function (el) { return el.id; }).map(function (el) {
+        return [el.id, prefix + el.id];
+      }));
+      var pattern = [...ids.keys()].sort(function (a, b) { return b.length - a.length; }).map(function (id) {
+        return id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }).join('|');
+      var markup = svg.outerHTML.replace(new RegExp('(#|id=")(' + pattern + ')(?=["\\s).:{])', 'g'), function (_, before, id) {
+        return before + ids.get(id);
+      });
+      var holder = document.createElement('div');
+      holder.innerHTML = markup;
+      var clone = holder.firstElementChild;
+      [clone].concat(qsa('[aria-labelledby], [aria-describedby]', clone)).forEach(function (el) {
+        ['aria-labelledby', 'aria-describedby'].forEach(function (attribute) {
+          if (el.hasAttribute(attribute)) el.setAttribute(attribute, el.getAttribute(attribute).split(/\s+/).map(function (id) {
+            return ids.get(id) || id;
+          }).join(' '));
+        });
+      });
+      return clone;
+    }
+
+    function buildPrintDiagrams() {
+      qsa('.mermaid svg', qs('#md-body')).forEach(function (svg, index) {
+        var box = svg.viewBox.baseVal;
+        var landscape = box.width > 820;
+        var availableWidth = (landscape ? 257 : 170) * 96 / 25.4 - 32;
+        var availableHeight = landscape ? 510 : 830;
+        var widthScale = Math.min(1, availableWidth / box.width);
+        var onePageScale = Math.min(widthScale, availableHeight / box.height);
+        // Preserve readable vector type; continue tall graphs instead of shrinking every label.
+        var scale = onePageScale >= 0.72 ? onePageScale : widthScale;
+        var panelHeight = availableHeight / scale;
+        var avoidCuts = qsa('.node, .edgeLabel, .messageText, .actor', svg).map(function (element) {
+          // Mermaid uses both SVG nodes and HTML labels inside foreignObject.
+          var b = element.getBoundingClientRect();
+          var transform = svg.getScreenCTM().inverse();
+          var top = new DOMPoint(b.left, b.top).matrixTransform(transform).y;
+          var bottom = new DOMPoint(b.right, b.bottom).matrixTransform(transform).y;
+          return { top: top - 5, bottom: bottom + 5 };
+        });
+        var cuts = [box.y];
+        while (cuts[cuts.length - 1] + panelHeight < box.y + box.height - 1) {
+          var start = cuts[cuts.length - 1];
+          var cut = start + panelHeight;
+          for (var candidate = cut; candidate > start + panelHeight * 0.5; candidate -= 2) {
+            if (!avoidCuts.some(function (b) { return candidate > b.top && candidate < b.bottom; })) {
+              cut = candidate;
+              break;
+            }
+          }
+          cuts.push(cut);
+        }
+        cuts.push(box.y + box.height);
+        var wrap = svg.closest('.mermaid-wrap');
+        var heading = qsa('h2, h3', qs('#md-body')).filter(function (h) {
+          return h.compareDocumentPosition(wrap) & Node.DOCUMENT_POSITION_FOLLOWING;
+        }).pop();
+        var pages = document.createElement('div');
+        pages.className = 'diagram-print-pages';
+        for (var part = 0; part < cuts.length - 1; part++) {
+          var panel = document.createElement('div');
+          panel.className = 'print-diagram-page' + (landscape ? ' is-landscape' : '') + (cuts.length > 2 ? ' is-tiled' : '');
+          panel.style.setProperty('--print-diagram-width', (box.width * scale).toFixed(2) + 'px');
+          var caption = document.createElement('div');
+          caption.className = 'print-diagram-caption';
+          caption.textContent = 'Diagram ' + (index + 1) + (heading ? ' · ' + heading.textContent : '') +
+            (cuts.length > 2 ? ' · Part ' + (part + 1) + ' of ' + (cuts.length - 1) : '');
+          panel.appendChild(caption);
+          // Namespace IDs and marker/style references so each vector panel is independent.
+          var clone = copyDiagramSvg(svg, 'print-' + index + '-' + part + '-');
+          clone.setAttribute('viewBox', [box.x, cuts[part], box.width, cuts[part + 1] - cuts[part]].join(' '));
+          clone.removeAttribute('height');
+          panel.appendChild(clone);
+          pages.appendChild(panel);
+        }
+        wrap.appendChild(pages);
+      });
+    }
 
     /* ── Configure mermaid ── */
     if (typeof mermaid !== 'undefined') {
@@ -832,7 +1054,7 @@
         return res.text();
       })
       .then(function (md) {
-        renderDoc(md, filePath);
+        return renderDoc(md, filePath);
       })
       .catch(function (err) {
         showError('Could not load <code>' + filePath + '</code>.<br>Make sure the file exists in your portfolio directory and you are running this via a local server.<br><em>Error: ' + err.message + '</em>');
@@ -881,7 +1103,7 @@
     }
 
     /* ── Render document ── */
-    function renderDoc(md, filePath) {
+    async function renderDoc(md, filePath) {
       // Filter out internal interview prep sections by default (unless ?prep=true in URL)
       var showInternal = params.get('prep') === 'true' || params.get('mode') === 'internal';
       if (!showInternal) {
@@ -905,6 +1127,25 @@
       // Inject
       qs('#md-body').innerHTML = html;
 
+      // Keep wide technical content inside its own scroll area on small screens.
+      qsa('table', qs('#md-body')).forEach(function (table, index) {
+        var wrap = document.createElement('div');
+        wrap.className = 'table-scroll';
+        wrap.tabIndex = 0;
+        wrap.setAttribute('role', 'region');
+        wrap.setAttribute('aria-label', 'Table ' + (index + 1) + ' — scroll horizontally when needed');
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      });
+      qsa('pre', qs('#md-body')).forEach(function (pre) {
+        var code = qs('code', pre);
+        if (code && (/[\u2500-\u257f]/.test(code.textContent) || /^\s*\+[-=]+\+/m.test(code.textContent))) {
+          pre.classList.add('ascii-block');
+        }
+        pre.tabIndex = 0;
+        pre.setAttribute('aria-label', 'Code or text block — scroll horizontally when needed');
+      });
+
       // Transform language-mermaid code blocks into .mermaid containers
       var mermaidBlocks = qsa('pre code.language-mermaid', qs('#md-body'));
       mermaidBlocks.forEach(function (codeBlock, idx) {
@@ -912,6 +1153,9 @@
         var rawCode = codeBlock.textContent.trim();
         var wrap = document.createElement('div');
         wrap.className = 'mermaid-wrap';
+        wrap.tabIndex = 0;
+        wrap.setAttribute('role', 'region');
+        wrap.setAttribute('aria-label', 'Diagram ' + (idx + 1) + ' — scroll horizontally when needed');
         var mermaidDiv = document.createElement('div');
         mermaidDiv.className = 'mermaid';
         mermaidDiv.id = 'mermaid-diagram-' + idx;
@@ -920,20 +1164,51 @@
         pre.parentNode.replaceChild(wrap, pre);
       });
 
+      // Mermaid measures labels: the document and its fonts must be laid out first.
+      qs('#doc-wrap').style.display = 'block';
+      if (document.fonts) await document.fonts.ready;
+
       // Render mermaid diagrams
       if (typeof mermaid !== 'undefined' && mermaidBlocks.length > 0) {
         try {
           if (typeof mermaid.run === 'function') {
-            mermaid.run({ querySelector: '.mermaid' }).catch(function (e) {
-              console.warn('Mermaid render warning:', e);
-            });
+            await mermaid.run({ querySelector: '.mermaid' });
           } else if (typeof mermaid.init === 'function') {
-            mermaid.init(undefined, qsa('.mermaid'));
+            await mermaid.init(undefined, qsa('.mermaid'));
           }
         } catch (mErr) {
-          console.warn('Mermaid execution warning:', mErr);
+          // Preserve the source if a diagram cannot render, rather than exporting an error SVG.
+          qsa('.mermaid-wrap', qs('#md-body')).forEach(function (wrap, index) {
+            var pre = document.createElement('pre');
+            var code = document.createElement('code');
+            code.textContent = mermaidBlocks[index].textContent;
+            pre.appendChild(code);
+            wrap.replaceWith(pre);
+          });
+          throw new Error('A diagram could not be rendered. Please reload before exporting.');
         }
+      } else if (mermaidBlocks.length > 0) {
+        throw new Error('The diagram renderer could not load. Please reload before exporting.');
       }
+
+      qsa('.mermaid svg', qs('#md-body')).forEach(function (svg, index) {
+        // Separate Mermaid graphs can otherwise reuse edge IDs in the same document.
+        var namespaced = copyDiagramSvg(svg, 'diagram-' + index + '-');
+        svg.replaceWith(namespaced);
+        svg = namespaced;
+        var viewBox = svg.viewBox.baseVal;
+        svg.parentElement.style.setProperty('--diagram-width', Math.max(260, viewBox.width) + 'px');
+        qsa('.node', svg).forEach(function (node) {
+          var shape = qs('rect, polygon, circle, ellipse, path', node);
+          if (!shape) return;
+          var rgb = getComputedStyle(shape).fill.match(/[\d.]+/g);
+          if (rgb && rgb.length >= 3 && (+rgb[0] * 0.2126 + +rgb[1] * 0.7152 + +rgb[2] * 0.0722) > 160) {
+            node.classList.add('mermaid-light-node');
+          }
+        });
+      });
+
+      buildPrintDiagrams();
 
       // Run highlight.js on any remaining unhighlighted blocks (defensively)
       if (typeof hljs !== 'undefined' && hljs.highlightElement) {
@@ -961,6 +1236,12 @@
       // Show document, hide loading
       qs('#loading').style.display = 'none';
       qs('#doc-wrap').style.display = 'block';
+      preparePrintLayout();
+      document.documentElement.dataset.documentState = 'ready';
+      qs('.viewer-main').setAttribute('aria-busy', 'false');
+      qs('#btn-print').disabled = false;
+      qs('#btn-print').title = 'Save as PDF';
+      qs('#btn-copy').disabled = false;
 
       // Copy link button
       qs('#btn-copy').addEventListener('click', function () {
@@ -968,7 +1249,7 @@
         navigator.clipboard.writeText(url).then(function () {
           var btn = qs('#btn-copy');
           var orig = btn.innerHTML;
-          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Copied!</span>';
           btn.style.color = '#a3b896';
           setTimeout(function () { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
         });
@@ -1043,6 +1324,8 @@
 
     /* ── Error state ── */
     function showError(msg) {
+      document.documentElement.dataset.documentState = 'error';
+      qs('.viewer-main').setAttribute('aria-busy', 'false');
       qs('#loading').style.display = 'none';
       var errEl = qs('#error');
       errEl.style.display = 'flex';
