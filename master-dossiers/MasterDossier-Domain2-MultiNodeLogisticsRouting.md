@@ -4,66 +4,77 @@
 
 ---
 
-## 1. The Second Box Was the Expensive One: How Routing Each Item Alone Doubled a Freight Bill
+## 1. The Second Box Was the Expensive One
 
-If you fulfill e-commerce orders from more than one warehouse, the most intuitive routing policy is to evaluate every item on its own: dispatch each line item from the warehouse that holds it and, when multiple nodes have stock, select the closest facility to the customer. Intuitively, this appears to minimize carrier transit time and zone charges. In practice, on multi-item shopping baskets, this unconstrained heuristic quietly hemorrhages operating margin.
+### 1.1 Every Item Was Routed on Its Own. The Invoice Said $21.50.
 
-Here is the empirical case in a single frame. A customer in Denver, CO orders a three-unit wellness basket: two *Focus Stick Packs (30-Pack)* and one *Adaptogen Tincture (60ml)*. The stick packs are dual-stocked at both network nodes: Allentown, PA (`LOC-PA-01`) and Reno, NV (`LOC-NV-02`). The tincture is batch-constrained and stocked exclusively in Reno. Geographically, Reno is the closer node to Denver (modeled as Zone 4, against Zone 6 from Allentown). 
+If you fulfill direct-to-consumer orders from more than one warehouse, the most intuitive routing policy in the world is to decide each item on its own: dispatch each line item from a warehouse that holds it and, where there is a choice, select the closest facility to the customer. Intuitively, this appears to minimize transit time and carrier zone charges. In practice, on multi-item shopping baskets, this unconstrained heuristic quietly hemorrhages operating margin.
 
-When a routing engine evaluates line items independently and defaults stick packs to Allentown, the order splits: stick packs ship from Allentown and the tincture ships from Reno. The merchant pays **two independent base postage fees**, **two independent parcel box charges**, and **two independent warehouse pick/pack handling fees**—totaling **$21.50**. Conversely, consolidating all three units into a single parcel from Reno costs **$10.50**. The naive per-line policy incurs an **$11.00 surcharge penalty (a 51.2% landed cost inflation)**, shipping two-thirds of the basket from a facility 1,500 miles farther away.
+Here is the empirical case in a single frame. A customer in Denver, CO orders a three-unit wellness basket: two *Focus Stick Packs (30-Pack)* and one *Adaptogen Tincture (60ml)*. The stick packs are dual-stocked at both network nodes: Allentown, PA (`LOC-PA-01`) and Reno, NV (`LOC-NV-02`). The tincture is batch-constrained and stocked exclusively in Reno. Geographically, Reno is the closer warehouse to Denver: modeled as Zone 4, against Zone 6 from Allentown.
 
-```text
-NAIVE PER-LINE ROUTING (2 PARCELS) ────────────► $21.50
-┌────────────────────────────────┐ ┌────────────────────────────────┐
-│ Parcel 1: Reno (Zone 4)        │ │ Parcel 2: Allentown (Zone 6)   │
-│ 1x Adaptogen Tincture          │ │ 2x Focus Stick Packs           │
-│ Freight: $6.40 | 3PL: $3.30    │ │ Freight: $8.10 | 3PL: $3.70    │
-│ Subtotal: $9.70                │ │ Subtotal: $11.80               │
-└────────────────────────────────┘ └────────────────────────────────┘
+A rule that evaluates each line item on its own, and defaults the stick packs to Allentown, sends the sticks from Allentown and the tincture from Reno: two boxes, two postage charges, two 3PL handling fees, totaling **$21.50**. Conversely, consolidating all three units into a single parcel dispatched from Reno costs **$10.50**. The per-line heuristic incurs an **$11.00 surcharge penalty (a 51.2% landed cost inflation)**, shipping two-thirds of the basket from a facility 1,500 miles farther away.
 
-CONSOLIDATED WATERFALL (1 PARCEL) ─────────────► $10.50  (-$11.00 / -51.2%)
-┌───────────────────────────────────────────────────────────────────┐
-│ Single Consolidated Parcel: Reno (Zone 4)                         │
-│ 1x Adaptogen Tincture + 2x Focus Stick Packs                      │
-│ Freight: $6.40 | 3PL Handling: $4.10 ($2.90 + 3 × $0.40)          │
-│ Total Landed Cost: $10.50                                         │
-└───────────────────────────────────────────────────────────────────┘
-```
+The loss has a name: **split-shipment surcharge leakage**. It does not generate software exceptions or operational alarms. Every parcel ships on time, warehouse scan guns confirm flawless pick sequences, and every shipping label is valid. The damage surfaces months later as an unexplained gross margin compression on multi-item baskets.
 
-This structural leak is termed **split-shipment surcharge leakage**. It generates zero fulfillment software exceptions. Every shipping label is valid, warehouse scan guns confirm flawless pick sequences, and parcels arrive within promised carrier transit windows. The damage surfaces months later as an unexplained gross margin compression on multi-item orders.
-
-> [!CAUTION]
-> **Modeled Scenario Boundary**: The 3PL handling fees, carrier zone rates, postal assignments, and cohort models presented herein are declared scenario inputs calculated in integer cents. They represent standard commercial direct-to-consumer baseline models rather than proprietary negotiated contracts or real-time carrier API quotations. Section 11 explicitly delineates what has been validated via offline test suites versus what represents architectural specifications.
+### 1.2 Executive Incident Matrix
 
 | Parameter / Incident Dimension | Direct Impact / Incident Observation | Systemic & Financial Hazard |
 |---|---|---|
-| **Target Basket** | 2× Focus Stick Packs (`SYN-FSTK-MY`) + 1× Adaptogen Tincture (`SYN-TNCT-AM`) to Denver, CO | Multi-item basket crossing node inventory allocation boundaries |
-| **Naive Per-Line Routing** | Forced split: Reno Zone 4 (Tincture) + Allentown Zone 6 (Sticks) = **$21.50** | Generates 2 parcels, doubling base postage and base 3PL handling fees |
-| **Consolidated Waterfall Routing** | Consolidated fulfillment: Reno Zone 4 (all 3 units) = **$10.50** | Slashes landed fulfillment cost by **$11.00 (-51.2%)** in a single box |
-| **500-Order Cohort Exposure** | Model Alpha (157 splits / 657 parcels) vs Model Beta (41 splits / 541 parcels) | **$997.40 net cohort leakage** ($1.9948/order); scales to **$728,102.00/yr** at 1,000 orders/day |
+| **Target Basket** | 2× Focus Stick Packs 30-Pack (`SYN-FSTK-MY`) + 1× Adaptogen Tincture 60ml (`SYN-TNCT-AM`), delivered to Denver, CO. Sticks are available at Allentown and Reno; tincture is available at Reno only. Reno is Zone 4, Allentown is Zone 6. | The tincture has exactly one feasible node, so the complete basket has a feasible single-node home. Any routing rule that evaluates line items individually cannot detect whole-basket feasibility. |
+| **Naive Per-Line Routing** | Sticks default to Allentown (Zone 6), tincture ships from Reno (Zone 4). Incurs 2 parcels, 2 base postages, and 2 handling fees: **$21.50**. | The routing objective optimizes per-item distance instead of parcel count. The second parcel adds a $2.90 handling penalty plus a second base carrier charge, while sending part of the order from the farther node. |
+| **Consolidated Waterfall Routing** | Tier 1 Consolidation Gate identifies that only Reno holds unreserved ATP for 100% of the basket. Dispatches 1 parcel: **$10.50**. Net saving: **$11.00 (51.2% reduction)**. | Parcel count becomes the first-order cost driver. Geographic zone and SLA ranking are applied *only* among candidate nodes capable of fulfilling the entire basket. |
+| **500-Order Cohort Exposure** | Model Alpha (157 splits / 31.4%) vs. Model Beta (41 splits / 8.2%); 657 vs. 541 parcels; $7,571.50 vs. $6,574.10 modeled fulfillment. **$997.40 net cohort saving** ($1.9948 per order). | Surcharge leakage is imperceptible per order but devastating in aggregate. At a 1,000-orders/day planning scale, this leakage represents **$728,102.00/year** in avoidable fulfillment expense. |
+
+### 1.3 The Two Plans Side by Side
+
+```text
+OPTION A: NAIVE PER-LINE SPLIT (2 PARCELS) ────► $21.50
+┌────────────────────────────────┐ ┌────────────────────────────────┐
+│ Parcel 1: Reno (Zone 4)        │ │ Parcel 2: Allentown (Zone 6)   │
+│ 1x Adaptogen Tincture          │ │ 2x Focus Stick Packs           │
+│ Carrier Freight (Z4):    $6.40 │ │ Carrier Freight (Z6):    $8.10 │
+│ 3PL Handling:            $3.30 │ │ 3PL Handling:            $3.70 │
+│ Subtotal:                $9.70 │ │ Subtotal:               $11.80 │
+└────────────────────────────────┘ └────────────────────────────────┘
+
+OPTION B: CONSOLIDATED WATERFALL (1 PARCEL) ───► $10.50  (-$11.00 / -51.2%)
+┌───────────────────────────────────────────────────────────────────┐
+│ Single Consolidated Parcel: Reno (Zone 4)                         │
+│ 1x Adaptogen Tincture + 2x Focus Stick Packs                      │
+│ Carrier Freight (USPS Ground Advantage Zone 4):             $6.40 │
+│ 3PL Handling ($2.90 base + 3 × $0.40 unit picks):           $4.10 │
+│ Total Landed Cost:                                         $10.50 │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+> [!CAUTION]
+> **Modeled Scenario Boundary**: The 3PL handling fees, carrier zone rates, postal assignments, and cohort models presented herein are declared scenario inputs calculated in integer cents. They represent standard commercial direct-to-consumer baseline models rather than live carrier API quotations or proprietary negotiated rate cards. Section 11 explicitly delineates what has been validated via offline test suites versus what represents architectural specifications.
+
+So how can a rule that routes every item sensibly cost twice as much? To see it, you first need the network topology and the fee schedule it was pricing against.
 
 ---
 
-## 2. Two Warehouses, One Basket: Network Topology & Tariff Mechanics
+## 2. Two Warehouses, One Basket
 
 ### 2.1 Terms Used in This Dossier
 
 | Term | Operational Definition |
 |---|---|
-| **Node** | A physical fulfillment facility. `LOC-PA-01` denotes Allentown, PA; `LOC-NV-02` denotes Reno, NV |
-| **3PL** | Third-party logistics provider executing physical receiving, pick, pack, and carrier induction |
-| **Basket** | The distinct set of SKUs and unit quantities comprising a single customer order checkout |
-| **Split Shipment** | Fulfilling a single customer order across two or more separate parcels, originating from different nodes |
+| **Node** | A physical fulfillment facility. `LOC-PA-01` is Allentown, PA; `LOC-NV-02` is Reno, NV |
+| **3PL** | Third-party logistics provider (ShipBob) executing physical receiving, pick, pack, and carrier induction |
+| **Basket** | The distinct set of SKUs and unit quantities comprising a single customer checkout |
+| **Parcel** | One physical shipping carton with one carrier postage charge and one set of warehouse handling fees |
+| **Split Shipment** | Fulfilling a single customer order across two or more separate parcels, usually originating from different nodes |
 | **Consolidated Shipment** | Fulfilling 100% of an order's line items in a single package dispatched from one node |
 | **ATP** | Available-to-Promise inventory: physical on-hand stock minus unfulfilled reservations and backorders |
-| **USPS Carrier Zone** | Great-circle distance bands (Zones 1–8) determining postage pricing from origin to destination ZIP |
+| **USPS Zone** | Great-circle distance bands (Zones 1–8) determining carrier postage pricing from origin to destination ZIP |
 | **Handling Fee** | Contractual warehouse fee charged per outbound shipment covering box, packing materials, and labor |
 | **Cross-Dock Replenishment** | Scheduled inter-facility freight transfers rebalancing inventory to prevent node stockouts |
 | **Waterfall** | A deterministic, prioritized execution sequence where rules evaluate hierarchically until satisfied |
 
 ### 2.2 Network Topology & Inventory Availability Profile
 
-Both nodes are contractually authorized to distribute all 12 SKUs in the catalog. However, dynamic manufacturing replenishment schedules create temporary inventory skews. During the analyzed operating cycle, finished goods for *Adaptogen Tinctures* and *Starter Bundles* were staged exclusively at the Reno facility.
+Both nodes are contractually authorized to distribute all 12 catalog variants. However, dynamic manufacturing replenishment schedules create temporary inventory skews. During the analyzed operating cycle, finished goods for *Adaptogen Tinctures* and *Starter Bundles* were staged exclusively at the Reno facility.
 
 ```mermaid
 flowchart LR
@@ -73,7 +84,7 @@ flowchart LR
     Primary East & Midwest Hub
     Carrier: USPS / UPS
     Active On-Hand Inventory:
-    Stick Packs, Tumblers, Whisks"]
+    Focus Stick Packs, Tumblers, Whisks"]
 
     NV["**LOC-NV-02**
     Reno, NV
@@ -99,21 +110,35 @@ The economic model utilizes the following 3PL rate card. These figures represent
 
 #### Mathematical Handling Decomposition
 
-Fulfillment handling expresses algebraically as a fixed parcel charge plus a variable per-unit pick fee:
+The first pick in every parcel is bundled into the base fulfillment fee; only picks after the first carry the $0.40 charge. This fee structure collapses algebraically into an exact two-term equation:
 
-$$\text{Handling} = \$2.90 \times P + \$0.40 \times U$$
+$$\text{Fixed Parcel Overhead} = \$2.50 \text{ (base)} + \$0.80 \text{ (corrugate)} = \$3.30 \text{ (first pick included)}$$
+
+$$\text{Variable Pick Labor} = \$0.40 \text{ for each unit picked after the first in each parcel}$$
+
+$$\text{Handling}(P, U) = \$3.30 \times P + \$0.40 \times (U - P) = \$3.30P + \$0.40U - \$0.40P = \mathbf{\$2.90P + \$0.40U}$$
 
 Where:
-- $P$ is the total number of outbound parcels.
-- $U$ is the total count of physical units picked across the order.
-- $\$2.90$ represents the unavoidable fixed overhead of a parcel: $\$2.50 \text{ base fulfillment} + \$0.80 \text{ corrugate box} - \$0.40 \text{ included first pick credit}$.
-- $\$0.40$ represents the direct incremental labor cost per picked unit.
+- $P$ is the total count of dispatched outbound parcels.
+- $U$ is the total count of physical units picked across all parcels.
+- The $\$2.90$ coefficient is not the sum of base and corrugate ($\$3.30$). It is $\$3.30$ less the $\$0.40$ credit that the per-unit term would otherwise assess for each parcel's first pick (which the schedule waives).
 
-Because an identical customer basket contains the exact same number of units ($U$) whether shipped together or separately, **the per-unit pick fees cancel out completely**:
+Checking the rate card against the formula:
 
-$$\Delta \text{Handling} = \left(\$2.90 \times P_{\text{split}} + \$0.40 \times U\right) - \left(\$2.90 \times P_{\text{single}} + \$0.40 \times U\right) = \$2.90 \times (P_{\text{split}} - P_{\text{single}})$$
+| Parcel Configuration | Parcels ($P$) | Units ($U$) | $\text{Handling} = \$2.90P + \$0.40U$ |
+|---|---:|---:|---:|
+| 1 parcel, 1 unit | 1 | 1 | $\$2.90(1) + \$0.40(1) = \mathbf{\$3.30}$ |
+| 1 parcel, 2 units | 1 | 2 | $\$2.90(1) + \$0.40(2) = \mathbf{\$3.70}$ |
+| 1 parcel, 3 units | 1 | 3 | $\$2.90(1) + \$0.40(3) = \mathbf{\$4.10}$ |
+| 2 parcels, 3 units (1 + 2) | 2 | 3 | $\$2.90(2) + \$0.40(3) = \mathbf{\$7.00}$ |
 
-Splitting an order into two parcels incurs an immutable **+$2.90 handling penalty per additional parcel**, entirely independent of basket size or destination.
+Now compare the same customer basket fulfilled as a split versus a consolidated shipment. Because the exact same physical units are picked in both scenarios, **the variable pick labor term cancels out completely**:
+
+$$\Delta \text{Handling} = \text{Handling}_{\text{split}} - \text{Handling}_{\text{consolidated}} = \$2.90 \times (P_{\text{split}} - P_{\text{consolidated}}) + \$0.40 \times (U - U) = \mathbf{\$2.90 \times (P_{\text{split}} - P_{\text{consolidated}})}$$
+
+$$\text{Check: } \$7.00 - \$4.10 = \mathbf{\$2.90}$$
+
+The handling penalty for a split shipment is **exactly $2.90 per additional parcel**, completely invariant to how many units or SKUs the order contains.
 
 ### 2.4 Scenario Carrier Cost Inputs
 
@@ -129,49 +154,61 @@ The model utilizes the following standard domestic postage tariff schedules:
 | **Zone 7** | 1,401 – 1,800 miles | $9.20 | $13.50 |
 | **Zone 8** | 1,801+ miles (Cross-Country) | $10.50 | $15.20 |
 
+#### Cross-Reference: Capstone Order #1070
+
+The identical carrier zone mechanics apply when an engine selects the wrong geographic node for a single parcel. In the Capstone Postmortem, customer Elena Vance's East Coast order (original destination Philadelphia, PA 19102; requested destination San Francisco, CA 94102) was inadvertently fulfilled from Reno (`LOC-NV-02`) rather than Allentown (`LOC-PA-01`). 
+
+Shipping a Northeast parcel cross-country from Reno (Zone 8, declared at **$14.60**) rather than Allentown (Zone 2, declared at **$6.50**) burns an extra **$8.10 per box (+124.6% landed cost penalty)**:
+
+$$\$14.60 - \$6.50 = \$8.10 \quad \left(\frac{\$8.10}{\$6.50} = +124.6\%\right)$$
+
+This illustrates the financial hazard of ignoring postal zones when consolidation is not in question. It forms the mirror image of the Denver basket: in Denver, ignoring parcel count cost $11.00; in Capstone #1070, ignoring postal zone cost $8.10.
+
 > [!NOTE]
-> **Cross-Reference to Capstone Order #1070**: In the Capstone Postmortem investigation, customer Elena Vance's East Coast order (destined for Philadelphia / Brooklyn) was inadvertently routed to Reno (`LOC-NV-02`) instead of Allentown (`LOC-PA-01`). Shipping across the continent from Reno at Zone 8 ($14.60 landed) rather than Allentown at Zone 2 ($6.50 landed) triggered an instant **+$8.10 cross-country freight penalty (+124.6%)**. Correct multi-node routing must defend against both cross-country misrouting and split-shipment proliferation.
+> The $6.50, $14.60, and +$8.10 figures represent Capstone-declared scenario inputs. The executed test suite in `evidence/freight/` asserts only that the Capstone fixture retains the Philadelphia destination and its separate $7.20 declared freight assumption (§11).
+
+With the economic parameters established, we now trace the Denver order through two divergent routing policies to observe where margin is preserved or lost.
 
 ---
 
 ## 3. One Basket, Two Policies: Following the Denver Order
 
-To see how an unconstrained routing policy loses money, we trace the Denver order through two divergent control paradigms. For Denver, CO, Reno is designated Zone 4 and Allentown is designated Zone 6.
+For Denver, CO, Reno is designated **Zone 4** and Allentown is designated **Zone 6**. The stock-discovery stage is the pivotal hinge where the two control policies diverge.
 
 ### 3.1 Routing Decision Trace
 
-| Step | Evaluation Stage | Naive Per-Line Heuristic | Consolidated Waterfall Engine |
+| Step | Evaluation Stage | Naive Per-Line Policy | Consolidated Waterfall Policy |
 |---|---|---|---|
 | **1** | **Order Ingestion** | Basket: 2× Focus Sticks, 1× Tincture. Destination: Denver, CO | Basket: 2× Focus Sticks, 1× Tincture. Destination: Denver, CO |
-| **2** | **ATP Stock Discovery** | Sticks: `LOC-PA-01` & `LOC-NV-02`. Tincture: `LOC-NV-02` only | Sticks: `LOC-PA-01` & `LOC-NV-02`. Tincture: `LOC-NV-02` only |
-| **3** | **Decision Logic** | Evaluates Line 1 (Sticks): defaults to Allentown. Evaluates Line 2 (Tincture): routes to Reno | **Tier 1 Consolidation Gate**: Filters nodes holding 100% basket ATP. Only `LOC-NV-02` qualifies |
-| **4** | **Candidate Ranking** | Unconstrained line placement forces multi-origin split | Sole qualifying node assigned entire order; zero split possible |
+| **2** | **ATP Discovery** | Sticks: `LOC-PA-01` & `LOC-NV-02`. Tincture: `LOC-NV-02` only | Sticks: `LOC-PA-01` & `LOC-NV-02`. Tincture: `LOC-NV-02` only |
+| **3** | **Decision Logic** | Evaluates Line 1 (Sticks): defaults to Allentown. Evaluates Line 2 (Tincture): routes to Reno | **Tier 1 Consolidation Gate**: Filters nodes holding unreserved stock for 100% of basket |
+| **4** | **Candidate Evaluation** | Independent line placement forces multi-origin split | **Reno only.** Exactly one candidate qualifies; no ranking needed |
 | **5** | **Execution Outcome** | **2 Parcels Dispatched** | **1 Parcel Dispatched** |
 
 ### 3.2 Full Cost Ledger Breakdown
 
 ```text
-OPTION A: NAIVE PER-LINE SPLIT (Two Parcels)
+OPTION A: NAIVE SPLIT (Two Parcels)
   Parcel 1: Reno, NV to Denver, CO (USPS Zone 4, 1 Unit Tincture)
-    USPS Ground Advantage Zone 4:                  $6.40
-    3PL Handling ($2.90 base + 1 × $0.40):         $3.30
-    Parcel 1 Subtotal:                             $9.70
+    Carrier Freight (USPS Ground Advantage Zone 4):      $6.40
+    3PL Handling ($2.90 base + 1 × $0.40):               $3.30
+    Parcel 1 Subtotal:                                   $9.70
 
   Parcel 2: Allentown, PA to Denver, CO (USPS Zone 6, 2 Units Sticks)
-    USPS Ground Advantage Zone 6:                  $8.10
-    3PL Handling ($2.90 base + 2 × $0.40):         $3.70
-    Parcel 2 Subtotal:                            $11.80
-  ──────────────────────────────────────────────────────
-  TOTAL SPLIT LANDED COST:                        $21.50
+    Carrier Freight (USPS Ground Advantage Zone 6):      $8.10
+    3PL Handling ($2.90 base + 2 × $0.40):               $3.70
+    Parcel 2 Subtotal:                                  $11.80
+  ────────────────────────────────────────────────────────────
+  TOTAL SPLIT LANDED FULFILLMENT:                       $21.50
 
-OPTION B: CONSOLIDATED WATERFALL (One Parcel from Reno)
+OPTION B: CONSOLIDATED (One Parcel from Reno)
   Single Parcel: Reno, NV to Denver, CO (USPS Zone 4, 3 Units Total)
-    USPS Ground Advantage Zone 4:                  $6.40
-    3PL Handling ($2.90 base + 3 × $0.40):         $4.10
-  ──────────────────────────────────────────────────────
-  TOTAL CONSOLIDATED LANDED COST:                 $10.50
+    Carrier Freight (USPS Ground Advantage Zone 4):      $6.40
+    3PL Handling ($2.90 base + 3 × $0.40):               $4.10
+  ────────────────────────────────────────────────────────────
+  TOTAL CONSOLIDATED LANDED FULFILLMENT:                $10.50
 
-NET CONSOLIDATION ADVANTAGE:  $21.50 - $10.50 = $11.00 SAVED (51.2% Reduction)
+NET CONSOLIDATION ADVANTAGE:  $21.50 - $10.50 = $11.00 SAVED (51.2% Lower)
 ```
 
 ### 3.3 The Decision as an Auditable Record
@@ -211,15 +248,17 @@ To guarantee financial traceability, every routing decision must emit an auditab
 }
 ```
 
-Logging rejected counterfactuals provides the business intelligence pipeline with empirical proof of avoided fulfillment expense.
+Logging the rejected alternative is deliberate: it provides operations and finance teams with an auditable ledger proving avoided fulfillment leakage.
+
+One basket illustrates the mechanism. The next question is whether a universal mathematical principle governs multi-node consolidation.
 
 ---
 
 ## 4. The Consolidation Bound: When Is a Second Parcel Worth It?
 
-Is consolidation always mathematically superior, or could long-zone transit fees eventually outstrip the penalty of a split package? We answer this by deriving **The Consolidation Bound**.
+Is consolidation always mathematically superior, or could extreme carrier long-zone rates eventually justify splitting an order to achieve closer shipping proximity? We answer this by deriving **The Consolidation Bound**.
 
-We calculate the worst-case cross-country zone penalty and compare it directly against the minimum possible cost of injecting a second parcel into the carrier network:
+We calculate the worst-case cross-country zone penalty and compare it directly against the minimum possible cost of injecting a second parcel into the logistics network:
 
 | Variable / Parameter | USPS Ground Advantage | Priority Mail Commercial |
 |---|---|---|
@@ -227,11 +266,11 @@ We calculate the worst-case cross-country zone penalty and compare it directly a
 | **Minimum Second Parcel Cost ($\text{Parcel 2}_{\min}$)**<br>*($2.90 Handling + Cheapest Zone 1–2 Base Postage)* | $\$2.90 + \$5.40 = \mathbf{\$8.30}$ | $\$2.90 + \$7.80 = \mathbf{\$10.70}$ |
 | **Consolidation Invariant Margin Advantage** | $\mathbf{\$3.20}$ net savings | $\mathbf{\$3.30}$ net savings |
 
-Under declared commercial rate cards, **a second parcel costs more than the worst-case postal zone differential by at least $3.20**. Consequently, whenever any single warehouse holds inventory for 100% of an order, the system must consolidate—even if that warehouse is located in the most distant carrier zone.
+Under declared commercial rate cards, **the second parcel always costs more than the worst possible postal zone differential by at least $3.20**. Consequently, whenever any single warehouse holds inventory for 100% of an order, the system must consolidate—even if that warehouse is located in the most distant carrier zone.
 
 ### Generous Boundary Verification: The Two-Zone-2 Theoretical Limit
 
-To prove the universal robustness of the bound, consider an extreme theoretical scenario deliberately biased in favor of the split: assume both split packages could travel to local Zone 2, whereas the consolidated package must travel cross-country to Zone 8:
+To demonstrate the mathematical resilience of the bound, consider an extreme theoretical scenario deliberately constructed in favor of the split: assume both split packages could travel to local Zone 2, whereas the consolidated package must travel cross-country to Zone 8:
 
 | Fulfillment Architecture | Parcels | Total Carrier Postage | Total 3PL Handling | Net Landed Cost |
 |---|---|---|---|---|
@@ -240,7 +279,9 @@ To prove the universal robustness of the bound, consider an extreme theoretical 
 | **Net Consolidation Advantage** | | | | **$3.20 Savings** |
 
 > [!IMPORTANT]
-> Because two physical fulfillment nodes separated by thousands of miles cannot both be in Zone 2 for the same customer address, this scenario represents an impossible upper bound for split efficiency. If consolidation beats the split even under this impossible best case, consolidation mathematically dominates in every real-world network routing scenario.
+> Because Allentown and Reno cannot both sit in the Zone 1–2 distance band for the same customer delivery address, the two-Zone-2 scenario is an impossible theoretical upper bound for split efficiency. If consolidation wins even under this impossible best case, consolidation mathematically dominates in every real-world network routing scenario.
+
+The bound holds because the full incremental cost of a second parcel—$\$2.90$ fixed handling plus the cheapest base carrier rate ($\$5.40$)—totals $\$8.30$, which comfortably exceeds the $\$5.10$ maximum zone premium. Note that the $\$2.90$ handling fee alone is smaller than the $\$5.10$ zone differential; the bound holds because the second parcel must also bear its own independent carrier charge.
 
 ### Inventory State & Routing Response Matrix
 
@@ -249,13 +290,13 @@ To prove the universal robustness of the bound, consider an extreme theoretical 
 | **Single node holds 100% ATP** | Complete consolidation feasible | Route 100% of basket to candidate node | Zero split surcharge; minimum landed cost |
 | **Multiple nodes hold 100% ATP** | Consolidation choice available | Rank candidates by closest carrier zone & SLA | Realizes authentic geographic zone savings |
 | **No single node holds 100% ATP** | Inventory fragment constraint | Evaluate minimum-parcel split vs backorder queue | Controls damage; parcel count minimized |
-| **ATP cache stale / in-flight race** | High phantom allocation risk | Re-query real-time unreserved balance at lock time | Prevents split downstream at physical wave |
+| **ATP cache stale / in-flight race** | High phantom allocation risk | Re-query real-time unreserved balance at lock time | Prevents committing to an unfulfillable single box |
 
 ---
 
 ## 5. Spotting Leakage: Three Questions for Any Split Order
 
-Fulfillment engineering teams do not need complex algorithms to identify whether their logistics network is bleeding cash. Auditing any order cohort requires asking three sequential questions:
+Fulfillment engineering teams do not need complex algorithms to identify whether their logistics network is bleeding margin. Auditing any order cohort requires asking three sequential questions:
 
 ```mermaid
 flowchart TD
@@ -273,40 +314,63 @@ Calculate the macro **Parcel-to-Order Ratio**:
 
 $$\text{Parcel Ratio} = \frac{\text{Total Dispatched Parcels}}{\text{Total Customer Orders}}$$
 
-In an unconstrained naive environment, this ratio typically hovers around **1.314** (657 parcels across 500 orders). Under consolidated routing governance, the ratio drops to **1.082** (541 parcels across 500 orders). A rising ratio with stable basket sizes is the earliest warning indicator of routing policy misconfiguration.
+In an unconstrained naive environment, this ratio typically reaches **1.314** (657 parcels across 500 orders). Under consolidated routing governance, the ratio drops to **1.082** (541 parcels across 500 orders). Because the model counts each split order as two parcels, the ratio minus $1.000$ represents the exact split rate ($0.314$ and $0.082$). A rising ratio with stable basket sizes is the earliest warning indicator of routing policy misconfiguration.
 
 ### 5.2 Could one node have fulfilled it all?
-Inspect the historical ATP inventory ledger at the exact second the routing decision locked. If any facility held positive available stock for every line item, the split was an algorithmic routing failure rather than an unavoidable inventory stockout.
+For each split order, audit the unreserved ATP at each node at the exact moment of order assignment. Record three discrete facts:
+1. The routing decision timestamp.
+2. The ATP snapshot timestamp for each regional facility.
+3. The unreserved quantity per SKU at each facility.
+
+This telemetry uncovers two distinct failure modes:
+- **Routing Policy Failure**: One node held the entire basket at assignment. The split was an unconstrained routing choice, not an inventory constraint (violating the §4 Consolidation Bound).
+- **Data Freshness Failure**: The ATP snapshot exceeded the declared staleness threshold, or stock was claimed in an un-isolated race condition. The candidate set itself was corrupt (Failure Mode #4 in §7).
 
 ### 5.3 What would one parcel have cost?
-Reprice the order retrospectively as a single shipment from the best consolidated node. The arithmetic delta between actual split carrier invoices and counterfactual single-parcel pricing reveals the precise dollar leakage.
+Reprice the order retrospectively as a single shipment from the best consolidated candidate node. Log the variance per order:
+
+$$\text{leak\_usd} = \text{actual\_modeled\_cost} - \text{counterfactual\_single\_parcel\_cost}$$
+
+$$\text{Denver Autopsy: } \$21.50 - \$10.50 = \mathbf{\$11.00}$$
+
+If the counterfactual is lower and one node held inventory, an authentic leak has been quantified. Aggregating `leak_usd` across monthly checkout volumes provides finance with an empirical recovery target.
 
 ---
 
 ## 6. When a Split Is Unavoidable: Controlled Exception Handling
 
-When stock depletion across nodes makes single-package fulfillment physical impossible, the system must transition from pure consolidation to controlled triage:
+When stock depletion across nodes makes single-package fulfillment physically impossible, the routing fallback must choose between three structured paths:
 
 | Mitigation Architecture | Primary Trigger Criteria | Cost & Customer Trade-Off |
 |---|---|---|
-| **Controlled Minimum-Parcel Split** | Expedited customer SLA; stock physically segregated across facilities | Incurs unavoidable +$2.90 handling fee plus second postage line; guarantees delivery speed |
+| **Controlled Minimum-Parcel Split** | Expedited customer SLA; stock physically segregated across facilities | Incurs at least +$8.30 more than one parcel under scenario inputs, plus any zone delta |
 | **Authorized Short-Hold Backorder** | Inbound replenishment container actively receiving at primary hub | Defers dispatch 24–48 hours; avoids second parcel expense; requires proactive customer messaging |
 | **Automated Cross-Dock Transfer** | Chronic split SKU pairing identified in rolling 7-day velocity data | Incurs bulk freight transfer expense; eliminates recurring retail parcel split penalties permanently |
+
+### Customer Communication Rules
+1. **Upfront Disclosure at Checkout/Confirmation**: Split orders must be disclosed immediately. The customer must be informed that the order will arrive in multiple parcels, with distinct tracking references and carrier delivery windows for each.
+2. **Backorder Choice**: Where a short hold (24–48 hours) enables a single node to fulfill the complete basket, provide the customer with an authorized backorder option as the preferred alternative to split packaging.
+3. **Unified Order Tracking**: Never allow a customer to infer that an item was omitted. Ensure the storefront tracking portal links all outbound parcel tracking numbers to the single parent order record.
+
+### Inventory Rebalancing Rules
+1. **Velocity Pairing Telemetry**: Track chronic multi-origin SKU pairings. SKU combinations that repeatedly trigger Tier 3 splits indicate an inventory allocation defect rather than a software failure.
+2. **Transfer Justification Math**: Authorize cross-dock warehouse replenishment when the bulk transfer freight cost is less than the cumulative second-parcel penalty it avoids ($\ge \$8.30$ per avoided split order).
+3. **Post-Transfer Verification**: Following a stock transfer, verify that the newly balanced node successfully passes Tier 1 for subsequent checkout cohorts.
 
 ---
 
 ## 7. Where Routing Leaks: Root-Cause Failure Mode Matrix
 
-A comprehensive postmortem of direct-to-consumer order routing identified four primary systemic vulnerability modes:
+A comprehensive systems analysis of multi-node order routing identified four primary systemic vulnerability modes:
 
-| # | Root-Cause Failure Mode | Architectural Mechanism | Prevention & Remediation Control |
-|---|---|---|---|
-| **1** | **Independent Per-Line Evaluation** | Routing heuristics optimize individual SKU distance rather than aggregate basket parcel count | **Consolidation Gate**: Enforce Tier 1 whole-basket availability check before proximity ranking |
-| **2** | **Omission of Warehouse Handling in Cost Logic** | Routing algorithms optimize purely for carrier postage, ignoring 3PL pick/pack/box fee structures | **Landed Cost Routing**: Incorporate $\$2.90P + \$0.40U$ into real-time decision functions |
-| **3** | **Unbalanced Catalog Placement** | High-velocity companion SKUs segregated into disparate regional nodes during replenishment | **Affinity-Based Staging**: Warehouse replenishment bundling paired SKUs in identical facilities |
-| **4** | **Stale Distributed ATP Data** | Inventory caches desynchronize during flash sales, causing phantom stock splits at wave creation | **Transactional Locking**: Validate unreserved real-time stock balances immediately prior to assignment |
+| # | Root-Cause Failure Mode | Architectural Mechanism | Preventable at Routing Time? | Remediation Control |
+|---|---|---|:---:|---|
+| **1** | **Independent Per-Line Evaluation** | Routing heuristics optimize individual SKU distance rather than aggregate basket parcel count | **Yes** | **Consolidation Gate**: Enforce Tier 1 whole-basket availability check before proximity ranking |
+| **2** | **Omission of Warehouse Handling in Cost Logic** | Routing algorithms optimize purely for carrier postage, ignoring 3PL pick/pack/box fee structures | **Yes** | **Landed Cost Routing**: Incorporate $\$2.90P + \$0.40U$ into real-time decision functions |
+| **3** | **Unbalanced Catalog Placement** | High-velocity companion SKUs segregated into disparate regional nodes during replenishment | **Partly** | **Affinity-Based Staging**: Warehouse replenishment bundling paired SKUs in identical facilities |
+| **4** | **Stale Distributed ATP Data** | Inventory caches desynchronize during flash sales, causing phantom stock splits at wave creation | **Yes** | **Transactional Locking**: Validate unreserved real-time stock balances immediately prior to assignment |
 
-The fatal design flaw across legacy e-commerce setups is **Failure #1**. The moment an engine decides line items individually, gross margin is subordinated to distance metrics.
+The decisive flaw is **Failure Mode #1**. The other three amplify the damage, but #1 is a pure design choice. Prevention requires evaluating whole-basket consolidation *before* geographic proximity.
 
 ---
 
@@ -334,12 +398,18 @@ COHORT PARCEL & HANDLING ARITHMETIC:
   Model Beta Parcels:  500 orders +  41 split orders = 541 parcels
   Eliminated Parcels:  657 - 541 = 116 parcels (73.89% relative split reduction)
 
-  Model Alpha Handling: ($2.90 × 657) + ($0.40 × 1,190) = $1,905.30 + $476.00 = $2,381.30
-  Model Beta Handling:  ($2.90 × 541) + ($0.40 × 1,190) = $1,568.90 + $476.00 = $2,044.90
-  Handling Savings:     $2,381.30 - $2,044.90 = $336.40 (Exactly 116 parcels × $2.90)
+  Handling, Alpha: $2.90 × 657 + $0.40 × 1,190 = $1,905.30 + $476.00 = $2,381.30
+  Handling, Beta:  $2.90 × 541 + $0.40 × 1,190 = $1,568.90 + $476.00 = $2,044.90
+  Handling Saving: 116 parcels × $2.90 = $336.40
 
-  Carrier Freight Savings: $5,190.20 (Alpha) - $4,529.20 (Beta) = $661.00
-  Total Modeled Savings:   $336.40 handling + $661.00 freight = $997.40
+  Freight, Alpha:  $5,190.20
+  Freight, Beta:   $4,529.20
+  Freight Saving:  $5,190.20 - $4,529.20 = $661.00
+
+  Total Fulfillment Saving: $336.40 handling + $661.00 freight = $997.40
+  Per-Order Saving:         $997.40 / 500 = $1.9948 per order
+  Relative Split Reduction: 116 / 157 = 73.89%
+  Absolute Split Reduction: 31.4% - 8.2% = 23.2 percentage points
 ```
 
 | Performance Metric | Model Alpha (Naive Per-Line) | Model Beta (Consolidated Waterfall) | Empirical Variance |
@@ -355,18 +425,19 @@ COHORT PARCEL & HANDLING ARITHMETIC:
 
 The consolidated waterfall eliminates 116 split shipments, unlocking **$997.40 in direct fulfillment margin recovery** across the 500-order sample.
 
-### 8.3 Scale Sensitivity Projections
+### 8.3 Planning Scale Sensitivity Projections
 
-Applying the empirical per-order savings factor ($1.9948 per order) across varied direct-to-consumer operating scales illustrates the compound financial return of algorithmic routing hygiene:
+The per-order cohort average of **$1.9948** is exact ($997.40 / 500), so the projections below carry zero rounding distortion. Each tier illustrates a distinct operational planning scale applied to the modeled cohort average:
 
-| Operating Volume Scale | Monthly Checkouts | Annual Dispatched Orders | Projected Annualized Savings |
-|---|---:|---:|---:|
-| **Mid-Market Brand (1.7k/mo)** | 1,700 | 20,400 | **$40,693.92 / year** |
-| **Growth Stage (5k/mo)** | 5,000 | 60,000 | **$119,688.00 / year** |
-| **High-Volume Scale (15k/mo)** | 15,000 | 180,000 | **$359,064.00 / year** |
-| **Enterprise Fleet (1k/day)** | 30,417 | 365,000 | **$728,102.00 / year** |
+| Operational Planning Scale | Monthly Checkouts | Annual Dispatched Orders | Arithmetic Calculation | Modeled Annualized Savings |
+|---|---:|---:|---|---:|
+| **Modeled Benchmark Cohort** | — | 500 | $\$1.9948 \times 500$ | **$997.40** |
+| **Mid-Market Brand (1.7k/mo)** | 1,700 | 20,400 | $\$1.9948 \times 1,700 \times 12$ | **$40,693.92 / year** |
+| **Growth Stage (5k/mo)** | 5,000 | 60,000 | $\$1.9948 \times 5,000 \times 12$ | **$119,688.00 / year** |
+| **High-Volume Scale (15k/mo)** | 15,000 | 180,000 | $\$1.9948 \times 15,000 \times 12$ | **$359,064.00 / year** |
+| **Enterprise Fleet (1k/day)** | 30,417 | 365,000 | $\$1.9948 \times 365,000$ | **$728,102.00 / year** |
 
-*Note: Projections reflect mathematical scale sensitivities applying unrounded cohort averages ($1.9948 per order; $3,391.16/mo at 1,700 orders/mo). They illustrate systemic exposure rather than audited historical P&L ledgers.*
+*Note: Projections represent conditional sensitivity calculations based on the declared cohort numerator. They illustrate systemic financial exposure rather than audited historical accounting ledgers.*
 
 ---
 
@@ -381,11 +452,11 @@ flowchart TD
     R(["Order Ingested: Multi-Item Basket"]) --> T1
 
     subgraph Tier1["Tier 1: Consolidated Sourcing Gate"]
-        T1{"Does any single node hold<br>unreserved ATP for 100% of basket?"}
+        T1{"Which candidate nodes hold<br>unreserved ATP for 100% of basket?"}
     end
 
-    Tier1 -- "Yes: Qualifying Nodes Found" --> T2
-    Tier1 -- "No: Stock Split Across Nodes" --> T3
+    Tier1 -- "One or more nodes found" --> T2
+    Tier1 -- "No single node has 100%" --> T3
 
     subgraph Tier2["Tier 2: Candidate Ranking Engine"]
         T2{"Rank qualifying candidate nodes:<br>1. Customer Delivery SLA<br>2. Lowest Carrier Zone Distance"}
@@ -394,7 +465,7 @@ flowchart TD
 
     subgraph Tier3["Tier 3: Split-Minimization Fallback"]
         T3{"Evaluate Split Triage Strategy:<br>• Controlled Minimum-Parcel Split<br>• Authorized Backorder Short-Hold<br>• Cross-Dock Queue Routing"}
-        T3 --> A2["Emit Audit Exception Log<br>Dispatch Minimum Viable Parcel Combination"]
+        T3 --> A2["Emit Structured Fallback Audit Log<br>Dispatch Minimum Viable Parcel Combination"]
     end
 
     A1 --> Done(["Dispatch to 3PL WMS"])
@@ -403,22 +474,42 @@ flowchart TD
 
 ### 9.2 Routing Parameters & Operational Rules
 
-| Waterfall Stage | Rule Designation | Operational Logic & Configuration Settings |
+| Waterfall Stage / Parameter | Value / Operational Threshold | Operational Rationale |
 |---|---|---|
-| **Tier 1** | **Consolidation Gate** | Scan all authorized network locations (`LOC-PA-01`, `LOC-NV-02`). Filter out any location where `ATP(sku) < OrderQuantity(sku)` for any line item in the cart. |
-| **Tier 2** | **Proximity & SLA Ranking** | Applied *exclusively* to the subset of nodes that successfully cleared Tier 1. Calculate destination carrier zone from candidate nodes; assign order to the lowest carrier zone matching customer delivery SLA. |
-| **Tier 3** | **Split Minimization** | Fallback triggered only when Tier 1 candidate pool is empty. Execute combinatorial bin packing to fulfill the basket using the minimum possible number of parcels ($N_{\min}$). Log fallback reason code. |
+| **Base Order Fulfillment** | $2.50 per parcel | Scenario input: fixed labor component of parcel handling |
+| **Packaging & Corrugate** | $0.80 per parcel | Scenario input: physical box and void-fill materials |
+| **Additional Pick Fee** | $0.40 per unit after the first | Scenario input: incremental per-unit warehouse pick fee |
+| **Equivalent Handling Form** | $\text{Handling} = \$2.90P + \$0.40U$ | Algebraic formulation isolating the $2.90 cost of an additional box |
+| **Carrier Tariff Schedules** | Table in §2.4 | Standard commercial domestic rate card inputs |
+| **Tier 1 Pass Condition** | Unreserved $\text{ATP} \ge \text{Quantity}$ for all SKUs | Strict consolidation filter: partial availability fails Tier 1 |
+| **ATP Freshness Check** | Real-time stock re-check at lock time | Prevents committing to an unfulfillable single-box wave |
+| **Candidate Ranking (Tier 2)** | Delivery SLA, then closest carrier zone | Applied *exclusively* among candidate nodes capable of 100% fulfillment |
+| **Bound Re-Validation Trigger** | Any change to carrier rates or handling | The §4 bound holds only while $\$2.90 + \text{BaseCarrier} > \Delta \text{Zone}_{\max}$ |
+| **Tier 3 Audit Logging** | Reason code & counterfactual on every split | A split order must never be reached silently |
 
-### 9.3 Production Implementation Context: Modern Shopify Architecture
+### 9.3 Production Implementation Context: Modern Shopify Plus Architecture
 
 Implementing this logic in modern high-volume direct-to-consumer infrastructure requires moving beyond Shopify's legacy administrative location fulfillment priority lists:
 
-- **Legacy Limitation**: Native administrative priority lists rank fulfillment locations in a static sequence. If Location A is ranked #1 and holds 1 out of 3 basket items, Shopify automatically fulfills that 1 item from Location A and splits the remaining 2 items to Location B. Static priority lists cannot enforce whole-basket consolidation.
-- **Modern Solution**: Execution via the **Shopify Functions Order Routing API** (`cart_delivery_options` target). Built as lightweight WebAssembly modules compiled from Rust, Shopify Functions execute within sub-10ms latency budgets during checkout and order creation:
-  - The function inspects the complete line item payload.
-  - It runs the Tier 1 filter to isolate locations capable of 100% fulfillment.
-  - It overrides default closest-location sorting by discarding locations that would generate a split parcel whenever a consolidated location exists.
-  - It integrates seamlessly with distributed inventory synchronization hooks, guaranteeing real-time ATP integrity.
+#### Legacy Admin Rules vs. Shopify Functions
+Location priority configured in the Shopify admin is a static rank order. It has no mechanism to evaluate per-parcel handling fees or execute a whole-basket ATP test. If Location A is ranked #1 and holds 1 out of 3 basket items, Shopify automatically fulfills that 1 item from Location A and splits the remaining 2 items to Location B. Static priority lists cannot enforce whole-basket consolidation.
+
+To achieve programmatic consolidation, the architecture targets the **Shopify Functions Order Routing API**. Built as lightweight WebAssembly (Wasm) modules compiled from Rust, Shopify Functions execute within sub-10ms latency budgets during checkout and order creation.
+
+#### API Surfaces and Availability
+
+| API Surface | Target Function Hook | Operational Behavior | Relevance to the Waterfall |
+|---|---|---|---|
+| **Order Routing Location Rule API** | `cart.fulfillment-groups.location-rankings.generate.run` | Programmatically ranks locations associated with fulfillment groups; Shopify selects the top-ranked location | Carries Tiers 1 and 2 as an adaptive ranking |
+| **Fulfillment Constraints API** | `cart.fulfillment-constraints.generate.run` | Restricts line items to specific locations or requires them to ship from the same location | Hard-enforces same-location sourcing, with the checkout risk detailed below |
+
+#### How the Tiers Map to Shopify Functions
+
+1. **Tier 1 as a Programmatic Location Filter**: The function computes which facilities hold unreserved ATP for 100% of the basket and ranks those qualifying locations into a higher-priority group than every other facility. Expressing Tier 1 as an adaptive ranking—rather than a hard same-location constraint—is a crucial engineering choice: Shopify documents that when items constrained by the Fulfillment Constraints API cannot be sourced together, the buyer sees *"No shipping options available"* at checkout. A hard constraint would inadvertently convert an inventory stockout (Tier 3) into an abandoned cart.
+2. **Tier 2 as a Zone-SLA Sort**: Within the top-ranked group of fully stocked candidates, the function sorts surviving nodes by customer delivery SLA and lowest carrier zone distance. Tier 2 never executes against a facility that failed Tier 1.
+3. **Tier 3 as Split Minimization**: When no single facility clears Tier 1, the function ranks locations by the percentage of basket items each can cover (highest first), ensuring that line items are packed into the minimum viable number of parcels. Backorder holds and inventory rebalancing transfers execute upstream in middleware.
+
+*API Documentation References:* [Order Routing Location Rule API](https://shopify.dev/docs/api/functions/reference/order-routing-location-rule) · [Fulfillment Constraints API](https://shopify.dev/docs/api/functions/latest/fulfillment-constraints).
 
 ---
 
@@ -435,23 +526,22 @@ Implementing this logic in modern high-volume direct-to-consumer infrastructure 
 
 To preserve complete engineering credibility, this dossier strictly distinguishes between what has been verified through offline, reproducible test suites and what represents modeled scenarios or architectural specifications.
 
-All offline verification tests are fully reproducible via the repository test suite referenced below.
+All offline verification tests are fully reproducible via the repository test suite summarized in [Freight Scenario Evidence](../evidence/freight/summary.md), and the overarching test harness is documented in the [Reproducible Evidence Suite](../evidence/README.md).
 
-### Evidence Scope & Verification Status Matrix
+### 11.1 Evidence Scope & Verification Status Matrix
 
 | Deliverable / Artifact | Location | Evidentiary Status | Verification Source |
 |---|---|---|---|
-| **Three-Tier Routing Waterfall** | §9 | Architectural Specification | Validated design; requires Shopify Functions deployment |
+| **Three-Tier Routing Waterfall** | §9 | Architectural Specification | Validated design; targets Shopify Functions API |
 | **Network Topology & Inventory Profiles** | §2.2 | Declared Scenario Model | Defined network model (`LOC-PA-01`, `LOC-NV-02`) |
 | **Denver Basket Autopsy ($21.50 vs $10.50)** | §3 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
 | **The Consolidation Bound ($3.20)** | §4 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
 | **500-Order Cohort Simulation ($997.40)** | §8 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
-| **Carrier Tariff Schedules** | §2.4 | Declared Model Inputs | Standard baseline rate cards; verified carrier quote skipped |
-| **General Test Harness & Artifacts** | `evidence/` | **Verified in Test Suite** | [Reproducible Evidence Suite](../evidence/README.md) |
+| **Carrier Tariff Schedules** | §2.4 | Declared Model Inputs | Standard commercial rate cards; live API quote skipped |
 
-### Executed Test Suite Results Table
+### 11.2 Executed Test Suite Results Table
 
-The test suite in [`evidence/freight/calculate_freight.js`](../evidence/freight/summary.md) executes programmatic assertions directly against integer-cent monetary representations, basket allocation matrices, and cohort models:
+The test harness in [`evidence/freight/calculate_freight.js`](../evidence/freight/summary.md) executes programmatic assertions directly against integer-cent monetary representations, basket allocation matrices, and cohort models:
 
 ```text
 Test Harness Run Metadata:
@@ -477,7 +567,13 @@ Test Harness Run Metadata:
 | Capstone fixture retains Philadelphia and $7.20 freight | **PASSED** | Validates Order #1070 boundary parameters |
 | Dated carrier tariff and ZIP-zone verification | **SKIPPED** | Declared model inputs; live API carrier quote verification omitted |
 
-*Evidentiary Boundary Statement*: The Denver autopsy forces a split against feasible Reno consolidation to demonstrate the mathematical risk of an unconstrained per-line default. Carrier rates remain scenario inputs rather than live contract quotations.
+### 11.3 Boundary Statement
+
+Read the carrier rate row honestly. The Denver autopsy forces a split against a feasible Reno consolidation to demonstrate the mathematical risk of an unconstrained per-line default. It does not establish that a closest-node policy would have chosen the split on a real order; in fact, for Denver, a closest-node policy would route every item from Reno and would not split. The split here arises from an unconstrained per-line default to Allentown, which is the exact behavior the waterfall eliminates.
+
+The conclusion is also conditional: it survives changes in carrier rates only while a second parcel's full incremental cost ($\$2.90$ fixed handling plus base postage) remains larger than the maximum carrier zone premium ($\Delta \text{Zone}_{\max}$). Tariffs remain declared scenario inputs, and the rate table represents the baseline model upon which financial projections depend.
+
+Furthermore, the Capstone Order #1070 figures cited in §2.4 ($6.50, $14.60, and +$8.10) are declared scenario inputs; the executed suite asserts only that its fixture retains Philadelphia and a separate $7.20 freight assumption. No live carrier invoices, negotiated commercial discounts, physical mis-shipments, or carrier claims are inferred from these calculations.
 
 ---
 
@@ -485,8 +581,8 @@ Test Harness Run Metadata:
 
 > *"The Denver order cost $21.50 instead of $10.50 because the routing rule placed each item on its own and never counted boxes. Every parcel was labeled correctly and delivered on time, and the money was lost anyway... The principle is short enough to put on a wall: ask whether one box can do the job before you ask which box is closest."*
 
-In distributed direct-to-consumer logistics, gross margin is not lost to catastrophic carrier failures. It leaks out cent by cent through well-intentioned heuristics that optimize for proximity while ignoring the brutal physics of parcel handling economics. True freight efficiency is achieved not by chasing the nearest warehouse, but by enforcing absolute basket consolidation before a single mile is measured.
+In distributed direct-to-consumer logistics, gross margin is rarely destroyed by catastrophic carrier failures. It leaks out cent by cent through well-intentioned heuristics that optimize for proximity while ignoring the brutal physics of parcel handling economics. True freight efficiency is achieved not by chasing the nearest warehouse, but by enforcing absolute basket consolidation before a single mile is measured.
 
 ---
 
-*Compiled: 2026-11-10 | Synapse Botanicals Systems Architecture | Riovic Matthew*
+*Compiled: 2026-11-10 | Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering*
