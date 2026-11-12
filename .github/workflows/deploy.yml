@@ -1,33 +1,52 @@
 # ════════════════════════════════════════════════════════
-#  GitHub Pages — Auto-Deploy Portfolio on every push
-#  Deploys the static portfolio site to GitHub Pages.
+#  Verify every branch push and deploy main to GitHub Pages.
 # ════════════════════════════════════════════════════════
 
-name: Deploy Portfolio to GitHub Pages
+name: Verify Portfolio and Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main          # fires on every push to main
-  workflow_dispatch:  # allows manual trigger from GitHub Actions tab
+      - '**'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run Offline Verification Harness
+        run: |
+          node evidence/test_report_accounting.js
+          node evidence/run_all.js
+
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # Start from the commit so generated evidence from CI stays out of Pages.
       - name: Checkout
         uses: actions/checkout@v4
 
