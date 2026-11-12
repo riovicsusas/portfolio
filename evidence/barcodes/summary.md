@@ -52,7 +52,7 @@ The encoder and decoder share pattern tables, so this checks bitstream self-cons
 
 ## Executed checks
 
-Run: `2026-11-12T06-24-56-916Z-ef2c9323` · Node v24.18.0
+Run: `2026-11-12T07-04-04-741Z-7ab1870c` · Node v24.18.0
 
 Passed: 58; failed: 0; skipped: 0.
 

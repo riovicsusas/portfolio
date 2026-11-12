@@ -41,7 +41,7 @@ Had the file gone through, two products would have carried barcodes that the war
 
 | Incident Parameter | Baseline Parameter Value | Architectural Significance |
 |---|---|---|
-| **Operator Profile** | Dr. Aris Thorne (`aris.thorne@example.com`) | Lead Catalog & ERP Systems Architect managing bulk Matrixify schema transformations. |
+| **Operator Profile** | Dr. Aris Thorne (`aris.thorne@example.com`) | Lead Catalog & ERP Systems Architect managing bulk Matrixify schema transformations. The Field Mutation Risk Taxonomy in §2.1 defines permissions by field. It reserves Tier 1 edits for Lead TechOps and lists TechOps and the Financial Controller as permitted operators for Tier 2. |
 | **Catalog Scope** | `Catalog_Mutation_v2.xlsx`: 12 variants across 5 product lines (Focus Sticks, Adaptogen Tinctures, Bundles, Tumblers, Whisks) | Foundational catalog master powering checkout, 3PL WMS, and ad channels. |
 | **The Silent Coercion Defects** | Two barcodes destroyed by numeric coercion (scientific notation, 11-digit truncation) and one handle rename | Three blocking errors, none visible to a human viewing the spreadsheet. |
 | **The Potential Blast Radius** | $3,900.00 modeled out-of-pocket toll per release; $7,800/year at 8 bulk updates and a 25% error rate (§3) | Relabeling fees, wasted paid media clicks, and emergency TechOps intervention. |
@@ -377,8 +377,12 @@ A damaged barcode cannot be repaired by arithmetic. Once an application converts
 | `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Barcode` (Row 2) | `8.40001E+11` *(Scientific Notation)* | `850041234014` | **PASSED**: Resolved from master mapping; check digit 4 |
 | `SYN-TNCT-AM` | Adaptogen Tincture AM | `Barcode` (Row 6) | `84000103000` *(11 Digits, Truncated)* | `850041234052` | **PASSED**: Resolved from master mapping; check digit 2 |
 | `SYN-TMBL-MO` | Tumbler Matte Obsidian | `Handle` (Row 10) | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | **RESTORED**: Canonical handle reinstated from registry |
-| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Variant Price` | $40.00 | $42.00 | **PASSED**: Tier 2 Valid (Gross margin: 79.76% at $8.50 COGS) |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **PASSED**: Tier 2 Valid (Reconciled to manufacturing BOM) |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Variant Price` | $40.00 | $42.00 | **PASSED**: Tier 2 Valid (Gross margin: 79.76% at $8.50 COGS)¹ |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **PASSED**: Tier 2 Valid (Reconciled to manufacturing BOM)¹ |
+
+¹ Gross margin = ($42.00 − $8.50) / $42.00 = $33.50 / $42.00 = 79.76%. COGS sourced from platform BOM: [evidence/costs/summary.md](../evidence/costs/summary.md) (Focus Stick Packs 30-Pack unit cost = $8.50).
+
+¹ Scenario cost corrected from erroneous $13.50 to canonical $12.50. Platform BOM: [evidence/costs/summary.md](../evidence/costs/summary.md) (AM Adaptogen Tincture 60ml unit cost = $12.50).
 
 Notice rows 4 and 5: the file also carried legitimate, intentional Tier 2 price and cost changes. The linter cleanly validated the legitimate financial adjustments while arresting the catastrophic Tier 1 schema defects.
 
@@ -473,7 +477,7 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 | **Modulo-10 Checksum Validity** (All 12 SKUs) | §5 | **Verified in Staging** | 12 of 12 pass: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
 | **95-Bit UPC-A Encode & Decode** | §4, §5 | **Verified in Staging** | 12 of 12 bit-exact software round-trip: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
 | **Negative Anomaly Rejection Suite** (7 Corrupted Inputs) | §6 | **Verified in Staging** | Trapped 100% of defect modes: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
-| **Tier 2 Price & Margin Verification** (79.76% at $8.50 COGS) | §8 | **Verified in Staging** | [`evidence/costs/summary.md`](../evidence/costs/summary.md) (Reproducible arithmetic in §8.3). |
+| **Tier 2 Price & Margin Verification** (79.76% at $8.50 COGS) | §8 | **Verified in Staging** | [`evidence/costs/summary.md`](../evidence/costs/summary.md) (SYN-FSTK-MY: $42.00 retail, $8.50 COGS = 79.76% gross margin; arithmetic also validates $12.50 tincture correction in §8.1). |
 | **Pre-Flight Audit Telemetry** (`Catalog_Mutation_v2.xlsx`) | §7 | Scenario Audit | Reconstructed 5-second circuit breaker trace across 12 variants. |
 | **Field Hazard Taxonomy & RBAC** | §2 | Documented Specification | Role-based catalog governance schema mapping access tiers. |
 | **Unmitigated Cost Model** ($3,900.00 release / $7,800/yr) | §3 | Documented Specification | Deterministic model incorporating 3PL relabeling fees and paid ad spend. |

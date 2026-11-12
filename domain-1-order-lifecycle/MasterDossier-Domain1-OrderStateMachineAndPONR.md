@@ -6,7 +6,7 @@
 
 ## 1. The Hook: The 49-Mile Desynchronization
 
-Marcus Chen fixes his shipping address on her phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
+Marcus Chen fixes his shipping address on his phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
 
 Nothing on a warehouse floor in Allentown, Pennsylvania has heard about it.
 
@@ -24,7 +24,7 @@ The save did not stop the order. **Stopping it took 133 seconds** of coordinated
              └──────────── 133 Seconds Total Freeze ────────────┘
 ```
 
-At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: she had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#18404** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #18404 re-entered the wave queue at 10:16:15 EST, 135 seconds after ingestion and into the Allentown wave queue with the correct Binghamton shipping label.
+At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#18404** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #18404 re-entered the wave queue at 10:16:15 EST, 135 seconds after ingestion and into the Allentown wave queue with the correct Binghamton shipping label.
 
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
@@ -130,6 +130,8 @@ Because standard parcel tracking (USPS Ground Advantage, UPS Ground) provides **
 > This section describes an internal operating policy for cost modeling. It is not legal advice or a regulatory determination; confirm disposition rules with your quality and regulatory owner.
 
 ### 3.2 The Mis-Shipment Loss Ledger
+
+> **Self-Contained Projection — Single-Pack Mis-Shipment Economics**: The table below is an independent unit-economics illustration for one mis-shipped Focus Stick Pack 30-Pack (SYN-FSTK-MY, $42.00 retail / $8.50 COGS). It is not the economics of Order #18404 itself ($102.00, 2 packs + $18.00 expedited shipping). It models what a single unmitigated mis-delivery would cost in isolation. Platform BOM rates are sourced from evidence/costs/summary.md.
 
 This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FSTK-MY`), fully refunded after a mis-shipment, with no replacement or customer shipping revenue. Handling and payment fees not listed below are excluded:
 
@@ -434,7 +436,7 @@ Order #18404 was not a standard ground shipment; the customer paid an **$18.00 p
 1. **Standard Tier Orders**: Held in Shopify's Stage 0 buffer for 15 minutes to allow customer self-service edits and fraud risk scoring.
 2. **Expedited Tier Orders**: Tagged with `priority:expedited`. Upon passing automated risk analysis (Risk Level == `LOW`), the coordinator immediately dispatches the fulfillment request to the 3PL to ensure the parcel catches the earliest available picking wave.
 
-Order #18404 cleared fraud scoring at 10:04:10 EST and was pushed to ShipBob two seconds later. By the time Marcus Chen sent her ticket at 10:14:00 EST, the order had been in the Allentown queue for nearly ten minutes (588 seconds).
+Order #18404 cleared fraud scoring at 10:04:10 EST and was pushed to ShipBob two seconds later. By the time Marcus Chen sent his ticket at 10:14:00 EST, the order had been in the Allentown queue for nearly ten minutes (588 seconds).
 
 **The Rule**: In expedited fulfillment, the safe editing window does not last 15 minutes. It closes in **under 600 seconds** from WMS drop.
 
@@ -715,7 +717,7 @@ The coordinator harness uses Node's built-in SQLite for a local persistent opera
 
 ## 12. The Architectural Takeaway
 
-Marcus Chen never learned that her order spent two minutes in suspended animation. Her carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
+Marcus Chen never learned that his order spent two minutes in suspended animation. His carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
 
 That is what a correct integration layer looks like: invisible when it works, because it refused to let a four-second tap on a phone outrun a physical conveyor 49 miles away.
 

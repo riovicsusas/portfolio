@@ -472,12 +472,12 @@ All empirical assertions in this Capstone link directly to reproducible test sui
 | Technical Deliverable | Location in Portfolio | Verification Status | Verified Evidence Artifact |
 | :--- | :--- | :---: | :--- |
 | **Capstone Systems Dossier** | `capstone/MasterDossier...` | **Implemented** | Comprehensive Case Study Spec |
-| **Point-of-No-Return Engine** | Domain 1 Master Dossier | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (15.56ms cutoff rejection) |
-| **Multi-Node Freight Waterfall**| Domain 2 Master Dossier | **Verified in Staging** | [`evidence/freight/results.json`](../evidence/freight/summary.md) ($11.00 split savings confirmed) |
-| **Matrixify Schema Audit** | Domain 3 Master Dossier | **Verified in Staging** | [`evidence/barcodes/results.json`](../evidence/barcodes/summary.md) (100% Modulo-10 decode verified) |
-| **Shopify Flow Webhook Triage** | Domain 4 Master Dossier | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (15.97ms duplicate deduplication) |
-| **Algorithmic Margin Defense** | Domain 5 Master Dossier | **Verified in Staging** | [`evidence/costs/sensitivity.json`](../evidence/costs/summary.md) ($41.30–$49.54 floor verified) |
-| **Gorgias Helpdesk Engine** | Domain 6 Master Dossier | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (Sub-100ms hold acknowledgment) |
+| **Point-of-No-Return Engine** | [Domain 1 Master Dossier](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (15.56ms cutoff rejection) |
+| **Multi-Node Freight Waterfall**| [Domain 2 Master Dossier](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) | **Verified in Staging** | [`evidence/freight/results.json`](../evidence/freight/summary.md) ($11.00 split savings confirmed) |
+| **Matrixify Schema Audit** | [Domain 3 Master Dossier](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) | **Verified in Staging** | [`evidence/barcodes/results.json`](../evidence/barcodes/summary.md) (100% Modulo-10 decode verified) |
+| **Shopify Flow Webhook Triage** | [Domain 4 Master Dossier](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (15.97ms duplicate deduplication) |
+| **Algorithmic Margin Defense** | Domain 5 Master Dossier | **Verified in Staging** | [`evidence/costs/sensitivity.json`](../evidence/costs/summary.md) Order #29863 has a calculated basket floor of $32.85. In the separate promotional bundle model, the minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. |
+| **Gorgias Helpdesk Engine** | [Domain 6 Master Dossier](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (Sub-100ms hold acknowledgment) |
 | **GraphQL Order State Query** | Section 7.3 of this Dossier | **Implemented** | Pinned against Shopify Admin API v2026-01 |
 | **Carrier Intercept Integration**| Section 8.1 of this Dossier | **Verified in Staging** | [`evidence/carrier-recovery/results.json`](../evidence/carrier-recovery/summary.md) (FSM transition passed) |
 | **Amazon SQS DLQ Topology** | Section 9.2 of this Dossier | **Specified** | Production Architecture Blueprint |

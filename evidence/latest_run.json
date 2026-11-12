@@ -1,6 +1,6 @@
 {
-  "run_id": "2026-11-12T06-24-56-916Z-ef2c9323",
-  "started_at": "2026-11-12T06:24:56.918Z",
+  "run_id": "2026-11-12T07-04-04-741Z-7ab1870c",
+  "started_at": "2026-11-12T07:04:04.744Z",
   "runtime": {
     "node": "v24.18.0",
     "platform": "win32",
@@ -12,7 +12,7 @@
     {
       "id": "freight",
       "status": "passed",
-      "duration_ms": 154,
+      "duration_ms": 166,
       "counts": {
         "passed": 15,
         "failed": 0,
@@ -20,12 +20,12 @@
         "total": 16
       },
       "report": "freight/results.json",
-      "report_sha256": "8fb1a5476f611f33bc268fa927bcec2e8f5f03a7271b58e655d573320119cb2f"
+      "report_sha256": "296dcb113da12905e05130e93ee5497411012770c514602c4c28ffc3f82cba81"
     },
     {
       "id": "latency",
       "status": "passed",
-      "duration_ms": 6829,
+      "duration_ms": 5624,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -33,12 +33,12 @@
         "total": 34
       },
       "report": "latency/metrics.json",
-      "report_sha256": "8c00196505baaf6a97014a6bd1814d658bb8d46a73b80f41b5e87337032ab98d"
+      "report_sha256": "df6313ae7b8194557e5a1fdb933618ca8a3aef88c821401a08d59aa4de5d877a"
     },
     {
       "id": "barcodes",
       "status": "passed",
-      "duration_ms": 202,
+      "duration_ms": 148,
       "counts": {
         "passed": 58,
         "failed": 0,
@@ -46,12 +46,12 @@
         "total": 58
       },
       "report": "barcodes/results.json",
-      "report_sha256": "c41567f58ae924c0881ad775256b8cb42a0acc4bcce32266f3ec10c997cd0b72"
+      "report_sha256": "07041f140e5bf89aa633d83e1de4c9b46e0900dbf2eee7dd77d5ce9f509f2a60"
     },
     {
       "id": "costs",
       "status": "passed",
-      "duration_ms": 170,
+      "duration_ms": 162,
       "counts": {
         "passed": 11,
         "failed": 0,
@@ -59,12 +59,12 @@
         "total": 11
       },
       "report": "costs/sensitivity.json",
-      "report_sha256": "fbf0ff7715b571f0b1420c2804e1928c64523b24bb2f1ab6bd4c4334f4c59e0c"
+      "report_sha256": "97e38a4d5db8c37b7220a620d0dab04503af1606ff358003ca305d53192e7212"
     },
     {
       "id": "carrier-recovery",
       "status": "passed",
-      "duration_ms": 158,
+      "duration_ms": 192,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -72,7 +72,7 @@
         "total": 36
       },
       "report": "carrier-recovery/results.json",
-      "report_sha256": "bb621321e2f3c8f86bd7d4213685b8fee007a37f5ad32be78dad16765a13e1f2"
+      "report_sha256": "f457a188fbb499b4d3fbc210b83ee1dd45130072158f00d22bf30b1a86f61d2c"
     }
   ],
   "counts": {
@@ -103,6 +103,6 @@
     "run_all.js": "78b6d7a42247fe8e7d8917dcb61497f4edd866571bd2c4b07c90dc012ee6889d",
     "test_report_accounting.js": "5975ef29627904922d908a35e52a045696ebe2a1e765980baae27608b197eb9f"
   },
-  "finished_at": "2026-11-12T06:25:04.470Z",
+  "finished_at": "2026-11-12T07:04:11.053Z",
   "status": "passed"
 }

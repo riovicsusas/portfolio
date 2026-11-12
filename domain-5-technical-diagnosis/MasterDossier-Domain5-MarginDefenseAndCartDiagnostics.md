@@ -271,11 +271,13 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 
 | SKU | Variant Name | Retail Price | COGS | 3PL Handling | Carrier Freight | Static Breakeven (Full-Fee) | Dynamic Floor ($P'$) | Max Allowable Discount ($) | Max Allowable Discount (%) |
 |---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack | $42.00 | $8.50 | $3.70 | $5.85 | $19.57 | **$18.90** | **$23.10** | **55.0%** |
-| `SYN-TNCT-AM` | Adaptogen Tincture 60ml | $38.00 | $12.50 | $3.70 | $5.85 | $23.45 | **$23.02** | **$14.98** | **39.4%** |
+| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack | $42.00 | $8.50 | $3.70 | $5.85² | $19.57 | **$18.90** | **$23.10** | **55.0%** |
+| `SYN-TNCT-AM` | Adaptogen Tincture 60ml | $38.00 | $12.50 | $3.70 | $5.85² | $23.45 | **$23.02** | **$14.98** | **39.4%** |
 | `SYN-TMBL-MO` | Precision Insulated Tumbler | $34.00 | $7.00 | $3.70 | $5.85 | $17.84 | **$17.35** | **$16.65** | **49.0%** |
 | `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $11.66 | **$11.53** | **$4.47** | **27.9%** |
 | `SYN-BNDL-MAO` | Starter Bundle (Kitted Scenario)* | $82.00 | $28.40 | $4.50 | $7.20 | $42.78 | **$41.61** | **$40.39** | **49.3%** |
+
+² Per-SKU 3PL handling of $3.70 = platform model ($2.90×1 parcel + $0.40×2 picks), reflecting one item shipped alone in one parcel. Per-SKU freight of $5.85 is a declared single-unit scenario rate. Basket-level handling in §6 uses $4.10 (1 parcel, 3 picks total for 2-item basket) and $6.50 freight. §6.5 explains the economy of scale. Canonical formula: Domain 2 §2.3.
 
 *\*Bundle BOM reflects the $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).*
 
@@ -294,7 +296,7 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 - **Line Item 1**: 1× Focus Stick Packs 30-Pack (`SYN-FSTK-MY`) = $42.00 (COGS: $8.50)
 - **Line Item 2**: 1× Adaptogen Tincture 60ml (`SYN-TNCT-AM`) = $38.00 (COGS: $12.50)
 - **Gross Merchandise Value**: **$80.00**
-- **Per-Order Operational Overhead**: 3PL handling $4.10; carrier freight $6.50
+- **Per-Order Operational Overhead**: 3PL handling $4.10; carrier freight $6.50 (3PL: platform model $2.90×1P + $0.40×3U = $4.10; sourced from [evidence/freight/tariffs.json](../evidence/freight/tariffs.json) and Domain 2 §2.3 canonical formula)
 
 ### 6.2 The Unrestricted Collision Event
 
@@ -392,7 +394,7 @@ Using discrete whole-cent search with half-up rounded gateway fees:
   $$\text{Fee} = \text{round}(0.029 \times \$32.84 + \$0.30) = \text{round}(\$0.95236 + \$0.30) = \text{round}(\$1.25236) = \$1.25$$
   $$\text{Contribution} = \$32.84 - \$31.60 - \$1.25 = \mathbf{-\$0.01} \quad (\text{Negative: DEFICIT})$$
 
-Therefore, the exact dynamic discrete floor for this basket is **$32.85**.
+The lowest whole-cent payment that breaks even for Order #29863 is $32.85, based on $21.00 in COGS, $4.10 in handling, and $6.50 in freight. The separate `alternative_promo` bundle model gives a minimum payable of $41.30 at $6.50 freight and $49.64 at $14.60 freight. These are two points from the freight sensitivity table in [`evidence/costs/summary.md`](../evidence/costs/summary.md).
 
 The maximum allowable discount the basket could withstand without bleeding cash was:
 $$\text{Max Allowable Discount} = \$80.00 - \$32.85 = \$47.15 \quad (58.94\%)$$
@@ -486,7 +488,7 @@ Dynamic floors are highly sensitive to outbound carrier freight. Holding kitted 
 | **Processing Fee Base** | Includes shipping & taxes | Gateway charges percentage fee on gross transaction capture. | §5 |
 | **Contribution Revenue Base** | Excludes remitted sales tax | Sales tax collected is a fiduciary liability, not merchant revenue. | §5 |
 | **Floor Search Algorithm** | Whole cents, asserting preceding cent is negative | Resolves discrete whole-cent breakeven payment. | §5, §6.4 |
-| **Order #29863 Cost Inputs** | COGS $21.00; 3PL $4.10; Freight $6.50 | Ground-truth direct cost fixtures for basket floor derivation. | §6 |
+| **Order #29863 Cost Inputs** | COGS $21.00; 3PL $4.10; Freight $6.50 | Ground-truth direct cost fixtures for basket floor derivation. COGS: $8.50 (SYN-FSTK-MY) + $12.50 (SYN-TNCT-AM) = $21.00 — per [evidence/costs/summary.md](../evidence/costs/summary.md) BOM; 3PL: 1 parcel × 3 units; Freight: ground Zone declared rate | §6 |
 | **Triage Time Budget** | Tier 1: 60s; Tier 2: 120s; Tier 3: 180s | Enforces disciplined, systematic forensic investigation. | §3 |
 | **Tier 1 MTTI Target** | Under 60 seconds | Cart failures must be immediately isolated in browser Network tab. | §3.1 |
 

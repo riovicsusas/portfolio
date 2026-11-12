@@ -127,7 +127,7 @@ flowchart LR
 | # | Cost Line | Cost Driver | Unit Cost | Quantity | Subtotal |
 |---|---|---|---|---|---|
 | 1 | **3PL Fulfillment SLA Breaches** | Orders missing same-day carrier departure cutoff | $15.00 customer courtesy credit | 83 orders | $1,245.00 |
-| 2 | **Overselling from Throttled Inventory** | Units sold after physical stock was depleted | $50.00 courtesy credit + $33.50 lost gross margin | 5 units | $417.50 |
+| 2 | **Overselling from Throttled Inventory** | Units sold after physical stock was depleted | $50.00 courtesy credit + $33.50 assumed foregone contribution per cancellation | 5 units | $417.50 |
 | 3 | **Emergency DevOps Triage** | Senior engineering incident response & queue re-sync | $250.00 loaded hourly rate | 2 hours | $500.00 |
 | | **Total Out-of-Pocket Incident Toll** | | | | **$2,162.50** |
 
@@ -139,7 +139,7 @@ incident_toll = (delayed_orders × $15.00) + (oversold_units × $83.50) + (engin
 ```
 
 1. **Fulfillment SLA breach penalties ($1,245.00)**: The order-routing automations and the middleware that dispatches fulfillment orders to ShipBob draw from the same Admin API bucket that the loop consumed. With the bucket full, those calls queued behind `HTTP 429` backoff retries. In this scenario, 83 orders missed the 14:00 EST carrier truck departure, requiring customer service to issue a $15.00 courtesy shipping credit per customer: $83 \times \$15.00 = \$1,245.00$.
-2. **Overselling losses from throttled inventory sync ($417.50)**: Real-time inventory sync webhooks were backed up in the starved queue. During that latency window, 5 units of The Daily Protocol Starter Bundle were purchased after physical inventory was exhausted. Each oversold order was canceled, costing a $50.00 appeasement gift card plus $33.50 in unrecoverable contribution margin: $5 \times (\$50.00 + \$33.50) = \$417.50$.
+2. **Overselling losses from throttled inventory sync ($417.50)**: Real-time inventory sync webhooks were backed up in the starved queue. During that latency window, 5 units of The Daily Protocol Starter Bundle were purchased after physical inventory was exhausted. The model assumes a $50.00 courtesy credit and $33.50 in foregone contribution for each cancellation. At $83.50 per cancellation, the modeled loss across five cancellations is $417.50.
 3. **Emergency DevOps triage ($500.00)**: Two hours of senior systems engineering time dedicated to isolating the runaway workflow, purging orphaned webhook queues, and verifying database ledger parity at a loaded cost of $250.00/hr.
 
 ### 3.2 Scaled Exposure: Black Friday / Cyber Monday (BFCM)
@@ -305,16 +305,20 @@ The payload is normalized (sorted keys, stripped whitespace) and hashed via SHA-
 }
 ```
 
+// PENDING maps to CS-ADDR-HOLD-PENDING in Domain 6's Shopify tag taxonomy (§4); CONFIRMED maps to CS-ADDR-HOLD-APPLIED; REJECTED maps to CS-ADDR-HOLD-REJECTED; UNKNOWN maps to CS-ADDR-HOLD-UNKNOWN.
+
 ### 6.4 What the Coordinator Ledger Answers
 
 | Incoming Delivery State | What the Ledger Finds | Coordinator Response |
 |---|---|---|
 | **Same ID, same hash, worker active** | State == `PENDING` | Return `PENDING`. No duplicate side effect is dispatched. |
-| **Same ID, same hash, outcome recorded** | State == `CONFIRMED` or `REJECTED` | Return stored historical outcome. Never re-execute mutation. |
+| **Same ID, same hash, outcome recorded** | State == `CONFIRMED`¹ or `REJECTED` | Return stored historical outcome. Never re-execute mutation. |
 | **Same ID, different payload hash** | Existing record has differing hash | **Reject as conflicting payload** (HTTP 409/422). Do not store or mutate. |
 | **Different ID, same shipment, active** | Prior operation is `PENDING` | Serialize execution behind the active operation lock. |
 | **Stale order version** | `expected_order_version` < current version | **Reject as stale version conflict**. Zero side effects permitted. |
 | **Prior attempt ended UNKNOWN** | State == `UNKNOWN` | **Reconcile physical WMS state first**. Never replay blind. |
+
+¹ CONFIRMED = operation succeeded; maps to CS-ADDR-HOLD-APPLIED at the Shopify helpdesk tag layer (Domain 6 §4).
 
 In our local test suite ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)), same-payload duplicate pairs were resolved via this ledger in **0.16ms (p50)**, rejecting duplicate execution with zero downstream business effects.
 
@@ -526,7 +530,7 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 
 | Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
-| **Order #24148 Recursive Incident** | §1, §4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. |
+| **Order #24148 Recursive Incident** | §1, §4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. Chloe Bennett (chloe.bennett@example.com); 114 webhook events in 62 seconds; 98% Admin API bucket saturation. |
 | **Financial Blast Radius Model** | §3 | Modeled Scenario | Unit-economic cost model incorporating 3PL SLA credits and inventory overselling. |
 | **Negative Tag Check Blueprint** | §5 | Documented Specification | Production-ready Shopify Flow visual guard pattern. |
 | **Idempotency Triad & Ledger Contract** | §6 | **Verified in Staging** | Local SQLite coordinator harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)): **0.16ms p50** duplicate resolution. |

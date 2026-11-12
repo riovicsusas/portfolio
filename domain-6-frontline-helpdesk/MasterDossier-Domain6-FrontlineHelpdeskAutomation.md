@@ -51,7 +51,7 @@ An API hold in Shopify is not yet a physical stop on the warehouse floor. The ti
 | **Fulfillment Latency Race** | 16.8 wave cycles elapse before human triage | Orders can pass the Point of No Return (PONR) before support intervenes. |
 | **Automated Intercept Velocity** | **8.4 seconds** from email ingest to committed hold | A rule places the hold request before the first wave is likely to release the order. |
 | **Financial Blast Radius** | **$76.00** itemized direct cost ($233.33 fully loaded) | Prevents consumable scrap write-offs, dual freight, and carrier intercept fees (§9). |
-| **Concurrency Safeguard** | Four-outcome tag taxonomy (`PENDING`, `APPLIED`, `REJECTED`, `UNKNOWN`) | Agents act strictly on a verified WMS queue lock, never on Shopify screen state. |
+| **Concurrency Safeguard** | Four-outcome tag taxonomy (`PENDING`, `APPLIED`, `REJECTED`, `UNKNOWN`); maps to Domain 4 §6.4 coordinator ledger states (`PENDING` → `PENDING`, `APPLIED` → `CONFIRMED`, `REJECTED` → `REJECTED`, `UNKNOWN` → `UNKNOWN`) | Agents act strictly on a verified WMS queue lock, never on Shopify screen state. |
 
 ---
 
@@ -165,6 +165,7 @@ A hold request dispatched to a distributed warehouse has four possible states. T
 | `CS-ADDR-HOLD-APPLIED` | Physical lock verified in WMS queue; order confirmed pre-wave. | Finalize CASS standardization, edit address in Shopify, release hold, send Macro `M-01`. | Do not release unrelated holds placed by fraud automations. |
 | `CS-ADDR-HOLD-REJECTED` | WMS rejected hold; order already wave-released or picked past PONR. | Escalate to carrier package intercept; pre-populate Macro `M-04`. | **DO NOT edit address in Shopify** (will desync from printed label). |
 | `CS-ADDR-HOLD-UNKNOWN` | Gateway timeout (`HTTP 504`); physical outcome is unknown. | Escalate to TechOps lead immediately before the warehouse cutoff. | **DO NOT guess outcome.**<br/>Do not confirm cancellation to customer. |
+| *Footnote* | See Domain 4 §6.3–6.4 for the underlying middleware idempotency contract these tags surface at the helpdesk layer. | | |
 
 ```mermaid
 flowchart TD
@@ -391,7 +392,9 @@ AVOIDED COST LEDGER PER MIS-DELIVERY EVENT:
   FULLY LOADED MODELED SAVINGS PER EVENT:            $233.33
 ```
 
-The itemized direct lines reconcile cleanly: $\$15.30 + \$14.80 + \$28.40 + \$17.50 = \mathbf{\$76.00}$. The $17.50 intercept fee matches the successful-recovery fee used in the carrier-recovery simulator ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)).
+> Domain 6 assumes $6.50 in original outbound freight and $8.80 in return freight. The [Capstone Order #35070 ledger in §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) assumes $7.20 and $8.40, respectively. Both scenarios use $14.80 for replacement freight, $17.50 for carrier intercept, and $28.40 for kitted Starter Bundle COGS.
+
+The $76.00 modeled direct cost comprises $15.30 in original and return freight ($6.50 + $8.80), $14.80 in replacement freight, $28.40 in scrap COGS, and $17.50 in carrier intercept fees. The $17.50 intercept fee matches the successful-recovery fee used in the carrier-recovery simulator ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)).
 
 ### 9.3 Side-by-Side CFO Cost Ledger
 
@@ -401,7 +404,7 @@ To maintain absolute fiduciary rigor, we compare the **Conservative Itemized Bas
 |---|:---:|:---:|---|
 | **Conservative Itemized Baseline** | **$76.00** | **$1,368.00 / month** | **100% Verified**: Dual carrier freight ($15.30), replacement freight ($14.80), consumable scrap COGS ($28.40), and UPS intercept fee ($17.50). |
 | **Un-Itemized Soft Increment** | $157.33 | $2,831.94 / month | Customer concession credits, churn mitigation, and chargeback avoidance without itemized breakdown (67.4% of total). |
-| **Fully Loaded Planning Model** | **$233.33** | **$4,199.94 / month** | **Upper-Bound Planning**: Itemized direct baseline plus soft concessions (unrounded per-event calculation yields exactly $4,200.00/mo). |
+| **Fully Loaded Planning Model** | **$233.33** | **$4,199.94 / month** | At 18 incidents per month and $233.33 per incident, the planning estimate is $4,199.94 per month, or approximately $4,200 to the nearest dollar. |
 
 The figure fully supportable from printed inputs is **$1,368.00 a month**.
 

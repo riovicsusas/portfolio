@@ -119,6 +119,8 @@ $$\text{Variable Pick Labor} = \$0.40 \text{ for each unit picked after the firs
 
 $$\text{Handling}(P, U) = \$3.30 \times P + \$0.40 \times (U - P) = \$3.30P + \$0.40U - \$0.40P = \mathbf{\$2.90P + \$0.40U}$$
 
+> This is the platform-wide 3PL handling model used in all dossiers. Base fulfillment ($2.50) + corrugate ($0.80) = $3.30 fixed parcel overhead; $0.40 per additional pick. The simplified coefficient $2.90P + $0.40U is the canonical form also referenced in Domain 5 §6 and the evidence/costs package.
+
 Where:
 - $P$ is the total count of dispatched outbound parcels.
 - $U$ is the total count of physical units picked across all parcels.
@@ -159,14 +161,7 @@ The model utilizes the following standard domestic postage tariff schedules:
 
 Order #35070 illustrates a different failure. Its Reno allocation retained the old Philadelphia destination after the customer requested San Francisco. The bundle was stocked in Reno (`LOC-NV-02`), so the incident was an address-state failure rather than an Allentown-versus-Reno allocation mistake.
 
-The Capstone declares **$7.20 original ground freight** and **$14.80 replacement expedited freight.** These belong to different shipments and service levels; their difference is not a postal-zone penalty.
-
-$$\$14.60 - \$6.50 = \$8.10 \quad \left(\frac{\$8.10}{\$6.50} = +124.6\%\right)$$
-
-This illustrates the financial hazard of ignoring postal zones when consolidation is not in question. It forms the mirror image of the Denver basket: in Denver, ignoring parcel count cost $11.00; in Capstone #35070, ignoring postal zone cost $8.10.
-
-> [!NOTE]
-> The $6.50, $14.60, and +$8.10 figures represent Capstone-declared scenario inputs. The executed test suite in `evidence/freight/` asserts only that the Capstone fixture retains the Philadelphia destination and its separate $7.20 declared freight assumption (§11).
+The Capstone models $7.20 in ground freight for the original shipment to Philadelphia and $14.80 in expedited freight for the replacement. The $7.60 difference compares two shipments with different service levels. See [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) for the full recovery ledger.
 
 With the economic parameters established, we now trace the Denver order through two divergent routing policies to observe where margin is preserved or lost.
 
@@ -535,7 +530,7 @@ All offline verification tests are fully reproducible via the repository test su
 |---|---|---|---|
 | **Three-Tier Routing Waterfall** | §9 | Architectural Specification | Validated design; targets Shopify Functions API |
 | **Network Topology & Inventory Profiles** | §2.2 | Declared Scenario Model | Defined network model (`LOC-PA-01`, `LOC-NV-02`) |
-| **Denver Basket Autopsy ($21.50 vs $10.50)** | §3 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
+| **Denver Basket Autopsy ($21.50 vs $10.50)** | §3 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md). LOC-PA-01 Zone 6 $8.10 freight + $3.70 handling = $11.80 parcel; LOC-NV-02 Zone 4 $6.40 freight + $3.30 handling = $9.70 parcel; split total $21.50. Consolidated: LOC-NV-02 Zone 4 $6.40 + $4.10 handling = $10.50. |
 | **The Consolidation Bound ($3.20)** | §4 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
 | **500-Order Cohort Simulation ($997.40)** | §8 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
 | **Carrier Tariff Schedules** | §2.4 | Declared Model Inputs | Standard commercial rate cards; live API quote skipped |
@@ -574,7 +569,7 @@ Read the carrier rate row honestly. The Denver autopsy forces a split against a 
 
 The conclusion is also conditional: it survives changes in carrier rates only while a second parcel's full incremental cost ($\$2.90$ fixed handling plus base postage) remains larger than the maximum carrier zone premium ($\Delta \text{Zone}_{\max}$). Tariffs remain declared scenario inputs, and the rate table represents the baseline model upon which financial projections depend.
 
-Furthermore, the Capstone Order #35070 figures cited in §2.4 ($6.50, $14.60, and +$8.10) are declared scenario inputs; the executed suite asserts only that its fixture retains Philadelphia and a separate $7.20 freight assumption. No live carrier invoices, negotiated commercial discounts, physical mis-shipments, or carrier claims are inferred from these calculations.
+The freight suite checks that the Order #35070 fixture retains Philadelphia as the original destination and $7.20 as the declared original freight cost. The Capstone ledger separately records $14.80 as the modeled expedited replacement freight. No live carrier invoices, negotiated commercial discounts, physical mis-shipments, or carrier claims are inferred from these calculations.
 
 ---
 
