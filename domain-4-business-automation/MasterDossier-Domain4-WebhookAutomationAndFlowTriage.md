@@ -305,22 +305,27 @@ The payload is normalized (sorted keys, stripped whitespace) and hashed via SHA-
 }
 ```
 
-// PENDING maps to CS-ADDR-HOLD-PENDING in Domain 6's Shopify tag taxonomy (§4); CONFIRMED maps to CS-ADDR-HOLD-APPLIED; REJECTED maps to CS-ADDR-HOLD-REJECTED; UNKNOWN maps to CS-ADDR-HOLD-UNKNOWN.
-
 ### 6.4 What the Coordinator Ledger Answers
 
 | Incoming Delivery State | What the Ledger Finds | Coordinator Response |
 |---|---|---|
 | **Same ID, same hash, worker active** | State == `PENDING` | Return `PENDING`. No duplicate side effect is dispatched. |
-| **Same ID, same hash, outcome recorded** | State == `CONFIRMED`¹ or `REJECTED` | Return stored historical outcome. Never re-execute mutation. |
+| **Same ID, same hash, outcome recorded** | State == `CONFIRMED` or `REJECTED` | Return stored historical outcome. Never re-execute mutation. |
 | **Same ID, different payload hash** | Existing record has differing hash | **Reject as conflicting payload** (HTTP 409/422). Do not store or mutate. |
 | **Different ID, same shipment, active** | Prior operation is `PENDING` | Serialize execution behind the active operation lock. |
 | **Stale order version** | `expected_order_version` < current version | **Reject as stale version conflict**. Zero side effects permitted. |
 | **Prior attempt ended UNKNOWN** | State == `UNKNOWN` | **Reconcile physical WMS state first**. Never replay blind. |
 
-¹ CONFIRMED = operation succeeded; maps to CS-ADDR-HOLD-APPLIED at the Shopify helpdesk tag layer (Domain 6 §4).
+For the address hold in Order #24148, the operation ID and normalized payload hash identify the request across deliveries. The coordinator states translate into these ticket decisions:
 
-In our local test suite ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)), same-payload duplicate pairs were resolved via this ledger in **0.16ms (p50)**, rejecting duplicate execution with zero downstream business effects.
+| Coordinator state | Helpdesk ticket tag | What the agent can do |
+|---|---|---|
+| `PENDING` | `CS-ADDR-HOLD-PENDING` | Wait for warehouse confirmation. Address validation can start while the edit stays blocked. |
+| `CONFIRMED` | `CS-ADDR-HOLD-APPLIED` | A verified pre-wave warehouse lock permits the address edit. Release only the hold created for the request. |
+| `REJECTED` | `CS-ADDR-HOLD-REJECTED` | A cutoff rejection blocks the edit. Escalate for carrier recovery when eligible. |
+| `UNKNOWN` | `CS-ADDR-HOLD-UNKNOWN` | Ask TechOps to verify the warehouse outcome before deciding whether to replay. |
+
+The local duplicate fixture dispatches one warehouse simulator effect. A concurrent copy receives `PENDING`, and a later replay receives the stored `CONFIRMED` result. [Coordinator checks](../evidence/latency/summary.md) show the executed assertions. [Domain 6 §4](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) expands the agent actions for each tag.
 
 ---
 
@@ -533,8 +538,8 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 | **Order #24148 Recursive Incident** | §1, §4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. Chloe Bennett (chloe.bennett@example.com); 114 webhook events in 62 seconds; 98% Admin API bucket saturation. |
 | **Financial Blast Radius Model** | §3 | Modeled Scenario | Unit-economic cost model incorporating 3PL SLA credits and inventory overselling. |
 | **Negative Tag Check Blueprint** | §5 | Documented Specification | Production-ready Shopify Flow visual guard pattern. |
-| **Idempotency Triad & Ledger Contract** | §6 | **Verified in Staging** | Local SQLite coordinator harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)): **0.16ms p50** duplicate resolution. |
-| **Status Code Triage & Cutoff Rejection** | §7 | **Verified in Staging** | Local coordinator test suite ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)): **0.59ms p50** rejection with 0 side effects. |
+| **Idempotency Triad & Ledger Contract** | §6 | **Executed locally** | A duplicate with the same ID and payload hash returns the active or stored result. The original request produces one simulator effect. [Coordinator checks](../evidence/latency/summary.md) |
+| **Status Code Triage & Cutoff Rejection** | §7 | **Cutoff checked locally** | The post-cutoff workload produces zero warehouse simulator effects, and replay preserves the rejection. [Coordinator checks](../evidence/latency/summary.md) |
 | **Four-Tier Execution Ladder** | §8 | Documented Specification | State-gated priority specifications and trigger-action conflict matrix. |
 | **SQS Work Queue & Full Jitter Model** | §9 | Documented Specification | Mathematical backoff model smoothing 500 retry spikes to 8.33 requests/sec. |
 

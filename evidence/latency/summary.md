@@ -6,12 +6,12 @@ Functional checks cover preserved rejections, payload conflicts, pending duplica
 
 | Workload | Attempts | Concurrency | p50 response ms | p95 | p99 | Business effects |
 |---|---:|---:|---:|---:|---:|---:|
-| Sequential local baseline | 50 | 1 | 31.2789 | 33.2685 | 38.1109 | 50 |
-| Concurrent local burst | 200 | 25 | 88.1052 | 138.5025 | 147.2192 | 200 |
-| Injected WMS delay | 40 | 10 | 44.872 | 63.1018 | 65.5726 | 40 |
-| Same-payload duplicate pairs | 100 | 20 | 0.6521 | 63.3647 | 68.4406 | 50 |
-| Post-cutoff rejection | 20 | 5 | 3.7896 | 4.7777 | 5.1387 | 0 |
-| Response loss after WMS-simulator success | 30 | 5 | 35.6355 | 41.7122 | 43.0429 | 30 |
+| Sequential local baseline | 50 | 1 | 31.118 | 32.4568 | 38.5514 | 50 |
+| Concurrent local burst | 200 | 25 | 98.1342 | 152.0713 | 170.8337 | 200 |
+| Injected WMS delay | 40 | 10 | 44.9449 | 63.3983 | 74.9504 | 40 |
+| Same-payload duplicate pairs | 100 | 20 | 0.5645 | 63.8405 | 66.4912 | 50 |
+| Post-cutoff rejection | 20 | 5 | 4.9066 | 5.4933 | 5.6298 | 0 |
+| Response loss after WMS-simulator success | 30 | 5 | 34.2674 | 54.1876 | 56.9646 | 30 |
 
 Timings use performance.now(). Percentiles use nearest-rank, ceil(p*N)-1, no interpolation. All request outcomes are retained; per-outcome statistics are available in metrics.json. Response latency includes pending, rejected and unknown results and must not be described as confirmation latency. The seed reproduces injected delays, not operating-system scheduling or measured durations. Raw per-delivery records are archived as operations.jsonl in each archived execution directory (evidence/runs/<run-id>/latency/operations.jsonl), not in the working tree.
 
@@ -19,7 +19,7 @@ The default smoke profile is a small local benchmark. Run --full for 10000 attem
 
 ## Executed checks
 
-Run: `2026-11-12T07-04-04-741Z-7ab1870c` · Node v24.18.0
+Run: `2026-11-12T07-40-53-912Z-566faf52` · Node v24.18.0
 
 Passed: 34; failed: 0; skipped: 0.
 

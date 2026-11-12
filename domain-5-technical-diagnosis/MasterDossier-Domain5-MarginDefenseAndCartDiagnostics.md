@@ -147,7 +147,12 @@ If the cart request returns `HTTP 200 OK`, proceed to the order timeline. Paymen
 
 ### 3.3 Fulfillment Queue Webhook Audit (<180s)
 
-If the payment shows `Authorized`, inspect the fulfillment export queue. An order that is authorized but unfulfilled indicates an outbound webhook delivery timeout (`HTTP 504`) or schema rejection (`HTTP 422`) between Shopify and the 3PL middleware—triaged via the status code dictionary established in Domain 4.
+If payment shows `Authorized` and the order is still unfulfilled, use the order ID to find its fulfillment export and the middleware response. Check the warehouse state and the operation ledger before deciding what to do.
+
+- **HTTP 504** leaves the warehouse outcome unknown. Check whether the original operation took effect before replaying it.
+- **HTTP 422** means the middleware rejected the request. Inspect the response body. Correct a schema error before submitting a corrected request. If the rejection says `PONR_EXCEEDED`, the warehouse cutoff has passed and the mutation stays blocked.
+
+[Domain 4 §7.1](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) covers the remaining response codes and escalation rules.
 
 ---
 
@@ -277,7 +282,7 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 | `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $11.66 | **$11.53** | **$4.47** | **27.9%** |
 | `SYN-BNDL-MAO` | Starter Bundle (Kitted Scenario)* | $82.00 | $28.40 | $4.50 | $7.20 | $42.78 | **$41.61** | **$40.39** | **49.3%** |
 
-² Per-SKU 3PL handling of $3.70 = platform model ($2.90×1 parcel + $0.40×2 picks), reflecting one item shipped alone in one parcel. Per-SKU freight of $5.85 is a declared single-unit scenario rate. Basket-level handling in §6 uses $4.10 (1 parcel, 3 picks total for 2-item basket) and $6.50 freight. §6.5 explains the economy of scale. Canonical formula: Domain 2 §2.3.
+² The single-SKU illustrations declare $3.70 handling and $5.85 freight per shipment. Order #29863 declares $4.10 handling and $6.50 freight for one parcel containing both items. These are the inputs used in §6.5. The separate routing model charges $2.50 base fulfillment plus $0.80 corrugate per parcel and $0.40 for each physical unit picked after the first. That schedule gives $3.30 for one unit and $4.10 for three units in one parcel. [Domain 2 §2.3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) derives that schedule and applies it to the three-unit Denver basket.
 
 *\*Bundle BOM reflects the $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).*
 
@@ -296,7 +301,7 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 - **Line Item 1**: 1× Focus Stick Packs 30-Pack (`SYN-FSTK-MY`) = $42.00 (COGS: $8.50)
 - **Line Item 2**: 1× Adaptogen Tincture 60ml (`SYN-TNCT-AM`) = $38.00 (COGS: $12.50)
 - **Gross Merchandise Value**: **$80.00**
-- **Per-Order Operational Overhead**: 3PL handling $4.10; carrier freight $6.50 (3PL: platform model $2.90×1P + $0.40×3U = $4.10; sourced from [evidence/freight/tariffs.json](../evidence/freight/tariffs.json) and Domain 2 §2.3 canonical formula)
+- **Per-Order Operational Overhead**: This two-item basket uses one parcel with declared handling of $4.10 and freight of $6.50. With $21.00 in COGS, the basket costs $31.60 before processing.
 
 ### 6.2 The Unrestricted Collision Event
 
@@ -394,7 +399,7 @@ Using discrete whole-cent search with half-up rounded gateway fees:
   $$\text{Fee} = \text{round}(0.029 \times \$32.84 + \$0.30) = \text{round}(\$0.95236 + \$0.30) = \text{round}(\$1.25236) = \$1.25$$
   $$\text{Contribution} = \$32.84 - \$31.60 - \$1.25 = \mathbf{-\$0.01} \quad (\text{Negative: DEFICIT})$$
 
-The lowest whole-cent payment that breaks even for Order #29863 is $32.85, based on $21.00 in COGS, $4.10 in handling, and $6.50 in freight. The separate `alternative_promo` bundle model gives a minimum payable of $41.30 at $6.50 freight and $49.64 at $14.60 freight. These are two points from the freight sensitivity table in [`evidence/costs/summary.md`](../evidence/costs/summary.md).
+The lowest whole-cent payment that breaks even for Order #29863 is **$32.85**. The separate `alternative_promo` bundle model uses $28.40 in COGS and $4.90 in handling. With the same 2.9% + $0.30 fee, rounded to cents, its minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. §8.3 shows both calculations and the full range. The [freight sensitivity report](../evidence/costs/summary.md) records the offline results.
 
 The maximum allowable discount the basket could withstand without bleeding cash was:
 $$\text{Max Allowable Discount} = \$80.00 - \$32.85 = \$47.15 \quad (58.94\%)$$
@@ -405,7 +410,7 @@ The customer was granted **$51.80 in total discounts**, exceeding the breakeven 
 
 Why does the basket floor ($32.85) differ from the sum of the individual SKU floors ($18.90 + $23.02 = $41.92)?
 
-Adding individual SKU floors overstates the basket floor by **$9.07**. In a multi-item checkout, the two items share a single physical parcel: **$4.10 in 3PL handling and $6.50 in freight**, rather than two separate pick/box charges ($7.40) and two individual parcel shipments ($11.70). Evaluating margin dynamically at the *basket level* captures these fulfillment economies of scale, allowing merchants to safely approve higher combined discounts than isolated SKU modeling would permit.
+The two separate orders use $7.40 in handling ($3.70 × 2) and $11.70 in freight ($5.85 × 2). The combined parcel uses $4.10 in handling and $6.50 in freight, saving $8.50 in physical costs. At their respective floors, the two payments incur $0.85 + $0.97 in processing versus $1.25 for the combined payment, a further $0.57 difference. Together, those differences explain the **$9.07** gap between the sum of the separate floors and the basket floor.
 
 ---
 
@@ -461,7 +466,7 @@ A marketing promotion generating 1,000 orders under unconstrained stacking turns
 
 ### 8.3 Kitted-Bundle Freight Sensitivity Analysis
 
-Dynamic floors are highly sensitive to outbound carrier freight. Holding kitted COGS ($28.40) and handling ($4.90) fixed across shipping zones on $82.00 of merchandise:
+The `alternative_promo` scenario holds the $82.00 merchandise price, $28.40 kitted COGS, and $4.90 handling fixed. It assumes zero shipping revenue and tax. The fee is 2.9% of the payment plus $0.30, rounded half-up to cents. Only the declared freight input varies.
 
 | Outbound Freight Cost | Total Direct Costs | Net Contribution ($82 Retail) | Dynamic Minimum Payable Floor | Delta vs. $6.50 Baseline | Max Allowable Discount ($) |
 |:---:|:---:|:---:|:---:|:---:|:---:|
@@ -472,7 +477,9 @@ Dynamic floors are highly sensitive to outbound carrier freight. Holding kitted 
 | **$14.60 (Cross-Country Zone 8)** | $47.90 | $31.42 | **$49.64** | **+$8.34** | $32.36 (39.5%) |
 | **$17.80 (Remote / AK / HI)** | $51.10 | $28.22 | **$52.93** | +$11.63 | $29.07 (35.5%) |
 
-*Takeaway*: Cross-country freight inflates the required breakeven floor by **$8.34 per order** compared to standard freight. Production discount policies must account for fulfillment zone distribution or maintain a minimum positive margin buffer.
+At $6.50 freight, fixed costs are $39.80 ($28.40 + $4.90 + $6.50). A $41.30 payment less its $1.50 fee leaves $39.80. At $14.60 freight, fixed costs are $47.90 and a $49.64 payment less its $1.74 fee leaves $47.90. One cent less leaves a one-cent deficit in either case. The higher freight input raises the floor by **$8.34**.
+
+The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $28.40 in COGS, $4.50 in handling, $7.20 in freight, and $3.14 in processing from a $98.00 sale, leaving $54.76 before recovery. [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) follows that separate order through its replacement branch.
 
 ---
 
@@ -488,7 +495,7 @@ Dynamic floors are highly sensitive to outbound carrier freight. Holding kitted 
 | **Processing Fee Base** | Includes shipping & taxes | Gateway charges percentage fee on gross transaction capture. | §5 |
 | **Contribution Revenue Base** | Excludes remitted sales tax | Sales tax collected is a fiduciary liability, not merchant revenue. | §5 |
 | **Floor Search Algorithm** | Whole cents, asserting preceding cent is negative | Resolves discrete whole-cent breakeven payment. | §5, §6.4 |
-| **Order #29863 Cost Inputs** | COGS $21.00; 3PL $4.10; Freight $6.50 | Ground-truth direct cost fixtures for basket floor derivation. COGS: $8.50 (SYN-FSTK-MY) + $12.50 (SYN-TNCT-AM) = $21.00 — per [evidence/costs/summary.md](../evidence/costs/summary.md) BOM; 3PL: 1 parcel × 3 units; Freight: ground Zone declared rate | §6 |
+| **Order #29863 Cost Inputs** | COGS $21.00, 3PL $4.10, freight $6.50 | One Focus Stick pack ($8.50) and one tincture ($12.50) share one parcel. The handling and freight amounts are declared basket inputs. The [BOM](../evidence/costs/summary.md) records the product costs. | §6 |
 | **Triage Time Budget** | Tier 1: 60s; Tier 2: 120s; Tier 3: 180s | Enforces disciplined, systematic forensic investigation. | §3 |
 | **Tier 1 MTTI Target** | Under 60 seconds | Cart failures must be immediately isolated in browser Network tab. | §3.1 |
 
@@ -526,7 +533,7 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 | **3×3 Discount Matrix & Rules** | §4 | Documented Specification | Combinatorial exclusivity ruleset designed for Shopify Functions enforcement. |
 | **Contribution Margin Floor Engine** | §5 | **Verified in Staging** | Local cost test suite ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Integer-cent discrete search with half-up rounding. |
 | **Order #29863 Collision & Campaign Model** | §6, §8.1, §8.2 | Staged Scenario | Modeled contribution calculation; 1,000-order campaign scaling is arithmetic. |
-| **Basket-Level Floor ($32.85)** | §6.4 | **Verified in Staging** | Proved discrete whole-cent breakeven boundary where $32.85 yields $0.00 and $32.84 yields -$0.01. |
+| **Basket-Level Floor ($32.85)** | §6.4 | **Worked calculation** | Against $31.60 in physical costs and a rounded $1.25 fee, $32.85 yields $0.00 and $32.84 yields −$0.01. |
 | **Kitted-Bundle Freight Sensitivity** | §8.3 | **Verified in Staging** | Cost model runner ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Evaluated across $4.50 to $17.80 freight ranges. |
 
 ### 11.2 Executed Results: 11 of 11 Checks Passed

@@ -8,12 +8,12 @@
 
 If you run an e-commerce operation, or hire the people who do, the most instructive failure is not a server that crashes. It is a distributed architecture where Shopify proudly reports "success" while the warehouse fulfillment hold silently fails, and an expensive customer order heads 3,000 miles to the wrong coast. 
 
-By the end of this case study, you will understand exactly why state divergence occurs at the seams between e-commerce platforms and physical warehouses, why a single HTTP status code was the pivotal point of failure, and how to engineer an enterprise-grade coordination protocol that guarantees it never happens at scale.
+This case follows an address change from the helpdesk to the warehouse cutoff, then traces the decisions that govern recovery and its cost.
 
 Here is the incident in one frame: At 13:35 on October 17, 2026, a customer support agent changed the shipping address on Order **#35070** from Philadelphia to San Francisco. Shopify Admin accepted the mutation instantly. Thirteen minutes later, a sealed carton bearing the *old* Philadelphia address rolled across a warehouse conveyor belt in Reno, Nevada. Between those two events, zero operational alarms were raised.
 
 > [!CAUTION]
-> **Staging Sandbox Disclosure:** This case study documents an empirical failure-injection experiment conducted within an isolated staging sandbox. Platform responses, middleware adapter traces, and state transitions represent verified executions. Financial figures, carrier tariffs, and monthly projections reflect deterministic scenario models grounded in our verified staging evidence package. No live customer PII or production services were impacted.
+> **Scenario and evidence scope.** Order #35070 is a staged reconstruction. Its timestamps, platform responses, and warehouse events are scenario inputs. The checked-in offline suite verifies selected coordinator behaviors, financial calculations, and carrier fixtures. Authenticated UPS CIE calls and physical parcel recovery were outside the scope of those checks.
 
 | Incident Dimension | Baseline Scenario Parameter |
 | :--- | :--- |
@@ -55,7 +55,7 @@ Every incident has a number that explains it. In this one, the number is **6 min
 
 Distributed systems don't fail in abstract diagrams—they fail in seconds. At 13:35:12, Shopify Flow dispatched a fulfillment hold request to the 3PL. Three seconds later (13:35:15), the request timed out with a 504: not a refusal, not an acceptance, just silence. At 13:42:00, Reno Wave Plan #8812 automatically released Order #35070 to the warehouse floor.
 
-Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sat a window of **6 minutes 48 seconds** (6 minutes 45 seconds from the 504 timeout). That narrow window was the entire margin of safety between a routine customer edit and an irreversible physical mis-ship. Nobody acted inside it, because the retry schedule ran on a fifteen-minute clock and nobody knew the warehouse clock was ticking.
+Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sat a window of **6 minutes 48 seconds** (6 minutes 45 seconds from the 504 timeout). A retry at 13:40:15 also timed out, leaving the warehouse state unconfirmed at cutoff. The next attempt returned `422 PONR_EXCEEDED` at 13:50:18.
 
 ### 3.1 Incident Event Chronology
 
@@ -82,7 +82,7 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 | **13:50:19** | T+50m09s | Architecture | **"Zombie Order" state established: Digital and physical states permanently diverged** | **DIVERGED** |
 
 > [!NOTE]
-> **Frontline Process Flaw:** In Step 13:35:08, the CX agent updated the shipping address directly within Shopify Admin before placing a verified fulfillment hold. Because the store had not yet deployed the **Domain 6 Gorgias "Freeze-Before-Edit" automated hold macro**, the platform permitted an address mutation to commit while the warehouse queue was completely active.
+> **Frontline process flaw.** At 13:35:08, the agent saved the San Francisco address while the Reno warehouse queue was still active. The proposed helpdesk rule sends a hold request as soon as the address-change ticket arrives and marks the ticket `PENDING`. The agent can edit only after the warehouse confirms a pre-wave lock and the ticket moves to `APPLIED`. A rejection blocks the edit, and an unknown result goes to TechOps for a warehouse state check. After the edit, release only the hold created for that request. [Domain 6 §§4 and 6.1](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) gives the ticket tags and operator rules.
 
 ---
 
@@ -198,11 +198,12 @@ Date: Sat, 17 Oct 2026 17:50:19 GMT
 
 | Status Code & Error | Semantic Meaning | Correct Architectural Response | Operational Failure in Scenario |
 | :--- | :--- | :--- | :--- |
-| **HTTP 504 Gateway Timeout** | *"I don't know."* (The gateway timed out before receiving upstream confirmation from the WMS database). | **Hold in Unknown State:** Enqueue for immediate microsecond retry; alert human ops before cutoff. | **Treated as a reason to sleep:** System scheduled a relaxed 15-minute polling retry, assuming the order was frozen. |
-| **HTTP 422 PONR_EXCEEDED** | *"Too late."* (The business logic rejected the hold because physical packing already printed the label). | **Abort Mutation:** Halt automated retries; immediately trigger carrier package intercept. | **Arrived 8 minutes too late:** By the time the system received the 422, the parcel was on the carrier trailer. |
+| **HTTP 504 Gateway Timeout** | The gateway timed out before the warehouse outcome was known. | Keep the edit blocked, alert operations, and reconcile the original hold before any replay. | The 13:40:15 retry also timed out. The warehouse released the wave at 13:42:00 with the hold still unconfirmed. |
+| **HTTP 422 PONR_EXCEEDED** | The warehouse rejected the hold after the cutoff. | Stop retrying the mutation and hand the shipment to recovery for a carrier eligibility check. | The rejection arrived at 13:50:18, 8 minutes 18 seconds after wave release. The old Philadelphia label had already printed. |
 
 > [!IMPORTANT]
-> **A 504 means "I don't know." A 422 means "Too late."**  
+> **A 504 leaves the result unknown. A 422 with `PONR_EXCEEDED` closes the edit path.**
+>
 > The system treated the first like a reason to wait, and by the time it heard the second, waiting had already cost the order.  
 > 
 > *The Mailbox Analogy:* Treating a 504 as a reason to wait is like dropping an urgent stop-work notice into a mailbox during a blizzard, having no idea if anyone collected it, and assuming an automated assembly line down the road will politely pause for fifteen minutes while you check back. The line does not pause. It runs on its own clock.
@@ -219,7 +220,7 @@ It is tempting to blame the Cloudflare gateway for the 504 timeout, but network 
 | :---: | :--- | :---: | :---: |
 | **1. Transport Layer** | Cloudflare edge gateway timed out after 3.0s under transient network load. | Operational Glitch | **Recoverable** (if reconciled within 6m48s window) |
 | **2. Architectural Layer** | **Missing Hold-Confirm-Update Coordinator:** Shopify accepted the address edit without requiring a verified physical hold confirmation from ShipBob. | **Critical Design Flaw** | **Recoverable** (if human alert had triggered immediately) |
-| **3. Timing Layer** | **Clock Mismatch:** The retry bus was configured for a 15-minute polling schedule, while the physical warehouse wave plan auto-released every 7 minutes. | **Lethal Configuration Flaw** | **FATAL** (Guaranteed PONR breach on any transient delay) |
+| **3. Timing Layer** | **Clock Mismatch:** The retry at 13:40:15 left 1 minute 45 seconds before wave release. The next attempt arrived after cutoff. | **Critical Design Flaw** | The trace reaches cutoff without a confirmed lock. |
 
 ### 5.2 The Solution Pattern: The Hold-Confirm-Update Coordinator
 
@@ -227,9 +228,9 @@ To prevent silent state divergence, distributed e-commerce systems must enforce 
 
 1. **Persist a Durable Operation ID:** Assign an immutable `operation_id` to the modification request across all retries.
 2. **Engage the Physical Lock First:** Require the WMS to transition the order from `OPEN` to `ON_HOLD` and acknowledge with an HTTP 200 before mutating any database fields.
-3. **Commit the Mutation Atomically:** Once the physical lock is confirmed, update the shipping address in Shopify Admin and sync the updated payload to the WMS.
-4. **Release the Specific Operation Hold:** Release only the hold associated with `operation_id`, allowing the order to re-queue for warehouse wave batching.
-5. **Treat Unknowns as Actionable Emergencies:** If the hold returns a 504, the state is **UNKNOWN**. The system must never assume success, nor should it wait 15 minutes. It must sound an immediate operational alarm.
+3. **Apply and Verify the Address Change:** Once the physical lock is confirmed, update Shopify and sync the new address to the WMS. Confirm that the warehouse record shows the new destination.
+4. **Release the Specific Operation Hold:** Release only the hold associated with `operation_id` after the destination is verified, allowing the order to re-queue for warehouse wave batching.
+5. **Reconcile Unknown Outcomes:** A 504 moves the operation to **UNKNOWN**. Block the edit, alert operations immediately, and verify the WMS state before replaying the hold under the same operation ID.
 
 ---
 
@@ -239,7 +240,7 @@ An engineering flaw becomes an executive business case when you calculate its im
 
 ### 6.1 Baseline vs. Dual-Fulfillment Recovery Ledger
 
-Starter Bundle COGS is modeled at **$28.40** (reflecting $28.00 in raw components—Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00—plus $0.40 dedicated packaging and insert material). Credit card gateway processing is calculated as `round($98.00 × 2.9% + $0.30, 2) = $3.14`.
+Starter Bundle COGS is modeled at **$28.40**. The $28.00 component total consists of Focus Sticks at $8.50, AM Tincture at $12.50, and a Precision Tumbler at $7.00. Kitting adds $0.40. Processing is 2.9% of the $98.00 payment plus $0.30, rounded half-up to **$3.14**. The [BOM and scenario inputs](../evidence/costs/bom_inputs.json) are the source for these amounts.
 
 ```text
 NORMAL ORDER ECONOMICS (#35070 Baseline):
@@ -256,7 +257,7 @@ ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
   Original Parcel COGS (Quarantined / Scrap):   -$28.40
   Original 3PL Pick/Pack Handling:              -$4.50
   Original Outbound Freight (Zone 8 to PA):     -$7.20
-  Carrier Package Intercept Toll (UPS API):     -$17.50
+  Modeled Intercept Fee (Confirmed Return):     -$17.50
   Carrier Return-to-Sender Freight:             -$8.40
   Replacement Parcel COGS (Reshipped from NV):  -$28.40
   Replacement 3PL Pick/Pack Handling:           -$4.50
@@ -270,8 +271,8 @@ ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
 
 ### 6.2 Financial Comparison
 
-* **Normal Baseline:** Generated **+$54.76** in operating cash.
-* **Replacement Branch:** Resulted in **-$43.84** in direct cash loss—a negative swing of **$98.60** (slightly higher than the total GMV of the initial purchase).
+* **Normal baseline** — $54.76 in modeled contribution.
+* **Retained-sale replacement branch** — −$43.84 in modeled contribution after $98.60 of added recovery costs.
 * **Worst-Case Chargeback Branch:** If the customer initiates a payment dispute due to delivery delay, the store absorbs:
   $$\text{Net Loss} = -\$43.84 - \$98.00 \text{ (Chargeback Reversal)} - \$15.00 \text{ (Gateway Penalty)} = -\$156.84$$
 
@@ -339,36 +340,49 @@ query inspectFulfillmentOrderState {
 
 ## 8. Containing the Blast Radius: UPS Intercept & FDA Quarantine
 
-Once the order crossed the Point of No Return at 13:42, prevention was impossible. Operations transitioned to damage limitation across three synchronized operational streams:
+After the modeled wave release at 13:42, the proposed playbook switches from address editing to containment. The retained-sale ledger in §6 assumes a confirmed return and a fresh replacement.
 
 ### 8.1 Stream 1: In-Flight Package Interception (UPS Delivery Intercept v2)
 
-The team initiated an automated carrier redirect request against the UPS REST API:
+For an eligible shipment with active tracking, the proposed workflow submits a return request and tracks the carrier response against the internal operation ID. The JSON below is the checked-in offline fixture. It uses a separate tracking number and the fixture’s canceled-shipment reason `AM`. The adapter stores `idempotency_key` internally, outside the UPS request body.
 
 ```json
-// POST /api/deliveryintercept/v2/return/1Z9999999999999999
-// Authenticated UPS Delivery Intercept v2 Payload
 {
-  "requestType": "RS",
-  "reasonForReturn": "AM",
-  "specialInstructions": "Emergency post-PONR intercept for misdirected order #35070",
-  "requesterContactInfo": {
-    "name": "Synapse Operations",
-    "telephone": "+18005550199"
+  "method": "POST",
+  "path": "/api/deliveryintercept/v2/return/1Z4096YY0316914058",
+  "headers": {
+    "Authorization": "Bearer OFFLINE-PLACEHOLDER-NOT-A-CREDENTIAL",
+    "Content-Type": "application/json",
+    "transId": "SIIReturn",
+    "platformType": "XOLT",
+    "inquiryType": "U"
   },
-  "idempotency_key": "7b8e1f20-8910-4c22-b501-98a44210e891"
+  "body": {
+    "requestType": "RS",
+    "specialInstructions": "Offline canceled-shipment fixture",
+    "requesterContactInfo": {
+      "name": "Sandbox Operator",
+      "telephone": "+12010000000"
+    },
+    "reasonForReturn": "AM"
+  }
 }
 ```
 
-> [!IMPORTANT]
-> **Acceptance Is Not Interception (The Carrier Billing Boundary):**  
-> Receiving an HTTP 202 `ACCEPTED` from UPS confirms only that the carrier took the request, not the parcel. It is electronic intent—a digital flag that an optical sorter or delivery driver still has to catch. Record three facts separately: the intercept request, its acceptance, and the confirmed physical outcome.  
-> 
-> The **$17.50 intercept fee** is strictly contingent on physical diversion at the regional hub. If the delivery courier beats the intercept and deposits the parcel in Philadelphia, UPS waives the fee ($0.00 billed), but the inventory is gone and you are forced into an expensive reship-or-refund branch.
+The pinned contract uses HTTP 200 for the response examples. The simulator checks the `success` field for electronic acceptance and waits for a separate carrier event before recording a recovery.
+
+| Offline input | Simulator outcome | Modeled fee |
+|---|---|---:|
+| HTTP 200 with `success: false` | `REJECTED` | $0.00 |
+| HTTP 200 with `success: true` and no recovery event | `ACCEPTED`, awaiting a carrier event | $0.00 |
+| Accepted request followed by `INTERCEPT_CONFIRMED` | `SUCCEEDED`, with one modeled fee | $17.50 |
+| Accepted request followed by `INTERCEPT_FAILED` | `FAILED` | $0.00 |
+
+The $17.50 and $0.00 values are scenario assumptions. The checked-in suite skips authenticated UPS CIE execution and physical recovery. [Request and response fixtures](../evidence/carrier-recovery/fixtures.json) · [Carrier verification scope](../evidence/carrier-recovery/summary.md)
 
 ### 8.2 Stream 2: Consumable Product Quarantine (FDA 21 CFR Part 111 Compliance)
 
-When the intercepted parcel returns to Reno, the consumable tincture cannot re-enter active inventory:
+If the parcel is recovered and returned to Reno, the proposed workflow puts the consumable tincture into quarantine:
 
 | Step | Regulatory Protocol | Execution Responsibility | System Record |
 | :---: | :--- | :--- | :--- |
@@ -384,13 +398,13 @@ When the intercepted parcel returns to Reno, the consumable tincture cannot re-e
 1. Dispatch an immediate expedited replacement from Reno to San Francisco (`SYN-BNDL-MAO`) via Next-Day Air.
 2. Issue an immediate **$25.00 store courtesy credit** for delivery disruption.
 3. Notify customer via Gorgias Macro M-04 with active replacement tracking.
-4. Pre-empt payment gateway chargeback by logging proactive customer resolution records with Stripe.
+4. Record customer outreach and replacement tracking to support a potential payment dispute response.
 
 ---
 
 ## 9. Why Fifteen Minutes Was the Wrong Clock (The Architecture Fix)
 
-The legacy integration retried on a polite 15-minute polling curve, treating the order as if time stood still. But physical warehouse operations do not operate on polite schedules—they operate on strict wave pick windows.
+The staged retry schedule reached the warehouse cutoff without a confirmed hold.
 
 ### 9.1 The Clock Collision
 
@@ -400,7 +414,7 @@ The legacy integration retried on a polite 15-minute polling curve, treating the
 
 ### 9.2 The SQS Work Queue & Dead-Letter Queue (DLQ) Architecture
 
-To eliminate this timing collision, the legacy synchronous retry loop was replaced with an asynchronous, event-driven queue topology:
+The proposed queue separates webhook acknowledgment from the warehouse result. The worker records the hold outcome before acknowledging the queue message and reconciles an unknown result before replay.
 
 ```text
 ┌────────────────────────────────────────────────────────┐
@@ -409,12 +423,12 @@ To eliminate this timing collision, the legacy synchronous retry loop was replac
                             │
                             ▼
 ┌────────────────────────────────────────────────────────┐
-│  MIDDLEWARE ADAPTER (Fast Ingestion Engine)             │
+│  MIDDLEWARE ADAPTER (Fast Ingestion Engine)            │
 │  • Authenticates webhook payload                       │
 │  • Assigns immutable operation_id                      │
-│  • ACKs to Shopify in < 60ms                           │
+│  • Target acknowledgment to Shopify: < 60 ms           │
 └───────────────────────────┬────────────────────────────┘
-                            │ Enqueues with FIFO Deduplication
+                            │ Enqueues with the durable operation ID
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │  AMAZON SQS STANDARD WORK QUEUE                        │
@@ -427,26 +441,39 @@ To eliminate this timing collision, the legacy synchronous retry loop was replac
 │ WMS HOLD WORKER CONSUMER  │ │ DEAD-LETTER QUEUE (DLQ)  │
 │ • Validates PONR status   │ │ • Retention: 14 days     │
 │ • Executes physical lock  │ │ • Triggers PagerDuty     │
-│ • Deletes message on 200  │ │ • Requires human triage  │
+│ • ACKs recorded outcome   │ │ • Requires human triage  │
 └─────────────┬─────────────┘ └──────────────────────────┘
               │ 
               ▼ [FIRST UNCERTAIN HOLD RESULT (504)]
 ┌────────────────────────────────────────────────────────┐
 │  SEV-1 OPS ALERT BUS: Slack Webhook + Gorgias Escalation│
-│  "HOLD UNCONFIRMED on Order #35070 — Cutoff in 6m48s"   │
-│  👉 Human floor operator pauses wave BEFORE release!   │
+│  "HOLD UNCONFIRMED on Order #35070 — Cutoff in 6m45s"  │
+│  Ops checks the warehouse queue before wave release    │
 └────────────────────────────────────────────────────────┘
 ```
 
 ### 9.3 SQS Queue Configuration Parameters
 
-| Parameter | Production Value | Architectural Rationale |
+| Parameter | Proposed Value | Architectural Rationale |
 | :--- | :---: | :--- |
-| **Visibility Timeout** | 30 seconds | Allows worker adequate time to execute WMS hold without duplicate consumer pickup. |
+| **Visibility Timeout** | 30 seconds | Gives the worker time to record the outcome before the message can be delivered again. |
 | **Max Receive Count** | 3 | Bounded retries prevent poison-pill message looping. |
-| **Alerting Trigger** | **Attempt 1 (Immediate)** | **The Core Innovation:** The system alerts human ops on the *first* uncertain result, providing a 6-minute window for manual floor intervention. |
+| **Alerting Trigger** | **First uncertain result** | In the staged trace, the first 504 leaves 6 minutes 45 seconds for a warehouse state check before cutoff. |
 | **Dead-Letter Retention** | 14 days | Preserves failed payloads for postmortem telemetry and root cause analysis. |
-| **Message Retention** | 4 days | Guarantees zero message loss during extended downstream 3PL outages. |
+| **Message Retention** | 4 days | Sets the retention window for unconsumed work messages. |
+
+### 9.4 How the Domains Hand Off Order #35070
+
+The table follows one address change on a $98.00 Starter Bundle. The input column describes the staged incident. The decision column shows the proposed response at each handoff. §11.1 links the separate domain cases and their evidence.
+
+| Domain | Local input for #35070 | Decision and handoff | Role in this case |
+|---|---|---|---|
+| **3 · Catalog** | Starter Bundle `SYN-BNDL-MAO` contains one Focus Stick pack, one tincture, and one tumbler. The request changes only the address. | Carry the existing SKU and quantities into fulfillment. A request to change an item would require exact catalog validation before submission. | Catalog identity is a prerequisite. The trace has no item mutation. |
+| **2 · Routing** | Reno is the existing fulfillment node. The requested destination changes from Philadelphia to San Francisco. | Pass Reno’s shipment and requested destination to the hold gate. The design compares available inventory and freight if an edit requires reassignment. | Existing Reno allocation in the trace. Reassignment is a separate design path. |
+| **6 · Helpdesk and recovery** | The ticket arrives at 13:35:00 and the agent saves the new address at 13:35:08, before a warehouse lock is confirmed. | Open the hold operation and mark the ticket `PENDING`. A verified pre-wave lock permits `APPLIED` and the address edit. If the gate rejects after cutoff, pass the active tracking number to the recovery workflow for an eligibility check. | Staged ticket sequence and proposed helpdesk rules. |
+| **1 · Order lifecycle** | The hold is sent at 13:35:12. Reno releases the wave at 13:42:00, 6 minutes 48 seconds later. | Keep the edit blocked until the WMS confirms a pre-wave lock. Pass the confirmed lock to the update step or send a cutoff rejection to the recovery path. | Scenario cutoff. Local fixtures exercise cutoff rejection and selective hold release. |
+| **4 · Automation** | The first `504` arrives at 13:35:15. The 13:40:15 retry also times out. At 13:50:18 the WMS returns `422 PONR_EXCEEDED`. | On a `504`, record `UNKNOWN` against the original operation ID, alert operations, and reconcile before replay. On `PONR_EXCEEDED`, stop the mutation retries and notify helpdesk to start recovery triage. | Staged responses. Local fixtures exercise duplicate delivery and unknown-outcome reconciliation. |
+| **5 · Contribution** | The $98.00 sale less $28.40 COGS, $4.50 handling, $7.20 freight, and $3.14 processing leaves $54.76. The retained-sale recovery branch in §6.1 adds $98.60. | Show the resulting −$43.84 contribution to the recovery owner when comparing replacement, refund, and dispute exposure. | Modeled recovery ledger checked in integer cents. |
 
 ---
 
@@ -455,9 +482,9 @@ To eliminate this timing collision, the legacy synchronous retry loop was replac
 Looking across this architectural autopsy, the first three laws govern prevention before the cutoff; the fourth governs recovery afterward:
 
 1. **The Law of Confirmed Physical Holds:** Never mutate a digital order state in an e-commerce platform until the physical warehouse management system has returned an explicit confirmation that the picking wave is frozen. *(Closes the gap in §5: the missing coordinator).*
-2. **The Law of Idempotent Retries:** Every mutation and retry attempt must carry an immutable, persistent `operation_id` to guarantee that duplicate webhook deliveries cannot corrupt warehouse wave batches or confuse "unknown" with "failed." *(Closes the gap in §4: blind retries across state seams).*
+2. **The Law of Idempotent Retries:** Keep the operation ID and payload identity across retries. Check the stored outcome before dispatching a second warehouse action. *(Closes the gap in §4: blind retries across state seams).*
 3. **The Law of Urgent Uncertainty:** A network timeout (`504 Gateway Timeout`) is a question, not an excuse to wait. The system must treat unknown outcomes as actionable high-priority exceptions and alert human operators before the warehouse cutoff expires. *(Closes the gap in §9: the fifteen-minute clock).*
-4. **The Law of Carrier Bifurcation:** Receiving electronic acceptance for a carrier package intercept (HTTP 202) is only intent. Physical interception requires depot optical diversion, and recovery requires tracking request, acceptance, and physical custody as three separate facts. *(Closes the gap in §8: mistaking digital intent for physical recovery).*
+4. **The Law of Carrier Bifurcation:** Track the carrier request, electronic acceptance, and confirmed recovery separately. In the pinned HTTP 200 response fixture, `success: true` moves the simulator to `ACCEPTED`. A separate confirmed-return event moves it to `SUCCEEDED`. *(Closes the gap in §8: mistaking digital intent for physical recovery).*
 
 ---
 
@@ -465,22 +492,22 @@ Looking across this architectural autopsy, the first three laws govern preventio
 
 In senior systems architecture, credibility requires clearly distinguishing between what has been empirically verified in test harnesses versus what represents an architectural specification.
 
-### 11.1 Evidence Scope & Staging Verification Matrix
+### 11.1 Evidence Scope & Verification Matrix
 
-All empirical assertions in this Capstone link directly to reproducible test suites in the [`evidence/`](../evidence/README.md) directory:
+The cases below illustrate different failures and controls. Order numbers, timings, and costs belong to the named scenarios. The [offline evidence suite](../evidence/README.md) verifies the fixture arithmetic and software behavior identified in each row.
 
-| Technical Deliverable | Location in Portfolio | Verification Status | Verified Evidence Artifact |
-| :--- | :--- | :---: | :--- |
-| **Capstone Systems Dossier** | `capstone/MasterDossier...` | **Implemented** | Comprehensive Case Study Spec |
-| **Point-of-No-Return Engine** | [Domain 1 Master Dossier](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (15.56ms cutoff rejection) |
-| **Multi-Node Freight Waterfall**| [Domain 2 Master Dossier](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) | **Verified in Staging** | [`evidence/freight/results.json`](../evidence/freight/summary.md) ($11.00 split savings confirmed) |
-| **Matrixify Schema Audit** | [Domain 3 Master Dossier](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) | **Verified in Staging** | [`evidence/barcodes/results.json`](../evidence/barcodes/summary.md) (100% Modulo-10 decode verified) |
-| **Shopify Flow Webhook Triage** | [Domain 4 Master Dossier](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (15.97ms duplicate deduplication) |
-| **Algorithmic Margin Defense** | Domain 5 Master Dossier | **Verified in Staging** | [`evidence/costs/sensitivity.json`](../evidence/costs/summary.md) Order #29863 has a calculated basket floor of $32.85. In the separate promotional bundle model, the minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. |
-| **Gorgias Helpdesk Engine** | [Domain 6 Master Dossier](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) | **Verified in Staging** | [`evidence/latency/metrics.json`](../evidence/latency/summary.md) (Sub-100ms hold acknowledgment) |
-| **GraphQL Order State Query** | Section 7.3 of this Dossier | **Implemented** | Pinned against Shopify Admin API v2026-01 |
-| **Carrier Intercept Integration**| Section 8.1 of this Dossier | **Verified in Staging** | [`evidence/carrier-recovery/results.json`](../evidence/carrier-recovery/summary.md) (FSM transition passed) |
-| **Amazon SQS DLQ Topology** | Section 9.2 of this Dossier | **Specified** | Production Architecture Blueprint |
+| Technical Deliverable | Inputs, decision, and result | Verification scope | Related reading and evidence |
+| :--- | :--- | :--- | :--- |
+| **Capstone recovery ledger** | Order #35070 starts at $54.76 contribution on a $98.00 sale. The replacement branch adds $98.60 of recovery costs, leaving −$43.84 if the sale is retained. §6.1 itemizes both branches. | Modeled ledger checked in integer cents | [Cost reconciliation](../evidence/costs/summary.md) |
+| **Point-of-No-Return Engine** | In Order #18404, the warehouse queue lock is confirmed 18 seconds after the ticket arrives. The coordinator verifies the lock, updates the address, and releases the specific hold at 133 seconds. After wave release, the gate blocks the mutation. | Staged trace. Local fixtures test cutoff rejection and selective release. | [Domain 1 §§4 and 6](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **Multi-Node Freight Waterfall** | The Denver fixture has two Focus Stick packs and one tincture. The forced split ships the sticks from Allentown ($8.10 freight + $3.70 handling) and the tincture from Reno ($6.40 freight + $3.30 handling), totaling $21.50. Reno can fulfill all three units for $6.40 freight + $4.10 handling = $10.50, saving $11.00. | Arithmetic on declared rates and available stock | [Domain 2 §3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) · [Freight checks](../evidence/freight/summary.md) |
+| **Matrixify Schema Audit** | The synthetic mapping assigns Focus Stick SKU `SYN-FSTK-MY` the 12-digit text `850041234014`. The import gate checks exact text, the Modulo-10 check digit, and the SKU-to-UPC mapping. All 12 approved fixtures retain their identifiers through the 95-bit software round trip. | Local software fixtures | [Domain 3 §§5–6](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) · [Barcode checks](../evidence/barcodes/summary.md) |
+| **Shopify Flow Webhook Triage** | In Order #24148, a tag feedback loop generates 114 events in 62 seconds. A repeated operation with the same ID and payload hash receives its existing status or outcome. A conflicting payload is rejected, and an unknown warehouse outcome is reconciled before replay. | Scenario trace. Local fixtures check duplicate, conflict, and reconciliation behavior. | [Domain 4 §§4 and 6](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **Algorithmic Margin Defense** | Order #29863 costs $8.50 for sticks + $12.50 for tincture + $4.10 handling + $6.50 freight = $31.60. At a $32.85 payment, the 2.9% + $0.30 fee rounds to $1.25, leaving $31.60. One cent less leaves a deficit. In the separate promotional bundle model, $28.40 COGS and $4.90 handling are fixed. With the same fee, minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. | Worked basket calculation. Offline cost suite checks the promotional bundle sweep. | [Domain 5 §§6.4 and 8.3](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) · [Cost checks](../evidence/costs/summary.md) |
+| **Gorgias Helpdesk Engine** | A reference address-change ticket triggers a Shopify hold at 8.4 seconds. The ticket stays `PENDING` until the warehouse confirms a pre-wave lock. Only `APPLIED` permits editing. An uncertain outcome goes to TechOps for reconciliation. | Helpdesk design and scenario timings. Local fixtures verify the underlying hold behavior. | [Domain 6 §§4–6](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **GraphQL Order State Query** | Shopify returned San Francisco as the destination, while the WMS manifest still showed a Philadelphia label. The comparison exposes the state divergence. | Diagnostic example | §7.3 |
+| **Carrier Intercept Integration** | The simulator keeps an electronically accepted request pending until a recovery event arrives. The confirmed-return fixture records one $17.50 fee. | Pinned contract checks and local event fixtures | §8.1 · [Carrier recovery checks](../evidence/carrier-recovery/summary.md) |
+| **Amazon SQS DLQ Topology** | The proposed queue keeps the operation ID across deliveries, checks the physical outcome before replay, and sends exhausted retries to a dead-letter queue. | Architecture specification | §9.2 |
 
 ---
 

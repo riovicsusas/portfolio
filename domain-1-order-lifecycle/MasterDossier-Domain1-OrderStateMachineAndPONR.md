@@ -171,7 +171,7 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 The arithmetic: $\$8.50 + \$6.50 + \$7.20 + \$1.50 = \mathbf{\$23.70}$; $\$42.00 - \$8.50 = \mathbf{\$33.50}$; Normal contribution is **$27.00** ($42.00 − $8.50 − $6.50). Failed-order contribution after the full refund is **−$23.70**. The deterioration is **$50.70**, or **120.7%** of the $42.00 retail price.
 
 > [!NOTE]
-> **Evidence alignment.** The $8.50 COGS matches the declared Focus Stick Packs component cost in the executed BOM ledger (`evidence/costs/summary.md`), and $6.50 / $7.20 appear there as declared freight inputs in different scenarios. The remaining ledger lines (notably the $1.50 quarantine fee) are scenario inputs.
+> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemizes the replacement branch.
 
 ### 3.3 Scaled Monthly Exposure Model
 
@@ -489,6 +489,8 @@ flowchart TD
    * *Target*: Shopify Admin GraphQL `fulfillmentOrderReleaseHold`.
    * *Contract*: Pass exact `holdIds` created in Gate 1.
    * *Invariant*: Confirm the WMS status transitions back to `READY_FOR_WAVE_BATCH` with updated metadata.
+
+In this case, Order #18404 received a verified warehouse lock 18 seconds after ticket ingestion and resumed with the corrected Binghamton label. In the separate Capstone case, Order #35070 received a 504 at the hold gateway and still carried the old Philadelphia destination in the Reno queue. That outcome calls for a warehouse state check before any update or retry. [Capstone §§3–5](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) traces the timeout through the warehouse cutoff.
 
 ---
 

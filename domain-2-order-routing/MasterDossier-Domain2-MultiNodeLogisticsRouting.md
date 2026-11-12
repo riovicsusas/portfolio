@@ -119,12 +119,12 @@ $$\text{Variable Pick Labor} = \$0.40 \text{ for each unit picked after the firs
 
 $$\text{Handling}(P, U) = \$3.30 \times P + \$0.40 \times (U - P) = \$3.30P + \$0.40U - \$0.40P = \mathbf{\$2.90P + \$0.40U}$$
 
-> This is the platform-wide 3PL handling model used in all dossiers. Base fulfillment ($2.50) + corrugate ($0.80) = $3.30 fixed parcel overhead; $0.40 per additional pick. The simplified coefficient $2.90P + $0.40U is the canonical form also referenced in Domain 5 §6 and the evidence/costs package.
-
 Where:
 - $P$ is the total count of dispatched outbound parcels.
 - $U$ is the total count of physical units picked across all parcels.
 - The $\$2.90$ coefficient is not the sum of base and corrugate ($\$3.30$). It is $\$3.30$ less the $\$0.40$ credit that the per-unit term would otherwise assess for each parcel's first pick (which the schedule waives).
+
+This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units. The separate two-item checkout in Domain 5 uses declared inputs of $4.10 handling and $6.50 freight for the basket. [Domain 5 §6](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) applies those inputs to the checkout margin calculation.
 
 Checking the rate card against the formula:
 
@@ -161,7 +161,7 @@ The model utilizes the following standard domestic postage tariff schedules:
 
 Order #35070 illustrates a different failure. Its Reno allocation retained the old Philadelphia destination after the customer requested San Francisco. The bundle was stocked in Reno (`LOC-NV-02`), so the incident was an address-state failure rather than an Allentown-versus-Reno allocation mistake.
 
-The Capstone models $7.20 in ground freight for the original shipment to Philadelphia and $14.80 in expedited freight for the replacement. The $7.60 difference compares two shipments with different service levels. See [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) for the full recovery ledger.
+The Capstone models $7.20 in ground freight for the original shipment to Philadelphia and $14.80 in expedited freight for the replacement. Those two outbound legs total $22.00. The $7.60 difference compares shipments with different service levels. The return adds $8.40, bringing modeled freight across all three legs to $30.40 before handling, intercept, and other costs. [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) shows the full recovery ledger.
 
 With the economic parameters established, we now trace the Denver order through two divergent routing policies to observe where margin is preserved or lost.
 

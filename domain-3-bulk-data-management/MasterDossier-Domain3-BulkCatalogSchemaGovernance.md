@@ -317,7 +317,7 @@ The first assertion in `validateBarcodeRecord` is a strict `typeof` check. A bar
 
 ## 6. The 9-Point Rejection Matrix: Trapping Malformed Identifiers
 
-The validation engine processes proposed mutations through an ordered sequence of nine definitive rejection tests. Each test maps directly to our verified negative anomaly test suite ([`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md)):
+The validation engine groups rejected mutations into nine failure types. For example, a checksum-valid `850041234021` is rejected on `SYN-FSTK-MY` because that SKU requires the exact text `850041234014`. The offline run exercised 16 negative inputs across these failure types. All 16 produced their expected rejection. The [barcode evidence](../evidence/barcodes/summary.md) lists the individual fixtures and outcomes.
 
 | # | Error Code | Failure Mode | Ground-Truth Fixture Input | Architectural Meaning | Required Remediation Action |
 |:---:|---|---|---|---|---|
@@ -378,13 +378,15 @@ A damaged barcode cannot be repaired by arithmetic. Once an application converts
 | `SYN-TNCT-AM` | Adaptogen Tincture AM | `Barcode` (Row 6) | `84000103000` *(11 Digits, Truncated)* | `850041234052` | **PASSED**: Resolved from master mapping; check digit 2 |
 | `SYN-TMBL-MO` | Tumbler Matte Obsidian | `Handle` (Row 10) | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | **RESTORED**: Canonical handle reinstated from registry |
 | `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Variant Price` | $40.00 | $42.00 | **PASSED**: Tier 2 Valid (Gross margin: 79.76% at $8.50 COGS)¹ |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **PASSED**: Tier 2 Valid (Reconciled to manufacturing BOM)¹ |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **PASSED**: Tier 2 Valid (Reconciled to manufacturing BOM)² |
 
 ¹ Gross margin = ($42.00 − $8.50) / $42.00 = $33.50 / $42.00 = 79.76%. COGS sourced from platform BOM: [evidence/costs/summary.md](../evidence/costs/summary.md) (Focus Stick Packs 30-Pack unit cost = $8.50).
 
-¹ Scenario cost corrected from erroneous $13.50 to canonical $12.50. Platform BOM: [evidence/costs/summary.md](../evidence/costs/summary.md) (AM Adaptogen Tincture 60ml unit cost = $12.50).
+² Scenario cost corrected from erroneous $13.50 to canonical $12.50. Platform BOM: [evidence/costs/summary.md](../evidence/costs/summary.md) (AM Adaptogen Tincture 60ml unit cost = $12.50).
 
 Notice rows 4 and 5: the file also carried legitimate, intentional Tier 2 price and cost changes. The linter cleanly validated the legitimate financial adjustments while arresting the catastrophic Tier 1 schema defects.
+
+Those two unit costs carry into separate order models. One pack and one tincture give Order #29863 $8.50 + $12.50 = **$21.00 in COGS** before handling, freight, and processing. The Capstone’s Order #35070 adds a $7.00 tumbler and $0.40 of kitting materials, bringing the Starter Bundle to **$28.40 in COGS**. [Domain 5 §6.1](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) and [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) show how those costs enter the respective ledgers.
 
 ### 8.2 Why Nothing Was Reconstructed
 
@@ -476,7 +478,7 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 |---|---|---|---|
 | **Modulo-10 Checksum Validity** (All 12 SKUs) | §5 | **Verified in Staging** | 12 of 12 pass: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
 | **95-Bit UPC-A Encode & Decode** | §4, §5 | **Verified in Staging** | 12 of 12 bit-exact software round-trip: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
-| **Negative Anomaly Rejection Suite** (7 Corrupted Inputs) | §6 | **Verified in Staging** | Trapped 100% of defect modes: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
+| **Negative Anomaly Rejection Suite** (16 inputs) | §6 | **Executed offline** | All 16 fixtures returned their expected rejection, including checksum-valid identifiers assigned to the wrong SKU. [Barcode fixture results](../evidence/barcodes/summary.md) |
 | **Tier 2 Price & Margin Verification** (79.76% at $8.50 COGS) | §8 | **Verified in Staging** | [`evidence/costs/summary.md`](../evidence/costs/summary.md) (SYN-FSTK-MY: $42.00 retail, $8.50 COGS = 79.76% gross margin; arithmetic also validates $12.50 tincture correction in §8.1). |
 | **Pre-Flight Audit Telemetry** (`Catalog_Mutation_v2.xlsx`) | §7 | Scenario Audit | Reconstructed 5-second circuit breaker trace across 12 variants. |
 | **Field Hazard Taxonomy & RBAC** | §2 | Documented Specification | Role-based catalog governance schema mapping access tiers. |
@@ -487,7 +489,7 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 
 ### 11.2 Evidence Links
 
-- [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md): 100% Modulo-10 checksum validity, 95-bit optical round-trip decode across all 12 SKUs, and the 7-case negative rejection suite.
+- The [barcode summary](../evidence/barcodes/summary.md) records 12 of 12 approved SKU mappings and 95-bit software round trips, plus 16 of 16 expected rejections. The encoder and decoder share pattern tables. Physical scanning is outside the test scope.
 - [`evidence/costs/summary.md`](../evidence/costs/summary.md): Tier 2 price, cost, and gross margin sensitivity verification.
 - [`evidence/README.md`](../evidence/README.md): Master evidence index.
 
