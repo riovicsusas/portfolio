@@ -8,11 +8,11 @@
 
 ### 1.1 Every Item Was Routed on Its Own. The Invoice Said $21.50.
 
-If you fulfill direct-to-consumer orders from more than one warehouse, the most intuitive routing policy in the world is to decide each item on its own: dispatch each line item from a warehouse that holds it and, where there is a choice, select the closest facility to the customer. Intuitively, this appears to minimize transit time and carrier zone charges. In practice, on multi-item shopping baskets, this unconstrained heuristic quietly hemorrhages operating margin.
+If you fulfill direct-to-consumer orders from more than one warehouse, the most intuitive routing policy in the world is to decide each item on its own: dispatch each line item from a warehouse that holds it and, where there is a choice. Tvaluate each line against its default stocked facility, without first checking whether one facility can fulfill the entire basket. Intuitively, this appears to minimize transit time and carrier zone charges. In practice, on multi-item shopping baskets, this unconstrained heuristic quietly hemorrhages operating margin.
 
 Here is the empirical case in a single frame. A customer in Denver, CO orders a three-unit wellness basket: two *Focus Stick Packs (30-Pack)* and one *Adaptogen Tincture (60ml)*. The stick packs are dual-stocked at both network nodes: Allentown, PA (`LOC-PA-01`) and Reno, NV (`LOC-NV-02`). The tincture is batch-constrained and stocked exclusively in Reno. Geographically, Reno is the closer warehouse to Denver: modeled as Zone 4, against Zone 6 from Allentown.
 
-A rule that evaluates each line item on its own, and defaults the stick packs to Allentown, sends the sticks from Allentown and the tincture from Reno: two boxes, two postage charges, two 3PL handling fees, totaling **$21.50**. Conversely, consolidating all three units into a single parcel dispatched from Reno costs **$10.50**. The per-line heuristic incurs an **$11.00 surcharge penalty (a 51.2% landed cost inflation)**, shipping two-thirds of the basket from a facility 1,500 miles farther away.
+A rule that evaluates each line item on its own, and defaults the stick packs to Allentown, sends the sticks from Allentown and the tincture from Reno: two boxes, two postage charges, two 3PL handling fees, totaling **$21.50**. Conversely, consolidating all three units into a single parcel dispatched from Reno costs **$10.50**. Consolidation saves **$11.00—a 51.16% reduction from the $21.50 split—while avoiding an unnecessary Allentown parcel**.
 
 The loss has a name: **split-shipment surcharge leakage**. It does not generate software exceptions or operational alarms. Every parcel ships on time, warehouse scan guns confirm flawless pick sequences, and every shipping label is valid. The damage surfaces months later as an unexplained gross margin compression on multi-item baskets.
 
@@ -21,7 +21,7 @@ The loss has a name: **split-shipment surcharge leakage**. It does not generate 
 | Parameter / Incident Dimension | Direct Impact / Incident Observation | Systemic & Financial Hazard |
 |---|---|---|
 | **Target Basket** | 2× Focus Stick Packs 30-Pack (`SYN-FSTK-MY`) + 1× Adaptogen Tincture 60ml (`SYN-TNCT-AM`), delivered to Denver, CO. Sticks are available at Allentown and Reno; tincture is available at Reno only. Reno is Zone 4, Allentown is Zone 6. | The tincture has exactly one feasible node, so the complete basket has a feasible single-node home. Any routing rule that evaluates line items individually cannot detect whole-basket feasibility. |
-| **Naive Per-Line Routing** | Sticks default to Allentown (Zone 6), tincture ships from Reno (Zone 4). Incurs 2 parcels, 2 base postages, and 2 handling fees: **$21.50**. | The routing objective optimizes per-item distance instead of parcel count. The second parcel adds a $2.90 handling penalty plus a second base carrier charge, while sending part of the order from the farther node. |
+| **Naive Per-Line Routing** | Sticks default to Allentown (Zone 6), tincture ships from Reno (Zone 4). Incurs 2 parcels, 2 base postages, and 2 handling fees: **$21.50**. | The routing policy follows per-item default locations without first checking whole-basket availability. The second parcel adds a $2.90 handling penalty plus a second base carrier charge, while sending part of the order from the farther node. |
 | **Consolidated Waterfall Routing** | Tier 1 Consolidation Gate identifies that only Reno holds unreserved ATP for 100% of the basket. Dispatches 1 parcel: **$10.50**. Net saving: **$11.00 (51.2% reduction)**. | Parcel count becomes the first-order cost driver. Geographic zone and SLA ranking are applied *only* among candidate nodes capable of fulfilling the entire basket. |
 | **500-Order Cohort Exposure** | Model Alpha (157 splits / 31.4%) vs. Model Beta (41 splits / 8.2%); 657 vs. 541 parcels; $7,571.50 vs. $6,574.10 modeled fulfillment. **$997.40 net cohort saving** ($1.9948 per order). | Surcharge leakage is imperceptible per order but devastating in aggregate. At a 1,000-orders/day planning scale, this leakage represents **$728,102.00/year** in avoidable fulfillment expense. |
 
@@ -63,6 +63,7 @@ So how can a rule that routes every item sensibly cost twice as much? To see it,
 | **Node** | A physical fulfillment facility. `LOC-PA-01` is Allentown, PA; `LOC-NV-02` is Reno, NV |
 | **3PL** | Third-party logistics provider (ShipBob) executing physical receiving, pick, pack, and carrier induction |
 | **Basket** | The distinct set of SKUs and unit quantities comprising a single customer checkout |
+| **Customer Profile (Denver)** | Sarah Jenkins (`sarah.jenkins@example.com`) in Denver, CO (`80202`) placing benchmark 3-unit basket |
 | **Parcel** | One physical shipping carton with one carrier postage charge and one set of warehouse handling fees |
 | **Split Shipment** | Fulfilling a single customer order across two or more separate parcels, usually originating from different nodes |
 | **Consolidated Shipment** | Fulfilling 100% of an order's line items in a single package dispatched from one node |
@@ -154,15 +155,15 @@ The model utilizes the following standard domestic postage tariff schedules:
 | **Zone 7** | 1,401 – 1,800 miles | $9.20 | $13.50 |
 | **Zone 8** | 1,801+ miles (Cross-Country) | $10.50 | $15.20 |
 
-#### Cross-Reference: Capstone Order #1070
+#### Cross-Reference: Capstone Order #35070
 
-The identical carrier zone mechanics apply when an engine selects the wrong geographic node for a single parcel. In the Capstone Postmortem, customer Elena Vance's East Coast order (original destination Philadelphia, PA 19102; requested destination San Francisco, CA 94102) was inadvertently fulfilled from Reno (`LOC-NV-02`) rather than Allentown (`LOC-PA-01`). 
+Order #35070 illustrates a different failure. Its Reno allocation retained the old Philadelphia destination after the customer requested San Francisco. The bundle was stocked in Reno (`LOC-NV-02`), so the incident was an address-state failure rather than an Allentown-versus-Reno allocation mistake.
 
-Shipping a Northeast parcel cross-country from Reno (Zone 8, declared at **$14.60**) rather than Allentown (Zone 2, declared at **$6.50**) burns an extra **$8.10 per box (+124.6% landed cost penalty)**:
+The Capstone declares **$7.20 original ground freight** and **$14.80 replacement expedited freight.** These belong to different shipments and service levels; their difference is not a postal-zone penalty.
 
 $$\$14.60 - \$6.50 = \$8.10 \quad \left(\frac{\$8.10}{\$6.50} = +124.6\%\right)$$
 
-This illustrates the financial hazard of ignoring postal zones when consolidation is not in question. It forms the mirror image of the Denver basket: in Denver, ignoring parcel count cost $11.00; in Capstone #1070, ignoring postal zone cost $8.10.
+This illustrates the financial hazard of ignoring postal zones when consolidation is not in question. It forms the mirror image of the Denver basket: in Denver, ignoring parcel count cost $11.00; in Capstone #35070, ignoring postal zone cost $8.10.
 
 > [!NOTE]
 > The $6.50, $14.60, and +$8.10 figures represent Capstone-declared scenario inputs. The executed test suite in `evidence/freight/` asserts only that the Capstone fixture retains the Philadelphia destination and its separate $7.20 declared freight assumption (§11).
@@ -240,7 +241,7 @@ To guarantee financial traceability, every routing decision must emit an auditab
     "modeled_landed_cost_cents": 1050
   },
   "rejected_counterfactual": {
-    "policy": "naive_per_line_proximity",
+    "policy": "static_per_line_default",
     "forced_parcels": 2,
     "modeled_landed_cost_cents": 2150,
     "prevented_leakage_cents": 1100
@@ -303,7 +304,7 @@ flowchart TD
     Q1{"**Question 1**<br>Did the order ship in > 1 parcel?"}
     Q1 -- No: Single Box --> OK[No Leakage: Optimal Parcel Unit Economics]
     Q1 -- Yes: Split Parcels --> Q2{"**Question 2**<br>Could any single node have<br>fulfilled 100% of items at dispatch?"}
-    Q2 -- Yes: Single Node Was Available --> LEAK["**CONFIRMED LEAKAGE**<br>Routing rule breached Consolidation Gate<br>Surcharge Penalty: ≥ $8.30 per split"]
+    Q2 -- Yes: Single Node Was Available --> LEAK["**CONFIRMED LEAKAGE**<br>Routing rule breached Consolidation Gate<br>Net Leakage: Actual split cost minus feasible consolidated cost"]
     Q2 -- No: Stock Truly Fragmented --> Q3{"**Question 3**<br>Was the split executed via<br>minimum parcel combination?"}
     Q3 -- Yes --> MIN[Unavoidable Structural Split: Log for Rebalancing]
     Q3 -- No --> CONF["**CONFIG ERROR**<br>Excess parcel generation detected"]
@@ -343,7 +344,7 @@ When stock depletion across nodes makes single-package fulfillment physically im
 
 | Mitigation Architecture | Primary Trigger Criteria | Cost & Customer Trade-Off |
 |---|---|---|
-| **Controlled Minimum-Parcel Split** | Expedited customer SLA; stock physically segregated across facilities | Incurs at least +$8.30 more than one parcel under scenario inputs, plus any zone delta |
+| **Controlled Minimum-Parcel Split** | Expedited customer SLA; stock physically segregated across facilities | Adds $2.90 fixed handling plus the extra parcel’s postage; the net difference also depends on any change in the retained parcel’s rate. |
 | **Authorized Short-Hold Backorder** | Inbound replenishment container actively receiving at primary hub | Defers dispatch 24–48 hours; avoids second parcel expense; requires proactive customer messaging |
 | **Automated Cross-Dock Transfer** | Chronic split SKU pairing identified in rolling 7-day velocity data | Incurs bulk freight transfer expense; eliminates recurring retail parcel split penalties permanently |
 
@@ -354,7 +355,7 @@ When stock depletion across nodes makes single-package fulfillment physically im
 
 ### Inventory Rebalancing Rules
 1. **Velocity Pairing Telemetry**: Track chronic multi-origin SKU pairings. SKU combinations that repeatedly trigger Tier 3 splits indicate an inventory allocation defect rather than a software failure.
-2. **Transfer Justification Math**: Authorize cross-dock warehouse replenishment when the bulk transfer freight cost is less than the cumulative second-parcel penalty it avoids ($\ge \$8.30$ per avoided split order).
+2. **Transfer Justification Math**: Authorize cross-dock warehouse replenishment when the bulk transfer freight cost is less than the cumulative net saving it creates, calculated as split fulfillment cost minus feasible consolidated fulfillment cost.
 3. **Post-Transfer Verification**: Following a stock transfer, verify that the newly balanced node successfully passes Tier 1 for subsequent checkout cohorts.
 
 ---
@@ -435,7 +436,7 @@ The per-order cohort average of **$1.9948** is exact ($997.40 / 500), so the pro
 | **Mid-Market Brand (1.7k/mo)** | 1,700 | 20,400 | $\$1.9948 \times 1,700 \times 12$ | **$40,693.92 / year** |
 | **Growth Stage (5k/mo)** | 5,000 | 60,000 | $\$1.9948 \times 5,000 \times 12$ | **$119,688.00 / year** |
 | **High-Volume Scale (15k/mo)** | 15,000 | 180,000 | $\$1.9948 \times 15,000 \times 12$ | **$359,064.00 / year** |
-| **Enterprise Fleet (1k/day)** | 30,417 | 365,000 | $\$1.9948 \times 365,000$ | **$728,102.00 / year** |
+| **Enterprise Fleet (1k/day)** | ≈30,417 average monthly checkouts | 365,000 | $\$1.9948 \times 365,000$ | **$728,102.00 / year** |
 
 *Note: Projections represent conditional sensitivity calculations based on the declared cohort numerator. They illustrate systemic financial exposure rather than audited historical accounting ledgers.*
 
@@ -564,7 +565,7 @@ Test Harness Run Metadata:
 | 500-order fixture preserves paired units and parcel counts | **PASSED** | Verifies exactly 1,190 units across 657 and 541 parcels |
 | Cohort savings match handling formula and freight inputs | **PASSED** | Validates exact $\$336.40 + \$661.00 = \$997.40$ cohort delta |
 | Monthly and annual projections retain exact cohort numerator | **PASSED** | Validates $\$1.9948$/order scale factor across extended volumes |
-| Capstone fixture retains Philadelphia and $7.20 freight | **PASSED** | Validates Order #1070 boundary parameters |
+| Capstone fixture retains Philadelphia and $7.20 freight | **PASSED** | Validates Order #35070 boundary parameters |
 | Dated carrier tariff and ZIP-zone verification | **SKIPPED** | Declared model inputs; live API carrier quote verification omitted |
 
 ### 11.3 Boundary Statement
@@ -573,7 +574,7 @@ Read the carrier rate row honestly. The Denver autopsy forces a split against a 
 
 The conclusion is also conditional: it survives changes in carrier rates only while a second parcel's full incremental cost ($\$2.90$ fixed handling plus base postage) remains larger than the maximum carrier zone premium ($\Delta \text{Zone}_{\max}$). Tariffs remain declared scenario inputs, and the rate table represents the baseline model upon which financial projections depend.
 
-Furthermore, the Capstone Order #1070 figures cited in §2.4 ($6.50, $14.60, and +$8.10) are declared scenario inputs; the executed suite asserts only that its fixture retains Philadelphia and a separate $7.20 freight assumption. No live carrier invoices, negotiated commercial discounts, physical mis-shipments, or carrier claims are inferred from these calculations.
+Furthermore, the Capstone Order #35070 figures cited in §2.4 ($6.50, $14.60, and +$8.10) are declared scenario inputs; the executed suite asserts only that its fixture retains Philadelphia and a separate $7.20 freight assumption. No live carrier invoices, negotiated commercial discounts, physical mis-shipments, or carrier claims are inferred from these calculations.
 
 ---
 

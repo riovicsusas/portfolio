@@ -6,11 +6,11 @@
 
 ## 1. The Hook: The 49-Mile Desynchronization
 
-Elena Vance fixes her shipping address on her phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
+Marcus Chen fixes his shipping address on her phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
 
 Nothing on a warehouse floor in Allentown, Pennsylvania has heard about it.
 
-A database write is a statement of intent. A carton on a conveyor is a fact. The distance between the two is where Order #1004—a $102 purchase comprising two $42 stick packs and $18 expedited shipping—nearly became a mis-shipment. The carton was bound for Scranton, PA when the customer actually lived in Binghamton, NY, a 49-mile interstate delta that no amount of storefront correctness could have closed on its own.
+A database write is a statement of intent. A carton on a conveyor is a fact. The distance between the two is where Order #18404—a $102 purchase comprising two $42 stick packs and $18 expedited shipping—nearly became a mis-shipment. The carton was bound for Scranton, PA when the customer actually lived in Binghamton, NY, a 49-mile interstate delta that no amount of storefront correctness could have closed on its own.
 
 The save did not stop the order. **Stopping it took 133 seconds** of coordinated freeze, verification, mutation, and release, and the order had to be found still standing in the queue when that work finished.
 
@@ -24,22 +24,22 @@ The save did not stop the order. **Stopping it took 133 seconds** of coordinated
              └──────────── 133 Seconds Total Freeze ────────────┘
 ```
 
-At 10:14:00 EST, customer Elena Vance submitted an urgent ticket: she had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#1004** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #1004 re-entered the wave queue at 10:16:15 EST, 135 seconds after ingestion and into the Allentown wave queue with the correct Binghamton shipping label.
+At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: she had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#18404** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #18404 re-entered the wave queue at 10:16:15 EST, 135 seconds after ingestion and into the Allentown wave queue with the correct Binghamton shipping label.
 
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
 > [!CAUTION]
-> **Staging Scenario Disclosure**: Order #1004, Elena Vance, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `elena.vance@example.com` is a reserved example domain. The offline test harnesses in §11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
+> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in §11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
 
 ### Executive Incident Matrix
 
 | Dimension | Detail | Why it matters |
 |---|---|---|
-| **Order Profile** | `#1004` · `gid://shopify/Order/5892114432104` · FO `gid://shopify/FulfillmentOrder/6710448123901` · 2× Focus Stick Packs 30-Pack ($84.00) + Expedited Shipping ($18.00) = **$102.00** | Ingestible product plus a paid priority SLA: the two attributes that shrink the safe edit window. |
+| **Order Profile** | `#18404` · `gid://shopify/Order/5892114432104` · FO `gid://shopify/FulfillmentOrder/6710448123901` · 2× Focus Stick Packs 30-Pack ($84.00) + Expedited Shipping ($18.00) = **$102.00** | Ingestible product plus a paid priority SLA: the two attributes that shrink the safe edit window. |
 | **Origin & Route** | Origin `LOC-PA-01` (Allentown, PA). Wrong destination: Scranton, PA. Correct destination: Binghamton, NY. **49-mile interstate delta.** | The correction crosses a state line, so zone, node, and tax-jurisdiction inputs all change. |
 | **Ingestion Window** | Ticket received **10:14:00 EST**, 11 minutes after checkout. The order had entered WMS at 10:04:12. | The order was already in the warehouse queue when the customer asked to change it. |
 | **Safety Invariant** | **Freeze-First**: confirm the *physical* queue lock before any mutation; release only the hold you placed. | An unconfirmed freeze is not a freeze. |
-| **Financial Exposure** | Order #1004 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; §3 illustrates these using a separate one-pack example.. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
+| **Financial Exposure** | Order #18404 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; §3 illustrates these using a separate one-pack example.. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
 | **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Release confirmed at **10:16:13 EST** after **133 seconds**; order resumed at **10:16:15 EST** after **135 seconds.** |
 
 ---
@@ -113,7 +113,7 @@ Stage 2 represents the narrow corridor between the two boundaries. In Stage 2, l
 
 ## 3. What One Mis-Shipped Carton Costs (Unit Economics & FDA Scrap)
 
-The 133-second protocol kept Order #1004’s two-pack shipment on the correct route. To show how mis-shipment costs accumulate, this section uses a separate single-pack illustration.
+The 133-second protocol kept Order #18404’s two-pack shipment on the correct route. To show how mis-shipment costs accumulate, this section uses a separate single-pack illustration.
 
 ### 3.1 Regulatory Governance: FDA 21 CFR Part 111 cGMP
 
@@ -192,14 +192,14 @@ A robust integration protocol that freezes warehouse execution in under 18 secon
 
 ---
 
-## 4. The 133-Second Trace: Dissecting Order #1004
+## 4. The 133-Second Trace: Dissecting Order #18404
 
 ### 4.1 Order & Exception Ingestion Profile
 
 | Field | Value |
 |---|---|
-| Customer | Elena Vance (`elena.vance@example.com`) |
-| Order ID | `gid://shopify/Order/5892114432104` (Display: `#1004`) |
+| Customer | Marcus Chen (`marcus.chen@example.com`) |
+| Order ID | `gid://shopify/Order/5892114432104` (Display: `#18404`) |
 | Fulfillment Order ID | `gid://shopify/FulfillmentOrder/6710448123901` |
 | Line Items | 1× Focus Stick Packs Matcha Yuzu (`SYN-FSTK-MY`, $42.00), 1× Focus Stick Packs Blood Orange (`SYN-FSTK-BO`, $42.00), Expedited Shipping ($18.00) |
 | Total Captured | **$102.00** |
@@ -233,7 +233,7 @@ A robust integration protocol that freezes warehouse execution in under 18 secon
 |---|---:|---|---|---|
 | **10:04:12** | — | ShipBob WMS | Order drops to WMS queue (Stage 1 begins) | Warehouse |
 | **10:14:00** | T+0s | Gorgias | Support ticket `#T-10492` ingested via webhook | Software |
-| **10:14:02** | +2s | Shopify Flow | Idempotency key `MUT-1004-ADDR` assigned; transaction opened | Software |
+| **10:14:02** | +2s | Shopify Flow | Idempotency key `MUT-18404-ADDR` assigned; transaction opened | Software |
 | **10:14:04** | +2s | Shopify Admin | `fulfillmentOrderHold` dispatched (`reason: INCORRECT_ADDRESS`) | Software |
 | **10:14:18** | +14s | ShipBob WMS | Adapter confirms WMS queue lock (`SHIPMENT_ON_HOLD`, Queue `#SB-948102`) | **Warehouse API** |
 | **10:15:22** | +64s | USPS CASS | Normalization returns DPV-valid ZIP+4 (`13901-3412`) | Software |
@@ -300,7 +300,7 @@ mutation FreezeFulfillmentOrder($id: ID!, $hold: FulfillmentOrderHoldInput!) {
   "hold": {
     "reason": "INCORRECT_ADDRESS",
     "reasonNotes": "Customer address correction ticket. Synapse PONR coordinator freeze.",
-    "handle": "synapse-addr-1004"
+    "handle": "synapse-addr-18404"
   }
 }
 ```
@@ -359,8 +359,8 @@ mutation CorrectShippingAddress($input: OrderInput!) {
   "input": {
     "id": "gid://shopify/Order/5892114432104",
     "shippingAddress": {
-      "firstName": "Elena",
-      "lastName": "Vance",
+      "firstName": "Marcus",
+      "lastName": "Chen",
       "address1": "142 COURT ST",
       "address2": "APT 3B",
       "city": "BINGHAMTON",
@@ -407,7 +407,7 @@ mutation ReleaseOurHoldOnly($id: ID!, $holdIds: [ID!]) {
 
 ## 5. The Priority Bypass Seam: Why T+11 Was Already in Queue
 
-A support agent sees an order 11 minutes old and reasons: *"Standard orders sit in a 15-minute buffer. We have four minutes."* For Order #1004, that reasoning was wrong.
+A support agent sees an order 11 minutes old and reasons: *"Standard orders sit in a 15-minute buffer. We have four minutes."* For Order #18404, that reasoning was wrong.
 
 ```text
 STANDARD ORDER (15-minute fraud/edit buffer)
@@ -416,7 +416,7 @@ STANDARD ORDER (15-minute fraud/edit buffer)
  15:00                                                         WMS drop (Stage 1)
  ▲ ticket at T+11 arrives INSIDE the buffer: a pure storefront edit.
 
-EXPEDITED ORDER (#1004)
+EXPEDITED ORDER (#18404)
  00:00  checkout
  ├─ 1:10 ─┤ fraud scoring passes (10:04:10)
           ├2s┤ WMS drop (10:04:12)  ◄── Stage 1 begins at T+1:12
@@ -429,12 +429,12 @@ EXPEDITED ORDER (#1004)
 
 This timing reflects a core e-commerce architectural rule: **Shipping Service Level Agreements (SLAs) override batching buffers.**
 
-Order #1004 was not a standard ground shipment; the customer paid an **$18.00 premium for Expedited Shipping**. In order to meet guaranteed carrier transit cutoffs (e.g., UPS Next Day Air departing the Allentown dock at 2:00 PM), Shopify Flow routing rules evaluate incoming orders immediately:
+Order #18404 was not a standard ground shipment; the customer paid an **$18.00 premium for Expedited Shipping**. In order to meet guaranteed carrier transit cutoffs (e.g., UPS Next Day Air departing the Allentown dock at 2:00 PM), Shopify Flow routing rules evaluate incoming orders immediately:
 
 1. **Standard Tier Orders**: Held in Shopify's Stage 0 buffer for 15 minutes to allow customer self-service edits and fraud risk scoring.
 2. **Expedited Tier Orders**: Tagged with `priority:expedited`. Upon passing automated risk analysis (Risk Level == `LOW`), the coordinator immediately dispatches the fulfillment request to the 3PL to ensure the parcel catches the earliest available picking wave.
 
-Order #1004 cleared fraud scoring at 10:04:10 EST and was pushed to ShipBob two seconds later. By the time Elena Vance sent her ticket at 10:14:00 EST, the order had been in the Allentown queue for nearly ten minutes (588 seconds).
+Order #18404 cleared fraud scoring at 10:04:10 EST and was pushed to ShipBob two seconds later. By the time Marcus Chen sent her ticket at 10:14:00 EST, the order had been in the Allentown queue for nearly ten minutes (588 seconds).
 
 **The Rule**: In expedited fulfillment, the safe editing window does not last 15 minutes. It closes in **under 600 seconds** from WMS drop.
 
@@ -521,11 +521,11 @@ Scores range from 0.00 to 5.00.
 | **2.50 – 3.19** | **Supervisor-Assisted Freeze** | Automated hold placed; supervisor queue exception required to proceed. |
 | **$\ge$ 3.20** | **Hard Programmatic Lockout** | Rejects storefront mutation immediately; failover to Carrier Intercept. |
 
-### 7.2 Incident Evaluation: Order #1004 vs. Runaway Scenario
+### 7.2 Incident Evaluation: Order #18404 vs. Runaway Scenario
 
 | Scenario | Physical (40%) | Consumable (30%) | Financial (30%) | Calculation | Score | System Action |
 |---|---:|---:|---:|---|---:|---|
-| **Order #1004** (Stage 1) | 1.0 | 5.0 | 1.0 | $(1.0 \times 0.4) + (5.0 \times 0.3) + (1.0 \times 0.3) = 0.40 + 1.50 + 0.30$ | **2.20 / 5.00** | **Automated Fast-Path Hold** |
+| **Order #18404** (Stage 1) | 1.0 | 5.0 | 1.0 | $(1.0 \times 0.4) + (5.0 \times 0.3) + (1.0 \times 0.3) = 0.40 + 1.50 + 0.30$ | **2.20 / 5.00** | **Automated Fast-Path Hold** |
 | **Stage 3 Runaway Scenario** | 4.0 | 5.0 | 1.0 | $(4.0 \times 0.4) + (5.0 \times 0.3) + (1.0 \times 0.3) = 1.60 + 1.50 + 0.30$ | **3.40 / 5.00** | **Hard Programmatic Lockout** |
 
 Note what dominates: even at Stage 1 the consumable term contributes 1.50 of the 2.20 score. Ingestible products start every evaluation with a heavy thumb on the scale, by design.
@@ -553,7 +553,7 @@ Three status codes decide what happens next, and they do not mean what they appe
   "message": "Shipment has crossed the physical pick boundary; mutation refused.",
   "order_id": "gid://shopify/Order/5892114432104",
   "pick_status": "PICKED",
-  "idempotency_key": "ponr-1004-addr-v1"
+  "idempotency_key": "ponr-18404-addr-v1"
 }
 ```
 
@@ -595,7 +595,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
 
 ### 9.1 Playbook A: CASS-Standardized Address Correction
 
-*The Order #1004 Path.*
+*The Order #18404 Path.*
 
 1. **Gate Assessment**: Read physical stage. Stage 0–1 $\to$ automated fast-path; Stage 2 $\to$ supervisor freeze; Stage 3+ $\to$ Playbook C.
 2. **Freeze $\to$ Verify** (Gates 1–2): Confirm WMS queue lock token before touching record.
@@ -604,7 +604,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
    Raw Input:   142 Court Street, Apt 3B, Binghamton, NY 13901
    CASS Output: 142 COURT ST APT 3B, BINGHAMTON NY 13901-3412 (DPV: Valid)
    ```
-4. **Dynamic Zone & Node Recalculation**: Re-evaluate carrier shipping zone and origin node. For Order #1004, the destination crosses state lines from PA to NY, so the coordinator flags the cross-state delta for tax and rate reconciliation.
+4. **Dynamic Zone & Node Recalculation**: Re-evaluate carrier shipping zone and origin node. For Order #18404, the destination crosses state lines from PA to NY, so the coordinator flags the cross-state delta for tax and rate reconciliation.
 5. **Mutate $\to$ Release** (Gates 3–4): Execute `orderUpdate` and release with explicit `holdIds`.
 6. **Timeline Audit Logging**: Write an un-editable staff note to the Shopify timeline:
    ```text
@@ -635,7 +635,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
    - A timeout is `UNKNOWN`; reconcile by lookup, not by resubmission.
 5. **Modeled Recovery Economics**: Successful return costs **$17.50**; failed or rejected requests cost **$0.00** in the fixtures.
 6. **Customer Transparency Automation**:
-   > *"Hi Elena, we caught your address update after your order had already been packed at our Allentown distribution center, which means we could no longer modify it in our system. We have initiated a carrier reroute request with UPS. Intercepts are requests, not guarantees. We will notify you the moment the carrier confirms diversion, and we will ensure your order reaches Binghamton regardless."*
+   > *"Hi Marcus, we caught your address update after your order had already been packed at our Allentown distribution center, which means we could no longer modify it in our system. We have initiated a carrier reroute request with UPS. Intercepts are requests, not guarantees. We will notify you the moment the carrier confirms diversion, and we will ensure your order reaches Binghamton regardless."*
 
 > [!NOTE]
 > Replacement economics in the BOM package (`evidence/costs/summary.md`) show how expensive this branch is: an incremental recovery cost of **$98.60** turns a $54.76 baseline contribution into **−$43.84**. That is the economic argument for catching tickets *before* Boundary 2.
@@ -674,7 +674,7 @@ In accordance with rigorous systems architecture principles, this section strict
 | **Pinned UPS Delivery Intercept v2 snapshot matches provenance hash; selected wire constraints enforced** | **Verified offline** | Carrier suite (34 passed, **2 skipped**) | Full OpenAPI validation; provider certification |
 | **Accepted ≠ recovered; duplicate events never repeat a fee; terminal states not overwritten** | **Executed locally** | Carrier suite (34 passed) | Physical carrier interception on trailers |
 | **Printed BOM, contribution, and replacement arithmetic reconcile in whole integer cents** | **Executed locally** | Cost suite (11/11 passed) | Real supplier purchasing contracts, net profit |
-| **The 133-second trace, Order #1004** | **Staged scenario** | Narrative scenario inputs | Any production wall-clock measurement |
+| **The 133-second trace, Order #18404** | **Staged scenario** | Narrative scenario inputs | Any production wall-clock measurement |
 | **Hazard weights, band edges, factor scoring values** | **Designed** | Systems policy proposal | Empirical calibration against live incidents |
 | **FDA 21 CFR Part 111 scrap policy and fee lines** | **Scenario policy** | Declared regulatory inputs | Formal regulatory determination, contract rates |
 | **Production latency, SQS delivery, vendor SLAs** | **Not established** | Architectural design | Live third-party platform guarantees |
@@ -715,7 +715,7 @@ The coordinator harness uses Node's built-in SQLite for a local persistent opera
 
 ## 12. The Architectural Takeaway
 
-Elena Vance never learned that her order spent two minutes in suspended animation. Her carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
+Marcus Chen never learned that her order spent two minutes in suspended animation. Her carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
 
 That is what a correct integration layer looks like: invisible when it works, because it refused to let a four-second tap on a phone outrun a physical conveyor 49 miles away.
 

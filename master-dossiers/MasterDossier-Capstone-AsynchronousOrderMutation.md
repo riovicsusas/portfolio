@@ -10,14 +10,14 @@ If you run an e-commerce operation, or hire the people who do, the most instruct
 
 By the end of this case study, you will understand exactly why state divergence occurs at the seams between e-commerce platforms and physical warehouses, why a single HTTP status code was the pivotal point of failure, and how to engineer an enterprise-grade coordination protocol that guarantees it never happens at scale.
 
-Here is the incident in one frame: At 13:35 on October 17, 2026, a customer support agent changed the shipping address on Order **#1070** from Philadelphia to San Francisco. Shopify Admin accepted the mutation instantly. Thirteen minutes later, a sealed carton bearing the *old* Philadelphia address rolled across a warehouse conveyor belt in Reno, Nevada. Between those two events, zero operational alarms were raised.
+Here is the incident in one frame: At 13:35 on October 17, 2026, a customer support agent changed the shipping address on Order **#35070** from Philadelphia to San Francisco. Shopify Admin accepted the mutation instantly. Thirteen minutes later, a sealed carton bearing the *old* Philadelphia address rolled across a warehouse conveyor belt in Reno, Nevada. Between those two events, zero operational alarms were raised.
 
 > [!CAUTION]
 > **Staging Sandbox Disclosure:** This case study documents an empirical failure-injection experiment conducted within an isolated staging sandbox. Platform responses, middleware adapter traces, and state transitions represent verified executions. Financial figures, carrier tariffs, and monthly projections reflect deterministic scenario models grounded in our verified staging evidence package. No live customer PII or production services were impacted.
 
 | Incident Dimension | Baseline Scenario Parameter |
 | :--- | :--- |
-| **Order Profile** | #1070, The Daily Protocol Starter Bundle, $98.00 GMV |
+| **Order Profile** | #35070, The Daily Protocol Starter Bundle, $98.00 GMV |
 | **Customer** | Elena Vance (`elena.vance@example.com`) |
 | **The Trigger Failure** | Outbound 3PL fulfillment hold timed out (`504 Gateway Timeout`); upstream state remained unknown |
 | **The Point of No Return** | Reno warehouse wave picking released 6 minutes 48 seconds after the first hold dispatch. |
@@ -53,7 +53,7 @@ In the dietary supplement and botanical industry, returned or misdirected parcel
 
 Every incident has a number that explains it. In this one, the number is **6 minutes 48 seconds**.
 
-Distributed systems don't fail in abstract diagrams—they fail in seconds. At 13:35:12, Shopify Flow dispatched a fulfillment hold request to the 3PL. Three seconds later (13:35:15), the request timed out with a 504: not a refusal, not an acceptance, just silence. At 13:42:00, Reno Wave Plan #8812 automatically released Order #1070 to the warehouse floor.
+Distributed systems don't fail in abstract diagrams—they fail in seconds. At 13:35:12, Shopify Flow dispatched a fulfillment hold request to the 3PL. Three seconds later (13:35:15), the request timed out with a 504: not a refusal, not an acceptance, just silence. At 13:42:00, Reno Wave Plan #8812 automatically released Order #35070 to the warehouse floor.
 
 Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sat a window of **6 minutes 48 seconds** (6 minutes 45 seconds from the 504 timeout). That narrow window was the entire margin of safety between a routine customer edit and an irreversible physical mis-ship. Nobody acted inside it, because the retry schedule ran on a fifteen-minute clock and nobody knew the warehouse clock was ticking.
 
@@ -63,7 +63,7 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 
 | Timestamp | Elapsed | System | Event Description | HTTP / Queue Status |
 | :--- | :---: | :--- | :--- | :---: |
-| **13:00:10** | T+0m | Shopify Core | Order #1070 placed by customer; payment authorized ($98.00) | 200 OK |
+| **13:00:10** | T+0m | Shopify Core | Order #35070 placed by customer; payment authorized ($98.00) | 200 OK |
 | **13:00:12** | T+2s | Webhook Bus | `orders/create` webhook dispatched to ShipBob WMS | 200 OK |
 | **13:00:15** | T+5s | ShipBob WMS | Fulfillment order ingested into Reno allocation queue | `OPEN / UNALLOCATED` |
 | **13:35:00** | T+34m50s | Gorgias | Support ticket #T-10842 received: customer requests address update to SF | — |
@@ -73,7 +73,7 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 | **13:35:12** | T+35m02s | Flow → WMS | **Action 2: Flow dispatches POST /1.0/webhook/order/hold** | Request Dispatched |
 | **13:35:15** | T+35m05s | Cloudflare Gateway | **Hold request times out (3.0s). Upstream WMS state unknown** | **504 Gateway Timeout** |
 | **13:40:15** | T+40m05s | Retry Transport | Retry Attempt 2 dispatches; gateway fails to respond in window | **504 Gateway Timeout** |
-| **13:42:00** | T+41m50s | ShipBob WMS | **Wave Plan #8812 auto-releases: Order #1070 allocated to batch pick** | **PONR BREACHED** |
+| **13:42:00** | T+41m50s | ShipBob WMS | **Wave Plan #8812 auto-releases: Order #35070 allocated to batch pick** | **PONR BREACHED** |
 | **13:45:00** | T+44m50s | Warehouse Floor | Floor technician picks Starter Bundle into Tote #44 | Pick Confirmed |
 | **13:48:00** | T+47m50s | Pack Bench | Barcode scanned; thermal label prints: **Philadelphia, PA** | `PACKED` |
 | **13:48:30** | T+48m20s | Outbound Sorter | Carton sealed and placed onto outbound parcel conveyor | Sealed |
@@ -235,14 +235,14 @@ To prevent silent state divergence, distributed e-commerce systems must enforce 
 
 ## 6. What One Zombie Order Costs (Unit Economic Autopsy)
 
-An engineering flaw becomes an executive business case when you calculate its impact on unit economics. Order #1070 began as a flagship, high-margin sale and ended as an operational loss.
+An engineering flaw becomes an executive business case when you calculate its impact on unit economics. Order #35070 began as a flagship, high-margin sale and ended as an operational loss.
 
 ### 6.1 Baseline vs. Dual-Fulfillment Recovery Ledger
 
 Starter Bundle COGS is modeled at **$28.40** (reflecting $28.00 in raw components—Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00—plus $0.40 dedicated packaging and insert material). Credit card gateway processing is calculated as `round($98.00 × 2.9% + $0.30, 2) = $3.14`.
 
 ```text
-NORMAL ORDER ECONOMICS (#1070 Baseline):
+NORMAL ORDER ECONOMICS (#35070 Baseline):
   Gross Merchandise Value (GMV):                +$98.00
   Cost of Goods Sold (BOM + Packaging):         -$28.40
   3PL Warehouse Fulfillment (Pick/Pack/Box):    -$4.50
@@ -292,7 +292,7 @@ The system’s automated retry loops did not detect this failure. Elena Vance di
 When an escalated ticket arrives, operations requires a standardized 3-minute diagnostic triage protocol answering three distinct architectural questions:
 
 ### 7.1 Question 1: Did Shopify think the edit worked?
-**Shopify Order Timeline Inspection (`Admin → Orders → #1070`):**
+**Shopify Order Timeline Inspection (`Admin → Orders → #35070`):**
 * At `13:35 EDT`: *"Elena Vance's shipping address updated to San Francisco, CA"* (Green success badge).
 * At `13:35 EDT`: *"Flow run '3PL Hold' failed: 504 Gateway Timeout — enqueued for retry."*
 * **Diagnostic Finding:** Shopify accepted the address mutation locally in its relational database without waiting for downstream 3PL confirmation.
@@ -351,7 +351,7 @@ The team initiated an automated carrier redirect request against the UPS REST AP
 {
   "requestType": "RS",
   "reasonForReturn": "AM",
-  "specialInstructions": "Emergency post-PONR intercept for misdirected order #1070",
+  "specialInstructions": "Emergency post-PONR intercept for misdirected order #35070",
   "requesterContactInfo": {
     "name": "Synapse Operations",
     "telephone": "+18005550199"
@@ -433,7 +433,7 @@ To eliminate this timing collision, the legacy synchronous retry loop was replac
               ▼ [FIRST UNCERTAIN HOLD RESULT (504)]
 ┌────────────────────────────────────────────────────────┐
 │  SEV-1 OPS ALERT BUS: Slack Webhook + Gorgias Escalation│
-│  "HOLD UNCONFIRMED on Order #1070 — Cutoff in 6m48s"   │
+│  "HOLD UNCONFIRMED on Order #35070 — Cutoff in 6m48s"   │
 │  👉 Human floor operator pauses wave BEFORE release!   │
 └────────────────────────────────────────────────────────┘
 ```

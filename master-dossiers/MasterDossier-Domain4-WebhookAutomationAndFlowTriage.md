@@ -6,11 +6,11 @@
 
 ## 1. The Hook: 114 Events in 62 Seconds
 
-Event-driven business automation feels like free labor. A customer updates a shipping address in an online portal, a tag appears on the order, a workflow reacts in the background, a warehouse management system (WMS) receives an updated routing instruction, and not a single human operator touches a keyboard. 
+Event-driven business automation feels like free labor. A customer updates a shipping address in an online portal, a tag appears on the order, a workflow reacts in the background, a warehouse management system (WMS) receives an updated routing instruction, and not a single human operator touches a keyboard.
 
 The fatal vulnerability of event-driven architectures is that **every reaction is itself an event, and unconstrained events compound exponentially**. An unconstrained event wakes every listener that can see it, and each listener's output becomes one more event for downstream listeners to process. Left ungoverned, that chain does not stop on its own.
 
-**11:02:01 EDT.** A routine shipping address update was processed on Order **#1048**, automatically appending the tag `Address-Verified`. Two independent Shopify Flow workflows subscribed to the generic trigger `"Order tags added"`. Workflow 1 evaluated the new tag and appended `Route-East`. Workflow 2 reacted to the tag change and appended `Logistics-Audited`. The addition of `Logistics-Audited` was itself an `"Order tags added"` event, so Workflow 1 immediately re-triggered. 
+**11:02:01 EDT.** A routine shipping address update was processed on Order **#24148** (Customer: **Chloe Bennett**, `chloe.bennett@example.com`), automatically appending the tag `Address-Verified`. Two independent Shopify Flow workflows subscribed to the generic trigger `"Order tags added"`. Workflow 1 evaluated the new tag and appended `Route-East`. Workflow 2 reacted to the tag change and appended `Logistics-Audited`. The addition of `Logistics-Audited` was itself an `"Order tags added"` event, so Workflow 1 immediately re-triggered.
 
 Neither workflow contained a syntax error. Neither workflow had a defect in its isolated business logic. Each did precisely what it was written to do, and together they formed a closed ring with no exit condition:
 * Within **62 seconds**, the order's internal timeline exploded to **114 events** (1.84 events per second on a single database record).
@@ -22,7 +22,7 @@ Neither workflow contained a syntax error. Neither workflow had a defect in its 
 
 ```text
        11:02:01 EDT                                             11:03:03 EDT
-  Order #1048 Tag Added                                    Circuit Breaker Injected
+  Order #24148 Tag Added                                    Circuit Breaker Injected
 ─────────────●──────────────────────────────────────────────────────────●─────────────►
              │                                                          │
              ├── 11:02:02: FLOW-01 Appends 'Route-East'                 │
@@ -34,16 +34,17 @@ Neither workflow contained a syntax error. Neither workflow had a defect in its 
                                [API BUDGET 98% EXHAUSTED]
 ```
 
-Had the circuit breaker not engaged, the runaway recursion on Order #1048 would have completely starved the entire storefront's API budget—blocking fraud reviews, delaying order fulfillment pushes to 3PL warehouses, and halting customer service updates across thousands of uninvolved customer orders.
+Had the circuit breaker not engaged, the runaway recursion on Order #24148 would have completely starved the entire storefront's API budget—blocking fraud reviews, delaying order fulfillment pushes to 3PL warehouses, and halting customer service updates across thousands of uninvolved customer orders.
 
 The second failure mode is quieter and just as expensive: when a warehouse endpoint returns `HTTP 504 Gateway Timeout` during a flash sale and every failed call retries on the same fixed schedule, hundreds of retries land in the same instant on a system that is already struggling. Section 2 contrasts both traps.
 
 > [!CAUTION]
-> **Controlled Failure Scenario Disclosure**: Order #1048 is an empirical failure-injection scenario executing within an isolated staging environment. The timeline and API telemetry represent a verified failure trace. Deduplication, idempotency hashing, and cutoff rejection resilience were verified against our local SQLite coordinator test harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). Platform rate-limit figures illustrate standard Shopify Plus leaky-bucket mechanics. §11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Controlled Failure Scenario Disclosure**: Order #24148, customer Chloe Bennett (`chloe.bennett@example.com`), is an empirical failure-injection scenario executing within an isolated staging environment. The timeline and API telemetry represent a verified failure trace. Deduplication, idempotency hashing, and cutoff rejection resilience were verified against our local SQLite coordinator test harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). Platform rate-limit figures illustrate standard Shopify Plus leaky-bucket mechanics. §11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
 
 | Incident Dimension | Baseline Parameter Value | Architectural Significance |
 |---|---|---|
-| **Incident Scope** | Order #1048 (Single-order recursive execution storm) | Demonstrates how a single order can starve multi-tenant storewide API quotas. |
+| **Customer Profile** | Chloe Bennett (`chloe.bennett@example.com`) | Customer initiating an address modification via storefront self-service portal. |
+| **Incident Scope** | Order #24148 (Single-order recursive execution storm) | Demonstrates how a single order can starve multi-tenant storewide API quotas. |
 | **Trigger Mechanism** | Address update appends `Address-Verified` tag | Unconstrained `Order tags added` listeners create circular dependencies. |
 | **Velocity of Recursion** | 114 timeline events generated in 62 seconds | 1.84 events/sec; saturates 97.5% of REST bucket and 95% of GraphQL quota. |
 | **Systemic Blast Radius** | Middleware latency collapses from 140ms to 4,850ms | $2,162.50 financial exposure across warehouse SLA credits and overselling. |
@@ -105,7 +106,7 @@ In naive middleware implementations, failed webhook deliveries are re-enqueued o
 
 Engineers often evaluate API rate-limiting as a temporary capacity inconvenience. To an executive, API starvation is an immediate operational and cash liability.
 
-When Order #1048 saturated 98% of the Shopify Admin API bucket for 62 seconds, every other automated workflow on the store was starved of API calls. The financial damage of that resource starvation radiates across three operational channels:
+When Order #24148 saturated 98% of the Shopify Admin API bucket for 62 seconds, every other automated workflow on the store was starved of API calls. The financial damage of that resource starvation radiates across three operational channels:
 
 ```mermaid
 flowchart LR
@@ -149,13 +150,13 @@ If the 500 warehouse fulfillment calls in the Trap B scenario represent orders m
 
 $$500 \times \$15.00 = \$7,500.00$$
 
-That single cost line is more than 3.4× the entire Order #1048 incident toll, before calculating a single oversold inventory bundle or incident response hour. 
+That single cost line is more than 3.4× the entire Order #24148 incident toll, before calculating a single oversold inventory bundle or incident response hour.
 
 Furthermore, an unmitigated 30-minute API blackout during peak traffic carries catastrophic unpriced costs: abandoned checkout conversions while payment automations stall, unrecoverable payment gateway transaction fees on refunded orders, chargeback dispute fees, and customer lifetime value (LTV) destruction. Consequently, **$2,162.50 represents the absolute floor** of financial exposure for a single un-intercepted recursion event.
 
 ---
 
-## 4. The 62-Second Autopsy: Dissecting Order #1048
+## 4. The 62-Second Autopsy: Dissecting Order #24148
 
 ### 4.1 Chronological Forensic Timeline
 
@@ -200,7 +201,7 @@ The fundamental architectural principle for eliminating sequential tag recursion
 
 ```text
 THE NEGATIVE CHECK INVARIANT:
-Every workflow that executes an "Add Order Tags" action MUST include an upstream 
+Every workflow that executes an "Add Order Tags" action MUST include an upstream
 condition verifying that the target tag is NOT already present on the order.
 ```
 
@@ -229,7 +230,7 @@ flowchart TD
 
 Even if an upstream event re-fires the `"Order tags added"` trigger 50 times in rapid succession, the workflow executes Action 1 and Action 2 exactly once. On the second iteration, **Condition 2 evaluates to False**, gracefully halting execution before any mutation or API call can commit.
 
-### 5.2 The Rule Applied to Order #1048
+### 5.2 The Rule Applied to Order #24148
 
 | Workflow | Before (Unconstrained Loop) | After (Guarded Blueprint) |
 |---|---|---|
@@ -256,7 +257,7 @@ sequenceDiagram
     autonumber
     participant D1 as Delivery Thread 1
     participant D2 as Delivery Thread 2
-    participant O as Order #1048 Tags
+    participant O as Order #24148 Tags
     participant F as External API (3PL / Fraud)
 
     D1->>O: Read tags (No 'Fraud-Review-Processed')
@@ -287,14 +288,14 @@ To achieve bulletproof concurrency protection under at-least-once delivery, midd
 The payload is normalized (sorted keys, stripped whitespace) and hashed via SHA-256 before ledger lookup:
 
 ```json
-{"action":"fulfillment_hold","order":"#1048","reason":"address-verification"}
+{"action":"fulfillment_hold","order":"#24148","reason":"address-verification"}
 ```
 
 ```json
 {
-  "operation_id": "op_1048_fulfillment_hold_0001",
-  "idempotency_key": "idem_1048_tag_event_202611021102",
-  "order": "#1048",
+  "operation_id": "op_24148_fulfillment_hold_0001",
+  "idempotency_key": "idem_24148_tag_event_202611021102",
+  "order": "#24148",
   "payload_hash": "sha256:a93e99ee8fe5ee2b03f7215c377ad5192ae4241f8a1f37ab1bfde2d7dd2ce0be",
   "expected_order_version": 7,
   "state": "PENDING",
@@ -373,7 +374,7 @@ When an on-call engineer receives an alert from the automation bus, they answer 
 
 ## 8. The Four-Tier Execution Priority Ladder (State-Gated Ordering)
 
-A common mistake in Shopify Flow design is assuming that workflows execute in the visual order they are arranged in an architectural diagram. 
+A common mistake in Shopify Flow design is assuming that workflows execute in the visual order they are arranged in an architectural diagram.
 
 In Shopify's cloud infrastructure, **all workflows subscribing to the same trigger execute concurrently in parallel worker threads**. If Workflow A (Fraud Check) and Workflow B (Warehouse Routing) both listen for `Order created`, they race against each other. Furthermore, fraud analysis arrives asynchronously via a dedicated `Order risk analyzed` webhook, meaning a workflow inspecting fraud risk at `Order created` reads an unpopulated score.
 
@@ -517,7 +518,7 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 ├──────────────────────────────┬─────────────────────────────────────────┤
 │ [✔] Verified in Staging      │ SQLite coordinator, deduplication tests │
 │ [!] Documented Specification │ Shopify Flow blueprint, SQS DLQ topology│
-│ [○] Scenario Audit           │ Order #1048 62-second recursive trace   │
+│ [○] Scenario Audit           │ Order #24148 62-second recursive trace   │
 └──────────────────────────────┴─────────────────────────────────────────┘
 ```
 
@@ -525,7 +526,7 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 
 | Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
-| **Order #1048 Recursive Incident** | §1, §4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. |
+| **Order #24148 Recursive Incident** | §1, §4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. |
 | **Financial Blast Radius Model** | §3 | Modeled Scenario | Unit-economic cost model incorporating 3PL SLA credits and inventory overselling. |
 | **Negative Tag Check Blueprint** | §5 | Documented Specification | Production-ready Shopify Flow visual guard pattern. |
 | **Idempotency Triad & Ledger Contract** | §6 | **Verified in Staging** | Local SQLite coordinator harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)): **0.16ms p50** duplicate resolution. |
@@ -580,7 +581,7 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ## 12. The Architectural Takeaway
 
-Order #1048 collapsed because two reasonable automations each trusted the other to know when to stop. The retry storm shares the identical failure mode: a cautious-looking fixed schedule, executed simultaneously by hundreds of callers against a system that had just signaled for room.
+Order #24148 collapsed because two reasonable automations each trusted the other to know when to stop. The retry storm shares the identical failure mode: a cautious-looking fixed schedule, executed simultaneously by hundreds of callers against a system that had just signaled for room.
 
 Both are **failures of memory**. In the loop, the system could not see its own earlier work. In the storm, the system could not determine whether an earlier attempt had already succeeded.
 

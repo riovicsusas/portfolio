@@ -1,16 +1,16 @@
 {
-  "run_id": "2026-11-11T09-32-49-630Z-b8ae4167",
-  "started_at": "2026-11-11T09:32:49.669Z",
-  "finished_at": "2026-11-11T09:32:49.685Z",
+  "run_id": "2026-11-12T06-24-56-916Z-ef2c9323",
+  "started_at": "2026-11-12T06:24:56.987Z",
+  "finished_at": "2026-11-12T06:24:57.063Z",
   "runtime": {
-    "node": "v24.22.1",
-    "platform": "linux",
+    "node": "v24.18.0",
+    "platform": "win32",
     "arch": "x64"
   },
-  "revision": "5497f4e2ede030ac04b43e2f3823413834ecb00b",
-  "script_sha256": "4c0e6524266181cceee5255e9385a61e8b0eadedeb30d6f932f1e20328660d76",
+  "revision": "034f194ac8787ef6cf33ae562a7616465f2a8725",
+  "script_sha256": "cf6b851ecc8bc64b8b2d09ce74218764a591566aa00557fcae7ef2bf70be2eff",
   "input_sha256": {
-    "tariffs.json": "e699b03c80eff9b609f91579d42377ce6b9aa105eaa8f17c7fc10925d0ad35d5"
+    "tariffs.json": "2fd30bfb4c14e5603b486c33a5767d5f946f863386e482bff3a5848356593ae6"
   },
   "classification": "Calculated results from declared synthetic inventory, handling and freight inputs",
   "status": "passed",
@@ -232,11 +232,11 @@
         "scope": "Conditional paired-basket cost model. Carrier totals and split counts are supplied scenario inputs, not outputs of a carrier quote or routing engine."
       },
       "capstone_context": {
-        "order": "#1070",
+        "order": "#35070",
         "original_destination": "Philadelphia, PA 19102",
         "requested_destination": "San Francisco, CA 94102",
         "outbound_freight_scenario_cents": 720,
-        "scope": "The Capstone uses its separate $7.20 freight assumption. This file does not relabel a Brooklyn example as evidence for #1070, establish a carrier quote, or prove that Reno routing was erroneous."
+        "scope": "The Capstone uses its separate $7.20 freight assumption. This file does not relabel a Brooklyn example as evidence for #35070, establish a carrier quote, or prove that Reno routing was erroneous."
       }
     },
     "split_plan": {

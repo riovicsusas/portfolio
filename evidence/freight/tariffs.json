@@ -70,10 +70,10 @@
     "scope": "Conditional paired-basket cost model. Carrier totals and split counts are supplied scenario inputs, not outputs of a carrier quote or routing engine."
   },
   "capstone_context": {
-    "order": "#1070",
+    "order": "#35070",
     "original_destination": "Philadelphia, PA 19102",
     "requested_destination": "San Francisco, CA 94102",
     "outbound_freight_scenario_cents": 720,
-    "scope": "The Capstone uses its separate $7.20 freight assumption. This file does not relabel a Brooklyn example as evidence for #1070, establish a carrier quote, or prove that Reno routing was erroneous."
+    "scope": "The Capstone uses its separate $7.20 freight assumption. This file does not relabel a Brooklyn example as evidence for #35070, establish a carrier quote, or prove that Reno routing was erroneous."
   }
 }

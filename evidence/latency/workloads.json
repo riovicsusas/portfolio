@@ -1,6 +1,6 @@
 {
   "description": "Seeded local coordinator and WMS-simulator workloads; injected delays are configuration, elapsed durations are measured.",
-  "seed": 1070,
+  "seed": 35070,
   "quantile_method": "nearest-rank, ceil(p*N)-1, no interpolation",
   "full_iterations_per_workload": 10000,
   "workloads": [

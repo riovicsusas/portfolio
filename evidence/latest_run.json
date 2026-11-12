@@ -1,9 +1,9 @@
 {
-  "run_id": "2026-11-11T09-32-49-630Z-b8ae4167",
-  "started_at": "2026-11-11T09:32:49.631Z",
+  "run_id": "2026-11-12T06-24-56-916Z-ef2c9323",
+  "started_at": "2026-11-12T06:24:56.918Z",
   "runtime": {
-    "node": "v24.22.1",
-    "platform": "linux",
+    "node": "v24.18.0",
+    "platform": "win32",
     "arch": "x64"
   },
   "mode": "smoke",
@@ -12,7 +12,7 @@
     {
       "id": "freight",
       "status": "passed",
-      "duration_ms": 58,
+      "duration_ms": 154,
       "counts": {
         "passed": 15,
         "failed": 0,
@@ -20,12 +20,12 @@
         "total": 16
       },
       "report": "freight/results.json",
-      "report_sha256": "bc0115cd3c4f5e7ad5700803b7d22c00bec8f72229a5a65fe26b3fcca436ba84"
+      "report_sha256": "8fb1a5476f611f33bc268fa927bcec2e8f5f03a7271b58e655d573320119cb2f"
     },
     {
       "id": "latency",
       "status": "passed",
-      "duration_ms": 1001,
+      "duration_ms": 6829,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -33,12 +33,12 @@
         "total": 34
       },
       "report": "latency/metrics.json",
-      "report_sha256": "bc64637020c48005bbffe238f281480b16ccbc097e770f38c49d6225fe5465f7"
+      "report_sha256": "8c00196505baaf6a97014a6bd1814d658bb8d46a73b80f41b5e87337032ab98d"
     },
     {
       "id": "barcodes",
       "status": "passed",
-      "duration_ms": 43,
+      "duration_ms": 202,
       "counts": {
         "passed": 58,
         "failed": 0,
@@ -46,12 +46,12 @@
         "total": 58
       },
       "report": "barcodes/results.json",
-      "report_sha256": "b781f1ab2577b92e0116e0863d59f847e79f29aa4897d2ce2b2600198c441977"
+      "report_sha256": "c41567f58ae924c0881ad775256b8cb42a0acc4bcce32266f3ec10c997cd0b72"
     },
     {
       "id": "costs",
       "status": "passed",
-      "duration_ms": 51,
+      "duration_ms": 170,
       "counts": {
         "passed": 11,
         "failed": 0,
@@ -59,12 +59,12 @@
         "total": 11
       },
       "report": "costs/sensitivity.json",
-      "report_sha256": "5d7cc5148c9483ac532da992c4782c009f043a5b70439dd789807a80d581301c"
+      "report_sha256": "fbf0ff7715b571f0b1420c2804e1928c64523b24bb2f1ab6bd4c4334f4c59e0c"
     },
     {
       "id": "carrier-recovery",
       "status": "passed",
-      "duration_ms": 51,
+      "duration_ms": 158,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -72,7 +72,7 @@
         "total": 36
       },
       "report": "carrier-recovery/results.json",
-      "report_sha256": "efb3c378865d21739c66a46cc6686ca6da4cc492cd98819680702bd8c2178a91"
+      "report_sha256": "bb621321e2f3c8f86bd7d4213685b8fee007a37f5ad32be78dad16765a13e1f2"
     }
   ],
   "counts": {
@@ -82,27 +82,27 @@
     "total": 155
   },
   "sources_sha256": {
-    "barcodes/fixtures.json": "1883e0db793e85be1698eb6a0466c6b87354a02343df68790cf0fd55cd16345d",
+    "barcodes/fixtures.json": "b98415ae855ac01fbf3eb79f8418d5dda3225c5c84c93b68ac9fc53d8b6dc237",
     "barcodes/validate_barcodes.js": "c85193b977c2251833edb7d40ea5e1d344a8726d3470694632be81fedcd53552",
-    "carrier-recovery/contracts/provenance.json": "76c739717a85e333cd46f8140afdabddc7a8f4f01990730c2ae1091eaefba9f0",
+    "carrier-recovery/contracts/provenance.json": "d9b5f845b9cd79982c34d431ff07326b979a42ba4582be1c45fc6197745fa3ba",
     "carrier-recovery/contracts/ups_delivery_intercept_v2.openapi.json": "6bf051ea964d3c74de18c30b87505d80f9ccf2056d6809fe9cecf700355ec33b",
-    "carrier-recovery/fixtures.json": "8b7b59d06de892f294367a60bb96da78f5a58903a87abb9b1b6a2bbdcb724b46",
-    "carrier-recovery/recovery.js": "79794a828074fdc61b20e4bbfcbfa08af20dd9b619c8399ef468d1b8dd4f4f3a",
-    "carrier-recovery/synapse_adapter_schema.json": "6b396ee55b52276d97f3a43af607931454de9b6a548eff82376ad807811e48b5",
-    "carrier-recovery/test_recovery.js": "afe627f353bf6eb217ceda3480fa740465fa61c55557191cad26849052e5c66c",
-    "costs/bom_inputs.json": "6f6dcfba06f2e4de653db4345702f6e7de86ca06925e1fee07fe109578a19a35",
+    "carrier-recovery/fixtures.json": "c3012e3766113b8a0dd45dac971ebef567112a947bb627e3a58d0bfe16112325",
+    "carrier-recovery/recovery.js": "7e6a4fc7d535b09af155457b9fedc0157a5fd7135ac205e72f404a513141dcd1",
+    "carrier-recovery/synapse_adapter_schema.json": "a58a93528acda59fb364f84f14c993b62676d1b5ccfcf4ab55b9e6df1e4778ef",
+    "carrier-recovery/test_recovery.js": "5dc407a4d79d6f5ade782b0c3538ccbeee7e40362af79a1641d011ef95e0af17",
+    "costs/bom_inputs.json": "b458061b538de4e0a3501fce3c8293663bf35114c5197e7bca37bdc4aeae756c",
     "costs/money.js": "24e3fbba01f0f1ac2d051b066dcf413b6dce0de3ea220d3220dcf60b7d6ff8a3",
     "costs/run_cost_model.js": "e808812b8041542779ad8e44b267d13099afef77d2ea5a6668a1b0c1432a4bd6",
-    "freight/calculate_freight.js": "4c0e6524266181cceee5255e9385a61e8b0eadedeb30d6f932f1e20328660d76",
-    "freight/tariffs.json": "e699b03c80eff9b609f91579d42377ce6b9aa105eaa8f17c7fc10925d0ad35d5",
-    "latency/coordinator.js": "35a60b0f407c5cc7a70228fbb39f821950fd672e49203fd2daef40a71a119e67",
+    "freight/calculate_freight.js": "cf6b851ecc8bc64b8b2d09ce74218764a591566aa00557fcae7ef2bf70be2eff",
+    "freight/tariffs.json": "2fd30bfb4c14e5603b486c33a5767d5f946f863386e482bff3a5848356593ae6",
+    "latency/coordinator.js": "626bdfd22f913b9882e7eb3c21ef20c6188a3a05e6fe149fece24e6fc8742add",
     "latency/coordinator_simulator.js": "0f70189c98fa7228a7c2e8750d43ea1a4c7d7c7d8ba894c6c5691400e2a66f85",
-    "latency/restart_worker.js": "edf19e74da571134727021baf819c4da242f5ebc7cc49cd8eff3f9f265248fa1",
-    "latency/workloads.json": "772c15f44acd9715413e4621b1bb79ca6477ece7be2b7a864dc8ae83be46545e",
+    "latency/restart_worker.js": "4d51e5f1eb8ccbf505a380bb9253ee22b8f0f441d822cc5e1308aad823f4aeb8",
+    "latency/workloads.json": "d93581629d2b790f283a30f80e576644fb8844459d4cc3aaacd664427b69d365",
     "lib/report.js": "8ca7b24b4e53d93698957ac1f04a74ae6c1a01928eb831f43e9b07254e4dc110",
     "run_all.js": "78b6d7a42247fe8e7d8917dcb61497f4edd866571bd2c4b07c90dc012ee6889d",
     "test_report_accounting.js": "5975ef29627904922d908a35e52a045696ebe2a1e765980baae27608b197eb9f"
   },
-  "finished_at": "2026-11-11T09:32:50.842Z",
+  "finished_at": "2026-11-12T06:25:04.470Z",
   "status": "passed"
 }

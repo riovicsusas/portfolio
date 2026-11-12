@@ -42,11 +42,11 @@ The dossier's previously reported $445.40 handling delta and $1,106.40 total do 
 
 ## Capstone boundary
 
-Order #1070's original destination is **Philadelphia, PA 19102**, requested destination **San Francisco, CA 94102**. Its $7.20 original freight is a separate declared input. No Brooklyn routing example, carrier invoice, physical shipment or misrouting outcome is inferred from these calculations.
+Order #35070's original destination is **Philadelphia, PA 19102**, requested destination **San Francisco, CA 94102**. Its $7.20 original freight is a separate declared input. No Brooklyn routing example, carrier invoice, physical shipment or misrouting outcome is inferred from these calculations.
 
 ## Executed checks
 
-Run: `2026-11-11T09-32-49-630Z-b8ae4167` · Node v24.22.1
+Run: `2026-11-12T06-24-56-916Z-ef2c9323` · Node v24.18.0
 
 Passed: 15; failed: 0; skipped: 1.
 

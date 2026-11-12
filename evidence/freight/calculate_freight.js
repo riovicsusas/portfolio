@@ -228,6 +228,6 @@ The dossier's previously reported $445.40 handling delta and $1,106.40 total do 
 
 ## Capstone boundary
 
-Order #1070's original destination is **${input.capstone_context.original_destination}**, requested destination **${input.capstone_context.requested_destination}**. Its ${money(input.capstone_context.outbound_freight_scenario_cents)} original freight is a separate declared input. No Brooklyn routing example, carrier invoice, physical shipment or misrouting outcome is inferred from these calculations.
+Order ${input.capstone_context.order}'s original destination is **${input.capstone_context.original_destination}**, requested destination **${input.capstone_context.requested_destination}**. Its ${money(input.capstone_context.outbound_freight_scenario_cents)} original freight is a separate declared input. No Brooklyn routing example, carrier invoice, physical shipment or misrouting outcome is inferred from these calculations.
 ` : '# Workstream A — Calculation failed\n\nSee failed assertions; incomplete results must not be cited as verified.';
 suite.finish({ data: { inputs: input, split_plan: split, consolidated_plan: consolidated, cohort_model: modeledCohort, consolidation_bound: { two_parcel_zone_2_cents: zones.zone_2_per_parcel_cents * 2 + handling(2, 3), one_parcel_zone_8_cents: zones.zone_8_per_parcel_cents + handling(1, 3), savings_cents: (zones.zone_2_per_parcel_cents * 2 + handling(2, 3)) - (zones.zone_8_per_parcel_cents + handling(1, 3)) } }, markdown, sources: input.reference_candidates });

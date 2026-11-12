@@ -6,11 +6,11 @@
 
 ## 1. The Hook: Checkout Said "Order Placed." The Ledger Said −$4.52
 
-A direct-to-consumer checkout funnel can lose money in two opposite ways. It can fail loudly, with a frozen button, a silent JavaScript crash, and a customer who never returns. Or it can succeed too well, completing an order that was never worth shipping. 
+A direct-to-consumer checkout funnel can lose money in two opposite ways. It can fail loudly, with a frozen button, a silent JavaScript crash, and a customer who never returns. Or it can succeed too well, completing an order that was never worth shipping.
 
 This dossier establishes the forensic triage protocol to isolate storefront failures in under three minutes, proves the unit-economic mechanics by which stacked promotions collapse contribution margin, and derives the algorithmic floor: the lowest customer payment a product or basket can accept before the order costs the merchant money.
 
-The case in one frame: Order **#1063** was an $80.00 gross merchandise basket of one Focus Stick Packs 30-Pack at $42.00 and one Adaptogen Tincture 60ml at $38.00. The customer applied four promotions in a single checkout: `VIP20` (20% off products), `WELCOME25` ($25.00 off the order), `LOYALTY10` (a $10.80 reward credit), and `FREESHIP` (free ground shipping). 
+The case in one frame: Order **#29863** placed by customer **David Miller** (`david.miller@example.com`) was an $80.00 gross merchandise basket of one Focus Stick Packs 30-Pack at $42.00 and one Adaptogen Tincture 60ml at $38.00. The customer applied four promotions in a single checkout: `VIP20` (20% off products), `WELCOME25` ($25.00 off the order), `LOYALTY10` (a $10.80 reward credit), and `FREESHIP` (free ground shipping).
 
 The customer paid **$28.20** for physical goods that cost $21.00 just to manufacture, before accounting for warehouse pick-and-pack handling ($4.10), outbound carrier freight ($6.50), and payment processing fees ($1.12). Modeled contribution came to **−$4.52** (or **−$4.80** if an optional gateway authorization fee applies). With combinatorial combination rules enforced, that exact same basket yields **+$30.24 in net contribution**.
 
@@ -33,11 +33,12 @@ The customer paid **$28.20** for physical goods that cost $21.00 just to manufac
 ```
 
 > [!CAUTION]
-> **Controlled Failure Scenario Disclosure**: Order #1063 is an empirical failure-injection scenario executed within an isolated staging environment. The contribution calculation, unit costs, 3PL handling rates, and gateway fees represent a verified financial model. Deduplication, component BOM arithmetic, integer-cent rounding, and dynamic breakeven floors were verified against our local cost test harness ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)). Storefront DevTools error payloads and ISO 8583 decline codes represent standard payment processing specifications. §11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Controlled Failure Scenario Disclosure**: Order #29863, customer David Miller (`david.miller@example.com`), is an empirical failure-injection scenario executed within an isolated staging environment. The contribution calculation, unit costs, 3PL handling rates, and gateway fees represent a verified financial model. Deduplication, component BOM arithmetic, integer-cent rounding, and dynamic breakeven floors were verified against our local cost test harness ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)). Storefront DevTools error payloads and ISO 8583 decline codes represent standard payment processing specifications. §11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
 
 | Incident Dimension | Observed Value | Architectural Significance |
 |---|---|---|
-| **Order Profile** | #1063: $80.00 gross basket (1× Focus Stick Packs $42, 1× Adaptogen Tincture $38) | Small basket falling below the $85.00 minimum for combining product and order discounts. |
+| **Customer Profile** | David Miller (`david.miller@example.com`) | Returning loyalty tier member stacking multiple promotional codes across separate marketing campaigns. |
+| **Order Profile** | #29863: $80.00 gross basket (1× Focus Stick Packs $42, 1× Adaptogen Tincture $38) | Small basket falling below the $85.00 minimum for combining product and order discounts. |
 | **Promotions Stacked** | `VIP20`, `WELCOME25`, `LOYALTY10`, `FREESHIP` | Product, order, and shipping promotions plus loyalty credit combined with zero exclusivity. |
 | **Customer Payment** | $28.20 collected after $51.80 in total discounts | Payment landed $4.65 below the required $32.85 basket floor (§6.4). |
 | **System Signal** | Zero errors reported; checkout succeeded and shipped | Margin leaks raise no automated alarms; failure is silent by construction. |
@@ -141,7 +142,7 @@ If the cart request returns `HTTP 200 OK`, proceed to the order timeline. Paymen
 
 > [!NOTE]
 > **ISO 8583 Mapping Context**: Processor integrations (Stripe, Adyen, Shopify Payments) map internal decline codes to ISO 8583 response codes according to their proprietary banking rails.
-> 
+>
 > † Published network code tables list `75` as *"allowable number of PIN tries exceeded"*, and list declines for exceeding frequency limits under `65`. The `75` mapping for the velocity decline is retained here as the scenario's convention and must be verified before production reliance.
 
 ### 3.3 Fulfillment Queue Webhook Audit (<180s)
@@ -285,11 +286,11 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 
 ---
 
-## 6. Following Order #1063 (The Collision Simulation)
+## 6. Following Order #29863 (The Collision Simulation)
 
 ### 6.1 Baseline Order Configuration
 
-- **Order Identifier**: `#1063`
+- **Order Identifier**: `#29863`
 - **Line Item 1**: 1× Focus Stick Packs 30-Pack (`SYN-FSTK-MY`) = $42.00 (COGS: $8.50)
 - **Line Item 2**: 1× Adaptogen Tincture 60ml (`SYN-TNCT-AM`) = $38.00 (COGS: $12.50)
 - **Gross Merchandise Value**: **$80.00**
@@ -337,7 +338,7 @@ flowchart TD
 ```
 
 ```text
-ORDER #1063: PRE-FIX FINANCIAL DISASTER AUDIT
+ORDER #29863: PRE-FIX FINANCIAL DISASTER AUDIT
   Gross Merchandise Value:                  $80.00
   Discounts Applied: (-$16.00 - $25.00 - $10.80): -$51.80
   ───────────────────────────────────────────────────────
@@ -361,7 +362,7 @@ With the 3×3 Combinatorial Matrix enforced:
 4. **Shipping Qualification**: Because the post-discount subtotal ($64.00) clears the $\ge \$50.00$ threshold (Rule 3), Free Ground Shipping is granted ($6.50 freight absorbed by merchant).
 
 ```text
-ORDER #1063: POST-FIX PROTECTED CONTRIBUTION
+ORDER #29863: POST-FIX PROTECTED CONTRIBUTION
   Customer Payment Collected:               $64.00
   Cost of Goods Sold (COGS):               -$21.00
   3PL Warehouse Handling:                   -$4.10
@@ -378,7 +379,7 @@ ORDER #1063: POST-FIX PROTECTED CONTRIBUTION
 
 Per-SKU floors are essential benchmarks, but true margin defense requires evaluating the **basket-level floor**.
 
-For Order #1063, total fixed physical costs are:
+For Order #29863, total fixed physical costs are:
 $$\text{Fixed Costs} = \text{COGS } (\$21.00) + \text{3PL Handling } (\$4.10) + \text{Freight } (\$6.50) = \$31.60$$
 
 Using discrete whole-cent search with half-up rounded gateway fees:
@@ -391,7 +392,7 @@ Using discrete whole-cent search with half-up rounded gateway fees:
   $$\text{Fee} = \text{round}(0.029 \times \$32.84 + \$0.30) = \text{round}(\$0.95236 + \$0.30) = \text{round}(\$1.25236) = \$1.25$$
   $$\text{Contribution} = \$32.84 - \$31.60 - \$1.25 = \mathbf{-\$0.01} \quad (\text{Negative: DEFICIT})$$
 
-Therefore, the exact dynamic discrete floor for this basket is **$32.85**. 
+Therefore, the exact dynamic discrete floor for this basket is **$32.85**.
 
 The maximum allowable discount the basket could withstand without bleeding cash was:
 $$\text{Max Allowable Discount} = \$80.00 - \$32.85 = \$47.15 \quad (58.94\%)$$
@@ -400,7 +401,7 @@ The customer was granted **$51.80 in total discounts**, exceeding the breakeven 
 
 ### 6.5 Multi-Item Box Economy of Scale
 
-Why does the basket floor ($32.85) differ from the sum of the individual SKU floors ($18.90 + $23.02 = $41.92)? 
+Why does the basket floor ($32.85) differ from the sum of the individual SKU floors ($18.90 + $23.02 = $41.92)?
 
 Adding individual SKU floors overstates the basket floor by **$9.07**. In a multi-item checkout, the two items share a single physical parcel: **$4.10 in 3PL handling and $6.50 in freight**, rather than two separate pick/box charges ($7.40) and two individual parcel shipments ($11.70). Evaluating margin dynamically at the *basket level* captures these fulfillment economies of scale, allowing merchants to safely approve higher combined discounts than isolated SKU modeling would permit.
 
@@ -410,7 +411,7 @@ Adding individual SKU floors overstates the basket floor by **$9.07**. In a mult
 
 ### 7.1 Root-Cause Failure Mode Matrix
 
-| # | Failure Mode | Root-Cause Class | Rule Breached | Architectural Guard | Seen in Order #1063 |
+| # | Failure Mode | Root-Cause Class | Rule Breached | Architectural Guard | Seen in Order #29863 |
 |:---:|---|---|:---:|---|:---:|
 | **1** | Two discounts from same class stack | Missing intra-class exclusivity | Rule 1 | Class-exclusivity gate at checkout boundary (§4.3, §4.4). | Conditional (`LOYALTY10` if order-class). |
 | **2** | Order discount stacks on small cart | Missing inter-class minimum | Rule 2 ($85.00) | Validation API reads cart subtotal before permitting mix. | **YES**: `WELCOME25` on $80 cart with `VIP20`. |
@@ -424,7 +425,7 @@ The decisive failure was **Defect #4**. Rules 1 through 3 are fast, legible prox
 
 ## 8. What the Floor Is Worth (Financial Exposure Scaling)
 
-### 8.1 Financial Swing on Order #1063
+### 8.1 Financial Swing on Order #29863
 
 | Financial Metric | Pre-Fix (Unrestricted Collision) | Post-Fix (Matrix Protected) | Net Operational Swing |
 |---|:---:|:---:|:---:|
@@ -437,7 +438,7 @@ Enforcing combinatorial rules swings this single order by **+$34.76**.
 
 ### 8.2 Scaled Campaign Exposure Model
 
-To an executive, a −$4.52 loss on a single order may appear negligible. Consider an uncontrolled marketing or affiliate campaign generating 1,000 stacked orders matching Order #1063:
+To an executive, a −$4.52 loss on a single order may appear negligible. Consider an uncontrolled marketing or affiliate campaign generating 1,000 stacked orders matching Order #29863:
 
 | Campaign Exposure Metric | Calculation | Financial Result |
 |---|---|---:|
@@ -485,7 +486,7 @@ Dynamic floors are highly sensitive to outbound carrier freight. Holding kitted 
 | **Processing Fee Base** | Includes shipping & taxes | Gateway charges percentage fee on gross transaction capture. | §5 |
 | **Contribution Revenue Base** | Excludes remitted sales tax | Sales tax collected is a fiduciary liability, not merchant revenue. | §5 |
 | **Floor Search Algorithm** | Whole cents, asserting preceding cent is negative | Resolves discrete whole-cent breakeven payment. | §5, §6.4 |
-| **Order #1063 Cost Inputs** | COGS $21.00; 3PL $4.10; Freight $6.50 | Ground-truth direct cost fixtures for basket floor derivation. | §6 |
+| **Order #29863 Cost Inputs** | COGS $21.00; 3PL $4.10; Freight $6.50 | Ground-truth direct cost fixtures for basket floor derivation. | §6 |
 | **Triage Time Budget** | Tier 1: 60s; Tier 2: 120s; Tier 3: 180s | Enforces disciplined, systematic forensic investigation. | §3 |
 | **Tier 1 MTTI Target** | Under 60 seconds | Cart failures must be immediately isolated in browser Network tab. | §3.1 |
 
@@ -510,7 +511,7 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 ├──────────────────────────────┬─────────────────────────────────────────┤
 │ [✔] Executed Locally         │ Cost arithmetic: 11 of 11 checks passed │
 │ [!] Derived in Dossier       │ Basket-level floor ($32.85) derived     │
-│ [○] Staged Scenario          │ Order #1063 modeled contribution trace  │
+│ [○] Staged Scenario          │ Order #29863 modeled contribution trace  │
 │ [~] Specified Architecture   │ 3x3 ruleset & Shopify Functions WASM    │
 └──────────────────────────────┴─────────────────────────────────────────┘
 ```
@@ -522,7 +523,7 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 | **Three-Minute Diagnostic Protocol** | §3 | Documented Specification | Standardized Chrome DevTools and ISO 8583 payment gateway triage protocol. |
 | **3×3 Discount Matrix & Rules** | §4 | Documented Specification | Combinatorial exclusivity ruleset designed for Shopify Functions enforcement. |
 | **Contribution Margin Floor Engine** | §5 | **Verified in Staging** | Local cost test suite ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Integer-cent discrete search with half-up rounding. |
-| **Order #1063 Collision & Campaign Model** | §6, §8.1, §8.2 | Staged Scenario | Modeled contribution calculation; 1,000-order campaign scaling is arithmetic. |
+| **Order #29863 Collision & Campaign Model** | §6, §8.1, §8.2 | Staged Scenario | Modeled contribution calculation; 1,000-order campaign scaling is arithmetic. |
 | **Basket-Level Floor ($32.85)** | §6.4 | **Verified in Staging** | Proved discrete whole-cent breakeven boundary where $32.85 yields $0.00 and $32.84 yields -$0.01. |
 | **Kitted-Bundle Freight Sensitivity** | §8.3 | **Verified in Staging** | Cost model runner ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Evaluated across $4.50 to $17.80 freight ranges. |
 
@@ -567,7 +568,7 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ## 12. The Architectural Takeaway
 
-Order #1063 completed without a single error. The customer was served, the payment cleared without friction, the warehouse picked the box, and the financial ledger showed an unrecoverable loss.
+Order #29863 completed without a single error. The customer was served, the payment cleared without friction, the warehouse picked the box, and the financial ledger showed an unrecoverable loss.
 
 That is what separates margin leaks from outages: **they do not alarm**. When a database crashes or an API rate limit trips, monitoring dashboards turn red and on-call engineers wake up. When a promotion stack sells an order below cost, the storefront celebrates an increment to the sales counter, while cash silently drains out of the business.
 

@@ -1,18 +1,18 @@
 {
-  "run_id": "2026-11-11T09-32-49-630Z-b8ae4167",
-  "started_at": "2026-11-11T09:32:49.732Z",
-  "finished_at": "2026-11-11T09:32:50.686Z",
+  "run_id": "2026-11-12T06-24-56-916Z-ef2c9323",
+  "started_at": "2026-11-12T06:24:57.137Z",
+  "finished_at": "2026-11-12T06:25:03.704Z",
   "runtime": {
-    "node": "v24.22.1",
-    "platform": "linux",
+    "node": "v24.18.0",
+    "platform": "win32",
     "arch": "x64"
   },
-  "revision": "5497f4e2ede030ac04b43e2f3823413834ecb00b",
+  "revision": "034f194ac8787ef6cf33ae562a7616465f2a8725",
   "script_sha256": "0f70189c98fa7228a7c2e8750d43ea1a4c7d7c7d8ba894c6c5691400e2a66f85",
   "input_sha256": {
-    "workloads.json": "772c15f44acd9715413e4621b1bb79ca6477ece7be2b7a864dc8ae83be46545e",
-    "coordinator.js": "35a60b0f407c5cc7a70228fbb39f821950fd672e49203fd2daef40a71a119e67",
-    "restart_worker.js": "edf19e74da571134727021baf819c4da242f5ebc7cc49cd8eff3f9f265248fa1"
+    "workloads.json": "d93581629d2b790f283a30f80e576644fb8844459d4cc3aaacd664427b69d365",
+    "coordinator.js": "626bdfd22f913b9882e7eb3c21ef20c6188a3a05e6fe149fece24e6fc8742add",
+    "restart_worker.js": "4d51e5f1eb8ccbf505a380bb9253ee22b8f0f441d822cc5e1308aad823f4aeb8"
   },
   "classification": "Measured local SQLite coordinator and fault-injected WMS simulator; no vendor or SQS calls",
   "status": "passed",
@@ -163,7 +163,7 @@
   "sources": [],
   "data": {
     "profile": "smoke",
-    "seed": 1070,
+    "seed": 35070,
     "quantile_method": "nearest-rank, ceil(p*N)-1, no interpolation",
     "measurement": "Local request-response elapsed time, all outcomes; disaggregated by outcome. Injected delays are test parameters.",
     "functional_cases": [
@@ -243,7 +243,7 @@
           1,
           3
         ],
-        "seed": 1070,
+        "seed": 35070,
         "attempts": 50,
         "outcomes": {
           "HOLD_CONFIRMED": 50
@@ -252,22 +252,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 50,
-          "min": 3.0671,
-          "p50": 4.873,
-          "p95": 6.5627,
-          "p99": 6.6896,
-          "max": 6.6896,
-          "mean": 4.9125
+          "min": 12.5081,
+          "p50": 31.1525,
+          "p95": 36.0857,
+          "p99": 37.631,
+          "max": 37.631,
+          "mean": 30.2794
         },
         "by_outcome_ms": {
           "HOLD_CONFIRMED": {
             "count": 50,
-            "min": 3.0671,
-            "p50": 4.873,
-            "p95": 6.5627,
-            "p99": 6.6896,
-            "max": 6.6896,
-            "mean": 4.9125
+            "min": 12.5081,
+            "p50": 31.1525,
+            "p95": 36.0857,
+            "p99": 37.631,
+            "max": 37.631,
+            "mean": 30.2794
           }
         }
       },
@@ -284,7 +284,7 @@
           1,
           5
         ],
-        "seed": 1071,
+        "seed": 35071,
         "attempts": 200,
         "outcomes": {
           "HOLD_CONFIRMED": 200
@@ -293,22 +293,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 200,
-          "min": 4.6404,
-          "p50": 16.3113,
-          "p95": 29.4091,
-          "p99": 35.3097,
-          "max": 37.8213,
-          "mean": 16.875
+          "min": 20.1295,
+          "p50": 102.1469,
+          "p95": 222.8242,
+          "p99": 244.4642,
+          "max": 279.1448,
+          "mean": 114.593
         },
         "by_outcome_ms": {
           "HOLD_CONFIRMED": {
             "count": 200,
-            "min": 4.6404,
-            "p50": 16.3113,
-            "p95": 29.4091,
-            "p99": 35.3097,
-            "max": 37.8213,
-            "mean": 16.875
+            "min": 20.1295,
+            "p50": 102.1469,
+            "p95": 222.8242,
+            "p99": 244.4642,
+            "max": 279.1448,
+            "mean": 114.593
           }
         }
       },
@@ -325,7 +325,7 @@
           5,
           15
         ],
-        "seed": 1072,
+        "seed": 35072,
         "attempts": 40,
         "outcomes": {
           "HOLD_CONFIRMED": 40
@@ -334,22 +334,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 40,
-          "min": 7.3153,
-          "p50": 12.7064,
-          "p95": 19.122,
-          "p99": 20.1494,
-          "max": 20.1494,
-          "mean": 13.6363
+          "min": 25.8858,
+          "p50": 59.9076,
+          "p95": 85.8095,
+          "p99": 91.7093,
+          "max": 91.7093,
+          "mean": 61.9315
         },
         "by_outcome_ms": {
           "HOLD_CONFIRMED": {
             "count": 40,
-            "min": 7.3153,
-            "p50": 12.7064,
-            "p95": 19.122,
-            "p99": 20.1494,
-            "max": 20.1494,
-            "mean": 13.6363
+            "min": 25.8858,
+            "p50": 59.9076,
+            "p95": 85.8095,
+            "p99": 91.7093,
+            "max": 91.7093,
+            "mean": 61.9315
           }
         }
       },
@@ -367,7 +367,7 @@
           3
         ],
         "duplicate_pairs": true,
-        "seed": 1073,
+        "seed": 35073,
         "attempts": 100,
         "outcomes": {
           "PENDING": 50,
@@ -377,31 +377,31 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 100,
-          "min": 0.03,
-          "p50": 0.0701,
-          "p95": 8.1744,
-          "p99": 8.8228,
-          "max": 9.2011,
-          "mean": 3.3272
+          "min": 0.0513,
+          "p50": 1.8046,
+          "p95": 78.7995,
+          "p99": 88.8779,
+          "max": 89.6806,
+          "mean": 28.5281
         },
         "by_outcome_ms": {
           "PENDING": {
             "count": 50,
-            "min": 0.03,
-            "p50": 0.0347,
-            "p95": 0.0675,
-            "p99": 0.0701,
-            "max": 0.0701,
-            "mean": 0.0368
+            "min": 0.0513,
+            "p50": 0.194,
+            "p95": 0.5361,
+            "p99": 1.8046,
+            "max": 1.8046,
+            "mean": 0.2568
           },
           "HOLD_CONFIRMED": {
             "count": 50,
-            "min": 4.0295,
-            "p50": 6.6545,
-            "p95": 8.7197,
-            "p99": 9.2011,
-            "max": 9.2011,
-            "mean": 6.6175
+            "min": 14.7161,
+            "p50": 57.7586,
+            "p95": 86.6225,
+            "p99": 89.6806,
+            "max": 89.6806,
+            "mean": 56.7993
           }
         }
       },
@@ -419,7 +419,7 @@
           0,
           0
         ],
-        "seed": 1074,
+        "seed": 35074,
         "attempts": 20,
         "outcomes": {
           "CUTOFF_REJECTED": 20
@@ -428,22 +428,22 @@
         "reconciled": 0,
         "request_response_all_outcomes_ms": {
           "count": 20,
-          "min": 0.4753,
-          "p50": 0.6164,
-          "p95": 0.8223,
-          "p99": 0.8524,
-          "max": 0.8524,
-          "mean": 0.6234
+          "min": 3.9029,
+          "p50": 5.0876,
+          "p95": 6.5714,
+          "p99": 7.7945,
+          "max": 7.7945,
+          "mean": 5.3646
         },
         "by_outcome_ms": {
           "CUTOFF_REJECTED": {
             "count": 20,
-            "min": 0.4753,
-            "p50": 0.6164,
-            "p95": 0.8223,
-            "p99": 0.8524,
-            "max": 0.8524,
-            "mean": 0.6234
+            "min": 3.9029,
+            "p50": 5.0876,
+            "p95": 6.5714,
+            "p99": 7.7945,
+            "max": 7.7945,
+            "mean": 5.3646
           }
         }
       },
@@ -461,7 +461,7 @@
           5
         ],
         "timeout_after_apply": true,
-        "seed": 1075,
+        "seed": 35075,
         "attempts": 30,
         "outcomes": {
           "UNKNOWN": 30
@@ -470,22 +470,22 @@
         "reconciled": 30,
         "request_response_all_outcomes_ms": {
           "count": 30,
-          "min": 4.1587,
-          "p50": 6.0062,
-          "p95": 8.611,
-          "p99": 8.9134,
-          "max": 8.9134,
-          "mean": 6.0771
+          "min": 15.6203,
+          "p50": 33.0023,
+          "p95": 44.7662,
+          "p99": 45.287,
+          "max": 45.287,
+          "mean": 32.4597
         },
         "by_outcome_ms": {
           "UNKNOWN": {
             "count": 30,
-            "min": 4.1587,
-            "p50": 6.0062,
-            "p95": 8.611,
-            "p99": 8.9134,
-            "max": 8.9134,
-            "mean": 6.0771
+            "min": 15.6203,
+            "p50": 33.0023,
+            "p95": 44.7662,
+            "p99": 45.287,
+            "max": 45.287,
+            "mean": 32.4597
           }
         }
       }
