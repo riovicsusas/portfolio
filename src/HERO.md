@@ -30,9 +30,9 @@ Below 768px, `src/hero.tsx` uses `matchMedia` to mount the lazy-loaded `src/mobi
 Reduced motion renders static badges instead of starting the physics engine. The four section cards use stacked page previews and technical-stack metadata. Local cover art uses Lucide icons rather than external stock images. Gmail and LinkedIn retain their destinations; WhatsApp and Upwork use Contact until direct profile details are supplied. Run `npm ci`, `npm run typecheck`, and `npm run build` after component edits; retain the complete regenerated `assets/hero/` directory for static Pages deployment.
 
 
-## Mobile section cards
+## Section card component
 
-`components/ui/card-25.tsx` adapts the supplied https://21st.dev/@ravikatiyar162/components/card-25 reference. All four cards link to existing sections and are vertically stacked at the mobile content width. Page screenshots in `images/section-previews/` supply local preview imagery; regenerate them after destination-page design changes. Metadata contains relevant tools instead of hiking statistics. Hover, keyboard focus, and touch press fan out the images; reduced motion removes the transition. The previous mobile quick-link grid and horizontal carousel are no longer mounted.
+`components/ui/card-25.tsx` adapts the supplied https://21st.dev/@ravikatiyar162/components/card-25 reference. All four cards link to existing sections and are vertically stacked at the mobile content width. Hover, keyboard focus, and touch press fan out the images; reduced motion removes the transition.
 
 
 ## Shared section cards and contact-only glow

@@ -1040,11 +1040,28 @@
 
     /* ── Read ?file= param ── */
     var params = new URLSearchParams(window.location.search);
-    var filePath = params.get('file'); // e.g. master-dossiers/MasterDossier-Domain1-...md
+    var filePath = params.get('file');
 
     if (!filePath) {
-      showError('No <code>?file=</code> parameter provided. Please link here with <code>?file=master-dossiers/YourDossier.md</code>');
+      showError('No <code>?file=</code> parameter provided. Open a dossier from the Projects page or use a link such as <code>?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md</code>.');
       return;
+    }
+
+    // Keep previously shared viewer links working after removing the duplicate dossiers.
+    var legacyDossierFolders = new Map([
+      ['MasterDossier-Capstone-AsynchronousOrderMutation.md', 'capstone'],
+      ['MasterDossier-Domain1-OrderStateMachineAndPONR.md', 'domain-1-order-lifecycle'],
+      ['MasterDossier-Domain2-MultiNodeLogisticsRouting.md', 'domain-2-order-routing'],
+      ['MasterDossier-Domain3-BulkCatalogSchemaGovernance.md', 'domain-3-bulk-data-management'],
+      ['MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md', 'domain-4-business-automation'],
+      ['MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md', 'domain-5-technical-diagnosis'],
+      ['MasterDossier-Domain6-FrontlineHelpdeskAutomation.md', 'domain-6-frontline-helpdesk'],
+    ]);
+    var legacyPrefix = 'master-dossiers/';
+    if (filePath.startsWith(legacyPrefix)) {
+      var legacyFilename = filePath.slice(legacyPrefix.length);
+      var canonicalFolder = legacyDossierFolders.get(legacyFilename);
+      if (canonicalFolder) filePath = canonicalFolder + '/' + legacyFilename;
     }
 
     /* ── Fetch the markdown file ── */

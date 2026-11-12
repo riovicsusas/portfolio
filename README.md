@@ -49,8 +49,7 @@ Each dossier is an in-depth systems specification combining operational SOPs, ma
 ├── domain-3-bulk-data-management/# Matrixify Schema Governance & Migration
 ├── domain-4-business-automation/# Webhook Triage & Shopify Flow Systems
 ├── domain-5-technical-diagnosis/# DevTools Cart Diagnostics & Margin Defense
-├── domain-6-frontline-helpdesk/ # Gorgias Macros & HTTP Automation Actions
-└── master-dossiers/             # Central Repository of Master Dossiers
+└── domain-6-frontline-helpdesk/ # Gorgias Macros & HTTP Automation Actions
 ```
 
 ---
