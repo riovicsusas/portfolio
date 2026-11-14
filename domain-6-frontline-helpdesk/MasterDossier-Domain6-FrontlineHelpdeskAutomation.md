@@ -35,14 +35,14 @@ Legend:  * event   # hold committed   ^ wave release (15-minute cycle)
 
 The diagram places the email immediately after a wave release. In practice, the first wave arrives somewhere between 0 and 15 minutes after ingestion, which is why the hold must be committed in seconds rather than minutes.
 
-By the time an agent opens the ticket, the warehouse can have printed the shipping label, picked the inventory, and staged the parcel for carrier pickup. The order then mis-ships to the customer's previous address. The merchant pays for the original freight and the replacement reshipment, and writes off 100% of the manufacturing COGS for a consumable it cannot restock (the scrap treatment is explained in §9.3).
+By the time an agent opens the ticket, the warehouse can have printed the shipping label, picked the inventory, and staged the parcel for carrier pickup. The order then mis-ships to the customer's previous address. The merchant pays for the original freight and the replacement reshipment, and writes off 100% of the manufacturing COGS for a consumable it cannot restock (the scrap treatment is explained in Section 9.3).
 
 The architectural solution is simple to state and exacting to execute: **a helpdesk automation rule reads the customer's intent the instant the email arrives and commits an asynchronous fulfillment hold in Shopify within 8.4 seconds—long before any agent touches the ticket.**
 
 An API hold in Shopify is not yet a physical stop on the warehouse floor. The ticket is therefore tagged `CS-ADDR-HOLD-PENDING` immediately, and frontline agents are programmatically barred from editing the order until the warehouse confirms a verified queue lock.
 
 > [!CAUTION]
-> **Controlled Failure Scenario Disclosure**: The customer profile Alex Rivera (`alex.rivera@example.com`), the first-response times, the 8.4-second hold commitment latency, the 18 monthly incident counts, and the avoided-cost figures are scenario planning inputs. They are not measurements. The offline carrier-recovery test harness ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)) checks the UPS Delivery Intercept v2 wire contract, the boundary between electronic acceptance and physical recovery, and event-driven state transitions. It does not measure helpdesk response times or establish achieved support savings. The walkthroughs in §5 are reference examples built from the stated rules, not recorded runs. No authenticated Gorgias, Shopify Plus, or ShipBob cloud credentials were used, and no production PII was used. §11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Controlled Failure Scenario Disclosure**: The customer profile Alex Rivera (`alex.rivera@example.com`), the first-response times, the 8.4-second hold commitment latency, the 18 monthly incident counts, and the avoided-cost figures are scenario planning inputs. They are not measurements. The offline carrier-recovery test harness ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)) checks the UPS Delivery Intercept v2 wire contract, the boundary between electronic acceptance and physical recovery, and event-driven state transitions. It does not measure helpdesk response times or establish achieved support savings. The walkthroughs in Section 5 are reference examples built from the stated rules, not recorded runs. No authenticated Gorgias, Shopify Plus, or ShipBob cloud credentials were used, and no production PII was used. Section 11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
 
 | Incident Dimension | Observed Scenario Value | Architectural Significance |
 |---|---|---|
@@ -50,8 +50,8 @@ An API hold in Shopify is not yet a physical stop on the warehouse floor. The ti
 | **The Core Seam** | Support and warehouse run on disconnected clocks | 252-minute human FRT against 15-minute automated WMS wave releases. |
 | **Fulfillment Latency Race** | 16.8 wave cycles elapse before human triage | Orders can pass the Point of No Return (PONR) before support intervenes. |
 | **Automated Intercept Velocity** | **8.4 seconds** from email ingest to committed hold | A rule places the hold request before the first wave is likely to release the order. |
-| **Financial Blast Radius** | **$76.00** itemized direct cost ($233.33 fully loaded) | Prevents consumable scrap write-offs, dual freight, and carrier intercept fees (§9). |
-| **Concurrency Safeguard** | Four ticket outcomes: `PENDING`, `APPLIED`, `REJECTED`, `UNKNOWN` | Only `APPLIED`, backed by a verified pre-wave warehouse lock, permits an address edit. §4 maps each tag to its coordinator state. |
+| **Financial Blast Radius** | **$76.00** itemized direct cost ($233.33 fully loaded) | Prevents consumable scrap write-offs, dual freight, and carrier intercept fees (Section 9). |
+| **Concurrency Safeguard** | Four ticket outcomes: `PENDING`, `APPLIED`, `REJECTED`, `UNKNOWN` | Only `APPLIED`, backed by a verified pre-wave warehouse lock, permits an address edit. Section 4 maps each tag to its coordinator state. |
 
 ---
 
@@ -166,7 +166,7 @@ A hold request dispatched to a distributed warehouse has four possible states. T
 | `CS-ADDR-HOLD-REJECTED` | `REJECTED` | WMS rejected hold; order already wave-released or picked past PONR. | Escalate to carrier package intercept; pre-populate Macro `M-04`. | **DO NOT edit address in Shopify** (will desync from printed label). |
 | `CS-ADDR-HOLD-UNKNOWN` | `UNKNOWN` | Gateway timeout (`HTTP 504`); physical outcome is unknown. | Escalate to TechOps lead immediately before the warehouse cutoff. | **DO NOT guess outcome.**<br/>Do not confirm cancellation to customer. |
 
-At the middleware layer, a hold keeps the same operation ID, normalized payload hash, and expected order version across retries. A duplicate delivery with the same ID and payload gets the current or stored result, so it does not dispatch another hold. A conflicting payload or stale version is rejected. After a timeout, TechOps checks authoritative warehouse state before replay. [Domain 4 §§6.3–6.4](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) shows the request and ledger for the separate Order #24148 example.
+At the middleware layer, a hold keeps the same operation ID, normalized payload hash, and expected order version across retries. A duplicate delivery with the same ID and payload gets the current or stored result, so it does not dispatch another hold. A conflicting payload or stale version is rejected. After a timeout, TechOps checks authoritative warehouse state before replay. [Domain 4 Sections 6.3–6.4](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) shows the request and ledger for the separate Order #24148 example.
 
 ```mermaid
 flowchart TD
@@ -272,8 +272,8 @@ A senior systems architect must evaluate automation rules as a critic, looking f
                                  'CS-ADDR-HOLD-REJECTED', 'CS-ADDR-HOLD-UNKNOWN']
    ```
    Alternatively, reuse a single operation identity per ticket so repeated requests return the existing state instead of submitting again.
-3. **`in_progress` Encompasses Unsafe Stages**: Shopify marks an order `in_progress` from the moment it is allocated until carrier induction. The rule correctly fires on `in_progress` to discover warehouse state, relying on the WMS adapter to return `CS-ADDR-HOLD-REJECTED` if the order is already in picking bins. Consequently, `PENDING` is never safe to act on, which is why §4 strictly forbids edits in that state.
-4. **Address-Only Regex Scope**: R-01's regex pattern is address-only with no cancellation terms, yet §2.2 routes cancellations through the same freeze. Pre-PONR cancellation holds therefore depend on the intent classifier.
+3. **`in_progress` Encompasses Unsafe Stages**: Shopify marks an order `in_progress` from the moment it is allocated until carrier induction. The rule correctly fires on `in_progress` to discover warehouse state, relying on the WMS adapter to return `CS-ADDR-HOLD-REJECTED` if the order is already in picking bins. Consequently, `PENDING` is never safe to act on, which is why Section 4 strictly forbids edits in that state.
+4. **Address-Only Regex Scope**: R-01's regex pattern is address-only with no cancellation terms, yet Section 2.2 routes cancellations through the same freeze. Pre-PONR cancellation holds therefore depend on the intent classifier.
 
 ---
 
@@ -314,7 +314,7 @@ A senior systems architect must evaluate automation rules as a critic, looking f
 * **Pre-condition**: Ticket is tagged `CS-ADDR-HOLD-REJECTED` (order already picked, packed, or manifested).
 * **Execution Checklist**:
   1. Inform customer that physical dispatch occurred before modification cutoff.
-  2. If tracking is active, check UPS Delivery Intercept v2 eligibility. If eligible, submit intercept return request (`POST /api/deliveryintercept/v2/return/{tracking_number}`). Route and method are checked offline against the pinned UPS snapshot (§11.2).
+  2. If tracking is active, check UPS Delivery Intercept v2 eligibility. If eligible, submit intercept return request (`POST /api/deliveryintercept/v2/return/{tracking_number}`). Route and method are checked offline against the pinned UPS snapshot (Section 11.2).
   3. Send Macro M-04 response:
      > *"Hi {{ticket.customer.first_name}}, our fulfillment center moves rapidly, and Order #{{order.name}} has already been packed and dispatched past the physical modification cutoff. We have requested a carrier return-to-sender with {{order.carrier}}. If the package arrives at your prior address, please mark it Return to Sender, and we will dispatch a replacement to your updated address."*
 
@@ -403,14 +403,14 @@ To maintain absolute fiduciary rigor, we compare the **Conservative Itemized Bas
 
 | Financial Ledger Branch | Avoided Cost / Incident | Monthly Avoided Toll (18 Incidents) | Evidentiary Basis |
 |---|:---:|:---:|---|
-| **Conservative Itemized Baseline** | **$76.00** | **$1,368.00 / month** | The four direct-cost components in §9.2 sum to $76.00 per event. The monthly model multiplies that amount by 18 incidents. |
+| **Conservative Itemized Baseline** | **$76.00** | **$1,368.00 / month** | The four direct-cost components in Section 9.2 sum to $76.00 per event. The monthly model multiplies that amount by 18 incidents. |
 | **Un-Itemized Soft Increment** | $157.33 | $2,831.94 / month | Customer concession credits, churn mitigation, and chargeback avoidance without itemized breakdown (67.4% of total). |
 | **Fully Loaded Planning Model** | **$233.33** | **$4,199.94 / month** | At 18 incidents per month and $233.33 per incident, the planning estimate is $4,199.94 per month, or approximately $4,200 to the nearest dollar. |
 
 The figure fully supportable from printed inputs is **$1,368.00 a month**.
 
 > [!NOTE]
-> **Regulatory Consumable Context (21 CFR Part 111, Subpart N)**: The ledger books the $28.40 kitted COGS as a total cash loss because a mis-delivered consumable that returns through a carrier has broken Synapse's chain of custody. Under FDA Current Good Manufacturing Practice (cGMP) regulations governing dietary supplements (21 CFR Part 111, Subpart N), returned product must be quarantined upon receipt (§111.510) until quality control completes a formal material review. The default regulatory outcome is destruction or suitable disposal (§111.515). Salvage for redistribution (§111.520) or reprocessing (§111.525) is prohibited unless explicitly approved under rigorous testing. This ledger reflects standard cGMP compliance, expensing the returned product as scrap write-off.
+> **Regulatory Consumable Context (21 CFR Part 111, Subpart N)**: The ledger books the $28.40 kitted COGS as a total cash loss because a mis-delivered consumable that returns through a carrier has broken Synapse's chain of custody. Under FDA Current Good Manufacturing Practice (cGMP) regulations governing dietary supplements (21 CFR Part 111, Subpart N), returned product must be quarantined upon receipt (Section 111.510) until quality control completes a formal material review. The default regulatory outcome is destruction or suitable disposal (Section 111.515). Salvage for redistribution (Section 111.520) or reprocessing (Section 111.525) is prohibited unless explicitly approved under rigorous testing. This ledger reflects standard cGMP compliance, expensing the returned product as scrap write-off.
 
 ---
 
@@ -442,13 +442,13 @@ In accordance with rigorous systems architecture standards, this dossier clearly
 
 | Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
 |---|:---:|---|---|
-| **Fulfillment Hold Actions** (`freeze_order_mutation`, `release_order_hold`) | §3 | Documented Specification | Standard Shopify Admin API fulfillment order hold/release schema. |
-| **Four-Outcome State Taxonomy** | §4 | Documented Specification | Tag taxonomy designed to eliminate frontline race conditions. |
-| **Rules Engine (R-01, R-02)** | §6 | Documented Specification | Regex and boolean rule logic specifying intent capture. |
-| **Frontline Macros (M-01–M-04)** | §7 | Documented Specification | Operational checklists and customer communication playbooks. |
-| **Avoided Cost Ledger ($76 / $233)** | §9 | Modeled Scenario | Financial ledger separating itemized direct costs from soft concessions. |
-| **UPS Intercept Contract Suite** | §7.4, §11.2 | **Executed Offline** | Offline contract checks against official UPS Delivery Intercept v2 JSON schema ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)). |
-| **Recovery Event-Driven Simulator** | §7.4, §11.2 | **Executed Locally** | Local event simulator testing state transitions, duplicate safety, and terminal immutability ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)). |
+| **Fulfillment Hold Actions** (`freeze_order_mutation`, `release_order_hold`) | Section 3 | Documented Specification | Standard Shopify Admin API fulfillment order hold/release schema. |
+| **Four-Outcome State Taxonomy** | Section 4 | Documented Specification | Tag taxonomy designed to eliminate frontline race conditions. |
+| **Rules Engine (R-01, R-02)** | Section 6 | Documented Specification | Regex and boolean rule logic specifying intent capture. |
+| **Frontline Macros (M-01–M-04)** | Section 7 | Documented Specification | Operational checklists and customer communication playbooks. |
+| **Avoided Cost Ledger ($76 / $233)** | Section 9 | Modeled Scenario | Financial ledger separating itemized direct costs from soft concessions. |
+| **UPS Intercept Contract Suite** | Sections 7.4 and 11.2 | **Executed Offline** | Offline contract checks against official UPS Delivery Intercept v2 JSON schema ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)). |
+| **Recovery Event-Driven Simulator** | Sections 7.4 and 11.2 | **Executed Locally** | Local event simulator testing state transitions, duplicate safety, and terminal immutability ([`../evidence/carrier-recovery/summary.md`](../evidence/carrier-recovery/summary.md)). |
 
 ### 11.2 Executed Results: 34 of 34 Checks Passed (2 Declared Skips)
 

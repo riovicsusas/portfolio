@@ -82,7 +82,7 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 | **13:50:19** | T+50m09s | Architecture | **"Zombie Order" state established: Digital and physical states permanently diverged** | **DIVERGED** |
 
 > [!NOTE]
-> **Frontline process flaw.** At 13:35:08, the agent saved the San Francisco address while the Reno warehouse queue was still active. The proposed helpdesk rule sends a hold request as soon as the address-change ticket arrives and marks the ticket `PENDING`. The agent can edit only after the warehouse confirms a pre-wave lock and the ticket moves to `APPLIED`. A rejection blocks the edit, and an unknown result goes to TechOps for a warehouse state check. After the edit, release only the hold created for that request. [Domain 6 §§4 and 6.1](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) gives the ticket tags and operator rules.
+> **Frontline process flaw.** At 13:35:08, the agent saved the San Francisco address while the Reno warehouse queue was still active. The proposed helpdesk rule sends a hold request as soon as the address-change ticket arrives and marks the ticket `PENDING`. The agent can edit only after the warehouse confirms a pre-wave lock and the ticket moves to `APPLIED`. A rejection blocks the edit, and an unknown result goes to TechOps for a warehouse state check. After the edit, release only the hold created for that request. [Domain 6 Sections 4 and 6.1](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) gives the ticket tags and operator rules.
 
 ---
 
@@ -280,7 +280,7 @@ ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
 
 At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
 * Assuming a modest **0.5% address change rate** (150 orders/month subject to modification).
-* At **$98.60 incremental recovery cost per incident**, unmitigated race conditions expose the merchant to:
+* The modeled full-failure ceiling assumes that all 150 monthly address changes incur the same $98.60 recovery cost:
   $$150 \text{ incidents} \times \$98.60 = \mathbf{\$14,790.00 / \text{month in cash margin bleed}} \quad (\mathbf{\$177,480 / \text{year}})$$
 
 ---
@@ -340,7 +340,7 @@ query inspectFulfillmentOrderState {
 
 ## 8. Containing the Blast Radius: UPS Intercept & FDA Quarantine
 
-After the modeled wave release at 13:42, the proposed playbook switches from address editing to containment. The retained-sale ledger in §6 assumes a confirmed return and a fresh replacement.
+After the modeled wave release at 13:42, the proposed playbook switches from address editing to containment. The retained-sale ledger in Section 6 assumes a confirmed return and a fresh replacement.
 
 ### 8.1 Stream 1: In-Flight Package Interception (UPS Delivery Intercept v2)
 
@@ -464,7 +464,7 @@ The proposed queue separates webhook acknowledgment from the warehouse result. T
 
 ### 9.4 How the Domains Hand Off Order #35070
 
-The table follows one address change on a $98.00 Starter Bundle. The input column describes the staged incident. The decision column shows the proposed response at each handoff. §11.1 links the separate domain cases and their evidence.
+The table follows one address change on a $98.00 Starter Bundle. The input column describes the staged incident. The decision column shows the proposed response at each handoff. Section 11.1 links the separate domain cases and their evidence.
 
 | Domain | Local input for #35070 | Decision and handoff | Role in this case |
 |---|---|---|---|
@@ -473,7 +473,7 @@ The table follows one address change on a $98.00 Starter Bundle. The input colum
 | **6 · Helpdesk and recovery** | The ticket arrives at 13:35:00 and the agent saves the new address at 13:35:08, before a warehouse lock is confirmed. | Open the hold operation and mark the ticket `PENDING`. A verified pre-wave lock permits `APPLIED` and the address edit. If the gate rejects after cutoff, pass the active tracking number to the recovery workflow for an eligibility check. | Staged ticket sequence and proposed helpdesk rules. |
 | **1 · Order lifecycle** | The hold is sent at 13:35:12. Reno releases the wave at 13:42:00, 6 minutes 48 seconds later. | Keep the edit blocked until the WMS confirms a pre-wave lock. Pass the confirmed lock to the update step or send a cutoff rejection to the recovery path. | Scenario cutoff. Local fixtures exercise cutoff rejection and selective hold release. |
 | **4 · Automation** | The first `504` arrives at 13:35:15. The 13:40:15 retry also times out. At 13:50:18 the WMS returns `422 PONR_EXCEEDED`. | On a `504`, record `UNKNOWN` against the original operation ID, alert operations, and reconcile before replay. On `PONR_EXCEEDED`, stop the mutation retries and notify helpdesk to start recovery triage. | Staged responses. Local fixtures exercise duplicate delivery and unknown-outcome reconciliation. |
-| **5 · Contribution** | The $98.00 sale less $28.40 COGS, $4.50 handling, $7.20 freight, and $3.14 processing leaves $54.76. The retained-sale recovery branch in §6.1 adds $98.60. | Show the resulting −$43.84 contribution to the recovery owner when comparing replacement, refund, and dispute exposure. | Modeled recovery ledger checked in integer cents. |
+| **5 · Contribution** | The $98.00 sale less $28.40 COGS, $4.50 handling, $7.20 freight, and $3.14 processing leaves $54.76. The retained-sale recovery branch in Section 6.1 adds $98.60. | Show the resulting −$43.84 contribution to the recovery owner when comparing replacement, refund, and dispute exposure. | Modeled recovery ledger checked in integer cents. |
 
 ---
 
@@ -481,10 +481,10 @@ The table follows one address change on a $98.00 Starter Bundle. The input colum
 
 Looking across this architectural autopsy, the first three laws govern prevention before the cutoff; the fourth governs recovery afterward:
 
-1. **The Law of Confirmed Physical Holds:** Never mutate a digital order state in an e-commerce platform until the physical warehouse management system has returned an explicit confirmation that the picking wave is frozen. *(Closes the gap in §5: the missing coordinator).*
-2. **The Law of Idempotent Retries:** Keep the operation ID and payload identity across retries. Check the stored outcome before dispatching a second warehouse action. *(Closes the gap in §4: blind retries across state seams).*
-3. **The Law of Urgent Uncertainty:** A network timeout (`504 Gateway Timeout`) is a question, not an excuse to wait. The system must treat unknown outcomes as actionable high-priority exceptions and alert human operators before the warehouse cutoff expires. *(Closes the gap in §9: the fifteen-minute clock).*
-4. **The Law of Carrier Bifurcation:** Track the carrier request, electronic acceptance, and confirmed recovery separately. In the pinned HTTP 200 response fixture, `success: true` moves the simulator to `ACCEPTED`. A separate confirmed-return event moves it to `SUCCEEDED`. *(Closes the gap in §8: mistaking digital intent for physical recovery).*
+1. **The Law of Confirmed Physical Holds:** Never mutate a digital order state in an e-commerce platform until the physical warehouse management system has returned an explicit confirmation that the picking wave is frozen. *(Closes the gap in Section 5: the missing coordinator).*
+2. **The Law of Idempotent Retries:** Keep the operation ID and payload identity across retries. Check the stored outcome before dispatching a second warehouse action. *(Closes the gap in Section 4: blind retries across state seams).*
+3. **The Law of Urgent Uncertainty:** A network timeout (`504 Gateway Timeout`) is a question, not an excuse to wait. The system must treat unknown outcomes as actionable high-priority exceptions and alert human operators before the warehouse cutoff expires. *(Closes the gap in Section 9: the fifteen-minute clock).*
+4. **The Law of Carrier Bifurcation:** Track the carrier request, electronic acceptance, and confirmed recovery separately. In the pinned HTTP 200 response fixture, `success: true` moves the simulator to `ACCEPTED`. A separate confirmed-return event moves it to `SUCCEEDED`. *(Closes the gap in Section 8: mistaking digital intent for physical recovery).*
 
 ---
 
@@ -498,16 +498,16 @@ The cases below illustrate different failures and controls. Order numbers, timin
 
 | Technical Deliverable | Inputs, decision, and result | Verification scope | Related reading and evidence |
 | :--- | :--- | :--- | :--- |
-| **Capstone recovery ledger** | Order #35070 starts at $54.76 contribution on a $98.00 sale. The replacement branch adds $98.60 of recovery costs, leaving −$43.84 if the sale is retained. §6.1 itemizes both branches. | Modeled ledger checked in integer cents | [Cost reconciliation](../evidence/costs/summary.md) |
-| **Point-of-No-Return Engine** | In Order #18404, the warehouse queue lock is confirmed 18 seconds after the ticket arrives. The coordinator verifies the lock, updates the address, and releases the specific hold at 133 seconds. After wave release, the gate blocks the mutation. | Staged trace. Local fixtures test cutoff rejection and selective release. | [Domain 1 §§4 and 6](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) · [Coordinator checks](../evidence/latency/summary.md) |
-| **Multi-Node Freight Waterfall** | The Denver fixture has two Focus Stick packs and one tincture. The forced split ships the sticks from Allentown ($8.10 freight + $3.70 handling) and the tincture from Reno ($6.40 freight + $3.30 handling), totaling $21.50. Reno can fulfill all three units for $6.40 freight + $4.10 handling = $10.50, saving $11.00. | Arithmetic on declared rates and available stock | [Domain 2 §3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) · [Freight checks](../evidence/freight/summary.md) |
-| **Matrixify Schema Audit** | The synthetic mapping assigns Focus Stick SKU `SYN-FSTK-MY` the 12-digit text `850041234014`. The import gate checks exact text, the Modulo-10 check digit, and the SKU-to-UPC mapping. All 12 approved fixtures retain their identifiers through the 95-bit software round trip. | Local software fixtures | [Domain 3 §§5–6](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) · [Barcode checks](../evidence/barcodes/summary.md) |
-| **Shopify Flow Webhook Triage** | In Order #24148, a tag feedback loop generates 114 events in 62 seconds. A repeated operation with the same ID and payload hash receives its existing status or outcome. A conflicting payload is rejected, and an unknown warehouse outcome is reconciled before replay. | Scenario trace. Local fixtures check duplicate, conflict, and reconciliation behavior. | [Domain 4 §§4 and 6](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) · [Coordinator checks](../evidence/latency/summary.md) |
-| **Algorithmic Margin Defense** | Order #29863 costs $8.50 for sticks + $12.50 for tincture + $4.10 handling + $6.50 freight = $31.60. At a $32.85 payment, the 2.9% + $0.30 fee rounds to $1.25, leaving $31.60. One cent less leaves a deficit. In the separate promotional bundle model, $28.40 COGS and $4.90 handling are fixed. With the same fee, minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. | Worked basket calculation. Offline cost suite checks the promotional bundle sweep. | [Domain 5 §§6.4 and 8.3](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) · [Cost checks](../evidence/costs/summary.md) |
-| **Gorgias Helpdesk Engine** | A reference address-change ticket triggers a Shopify hold at 8.4 seconds. The ticket stays `PENDING` until the warehouse confirms a pre-wave lock. Only `APPLIED` permits editing. An uncertain outcome goes to TechOps for reconciliation. | Helpdesk design and scenario timings. Local fixtures verify the underlying hold behavior. | [Domain 6 §§4–6](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) · [Coordinator checks](../evidence/latency/summary.md) |
-| **GraphQL Order State Query** | Shopify returned San Francisco as the destination, while the WMS manifest still showed a Philadelphia label. The comparison exposes the state divergence. | Diagnostic example | §7.3 |
-| **Carrier Intercept Integration** | The simulator keeps an electronically accepted request pending until a recovery event arrives. The confirmed-return fixture records one $17.50 fee. | Pinned contract checks and local event fixtures | §8.1 · [Carrier recovery checks](../evidence/carrier-recovery/summary.md) |
-| **Amazon SQS DLQ Topology** | The proposed queue keeps the operation ID across deliveries, checks the physical outcome before replay, and sends exhausted retries to a dead-letter queue. | Architecture specification | §9.2 |
+| **Capstone recovery ledger** | Order #35070 starts at $54.76 contribution on a $98.00 sale. The replacement branch adds $98.60 of recovery costs, leaving −$43.84 if the sale is retained. Section 6.1 itemizes both branches. | Modeled ledger checked in integer cents | [Cost reconciliation](../evidence/costs/summary.md) |
+| **Point-of-No-Return Engine** | In Order #18404, the warehouse queue lock is confirmed 18 seconds after the ticket arrives. The coordinator verifies the lock, updates the address, and releases the specific hold at 133 seconds. After wave release, the gate blocks the mutation. | Staged trace. Local fixtures test cutoff rejection and selective release. | [Domain 1 Sections 4 and 6](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **Multi-Node Freight Waterfall** | The Denver fixture has two Focus Stick packs and one tincture. The forced split ships the sticks from Allentown ($8.10 freight + $3.70 handling) and the tincture from Reno ($6.40 freight + $3.30 handling), totaling $21.50. Reno can fulfill all three units for $6.40 freight + $4.10 handling = $10.50, saving $11.00. | Arithmetic on declared rates and available stock | [Domain 2 Section 3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) · [Freight checks](../evidence/freight/summary.md) |
+| **Matrixify Schema Audit** | The synthetic mapping assigns Focus Stick SKU `SYN-FSTK-MY` the 12-digit text `850041234014`. The import gate checks exact text, the Modulo-10 check digit, and the SKU-to-UPC mapping. All 12 approved fixtures retain their identifiers through the 95-bit software round trip. | Local software fixtures | [Domain 3 Sections 5–6](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) · [Barcode checks](../evidence/barcodes/summary.md) |
+| **Shopify Flow Webhook Triage** | In Order #24148, a tag feedback loop generates 114 events in 62 seconds. A repeated operation with the same ID and payload hash receives its existing status or outcome. A conflicting payload is rejected, and an unknown warehouse outcome is reconciled before replay. | Scenario trace. Local fixtures check duplicate, conflict, and reconciliation behavior. | [Domain 4 Sections 4 and 6](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **Algorithmic Margin Defense** | Order #29863 costs $8.50 for sticks + $12.50 for tincture + $4.10 handling + $6.50 freight = $31.60. At a $32.85 payment, the 2.9% + $0.30 fee rounds to $1.25, leaving $31.60. One cent less leaves a deficit. In the separate promotional bundle model, $28.40 COGS and $4.90 handling are fixed. With the same fee, minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. | Worked basket calculation. Offline cost suite checks the promotional bundle sweep. | [Domain 5 Sections 6.4 and 8.3](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) · [Cost checks](../evidence/costs/summary.md) |
+| **Gorgias Helpdesk Engine** | A reference address-change ticket triggers a Shopify hold at 8.4 seconds. The ticket stays `PENDING` until the warehouse confirms a pre-wave lock. Only `APPLIED` permits editing. An uncertain outcome goes to TechOps for reconciliation. | Helpdesk design and scenario timings. Local fixtures verify the underlying hold behavior. | [Domain 6 Sections 4–6](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **GraphQL Order State Query** | Shopify returned San Francisco as the destination, while the WMS manifest still showed a Philadelphia label. The comparison exposes the state divergence. | Diagnostic example | Section 7.3 |
+| **Carrier Intercept Integration** | The simulator keeps an electronically accepted request pending until a recovery event arrives. The confirmed-return fixture records one $17.50 fee. | Pinned contract checks and local event fixtures | Section 8.1 · [Carrier recovery checks](../evidence/carrier-recovery/summary.md) |
+| **Amazon SQS DLQ Topology** | The proposed queue keeps the operation ID across deliveries, checks the physical outcome before replay, and sends exhausted retries to a dead-letter queue. | Architecture specification | Section 9.2 |
 
 ---
 

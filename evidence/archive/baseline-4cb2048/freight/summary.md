@@ -9,7 +9,7 @@
 
 ---
 
-## 1. Denver Basket Fulfillment Comparison (Domain 2 §4)
+## 1. Denver Basket Fulfillment Comparison (Domain 2 Section 4)
 - **Basket Contents**: 1x Focus Stick Packs (6 oz) + 1x AM Adaptogen Tincture (8 oz) = 14 oz parcel.
 - **Destination**: Denver, CO (80202).
 
@@ -24,7 +24,7 @@
 
 ---
 
-## 2. Order #1070 Starter Bundle Routing Penalty (Capstone §9 & Domain 2 §3)
+## 2. Order #1070 Starter Bundle Routing Penalty (Capstone Section 9 & Domain 2 Section 3)
 - **Parcel Weight**: 30 oz billable at 2 lbs.
 - **Destination**: Brooklyn, NY (11201).
 

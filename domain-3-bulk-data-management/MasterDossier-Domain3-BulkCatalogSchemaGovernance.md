@@ -37,14 +37,14 @@ At 09:15:15 EDT, the circuit breaker tripped and aborted the import. Zero rows r
 Had the file gone through, two products would have carried barcodes that the warehouse management system (WMS) could not match to physical inventory, and a core product page would have returned HTTP 404 to every ad click, search result, and customer bookmark pointing to the old address. Section 3 models that failure at a **$3,900.00 cash blast radius** for a single unmitigated release.
 
 > [!CAUTION]
-> **Staging Sandbox Disclosure**: Every result in this dossier was produced in a staging environment: an in-memory/SQLite-backed test suite, synthetic GTIN fixtures (test identifiers, not GS1-licensed codes), and deterministic pricing and cost models. No production store, live Matrixify import, or physical warehouse scanner was exercised. §11 separates what was verified in staging from what is only specified.
+> **Staging Sandbox Disclosure**: Every result in this dossier was produced in a staging environment: an in-memory/SQLite-backed test suite, synthetic GTIN fixtures (test identifiers, not GS1-licensed codes), and deterministic pricing and cost models. No production store, live Matrixify import, or physical warehouse scanner was exercised. Section 11 separates what was verified in staging from what is only specified.
 
 | Incident Parameter | Baseline Parameter Value | Architectural Significance |
 |---|---|---|
-| **Operator Profile** | Dr. Aris Thorne (`aris.thorne@example.com`) | Lead Catalog & ERP Systems Architect managing bulk Matrixify schema transformations. The Field Mutation Risk Taxonomy in §2.1 defines permissions by field. It reserves Tier 1 edits for Lead TechOps and lists TechOps and the Financial Controller as permitted operators for Tier 2. |
+| **Operator Profile** | Dr. Aris Thorne (`aris.thorne@example.com`) | Lead Catalog & ERP Systems Architect managing bulk Matrixify schema transformations. The Field Mutation Risk Taxonomy in Section 2.1 defines permissions by field. It reserves Tier 1 edits for Lead TechOps and lists TechOps and the Financial Controller as permitted operators for Tier 2. |
 | **Catalog Scope** | `Catalog_Mutation_v2.xlsx`: 12 variants across 5 product lines (Focus Sticks, Adaptogen Tinctures, Bundles, Tumblers, Whisks) | Foundational catalog master powering checkout, 3PL WMS, and ad channels. |
 | **The Silent Coercion Defects** | Two barcodes destroyed by numeric coercion (scientific notation, 11-digit truncation) and one handle rename | Three blocking errors, none visible to a human viewing the spreadsheet. |
-| **The Potential Blast Radius** | $3,900.00 modeled out-of-pocket toll per release; $7,800/year at 8 bulk updates and a 25% error rate (§3) | Relabeling fees, wasted paid media clicks, and emergency TechOps intervention. |
+| **The Potential Blast Radius** | $3,900.00 modeled out-of-pocket toll per release; $7,800/year at 8 bulk updates and a 25% error rate (Section 3) | Relabeling fees, wasted paid media clicks, and emergency TechOps intervention. |
 | **The 5-Second Circuit Breaker** | 09:15:10 to 09:15:15 EDT; import aborted with zero database commits | Automated linter terminated execution before Shopify Admin was contacted. |
 
 ---
@@ -134,7 +134,7 @@ Annual unmitigated exposure  = 2 x $3,900.00                   = $7,800.00 per y
 
 ### 3.4 What the Ledger Does Not Count
 
-The $3,900.00 figure is a conservative financial floor. It prices only the three cost lines that arrive as direct invoices and payroll. It excludes lost sales contribution: every Focus Sticks Matcha Yuzu order lost to a scan failure or a dead landing page forfeits **$33.50 of gross margin** at the $42.00 retail price and $8.50 COGS (§8). It also excludes carrier chargebacks, customer support ticket volume, and the search ranking lag that persists after 301 redirects are deployed.
+The $3,900.00 figure is a conservative financial floor. It prices only the three cost lines that arrive as direct invoices and payroll. It excludes lost sales contribution: every Focus Sticks Matcha Yuzu order lost to a scan failure or a dead landing page forfeits **$33.50 of gross margin** at the $42.00 retail price and $8.50 COGS (Section 8). It also excludes carrier chargebacks, customer support ticket volume, and the search ranking lag that persists after 301 redirects are deployed.
 
 ---
 
@@ -185,7 +185,7 @@ Rename the handle in a bulk file, and the old address stops resolving. Three los
 * **Search Equity**: Accumulated PageRank authority stops accruing to a URL that no longer exists until a 301 redirect is configured and re-crawled.
 * **Conversion History**: Analytics platforms attribute performance by landing page slug, so the new slug resets historical conversion tracking.
 
-Unless a redirect is created deliberately, a handle change delivered through a bulk file carries none. That is why a handle rename is an approved redirect project, never a catalog edit (Law 2, §10).
+Unless a redirect is created deliberately, a handle change delivered through a bulk file carries none. That is why a handle rename is an approved redirect project, never a catalog edit (Law 2, Section 10).
 
 ### 4.3 Field-Level Validation Formulas
 
@@ -206,7 +206,7 @@ The barcode formula explicitly tests `ISTEXT` before evaluating the regex. Conve
 
 ### 4.4 Schema by Omission
 
-`Inventory Quantity` is Tier 1 and has no formula because no spreadsheet formula can make it safe to import. It is protected by being absent. A field that is not being updated must not exist in the import file, ensuring there is nothing to coerce, overwrite, or desynchronize from the warehouse. Gate 1 in §9 enforces this rule on every release.
+`Inventory Quantity` is Tier 1 and has no formula because no spreadsheet formula can make it safe to import. It is protected by being absent. A field that is not being updated must not exist in the import file, ensuring there is nothing to coerce, overwrite, or desynchronize from the warehouse. Gate 1 in Section 9 enforces this rule on every release.
 
 ---
 
@@ -386,7 +386,7 @@ A damaged barcode cannot be repaired by arithmetic. Once an application converts
 
 Notice rows 4 and 5: the file also carried legitimate, intentional Tier 2 price and cost changes. The linter cleanly validated the legitimate financial adjustments while arresting the catastrophic Tier 1 schema defects.
 
-Those two unit costs carry into separate order models. One pack and one tincture give Order #29863 $8.50 + $12.50 = **$21.00 in COGS** before handling, freight, and processing. The Capstone’s Order #35070 adds a $7.00 tumbler and $0.40 of kitting materials, bringing the Starter Bundle to **$28.40 in COGS**. [Domain 5 §6.1](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) and [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) show how those costs enter the respective ledgers.
+Those two unit costs carry into separate order models. One pack and one tincture give Order #29863 $8.50 + $12.50 = **$21.00 in COGS** before handling, freight, and processing. The Capstone’s Order #35070 adds a $7.00 tumbler and $0.40 of kitting materials, bringing the Starter Bundle to **$28.40 in COGS**. [Domain 5 Section 6.1](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) and [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) show how those costs enter the respective ledgers.
 
 ### 8.2 Why Nothing Was Reconstructed
 
@@ -451,10 +451,10 @@ Every omitted column (`Barcode`, `Handle`, `Inventory Quantity`, `Title`, `Metaf
 
 Four non-negotiable laws govern catalog data across enterprise commerce:
 
-1. **The Law of Pure Text Identifiers**: A barcode is a label, not a mathematical number. It must be stored, exported, and validated strictly as a string primitive. Any identifier that has ever passed through a numeric type must be rejected. *(Closes the gap in §4: numeric coercion).*
-2. **The Law of Immutable Canonical Handles**: A product handle is a live URL address, not a marketing title. Renaming a handle requires a formal redirect project and marketing approval, never a casual bulk spreadsheet edit. *(Closes the gap in §3: the 404 ad-spend bleed).*
-3. **The Law of Minimal Column Scope (Schema by Omission)**: If an attribute is not actively being modified, it must not exist in the import file. Blank cells must never be permitted near production databases. *(Closes the gap in §9: accidental data destruction).*
-4. **The Law of Authoritative Recovery**: Damaged barcodes must never be reconstructed through arithmetic guessing or truncation padding. They must be restored strictly from the authoritative master SKU catalog mapping. *(Closes the gap in §8: unrecoverable precision loss).*
+1. **The Law of Pure Text Identifiers**: A barcode is a label, not a mathematical number. It must be stored, exported, and validated strictly as a string primitive. Any identifier that has ever passed through a numeric type must be rejected. *(Closes the gap in Section 4: numeric coercion).*
+2. **The Law of Immutable Canonical Handles**: A product handle is a live URL address, not a marketing title. Renaming a handle requires a formal redirect project and marketing approval, never a casual bulk spreadsheet edit. *(Closes the gap in Section 3: the 404 ad-spend bleed).*
+3. **The Law of Minimal Column Scope (Schema by Omission)**: If an attribute is not actively being modified, it must not exist in the import file. Blank cells must never be permitted near production databases. *(Closes the gap in Section 9: accidental data destruction).*
+4. **The Law of Authoritative Recovery**: Damaged barcodes must never be reconstructed through arithmetic guessing or truncation padding. They must be restored strictly from the authoritative master SKU catalog mapping. *(Closes the gap in Section 8: unrecoverable precision loss).*
 
 ---
 
@@ -476,16 +476,16 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 
 | Deliverable | Section | Status | Ground-Truth Evidence Source |
 |---|---|---|---|
-| **Modulo-10 Checksum Validity** (All 12 SKUs) | §5 | **Verified in Staging** | 12 of 12 pass: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
-| **95-Bit UPC-A Encode & Decode** | §4, §5 | **Verified in Staging** | 12 of 12 bit-exact software round-trip: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
-| **Negative Anomaly Rejection Suite** (16 inputs) | §6 | **Executed offline** | All 16 fixtures returned their expected rejection, including checksum-valid identifiers assigned to the wrong SKU. [Barcode fixture results](../evidence/barcodes/summary.md) |
-| **Tier 2 Price & Margin Verification** (79.76% at $8.50 COGS) | §8 | **Verified in Staging** | [`evidence/costs/summary.md`](../evidence/costs/summary.md) (SYN-FSTK-MY: $42.00 retail, $8.50 COGS = 79.76% gross margin; arithmetic also validates $12.50 tincture correction in §8.1). |
-| **Pre-Flight Audit Telemetry** (`Catalog_Mutation_v2.xlsx`) | §7 | Scenario Audit | Reconstructed 5-second circuit breaker trace across 12 variants. |
-| **Field Hazard Taxonomy & RBAC** | §2 | Documented Specification | Role-based catalog governance schema mapping access tiers. |
-| **Unmitigated Cost Model** ($3,900.00 release / $7,800/yr) | §3 | Documented Specification | Deterministic model incorporating 3PL relabeling fees and paid ad spend. |
-| **Spreadsheet Validation Formulas** | §4 | Specified | Template formulas in this dossier; not executed against live sheet. |
-| **Matrixify Safe MERGE SOP & Canary Lifecycle** | §9 | Documented Specification | Standard operating procedure for non-destructive partial imports. |
-| **WMS Optical Scanner Acceptance Test** | §9.4 | Specified | Operational acceptance criteria; physical hardware test. |
+| **Modulo-10 Checksum Validity** (All 12 SKUs) | Section 5 | **Verified in Staging** | 12 of 12 pass: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
+| **95-Bit UPC-A Encode & Decode** | Sections 4 and 5 | **Verified in Staging** | 12 of 12 bit-exact software round-trip: [`evidence/barcodes/summary.md`](../evidence/barcodes/summary.md). |
+| **Negative Anomaly Rejection Suite** (16 inputs) | Section 6 | **Executed offline** | All 16 fixtures returned their expected rejection, including checksum-valid identifiers assigned to the wrong SKU. [Barcode fixture results](../evidence/barcodes/summary.md) |
+| **Tier 2 Price & Margin Verification** (79.76% at $8.50 COGS) | Section 8 | **Verified in Staging** | [`evidence/costs/summary.md`](../evidence/costs/summary.md) (SYN-FSTK-MY: $42.00 retail, $8.50 COGS = 79.76% gross margin; arithmetic also validates $12.50 tincture correction in Section 8.1). |
+| **Pre-Flight Audit Telemetry** (`Catalog_Mutation_v2.xlsx`) | Section 7 | Scenario Audit | Reconstructed 5-second circuit breaker trace across 12 variants. |
+| **Field Hazard Taxonomy & RBAC** | Section 2 | Documented Specification | Role-based catalog governance schema mapping access tiers. |
+| **Unmitigated Cost Model** ($3,900.00 release / $7,800/yr) | Section 3 | Documented Specification | Deterministic model incorporating 3PL relabeling fees and paid ad spend. |
+| **Spreadsheet Validation Formulas** | Section 4 | Specified | Template formulas in this dossier; not executed against live sheet. |
+| **Matrixify Safe MERGE SOP & Canary Lifecycle** | Section 9 | Documented Specification | Standard operating procedure for non-destructive partial imports. |
+| **WMS Optical Scanner Acceptance Test** | Section 9.4 | Specified | Operational acceptance criteria; physical hardware test. |
 
 ### 11.2 Evidence Links
 

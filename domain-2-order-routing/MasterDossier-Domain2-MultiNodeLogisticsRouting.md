@@ -124,7 +124,7 @@ Where:
 - $U$ is the total count of physical units picked across all parcels.
 - The $\$2.90$ coefficient is not the sum of base and corrugate ($\$3.30$). It is $\$3.30$ less the $\$0.40$ credit that the per-unit term would otherwise assess for each parcel's first pick (which the schedule waives).
 
-This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units. The separate two-item checkout in Domain 5 uses declared inputs of $4.10 handling and $6.50 freight for the basket. [Domain 5 §6](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) applies those inputs to the checkout margin calculation.
+This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units. The separate two-item checkout in Domain 5 uses declared inputs of $4.10 handling and $6.50 freight for the basket. [Domain 5 Section 6](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) applies those inputs to the checkout margin calculation.
 
 Checking the rate card against the formula:
 
@@ -161,7 +161,7 @@ The model utilizes the following standard domestic postage tariff schedules:
 
 Order #35070 illustrates a different failure. Its Reno allocation retained the old Philadelphia destination after the customer requested San Francisco. The bundle was stocked in Reno (`LOC-NV-02`), so the incident was an address-state failure rather than an Allentown-versus-Reno allocation mistake.
 
-The Capstone models $7.20 in ground freight for the original shipment to Philadelphia and $14.80 in expedited freight for the replacement. Those two outbound legs total $22.00. The $7.60 difference compares shipments with different service levels. The return adds $8.40, bringing modeled freight across all three legs to $30.40 before handling, intercept, and other costs. [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) shows the full recovery ledger.
+The Capstone models $7.20 in ground freight for the original shipment to Philadelphia and $14.80 in expedited freight for the replacement. Those two outbound legs total $22.00. The $7.60 difference compares shipments with different service levels. The return adds $8.40, bringing modeled freight across all three legs to $30.40 before handling, intercept, and other costs. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) shows the full recovery ledger.
 
 With the economic parameters established, we now trace the Denver order through two divergent routing policies to observe where margin is preserved or lost.
 
@@ -319,8 +319,8 @@ For each split order, audit the unreserved ATP at each node at the exact moment 
 3. The unreserved quantity per SKU at each facility.
 
 This telemetry uncovers two distinct failure modes:
-- **Routing Policy Failure**: One node held the entire basket at assignment. The split was an unconstrained routing choice, not an inventory constraint (violating the §4 Consolidation Bound).
-- **Data Freshness Failure**: The ATP snapshot exceeded the declared staleness threshold, or stock was claimed in an un-isolated race condition. The candidate set itself was corrupt (Failure Mode #4 in §7).
+- **Routing Policy Failure**: One node held the entire basket at assignment. The split was an unconstrained routing choice, not an inventory constraint (violating the Section 4 Consolidation Bound).
+- **Data Freshness Failure**: The ATP snapshot exceeded the declared staleness threshold, or stock was claimed in an un-isolated race condition. The candidate set itself was corrupt (Failure Mode #4 in Section 7).
 
 ### 5.3 What would one parcel have cost?
 Reprice the order retrospectively as a single shipment from the best consolidated candidate node. Log the variance per order:
@@ -476,11 +476,11 @@ flowchart TD
 | **Packaging & Corrugate** | $0.80 per parcel | Scenario input: physical box and void-fill materials |
 | **Additional Pick Fee** | $0.40 per unit after the first | Scenario input: incremental per-unit warehouse pick fee |
 | **Equivalent Handling Form** | $\text{Handling} = \$2.90P + \$0.40U$ | Algebraic formulation isolating the $2.90 cost of an additional box |
-| **Carrier Tariff Schedules** | Table in §2.4 | Standard commercial domestic rate card inputs |
+| **Carrier Tariff Schedules** | Table in Section 2.4 | Standard commercial domestic rate card inputs |
 | **Tier 1 Pass Condition** | Unreserved $\text{ATP} \ge \text{Quantity}$ for all SKUs | Strict consolidation filter: partial availability fails Tier 1 |
 | **ATP Freshness Check** | Real-time stock re-check at lock time | Prevents committing to an unfulfillable single-box wave |
 | **Candidate Ranking (Tier 2)** | Delivery SLA, then closest carrier zone | Applied *exclusively* among candidate nodes capable of 100% fulfillment |
-| **Bound Re-Validation Trigger** | Any change to carrier rates or handling | The §4 bound holds only while $\$2.90 + \text{BaseCarrier} > \Delta \text{Zone}_{\max}$ |
+| **Bound Re-Validation Trigger** | Any change to carrier rates or handling | The Section 4 bound holds only while $\$2.90 + \text{BaseCarrier} > \Delta \text{Zone}_{\max}$ |
 | **Tier 3 Audit Logging** | Reason code & counterfactual on every split | A split order must never be reached silently |
 
 ### 9.3 Production Implementation Context: Modern Shopify Plus Architecture
@@ -528,12 +528,12 @@ All offline verification tests are fully reproducible via the repository test su
 
 | Deliverable / Artifact | Location | Evidentiary Status | Verification Source |
 |---|---|---|---|
-| **Three-Tier Routing Waterfall** | §9 | Architectural Specification | Validated design; targets Shopify Functions API |
-| **Network Topology & Inventory Profiles** | §2.2 | Declared Scenario Model | Defined network model (`LOC-PA-01`, `LOC-NV-02`) |
-| **Denver Basket Autopsy ($21.50 vs $10.50)** | §3 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md). LOC-PA-01 Zone 6 $8.10 freight + $3.70 handling = $11.80 parcel; LOC-NV-02 Zone 4 $6.40 freight + $3.30 handling = $9.70 parcel; split total $21.50. Consolidated: LOC-NV-02 Zone 4 $6.40 + $4.10 handling = $10.50. |
-| **The Consolidation Bound ($3.20)** | §4 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
-| **500-Order Cohort Simulation ($997.40)** | §8 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
-| **Carrier Tariff Schedules** | §2.4 | Declared Model Inputs | Standard commercial rate cards; live API quote skipped |
+| **Three-Tier Routing Waterfall** | Section 9 | Architectural Specification | Validated design; targets Shopify Functions API |
+| **Network Topology & Inventory Profiles** | Section 2.2 | Declared Scenario Model | Defined network model (`LOC-PA-01`, `LOC-NV-02`) |
+| **Denver Basket Autopsy ($21.50 vs $10.50)** | Section 3 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md). LOC-PA-01 Zone 6 $8.10 freight + $3.70 handling = $11.80 parcel; LOC-NV-02 Zone 4 $6.40 freight + $3.30 handling = $9.70 parcel; split total $21.50. Consolidated: LOC-NV-02 Zone 4 $6.40 + $4.10 handling = $10.50. |
+| **The Consolidation Bound ($3.20)** | Section 4 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
+| **500-Order Cohort Simulation ($997.40)** | Section 8 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
+| **Carrier Tariff Schedules** | Section 2.4 | Declared Model Inputs | Standard commercial rate cards; live API quote skipped |
 
 ### 11.2 Executed Test Suite Results Table
 

@@ -39,7 +39,7 @@ Had the circuit breaker not engaged, the runaway recursion on Order #24148 would
 The second failure mode is quieter and just as expensive: when a warehouse endpoint returns `HTTP 504 Gateway Timeout` during a flash sale and every failed call retries on the same fixed schedule, hundreds of retries land in the same instant on a system that is already struggling. Section 2 contrasts both traps.
 
 > [!CAUTION]
-> **Controlled Failure Scenario Disclosure**: Order #24148, customer Chloe Bennett (`chloe.bennett@example.com`), is an empirical failure-injection scenario executing within an isolated staging environment. The timeline and API telemetry represent a verified failure trace. Deduplication, idempotency hashing, and cutoff rejection resilience were verified against our local SQLite coordinator test harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). Platform rate-limit figures illustrate standard Shopify Plus leaky-bucket mechanics. §11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Controlled Failure Scenario Disclosure**: Order #24148, customer Chloe Bennett (`chloe.bennett@example.com`), is an empirical failure-injection scenario executing within an isolated staging environment. The timeline and API telemetry represent a verified failure trace. Deduplication, idempotency hashing, and cutoff rejection resilience were verified against our local SQLite coordinator test harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). Platform rate-limit figures illustrate standard Shopify Plus leaky-bucket mechanics. Section 11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
 
 | Incident Dimension | Baseline Parameter Value | Architectural Significance |
 |---|---|---|
@@ -97,8 +97,8 @@ In naive middleware implementations, failed webhook deliveries are re-enqueued o
 | **What amplifies it** | Each reaction is itself an event | Synchronized retries from hundreds of concurrent callers |
 | **What it exhausts** | Shopify Admin API budget (REST leaky bucket and GraphQL points) | 3PL endpoint capacity and middleware worker thread pools |
 | **How it shows up** | One order's timeline grows faster than total store traffic | Hundreds of orders fail simultaneously at recurring intervals |
-| **What stops it** | Negative guards (§5) and state-gated ordering (§8) | Classified retries (§7), asynchronous queue, DLQ, and Full Jitter (§9) |
-| **Shared remedy** | Durable operation identity (§6) | Durable operation identity (§6) |
+| **What stops it** | Negative guards (Section 5) and state-gated ordering (Section 8) | Classified retries (Section 7), asynchronous queue, DLQ, and Full Jitter (Section 9) |
+| **Shared remedy** | Durable operation identity (Section 6) | Durable operation identity (Section 6) |
 
 ---
 
@@ -228,7 +228,7 @@ flowchart TD
     style DONE fill:#cce5ff,stroke:#004085,stroke-width:2px;
 ```
 
-Even if an upstream event re-fires the `"Order tags added"` trigger 50 times in rapid succession, the workflow executes Action 1 and Action 2 exactly once. On the second iteration, **Condition 2 evaluates to False**, gracefully halting execution before any mutation or API call can commit.
+Even if the `"Order tags added"` trigger fires 50 times in sequence, Action 1 and Action 2 run only on the first pass, provided that pass commits the guard tag. From the second pass onward, **Condition 2 evaluates to False**, so neither action runs again.
 
 ### 5.2 The Rule Applied to Order #24148
 
@@ -240,7 +240,7 @@ Even if an upstream event re-fires the `"Order tags added"` trigger 50 times in 
 With both flows guarded, the ring executes exactly once: Flow 1 adds `Route-East`, Flow 2 adds `Logistics-Audited`, Flow 1 re-evaluates, finds `Route-East` already present, and halts immediately. **Two tag additions replace 114 runaway events.**
 
 > [!WARNING]
-> **The Concurrency Gap**: The blueprint exposes a critical boundary. The tag is added in **Action 2**, *after* the external HTTP request in Action 1. Any concurrent webhook event arriving while Action 1 is in-flight will evaluate Condition 2, find the tag absent, and execute a duplicate side effect. Closing that window requires an atomic coordination boundary (§6).
+> **The Concurrency Gap**: The blueprint exposes a critical boundary. The tag is added in **Action 2**, *after* the external HTTP request in Action 1. Any concurrent webhook event arriving while Action 1 is in-flight will evaluate Condition 2, find the tag absent, and execute a duplicate side effect. Closing that window requires an atomic coordination boundary (Section 6).
 
 ---
 
@@ -325,7 +325,7 @@ For the address hold in Order #24148, the operation ID and normalized payload ha
 | `REJECTED` | `CS-ADDR-HOLD-REJECTED` | A cutoff rejection blocks the edit. Escalate for carrier recovery when eligible. |
 | `UNKNOWN` | `CS-ADDR-HOLD-UNKNOWN` | Ask TechOps to verify the warehouse outcome before deciding whether to replay. |
 
-The local duplicate fixture dispatches one warehouse simulator effect. A concurrent copy receives `PENDING`, and a later replay receives the stored `CONFIRMED` result. [Coordinator checks](../evidence/latency/summary.md) show the executed assertions. [Domain 6 §4](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) expands the agent actions for each tag.
+The local duplicate fixture dispatches one warehouse simulator effect. A concurrent copy receives `PENDING`, and a later replay receives the stored `CONFIRMED` result. [Coordinator checks](../evidence/latency/summary.md) show the executed assertions. [Domain 6 Section 4](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) expands the agent actions for each tag.
 
 ---
 
@@ -411,7 +411,7 @@ flowchart LR
 | **Tier 3** | **Financial & Ledger Parity** | `tags_contain: 'Routing-Assigned'` | **Trigger**: `Order tags added`. Audits tax jurisdiction calculations, currency conversion, and discount codes. Zero-delta verification on order adjustments. | `Ledger-Reconciled` |
 | **Tier 4** | **Customer Communications** | `tags_contain: 'Ledger-Reconciled'` | **Trigger**: `Order tags added`. Dispatches customer order confirmation email (Klaviyo), SMS alerts, and marketing loyalty tier updates. | *None (End of Chain)* |
 
-Because the state gates are committed as order tags, each tier's workflow must also enforce the Negative Check Rule (§5): Tier 2 requires `Fraud-Analysis-Complete` present and `Routing-Assigned` absent.
+Because the state gates are committed as order tags, each tier's workflow must also enforce the Negative Check Rule (Section 5): Tier 2 requires `Fraud-Analysis-Complete` present and `Routing-Assigned` absent.
 
 ### 8.2 Event Trigger vs. Action Conflict Matrix
 
@@ -495,12 +495,12 @@ A synchronized **500-request shockwave is mathematically smoothed into a stable 
 
 | Parameter Name | Production Value | Architectural Rationale |
 |---|---|---|
-| **Work Queue Type** | SQS Standard | High throughput at-least-once delivery; duplicates absorbed by ledger (§6). |
+| **Work Queue Type** | SQS Standard | High throughput at-least-once delivery; duplicates absorbed by ledger (Section 6). |
 | **Visibility Timeout** | 30 seconds | Headroom over 5,000ms gateway threshold for delivery call and ledger read. |
 | **Max Receive Count** | 3 attempts | Initial delivery plus 2 retries; moves poison-pill payloads to DLQ. |
 | **Dead-Letter Retention** | 14 days (SQS max) | Retention measured from initial enqueue; ensures full triage window. |
 | **DLQ Alert Trigger** | Immediate on depth $\ge$ 1 | Any dead-lettered message represents an order at risk of fulfillment failure. |
-| **Backoff Policy** | Full Jitter ($B=30\text{s}, M=300\text{s}$) | Mathematically desynchronizes concurrent retries (§9.2). |
+| **Backoff Policy** | Full Jitter ($B=30\text{s}, M=300\text{s}$) | Mathematically desynchronizes concurrent retries (Section 9.2). |
 | **422 / 401 / 403 Routing** | Direct to DLQ | Schema and auth rejections cannot resolve through retries. |
 | **504 Threshold** | Upstream timeout > 5,000ms | Enforces "Unknown State" protocol requiring ledger reconciliation before replay. |
 
@@ -510,10 +510,10 @@ A synchronized **500-request shockwave is mathematically smoothed into a stable 
 
 Across distributed commerce architectures, four non-negotiable laws govern event-driven workflows:
 
-1. **The Law of Negative Guards**: No workflow shall execute an `"Add Tags"` action without an upstream condition verifying that the target tag is not already present. *(Closes the gap in §4: runaway tag recursion).*
-2. **The Law of State-Gated Ordering**: Workflows must be chained by explicit committed state conditions, never by drawn diagram hierarchies. *(Closes the gap in §8: concurrent webhook race conditions).*
-3. **The Law of Classified Retries**: Client rejections (`422`) must abort; rate limits (`429`) must back off; timeouts (`504`) must reconcile state before replay. Never retry blind. *(Closes the gap in §7: retry storms and duplicate mutations).*
-4. **The Law of Idempotent Identity**: Every automated side effect must carry a durable `operation_id` and payload hash to ensure duplicate events cannot corrupt production state. *(Closes the gap in §6: concurrent execution).*
+1. **The Law of Negative Guards**: No workflow shall execute an `"Add Tags"` action without an upstream condition verifying that the target tag is not already present. *(Closes the gap in Section 4: runaway tag recursion).*
+2. **The Law of State-Gated Ordering**: Workflows must be chained by explicit committed state conditions, never by drawn diagram hierarchies. *(Closes the gap in Section 8: concurrent webhook race conditions).*
+3. **The Law of Classified Retries**: Client rejections (`422`) must abort; rate limits (`429`) must back off; timeouts (`504`) must reconcile state before replay. Never retry blind. *(Closes the gap in Section 7: retry storms and duplicate mutations).*
+4. **The Law of Idempotent Identity**: Every automated side effect must carry a durable `operation_id` and payload hash to ensure duplicate events cannot corrupt production state. *(Closes the gap in Section 6: concurrent execution).*
 
 ---
 
@@ -535,13 +535,13 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 
 | Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
-| **Order #24148 Recursive Incident** | §1, §4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. Chloe Bennett (chloe.bennett@example.com); 114 webhook events in 62 seconds; 98% Admin API bucket saturation. |
-| **Financial Blast Radius Model** | §3 | Modeled Scenario | Unit-economic cost model incorporating 3PL SLA credits and inventory overselling. |
-| **Negative Tag Check Blueprint** | §5 | Documented Specification | Production-ready Shopify Flow visual guard pattern. |
-| **Idempotency Triad & Ledger Contract** | §6 | **Executed locally** | A duplicate with the same ID and payload hash returns the active or stored result. The original request produces one simulator effect. [Coordinator checks](../evidence/latency/summary.md) |
-| **Status Code Triage & Cutoff Rejection** | §7 | **Cutoff checked locally** | The post-cutoff workload produces zero warehouse simulator effects, and replay preserves the rejection. [Coordinator checks](../evidence/latency/summary.md) |
-| **Four-Tier Execution Ladder** | §8 | Documented Specification | State-gated priority specifications and trigger-action conflict matrix. |
-| **SQS Work Queue & Full Jitter Model** | §9 | Documented Specification | Mathematical backoff model smoothing 500 retry spikes to 8.33 requests/sec. |
+| **Order #24148 Recursive Incident** | Sections 1 and 4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. Chloe Bennett (chloe.bennett@example.com); 114 webhook events in 62 seconds; 98% Admin API bucket saturation. |
+| **Financial Blast Radius Model** | Section 3 | Modeled Scenario | Unit-economic cost model incorporating 3PL SLA credits and inventory overselling. |
+| **Negative Tag Check Blueprint** | Section 5 | Documented Specification | Production-ready Shopify Flow visual guard pattern. |
+| **Idempotency Triad & Ledger Contract** | Section 6 | **Executed locally** | A duplicate with the same ID and payload hash returns the active or stored result. The original request produces one simulator effect. [Coordinator checks](../evidence/latency/summary.md) |
+| **Status Code Triage & Cutoff Rejection** | Section 7 | **Cutoff checked locally** | The post-cutoff workload produces zero warehouse simulator effects, and replay preserves the rejection. [Coordinator checks](../evidence/latency/summary.md) |
+| **Four-Tier Execution Ladder** | Section 8 | Documented Specification | State-gated priority specifications and trigger-action conflict matrix. |
+| **SQS Work Queue & Full Jitter Model** | Section 9 | Documented Specification | Mathematical backoff model smoothing 500 retry spikes to 8.33 requests/sec. |
 
 ### 11.2 Executed Results: 34 of 34 Checks Passed
 
