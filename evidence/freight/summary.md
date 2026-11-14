@@ -2,16 +2,20 @@
 
 All amounts are declared scenario inputs calculated in integer cents. The listed USPS/UPS URLs identify possible reference sources; no current tariff, dated historical tariff, ShipBob quotation, ZIP-zone assignment or invoice is verified by this suite.
 
-## Controlled three-unit comparison
+## Bethlehem three-unit comparison
 
-Basket: two SYN-FSTK-MY units and one SYN-TNCT-AM unit. The synthetic reservation fixture allows the full basket at Reno and sticks only at Allentown. Model buckets 4/6 are pricing inputs, not verified Denver postal zones. A forced split is compared with feasible consolidation; the comparison does not demonstrate that a closest-node rule would select the split.
+Destination: **Bethlehem, PA 18018**. The basket has two SYN-FSTK-MY units and one SYN-TNCT-AM unit. Allentown ranks first by proximity and can fulfill the sticks. Reno ranks second, holds the only available tincture, and can fulfill the entire basket. The per-line rule looks for the nearest node with stock for each requested line and produces two parcels. A whole-basket check finds the one-parcel alternative in Reno. Model buckets 2 (Allentown) and 8 (Reno) are declared pricing inputs. Both plans assume the selected service can meet the delivery promise.
 
 | Split parcel node | Picked units | Freight | Handling | Total |
 |---|---:|---:|---:|---:|
-| LOC-PA-01 | 2 | $8.10 | $3.70 | $11.80 |
-| LOC-NV-02 | 1 | $6.40 | $3.30 | $9.70 |
+| LOC-PA-01 | 2 | $5.40 | $3.70 | $9.10 |
+| LOC-NV-02 | 1 | $10.50 | $3.30 | $13.80 |
 
-Split total: **$21.50**. Reno consolidated total: **$10.50**. Difference: **$11.00**.
+| Consolidated parcel node | Picked units | Freight | Handling | Total |
+|---|---:|---:|---:|---:|
+| LOC-NV-02 | 3 | $10.50 | $4.10 | $14.60 |
+
+Split total: **$22.90**. Reno consolidated total: **$14.60**. Difference: **$8.30** (36.24%).
 
 Handling is $2.50 base + $0.80 corrugate per parcel + $0.40 per pick after the first. There is no extra cart penalty. Weights, service-specific surcharges and re-rating are excluded from this fixed-input comparison.
 
@@ -22,7 +26,7 @@ The theoretical lower bound compares two hypothetical local Zone 2 shipments aga
 - One Zone 8 parcel: $10.50 freight + $4.10 handling = **$14.60**.
 - Net consolidation advantage: **$3.20**.
 
-This confirms that even under an extreme theoretical assumption deliberately favoring the split, consolidating into a single parcel remains cheaper by at least $3.20 under the declared rate card. This theoretical comparison is distinct from the Denver comparison and the 500-order cohort model.
+This confirms that even with two hypothetical local parcels, consolidating into a single parcel remains cheaper by at least $3.20 under the declared rate card. The Bethlehem example and the 500-order cohort use separate inputs.
 
 ## Paired-basket cohort model
 
@@ -46,7 +50,7 @@ Order #35070's original destination is **Philadelphia, PA 19102**, requested des
 
 ## Executed checks
 
-Run: `2026-11-12T07-40-53-912Z-566faf52` · Node v24.18.0
+Run: `2026-11-14T12-15-45-078Z-18264` · Node v24.18.0
 
 Passed: 15; failed: 0; skipped: 1.
 
@@ -55,11 +59,11 @@ Passed: 15; failed: 0; skipped: 1.
 | All monetary inputs are nonnegative safe integer cents | passed |  |
 | Three-pick parcel handling equals $4.10 under the declared model | passed |  |
 | Three units split across two parcels cost $7.00 handling | passed |  |
-| Both priced plans reserve the complete basket within fixture capacity | passed |  |
+| Nearest stocked nodes split the basket while Reno can reserve all three units | passed |  |
 | Unavailable tincture cannot be allocated to Allentown | passed |  |
 | Incomplete basket cannot be priced as successful fulfillment | passed |  |
 | Reservations are aggregated across parcels at the same node | passed |  |
-| Split $21.50 and consolidated $10.50 derive from parcel line items | passed |  |
+| Nearest-stocked split $22.90 and Reno consolidation $14.60 derive from parcel line items | passed |  |
 | Changing a lane cost propagates into the plan total without a hidden surcharge | passed |  |
 | Five-hundred-order fixture preserves paired units and parcel counts | passed |  |
 | Cohort savings match handling formula and aggregate freight inputs | passed |  |

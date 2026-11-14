@@ -47,13 +47,13 @@ const LATEST_UPDATES = [
     domain: "Routing & Logistics",
     icon: "ph-truck",
     title: "Bi-Coastal Multi-Node Routing Engine & Freight Optimization",
-    short: "Deployed deterministic routing waterfalls containing split-shipment surcharges between Allentown, PA and Reno, NV fulfillment centers.",
-    problem: "Shopify's native location priority rules routed multi-line cart orders across separate coasts, incurring $4.20/order split-shipment penalty fees and doubling customer transit times.",
-    solution: "Designed a deterministic routing waterfall algorithm ('Minimize Splits' prioritized over 'Closest Node') that clusters line-item shipments and prevents out-of-region cross-dock leakage.",
+    short: "The closest-stocked rule gives a Bethlehem customer two boxes. Checking the whole basket brings it down to one.",
+    problem: "Nearby Allentown can ship the sticks, and only Reno has the tincture. The resulting two-parcel plan costs $22.90 in the model.",
+    solution: "Check stock, packaging, cost, and delivery as a basket. Reno can ship all three units in one $14.60 parcel under the same modeled delivery promise.",
     metrics: [
-      { val: "$4.20", label: "Freight Saved Per Split Avoided" },
-      { val: "94.8%", label: "Single-Box In-Region Fill" },
-      { val: "-1.8 Days", label: "Average Transit Reduction" }
+      { val: "$8.30", label: "Modeled Bethlehem Savings" },
+      { val: "2 → 1", label: "Bethlehem Parcels" },
+      { val: "$997.40", label: "Separate 500-Order Model" }
     ],
     tags: ["Multi-Node Routing", "Freight Waterfalls", "ShipBob 3PL", "Split Containment"]
   },

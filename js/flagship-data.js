@@ -55,7 +55,7 @@ const FLAGSHIP_PROJECTS = [
     "filterCat": "logistics",
     "loomDuration": "8–10 min defense",
     "image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
-    "desc": "Deterministic routing waterfalls (Minimize Splits → Closest Node) containing split-shipment surcharges ($4.20/order) and eliminating out-of-region fulfillment leakage across Allentown PA and Reno NV warehouses.",
+    "desc": "A Bethlehem, PA order follows the closest-stocked rule into two boxes. Checking the full basket keeps it together in Reno and saves $8.30 under the modeled rates.",
     "tags": [
       "Multi-Node Routing",
       "Freight Waterfalls",

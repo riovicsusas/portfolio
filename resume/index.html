@@ -82,12 +82,11 @@ post-purchase address edits; designed a deterministic
 two-phase commit holds in Shopify Flow, eliminating simulated inventory
 drift and $98 customer chargebacks.</li>
 <li><strong>Multi-Node Routing &amp; Freight Surcharge Optimization
-(Domain 2):</strong> Modeled and validated a <strong>77.2% reduction in
-split-shipment freight surcharges</strong> (<span
-class="math inline">4.20–</span>6.80 saved per heavy basket) across
-bi-coastal nodes (<code>LOC-NV-02</code> &amp; <code>LOC-PA-01</code>)
-by enforcing a strict routing waterfall and isolating showroom stock as
-<code>not stocked</code>.</li>
+(Domain 2):</strong> Designed whole-basket routing across Allentown and Reno. Offline checks
+reproduced <strong>$8.30 (36.2%) lower fulfillment cost</strong> for one
+Bethlehem basket under modeled rates. A separate 500-order cost model
+calculated <strong>$997.40 in savings</strong> from declared parcel and
+freight inputs.</li>
 <li><strong>Zero-Loop Workflow Automation &amp; Circuit Breaking (Domain
 3):</strong> Stress-tested workflow resiliency by simulating a
 1,840-execution recursive Flow loop; rebuilt schemas with

@@ -60,7 +60,7 @@ const DEFAULT_PROJECTS = [
         {
           "code": "Domain 2.1 Spec",
           "title": "Architecture — Multi-Node Routing Engine Spec",
-          "role": "Defines location priority rankings and Reno exclusive SKUs (Adaptogen Tincture and Whisk) governing warehouse order allocation."
+          "role": "Defines whole-basket allocation and the Bethlehem stock fixture, with the tincture available only at Reno."
         }
       ]
     }
@@ -196,10 +196,10 @@ const DEFAULT_PROJECTS = [
     "icon": "ph-tree-structure",
     "title": "Multi-Node Routing Engine Spec",
     "category": "Systems Engineering & Routing Specification",
-    "subtitle": "Production Configuration & Rule Governance — Bi-Coastal Fulfillment Engine",
+    "subtitle": "Whole-Basket Routing & Rule Governance — Allentown and Reno",
     "short": "Architectural specification for Shopify Native Order Routing, multi-node allocation rules, and split-shipment containment.",
-    "overview": "Architectural specification for Shopify Native Order Routing rules governing bi-coastal fulfillment nodes (Allentown LOC-PA-01 and Reno LOC-NV-02). Establishes sequential evaluation hierarchies, catalog stocking profiles, safety stock buffers, and manual location override protocols.",
-    "fullOverview": "This production systems specification codifies the multi-node fulfillment routing architecture for Synapse Botanicals across East Coast (Allentown, PA) and West Coast (Reno, NV) distribution facilities. It defines the sequential evaluation hierarchy within Shopify's Native Order Routing Engine (Destination Country constraint ➔ Split Minimization vs. Proximity ➔ Ranked Priority tie-breakers), resolves the catastrophic 'Cross-Country Routing Trap', establishes SKU catalog stocking profiles including Reno-exclusive glass tinctures and electric whisks, and sets safety stock buffer thresholds (15 units) to eliminate out-of-stock race conditions during promotional surges.",
+    "overview": "Routing specification for Allentown and Reno. Check whether one warehouse can fill the basket, compare eligible plans on cost and delivery, then reserve the chosen stock.",
+    "fullOverview": "In the Bethlehem, PA fixture, the closest-stocked rule sends two stick packs from nearby Allentown and the tincture from Reno. Reno already has to ship the tincture and has both stick packs in stock. The proposed routing waterfall checks the basket as a unit, compares the rated parcel costs against the delivery promise, and rechecks stock before reservation.",
     "dossierUrl": "domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md",
     "pdfUrl": "",
     "image": "",
@@ -207,29 +207,29 @@ const DEFAULT_PROJECTS = [
       "Shopify Order Routing",
       "Multi-Node Fulfillment",
       "Location Priority",
-      "Safety Stock Buffers",
+      "Reservation Checks",
       "3PL WMS Integration",
       "Split-Shipment Minimization"
     ],
     "loomUrl": "",
     "references": {
-      "lineage": "Domain 1.1 Order Exception SOP ➔ Domain 2.1 Routing Engine Spec (Current) ➔ Domain 2.2 Cost Optimization Matrix ➔ Domain 2.3 Empirical Analysis",
+      "lineage": "Domain 1.1 Order Exception SOP ➔ Domain 2.1 Routing Engine Spec (Current) ➔ Domain 2.2 Cost Optimization Matrix ➔ Domain 2.3 Paired-Cohort Analysis",
       "architectureScope": [
         {
           "name": "Shopify Native Order Routing Engine",
-          "role": "Algorithmic rule stack execution and automated location assignment"
+          "role": "Built-in rule ordering and custom ranking hooks for eligible fulfillment locations"
         },
         {
           "name": "Allentown DC (LOC-PA-01)",
-          "role": "High-velocity East Coast node for powder stick packs and starter bundles"
+          "role": "Nearby warehouse for Bethlehem with two stick packs and no tincture in the fixture"
         },
         {
           "name": "Reno Hub (LOC-NV-02)",
-          "role": "West Coast node & exclusive handler for liquid tinctures and electric whisks"
+          "role": "Cross-country warehouse with enough stock to ship the full Bethlehem basket"
         },
         {
           "name": "Shopify Inventory API",
-          "role": "Available-to-Sell (ATS) inventory ledger and safety buffer enforcement"
+          "role": "Inventory inputs for checking availability before reservation"
         }
       ],
       "dependencies": [
@@ -260,15 +260,15 @@ const DEFAULT_PROJECTS = [
     "category": "Algorithmic Evaluation & Cost Optimization",
     "subtitle": "Decision Engine — Logistics Economics & Breakeven Analysis",
     "short": "Mathematical decision engine balancing 3PL split-shipment fees against cross-country carrier postage zones.",
-    "overview": "Mathematical decision engine evaluating the financial trade-off between consolidated distant shipments and local split shipments. Models 3PL handling surcharges against USPS/UPS postal zone rate cards to define precise margin-optimal routing policies.",
-    "fullOverview": "This decision engine establishes the quantitative framework balancing 3PL pick/pack base fees ($3.20 primary, $2.10 secondary) against carrier postal zone rate structures across Zones 1–8. Through rigorous modeling of Synapse Botanicals' product catalog weights and box dimensions, it identifies the exact breakeven thresholds where splitting an order across regional warehouses preserves margin versus when shipping consolidated from a single distant hub is more economical. The matrix provides the operational justification for configuring Shopify's native routing directives to prioritize split minimization over closest proximity.",
+    "overview": "Compares the cost of a local Allentown parcel plus a Reno parcel with the cost of shipping the full Bethlehem basket from Reno.",
+    "fullOverview": "The fixed-rate model puts the Bethlehem split at $22.90 and one Reno box at $14.60. Consolidation avoids $5.40 in postage and $2.90 in handling under the same delivery promise. If the larger Reno box raises postage by $8.30, the plans tie.",
     "dossierUrl": "domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
       "Logistics Economics",
-      "USPS/UPS Zone Modeling",
-      "Dimensional Weight",
+      "Modeled Carrier Zones",
+      "Parcel Re-Rating",
       "3PL Handling Fees",
       "Breakeven Analysis",
       "Margin Preservation"
@@ -278,12 +278,12 @@ const DEFAULT_PROJECTS = [
       "lineage": "Domain 2.1 Routing Spec ➔ Domain 2.2 Cost Optimization Matrix (Current) ➔ Domain 2.3 Benchmark Analysis ➔ Domain 5.2 Margin Protection",
       "architectureScope": [
         {
-          "name": "Carrier Rate Benchmark (USPS Ground Advantage & UPS)",
-          "role": "Zone 1 through Zone 8 dimensional shipping rate curves"
+          "name": "Carrier Scenario Rates",
+          "role": "Fixed postage inputs by modeled zone"
         },
         {
-          "name": "3PL Commercial Contract Model",
-          "role": "Pick/pack base handling, order insertion fees, and packaging materials"
+          "name": "3PL Handling Model",
+          "role": "Base handling and packaging per parcel, plus picks after the first"
         },
         {
           "name": "Shopify Routing Configuration",
@@ -303,12 +303,12 @@ const DEFAULT_PROJECTS = [
         {
           "code": "Domain 2.3 Analysis",
           "title": "Case Study — Multi-Location Routing Optimization",
-          "role": "Validates the mathematical predictions against empirical 500-order live simulation batches."
+          "role": "Extends the handling arithmetic to a separate 500-order fixture with declared split counts and freight totals."
         },
         {
           "code": "Domain 3.2 Matrix",
           "title": "Matrix — Catalog Data Schema & Validation",
-          "role": "Provides variant shipping weights and packaging dimensions utilized in dimensional weight calculations."
+          "role": "Provides catalog attributes for production package rating."
         }
       ]
     }
@@ -319,48 +319,48 @@ const DEFAULT_PROJECTS = [
     "folderIcon": "ph-arrows-split",
     "icon": "ph-chart-line-up",
     "title": "Multi-Location Routing Optimization",
-    "category": "Empirical Logistics & Financial Analysis",
-    "subtitle": "A/B Routing Benchmark & ROI Report — 500-Order Empirical Simulation",
-    "short": "Empirical 500-order comparative study proving $3,450+ annualized savings by optimizing multi-node routing rules.",
-    "overview": "Empirical 500-order comparative simulation analyzing the financial and operational impact of Directive Alpha (Split Minimization) vs. Directive Bravo (Closest Proximity). Quantifies split shipment containment, freight cost reduction, and delivery SLA performance.",
-    "fullOverview": "This empirical case study analyzes a 500-order simulation batch across Synapse Botanicals' nationwide customer base during high-volume promotional conditions. It benchmarks the performance of an uncontrolled 'Closest Location' routing directive against an optimized 'Minimize Split Shipments' configuration. The analysis demonstrates an 84% reduction in redundant split shipments, eliminating $1,840 in unnecessary secondary handling fees, compressing average delivery transit times by 0.6 days, and safeguarding net contribution margins on multi-item starter kits from dropping below 52%.",
+    "category": "Modeled Logistics & Financial Analysis",
+    "subtitle": "Bethlehem Basket and 500-Order Paired-Cohort Model",
+    "short": "The Bethlehem basket costs $8.30 less in one box. A separate 500-order model calculates $997.40 in savings.",
+    "overview": "Compares two Bethlehem parcel plans, then models fulfillment spend for the same 500 orders under two sets of split and freight inputs.",
+    "fullOverview": "For Bethlehem, the proximity-only rule splits the basket between Allentown and Reno. One box from Reno costs $14.60 instead of $22.90. In the separate cohort, Model Alpha has 157 splits and Model Beta has 41. Given the supplied freight totals, 116 fewer parcels and $661.00 less freight produce $997.40 in modeled savings.",
     "dossierUrl": "domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
-      "A/B Routing Simulation",
+      "Paired-Cohort Model",
       "Split Shipment Containment",
       "Carrier Zone Distribution",
       "Freight Cost Auditing",
-      "Delivery SLA Analysis",
+      "Delivery Promise",
       "Operational ROI"
     ],
     "loomUrl": "",
     "references": {
-      "lineage": "Domain 2.1 Routing Spec ➔ Domain 2.2 Cost Engine ➔ Domain 2.3 Empirical Analysis (Current) ➔ Capstone Portfolio Defense",
+      "lineage": "Domain 2.1 Routing Spec ➔ Domain 2.2 Cost Engine ➔ Domain 2.3 Paired-Cohort Analysis (Current) ➔ Capstone Portfolio Defense",
       "architectureScope": [
         {
-          "name": "Shopify Order Routing Simulator",
-          "role": "Execution of A/B comparative order distribution runs"
+          "name": "Offline Freight Fixture",
+          "role": "Reproduces the nearest-stocked split and whole-basket alternative"
         },
         {
-          "name": "Carrier Manifest Telemetry",
-          "role": "Tracking actual transit days, zone distributions, and postage expenditures"
+          "name": "Paired-Cohort Freight Inputs",
+          "role": "Compares declared freight totals across 500 matching orders"
         },
         {
-          "name": "Warehouse Pick/Pack Billing Audit",
-          "role": "Verification of 3PL invoice items and secondary package charges"
+          "name": "Warehouse Pick/Pack Model",
+          "role": "Calculates handling from parcel and unit counts"
         },
         {
-          "name": "Customer Experience SLA Monitor",
-          "role": "Tracking multi-package tracking delivery confusion and ticket rates"
+          "name": "Delivery Promise",
+          "role": "Both Bethlehem plans assume the selected service can meet the same promise"
         }
       ],
       "dependencies": [
         {
           "code": "Domain 2.1 Spec",
           "title": "Architecture — Multi-Node Routing Engine Spec",
-          "role": "Provides the baseline routing rule configurations tested in the simulation."
+          "role": "Describes the baseline and whole-basket policies used in the Bethlehem comparison."
         },
         {
           "code": "Domain 2.2 Matrix",

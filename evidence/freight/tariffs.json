@@ -32,8 +32,8 @@
     "zone_8_per_parcel_cents": 1050
   },
   "lane_scenario": {
-    "id": "D2-THREE-UNIT-CONTROLLED-COMPARISON",
-    "destination": "Denver, CO (scenario destination; actual ZIP-pair zones not verified)",
+    "id": "D2-BETHLEHEM-NEAREST-STOCKED-COMPARISON",
+    "destination": "Bethlehem, PA 18018",
     "basket": [
       { "sku": "SYN-FSTK-MY", "quantity": 2 },
       { "sku": "SYN-TNCT-AM", "quantity": 1 }
@@ -44,17 +44,10 @@
     },
     "inventory_scope": "Synthetic reservation-capacity fixture for this comparison; not a recorded warehouse stock snapshot or permanent exclusivity claim",
     "lanes": {
-      "LOC-PA-01": { "modeled_bucket": "6", "freight_per_parcel_cents": 810 },
-      "LOC-NV-02": { "modeled_bucket": "4", "freight_per_parcel_cents": 640 }
+      "LOC-PA-01": { "distance_rank": 1, "modeled_bucket": "2", "freight_per_parcel_cents": 540 },
+      "LOC-NV-02": { "distance_rank": 2, "modeled_bucket": "8", "freight_per_parcel_cents": 1050 }
     },
-    "split_plan": [
-      { "node": "LOC-PA-01", "items": [{ "sku": "SYN-FSTK-MY", "quantity": 2 }] },
-      { "node": "LOC-NV-02", "items": [{ "sku": "SYN-TNCT-AM", "quantity": 1 }] }
-    ],
-    "consolidated_plan": [
-      { "node": "LOC-NV-02", "items": [{ "sku": "SYN-FSTK-MY", "quantity": 2 }, { "sku": "SYN-TNCT-AM", "quantity": 1 }] }
-    ],
-    "scope": "Controlled feasible-plan comparison. It does not establish that closest-node routing would split this basket; Reno can already supply the full basket. Fixed per-parcel scenario freight excludes billable-weight changes and surcharges."
+    "scope": "The ranking and buckets are scenario inputs for Bethlehem. Parcel plans are computed from that ranking and the reservation fixture. Fixed per-parcel freight excludes billable-weight changes and surcharges. Both plans assume the selected service can meet the delivery promise."
   },
   "cohort_scenario": {
     "orders_with_two_units": 310,

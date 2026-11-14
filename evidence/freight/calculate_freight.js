@@ -40,6 +40,19 @@ function quantities(items) {
   }
   return Object.fromEntries(Object.entries(totals).sort(([a], [b]) => a.localeCompare(b)));
 }
+function canSupply(node, sku, quantity) {
+  return (lane.available_to_promise_fixture[node]?.[sku] ?? 0) >= quantity;
+}
+function nearestStockedPlan(rankedNodes, items) {
+  const itemsByNode = new Map();
+  for (const { sku, quantity } of items) {
+    const node = rankedNodes.find(candidate => canSupply(candidate, sku, quantity));
+    assert.ok(node, `No stocked node can supply ${sku}`);
+    if (!itemsByNode.has(node)) itemsByNode.set(node, []);
+    itemsByNode.get(node).push({ sku, quantity });
+  }
+  return Array.from(itemsByNode, ([node, items]) => ({ node, items }));
+}
 function pricePlan(plan) {
   assert.ok(plan.length > 0);
   assert.deepEqual(quantities(plan.flatMap(parcel => parcel.items)), quantities(lane.basket), 'Plan must contain exactly the requested basket');
@@ -64,7 +77,7 @@ function pricePlan(plan) {
   assert.ok(Number.isSafeInteger(totalPlanCents) && totalPlanCents >= 0, 'Plan total must be safe integer cents');
   return { parcels, units: totalUnits, total_cents: totalPlanCents };
 }
-let split, consolidated, modeledCohort;
+let consolidatedPlan, split, consolidated, modeledCohort;
 await suite.check('All monetary inputs are nonnegative safe integer cents', () => {
   function inspect(value) {
     for (const [key, v] of Object.entries(value)) {
@@ -76,9 +89,25 @@ await suite.check('All monetary inputs are nonnegative safe integer cents', () =
 });
 await suite.check('Three-pick parcel handling equals $4.10 under the declared model', () => assert.equal(handling(1, 3), 410));
 await suite.check('Three units split across two parcels cost $7.00 handling', () => assert.equal(handling(2, 3), 700));
-await suite.check('Both priced plans reserve the complete basket within fixture capacity', () => {
-  split = pricePlan(lane.split_plan); consolidated = pricePlan(lane.consolidated_plan);
-  assert.equal(split.units, consolidated.units); assert.equal(split.units, 3);
+await suite.check('Nearest stocked nodes split the basket while Reno can reserve all three units', () => {
+  const rankedNodes = Object.keys(lane.lanes).sort((a, b) => lane.lanes[a].distance_rank - lane.lanes[b].distance_rank);
+  const basket = Object.entries(quantities(lane.basket)).map(([sku, quantity]) => ({ sku, quantity }));
+  const rank = rankedNodes.map(node => lane.lanes[node].distance_rank);
+  assert.deepEqual(rank, [1, 2]);
+  assert.deepEqual(rankedNodes, ['LOC-PA-01', 'LOC-NV-02']);
+  const splitPlan = nearestStockedPlan(rankedNodes, basket);
+  assert.deepEqual(splitPlan, [
+    { node: 'LOC-PA-01', items: [{ sku: 'SYN-FSTK-MY', quantity: 2 }] },
+    { node: 'LOC-NV-02', items: [{ sku: 'SYN-TNCT-AM', quantity: 1 }] }
+  ]);
+  const fullBasketNodes = rankedNodes.filter(node => basket.every(({ sku, quantity }) => canSupply(node, sku, quantity)));
+  assert.deepEqual(fullBasketNodes, ['LOC-NV-02']);
+  consolidatedPlan = [{ node: fullBasketNodes[0], items: basket }];
+  assert.deepEqual(nearestStockedPlan(rankedNodes.toReversed(), basket), consolidatedPlan);
+  split = pricePlan(splitPlan);
+  consolidated = pricePlan(consolidatedPlan);
+  assert.equal(split.units, 3);
+  assert.equal(consolidated.units, 3);
 });
 await suite.check('Unavailable tincture cannot be allocated to Allentown', () => {
   assert.throws(() => pricePlan([{ node: 'LOC-PA-01', items: lane.basket }]), /Insufficient/);
@@ -97,16 +126,16 @@ await suite.check('Reservations are aggregated across parcels at the same node',
     ]), /Insufficient/);
   } finally { lane.available_to_promise_fixture['LOC-PA-01']['SYN-FSTK-MY'] = capacity; }
 });
-await suite.check('Split $21.50 and consolidated $10.50 derive from parcel line items', () => {
-  assert.equal(split.total_cents, 2150); assert.equal(consolidated.total_cents, 1050);
-  assert.equal(split.total_cents - consolidated.total_cents, 1100);
+await suite.check('Nearest-stocked split $22.90 and Reno consolidation $14.60 derive from parcel line items', () => {
+  assert.equal(split.total_cents, 2290); assert.equal(consolidated.total_cents, 1460);
+  assert.equal(split.total_cents - consolidated.total_cents, 830);
   for (const p of [...split.parcels, ...consolidated.parcels]) assert.equal(p.total_cents, p.freight_cents + p.handling_cents);
 });
 await suite.check('Changing a lane cost propagates into the plan total without a hidden surcharge', () => {
   const prior = lane.lanes['LOC-NV-02'].freight_per_parcel_cents;
   try {
     lane.lanes['LOC-NV-02'].freight_per_parcel_cents += 37;
-    assert.equal(pricePlan(lane.consolidated_plan).total_cents, consolidated.total_cents + 37);
+    assert.equal(pricePlan(consolidatedPlan).total_cents, consolidated.total_cents + 37);
   } finally { lane.lanes['LOC-NV-02'].freight_per_parcel_cents = prior; }
 });
 await suite.check('Five-hundred-order fixture preserves paired units and parcel counts', () => {
@@ -189,15 +218,19 @@ const markdown = split && consolidated && modeledCohort ? `# Workstream A — Fr
 
 All amounts are declared scenario inputs calculated in integer cents. The listed USPS/UPS URLs identify possible reference sources; no current tariff, dated historical tariff, ShipBob quotation, ZIP-zone assignment or invoice is verified by this suite.
 
-## Controlled three-unit comparison
+## Bethlehem three-unit comparison
 
-Basket: two SYN-FSTK-MY units and one SYN-TNCT-AM unit. The synthetic reservation fixture allows the full basket at Reno and sticks only at Allentown. Model buckets 4/6 are pricing inputs, not verified Denver postal zones. A forced split is compared with feasible consolidation; the comparison does not demonstrate that a closest-node rule would select the split.
+Destination: **${lane.destination}**. The basket has two SYN-FSTK-MY units and one SYN-TNCT-AM unit. Allentown ranks first by proximity and can fulfill the sticks. Reno ranks second, holds the only available tincture, and can fulfill the entire basket. The per-line rule looks for the nearest node with stock for each requested line and produces two parcels. A whole-basket check finds the one-parcel alternative in Reno. Model buckets 2 (Allentown) and 8 (Reno) are declared pricing inputs. Both plans assume the selected service can meet the delivery promise.
 
 | Split parcel node | Picked units | Freight | Handling | Total |
 |---|---:|---:|---:|---:|
 ${planRows(split)}
 
-Split total: **${money(split.total_cents)}**. Reno consolidated total: **${money(consolidated.total_cents)}**. Difference: **${money(split.total_cents - consolidated.total_cents)}**.
+| Consolidated parcel node | Picked units | Freight | Handling | Total |
+|---|---:|---:|---:|---:|
+${planRows(consolidated)}
+
+Split total: **${money(split.total_cents)}**. Reno consolidated total: **${money(consolidated.total_cents)}**. Difference: **${money(split.total_cents - consolidated.total_cents)}** (${((split.total_cents - consolidated.total_cents) / split.total_cents * 100).toFixed(2)}%).
 
 Handling is $2.50 base + $0.80 corrugate per parcel + $0.40 per pick after the first. There is no extra cart penalty. Weights, service-specific surcharges and re-rating are excluded from this fixed-input comparison.
 
@@ -208,7 +241,7 @@ The theoretical lower bound compares two hypothetical local Zone 2 shipments aga
 - One Zone 8 parcel: ${money(zones.zone_8_per_parcel_cents)} freight + ${money(handling(1, 3))} handling = **${money(zones.zone_8_per_parcel_cents + handling(1, 3))}**.
 - Net consolidation advantage: **${money((zones.zone_2_per_parcel_cents * 2 + handling(2, 3)) - (zones.zone_8_per_parcel_cents + handling(1, 3)))}**.
 
-This confirms that even under an extreme theoretical assumption deliberately favoring the split, consolidating into a single parcel remains cheaper by at least $3.20 under the declared rate card. This theoretical comparison is distinct from the Denver comparison and the 500-order cohort model.
+This confirms that even with two hypothetical local parcels, consolidating into a single parcel remains cheaper by at least $3.20 under the declared rate card. The Bethlehem example and the 500-order cohort use separate inputs.
 
 ## Paired-basket cohort model
 

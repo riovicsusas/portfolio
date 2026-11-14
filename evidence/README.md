@@ -32,7 +32,7 @@ All commands run from the repository root on Windows, macOS or Linux. The checke
 
 | Workstream | Evidence | Scope |
 |---|---|---|
-| [Freight](freight/summary.md) | Reserve-feasible modeled parcel plans, handling, cohort and scale arithmetic | Declared scenario rates; public source candidates are not certified tariffs |
+| [Freight](freight/summary.md) | Nearest-stocked allocation versus whole-basket consolidation, stock and cost checks, and separate cohort arithmetic | Declared scenario rates; public source candidates are not certified tariffs |
 | [Coordinator](latency/summary.md) | Operation identity, duplicate outcomes, cutoff/reconciliation behavior and local restart recovery; seeded timing workloads | Local SQLite and WMS/Shopify simulation, not Redis, SQS or vendor performance |
 | [Barcodes](barcodes/summary.md) | Exact SKU mapping, checksum, invalid-input rejection and shared-table bitstream round trips | Synthetic UPC fixtures; no GS1 ownership, independent optical reader or warehouse scanner claim |
 | [Costs](costs/summary.md) | Component BOM, cent-rounded processing, contribution branches and sensitivity | Scenario costs; not historical procurement invoices |
@@ -43,9 +43,9 @@ Every executed check is counted. Skips and failures are separate. A failed check
 ## Results and provenance
 
 - Each workstream's JSON report and `summary.md` show its latest execution.
-- `latest_run.json` records the whole-suite status, runtime, assertion totals, source hashes and output hashes.
+- `latest_run.json` records the status, runtime, assertion totals, and hashes from the most recent whole-suite run. Individual workstream runs refresh their own reports.
 - Every execution creates a separate `evidence/runs/<run-id>/` directory with the reports and additional raw records. These local archives are ignored by Git so repeated runs do not bloat the repository.
-- `sample-run/` contains a checked-in representative execution, including the operation records underlying its latency summary. Regenerate new archives with the commands above; compare method and outcomes rather than expecting identical wall-clock timings.
+- `sample-run/` contains a checked-in representative execution, including the operation records underlying its latency summary. Its freight example predates the Bethlehem fixture. See the [current freight report](freight/summary.md) for the active case. Regenerate new archives with the commands above; compare method and outcomes rather than expecting identical wall-clock timings.
 - `archive/baseline-4cb2048/` preserves the earlier committed outputs. Those reports predate these validation corrections and do not certify their old claims.
 - Source/code and input hashes identify the tested content even before a new Git commit exists. The base revision alone is not proof that the working tree was clean.
 

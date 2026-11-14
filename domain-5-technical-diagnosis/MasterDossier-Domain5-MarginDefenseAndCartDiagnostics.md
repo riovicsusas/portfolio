@@ -282,7 +282,7 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 | `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $11.66 | **$11.53** | **$4.47** | **27.9%** |
 | `SYN-BNDL-MAO` | Starter Bundle (Kitted Scenario)* | $82.00 | $28.40 | $4.50 | $7.20 | $42.78 | **$41.61** | **$40.39** | **49.3%** |
 
-² The single-SKU illustrations declare $3.70 handling and $5.85 freight per shipment. Order #29863 declares $4.10 handling and $6.50 freight for one parcel containing both items. These are the inputs used in Section 6.5. The separate routing model charges $2.50 base fulfillment plus $0.80 corrugate per parcel and $0.40 for each physical unit picked after the first. That schedule gives $3.30 for one unit and $4.10 for three units in one parcel. [Domain 2 Section 2.3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) derives that schedule and applies it to the three-unit Denver basket.
+² The single-SKU illustrations declare $3.70 handling and $5.85 freight per shipment. Order #29863 declares $4.10 handling and $6.50 freight for one parcel containing both items. These are the inputs used in Section 6.5. The separate routing model charges $2.50 base fulfillment plus $0.80 corrugate per parcel and $0.40 for each physical unit picked after the first. That schedule gives $3.30 for one unit and $4.10 for three units in one parcel. [Domain 2 Section 2.3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) derives that schedule and applies it to the three-unit Bethlehem basket.
 
 *\*Bundle BOM reflects the $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).*
 
