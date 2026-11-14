@@ -1,12 +1,12 @@
-# The Customer Fixed His Address in Four Seconds. The Warehouse Never Heard.
+# 133 Seconds to Stop a Wrong Label: A Staged Freeze-First Trace
 
-**Why a "saved" change can't stop a package already in the queue**
+**A staged Shopify-to-warehouse address-correction trace, the Freeze-First protocol behind it, and a clear line between what was tested and what was modeled.**
 
 *Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Compiled 2026-11-10*
 
 ---
 
-## 1. Four Seconds to Save, 133 to Stop: The Storefront–Warehouse Desynchronization
+## 1. Four Seconds to Save, 133 to Stop: A Staged Storefront–Warehouse Desync Trace
 
 Marcus Chen fixes his shipping address on his phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
 
@@ -41,12 +41,14 @@ The wrong label never printed because the order was physically prevented from mo
 | **Origin & Route** | Origin `LOC-PA-01` (Allentown, PA). Wrong destination: Scranton, PA. Correct destination: Binghamton, NY. **49-mile interstate delta.** | The correction crosses a state line, so zone, node, and tax-jurisdiction inputs all change. |
 | **Ingestion Window** | Ticket received **10:14:00 EST**, 11 minutes after checkout. The order had entered WMS at 10:04:12. | The order was already in the warehouse queue when the customer asked to change it. |
 | **Safety Invariant** | **Freeze-First**: confirm the *physical* queue lock before any mutation; release only the hold you placed. | An unconfirmed freeze is not a freeze. |
-| **Financial Exposure** | Order #18404 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; Section 3 illustrates these using a separate one-pack example.. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
-| **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Release confirmed at **10:16:13 EST** after **133 seconds**; order resumed at **10:16:15 EST** after **135 seconds.** |
+| **Financial Exposure** | Order #18404 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; Section 3 illustrates these using a separate one-pack example. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
+| **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Release confirmed at **10:16:13 EST** after **133 seconds**; order resumed at **10:16:15 EST** after **135 seconds.** | In this staged trace, the wrong label never printed: the order was held, corrected, and released before it re-entered the wave queue. |
 
 ---
 
-## 2. One Status, Three Risk Levels: The Five-Stage Warehouse State Model
+## 2. One Label, Three Realities: Five Warehouse Stages Behind Shopify's 'In Progress'
+
+*Answers when an order can still be edited: full changes early, address-only with a supervisor freeze mid-wave, and no storefront changes after the pick scan.*
 
 Shopify Admin has one dial for fulfillment. The warehouse has five physical stages. They run on **different clocks**, and the storefront clock is the one that lies.
 
@@ -113,7 +115,9 @@ Stage 2 represents the narrow corridor between the two boundaries. In Stage 2, l
 
 ---
 
-## 3. What One Wrong Carton Really Costs: Unit Economics and FDA Scrap
+## 3. $50.70 Worse Off Per Carton: Modeled Single-Pack Refund and Scrap-Policy Economics
+
+*Walks through an illustrative one-pack loss, why Synapse's quality procedure bars reselling returned supplements, and how 150 monthly tickets scale it.*
 
 The 133-second protocol kept Order #18404’s two-pack shipment on the correct route. To show how mis-shipment costs accumulate, this section uses a separate single-pack illustration.
 
@@ -203,11 +207,13 @@ $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address E
 | **Direct cash drain** | $23.70 | **$3,555.00 / month** | **$42,660.00 / year** |
 | **Contribution deterioration** | $50.70 | **$7,605.00 / month** | **$91,260.00 / year** |
 
-A robust integration protocol that freezes warehouse execution in under 18 seconds does not merely improve customer satisfaction—At 150 modeled single-pack refund events per month, the contribution exposure reaches **$7,605 monthly**, or **$91,260 annually**.
+A robust integration protocol that freezes warehouse execution in about 18 seconds does not merely improve customer satisfaction; it also protects margin. At 150 modeled single-pack refund events per month, the contribution exposure reaches **$7,605 monthly**, or **$91,260 annually**.
 
 ---
 
-## 4. Anatomy of a 133-Second Freeze: Dissecting Order #18404
+## 4. 114 Seconds You Own, 19 You Rent: Staged Latency Breakdown of Order #18404
+
+*Follows the hold, verification, update, and release against timestamps, identifies the slowest step, and lists the four wire payloads.*
 
 ### 4.1 Order & Exception Ingestion Profile
 
@@ -420,7 +426,7 @@ mutation ReleaseOurHoldOnly($id: ID!, $holdIds: [ID!]) {
 
 ---
 
-## 5. Why "We Have Four Minutes" Was Wrong: The Expedited Priority Bypass
+## 5. No Four-Minute Cushion: Expedited SLA Routing and the 600-Second Design Budget
 
 A support agent sees an order 11 minutes old and reasons: *"Standard orders sit in a 15-minute buffer. We have four minutes."* For Order #18404, that reasoning was wrong.
 
@@ -457,7 +463,9 @@ The 600-second figure is a *design budget*, not a measured wave cadence. Note th
 
 ---
 
-## 6. Freeze, Verify, Mutate, Release: The Freeze-First Protocol
+## 6. Lock Before You Touch: The Four-Gate Freeze-First Protocol for Order Edits
+
+*Lays out the ordered checkpoints an order change must clear, what each one demands, and how a timeout or picked order is routed.*
 
 The Freeze-First protocol enforces a strict, ordered state transition that guarantees the storefront never gets ahead of the warehouse floor.
 
@@ -507,7 +515,9 @@ In this case, Order #18404 received a verified warehouse lock 18 seconds after t
 
 ---
 
-## 7. 200 Means "Got It," Not "Stopped": Reading Warehouse and Shopify Telemetry
+## 7. Acknowledged, Unknown, or Too Late: How to Read 200, 504, and 422 Codes
+
+*Maps each Shopify and warehouse response to what actually happened on the floor and the action required, and why a timeout is riskiest.*
 
 Three status codes decide what happens next, and they do not mean what they appear to mean.
 
@@ -543,7 +553,9 @@ Three status codes decide what happens next, and they do not mean what they appe
 
 ---
 
-## 8. One Gate, Three Playbooks: Address Correction, Flavor Exchange, and Hard Lockout
+## 8. Stage Decides the Playbook: Address Fix, Flavor Swap, Cancellation, and Intercept
+
+*Shows how a single physical-state check routes each request, then walks through the ordered steps and safeguards for each of the three paths.*
 
 Every customer request, whether address edit, flavor swap, or cancellation, enters through **the same physical-state gate**. The playbooks differ in what happens after it.
 
@@ -616,7 +628,9 @@ Notify the customer`"]
 
 ---
 
-## 9. Four Laws That Keep the Database Honest: Rules for the Order Lifecycle
+## 9. Hold First, Release Only Yours: Four Laws for Safe Order Mutation
+
+*Gives readers a short checklist: when to freeze, what proves a stop, how far a release may reach, and when editing ends.*
 
 1. **Freeze First, Mutate Second**: Never change an order that has not been physically held. A mutation without a freeze is a race you have chosen to run.
 2. **Receipt Is Not a Stop (Confirm the Lock, Not the 200)**: An acknowledgment proves only that a packet reached a server. The only signal that clears a mutation is a confirmed `SHIPMENT_ON_HOLD` queue token.
@@ -625,7 +639,7 @@ Notify the customer`"]
 
 ---
 
-## 10. Invisible When It Works: The Architectural Takeaway
+## 10. Invisible When It Works: What a Correct Integration Layer Looks Like
 
 Marcus Chen never learned that his order spent two minutes in suspended animation. His carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
 
@@ -637,7 +651,9 @@ In e-commerce, it is trivial to build software that works when everything goes s
 
 ---
 
-## 11. Staged Scenario, Tested Mechanics: Evidence Scope and Verification Status
+## 11. What Ran, What Didn't: Locally Executed Tests Versus Staged and Modeled Claims
+
+*Sorts each claim by evidence level, from executed locally to not established, then reports the simulator benchmark's latency percentiles and business-effect counts.*
 
 In accordance with rigorous systems architecture principles, this section strictly separates locally verified software test suites from operational specifications.
 
