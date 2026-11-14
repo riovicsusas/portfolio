@@ -545,22 +545,24 @@ Three status codes decide what happens next, and they do not mean what they appe
 
 Every customer request, whether address edit, flavor swap, or cancellation, enters through **the same physical-state gate**. The playbooks differ in what happens after it.
 
-```text
-                    ┌─────────────────────────────┐
-                    │     CUSTOMER EXCEPTION      │
-                    └──────────────┬──────────────┘
-                                   ▼
-                    ┌─────────────────────────────┐
-                    │  PONR GATE (physical stage) │
-                    └───┬──────────┬───────────┬──┘
-          Stage 0–1     │ Stage 2  │           │  Stage 3–4
-                        ▼          ▼           ▼
-       ┌──────────────────┐ ┌─────────────┐ ┌──────────────────────────┐
-       │ PLAYBOOK A       │ │ Supervisor  │ │ PLAYBOOK C               │
-       │ Address (CASS)   │ │ queue freeze│ │ Cancel / Hard Lockout    │
-       │ PLAYBOOK B       │ │ (address    │ │ → UPS Delivery Intercept │
-       │ Flavor exchange  │ │  only)      │ │ → transparency macro     │
-       └──────────────────┘ └─────────────┘ └──────────────────────────┘
+```mermaid
+flowchart TD
+    Request["Customer exception"] --> Gate["PONR gate · Physical warehouse stage"]
+
+    Gate -->|"Stages 0–1"| Early["`**Playbook A** · CASS address correction
+**Playbook B** · 1:1 flavor exchange`"]
+
+    Gate -->|"Stage 2"| Wave["`**Playbook A** · Address correction only
+Confirm the supervisor queue freeze in WMS
+before picking begins`"]
+
+    Gate -->|"Stages 3–4"| Late["`**Playbook C** · Hard lockout
+Request UPS Delivery Intercept if eligible
+Notify the customer`"]
+
+    style Early fill:#d4edda,stroke:#28a745,color:#142533
+    style Wave fill:#fff3cd,stroke:#ffc107,color:#142533
+    style Late fill:#f8d7da,stroke:#dc3545,color:#142533
 ```
 
 ### 8.1 Playbook A: CASS-Standardized Address Correction
