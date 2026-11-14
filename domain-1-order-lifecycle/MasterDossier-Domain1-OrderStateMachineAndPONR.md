@@ -144,7 +144,7 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 | **Direct out-of-pocket cash drain** | | **$23.70** |
 | Retail price | | $42.00 |
 | Less COGS | | −$8.50 |
-| Less normal outbound freight | -$6.50 |
+| Less normal outbound freight | | −$6.50 |
 | **Normal contribution before unlisted fees** ($42.00 − $8.50 − $6.50) | Economic | **$27.00** |
 | **Contribution deterioration per carton** ($27.00 − (−$23.70))| | **$50.70** |
 
@@ -168,7 +168,18 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-The arithmetic: $\$8.50 + \$6.50 + \$7.20 + \$1.50 = \mathbf{\$23.70}$; $\$42.00 - \$8.50 = \mathbf{\$33.50}$; Normal contribution is **$27.00** ($42.00 − $8.50 − $6.50). Failed-order contribution after the full refund is **−$23.70**. The deterioration is **$50.70**, or **120.7%** of the $42.00 retail price.
+A single Focus Stick Pack 30-Pack (`SYN-FSTK-MY`) sells for **$42.00** and costs **$8.50** to produce. This standalone example assumes **$6.50** in outbound freight. In the mis-shipment scenario, the merchant issues a full refund, pays to bring the carton back, and has it destroyed. The model excludes replacement shipments, customer shipping revenue, pick-and-pack handling, and payment processing fees.
+
+| Component | Successful sale | Mis-shipment | Why it’s included |
+|---|---:|---:|---|
+| Sales revenue kept | $42.00 | $0.00 | The merchant keeps the sale price when the order succeeds. A full refund leaves no sales revenue. |
+| Product cost (COGS) | $8.50 | $8.50 | Both outcomes use one carton. The merchant sells it in the first case and writes off its cost when the returned carton is destroyed. |
+| Outbound freight | $6.50 | $6.50 | The carrier charges to ship the carton out in both cases. |
+| Return freight | $0.00 | $7.20 | The carrier charges to bring the mis-shipped carton back. |
+| Quarantine and destruction | $0.00 | $1.50 | The warehouse charges to set the returned carton aside and destroy it. |
+| **Contribution after listed costs** | **$27.00 kept** | **$23.70 lost** | Subtract the listed costs from the sales revenue kept in each scenario. |
+
+**The mis-shipment leaves a $23.70 loss.** A successful sale would have left **$27.00 in contribution**, so the merchant ends up **$50.70 worse off**. That difference comes from **$42.00 refunded to the customer** and **$8.70 in extra return and disposal costs**. The carton and outbound shipping cost the same either way.
 
 > [!NOTE]
 > **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemizes the replacement branch.
