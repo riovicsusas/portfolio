@@ -29,7 +29,7 @@ At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved f
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
 > [!CAUTION]
-> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 10 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
+> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
 
 ### Executive Incident Matrix
 
@@ -537,7 +537,7 @@ Three status codes decide what happens next, and they do not mean what they appe
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Why 504 is the most dangerous signal.** A timeout after the remote side already succeeded looks identical to a timeout where nothing happened. A blind retry with a *fresh* key can double-apply; a retry with the *same* key and a reconciliation read cannot. The offline harness exercises both cases (Section 10).
+**Why 504 is the most dangerous signal.** A timeout after the remote side already succeeded looks identical to a timeout where nothing happened. A blind retry with a *fresh* key can double-apply; a retry with the *same* key and a reconciliation read cannot. The offline harness exercises both cases (Section 11).
 
 ---
 
@@ -623,7 +623,19 @@ Notify the customer`"]
 
 ---
 
-## 10. What Is Proven, and What Is Only Designed
+## 10. The Architectural Takeaway
+
+Marcus Chen never learned that his order spent two minutes in suspended animation. His carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
+
+That is what a correct integration layer looks like: invisible when it works, because it refused to let a four-second tap on a phone outrun a physical conveyor 49 miles away.
+
+In e-commerce, it is trivial to build software that works when everything goes smoothly. What distinguishes enterprise engineering is how a system behaves when a customer changes their mind while an automated warehouse is already in motion.
+
+> *"In a distributed system, database state is an aspiration; physical warehouse state is reality. The job of the integration layer is to ensure the aspiration never outruns the reality."*
+
+---
+
+## 11. What Is Proven, and What Is Only Designed
 
 In accordance with rigorous systems architecture principles, this section strictly separates locally verified software test suites from operational specifications.
 
@@ -633,7 +645,7 @@ In accordance with rigorous systems architecture principles, this section strict
 - [Carrier Recovery Contracts](../evidence/carrier-recovery/summary.md)
 - [Reproducible Evidence Suite](../evidence/README.md)
 
-### 10.1 Evidence Scope & Verification Status Matrix
+### 11.1 Evidence Scope & Verification Status Matrix
 
 | System Component / Claim | Evidentiary Status | Verification Source | Not Established / Scope Boundary |
 |---|---|---|---|
@@ -650,7 +662,7 @@ In accordance with rigorous systems architecture principles, this section strict
 | **FDA 21 CFR Part 111 scrap policy and fee lines** | **Scenario policy** | Declared regulatory inputs | Formal regulatory determination, contract rates |
 | **Production latency, SQS delivery, vendor SLAs** | **Not established** | Architectural design | Live third-party platform guarantees |
 
-### 10.2 Executed SQLite Coordinator Benchmark
+### 11.2 Executed SQLite Coordinator Benchmark
 
 **Run Metadata:** `2026-11-09T18-21-14-457Z-59d713d1` · `Node v24.22.1` · **34 Passed, 0 Failed, 0 Skipped**
 
@@ -681,18 +693,6 @@ The coordinator harness uses Node's built-in SQLite for a local persistent opera
 5. **Uncertainty Handling**: Timeout after remote success reconciles without a second effect; absent effect reconciles before a safe same-key retry; revision change after an uncertain effect is detected.
 6. **Payload Integrity**: Reusing a key for a different order, or with a changed address, is rejected as a conflict.
 7. **Crash Recovery**: A new process recovers an effect persisted before worker termination.
-
----
-
-## 11. The Architectural Takeaway
-
-Marcus Chen never learned that his order spent two minutes in suspended animation. His carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
-
-That is what a correct integration layer looks like: invisible when it works, because it refused to let a four-second tap on a phone outrun a physical conveyor 49 miles away.
-
-In e-commerce, it is trivial to build software that works when everything goes smoothly. What distinguishes enterprise engineering is how a system behaves when a customer changes their mind while an automated warehouse is already in motion.
-
-> *"In a distributed system, database state is an aspiration; physical warehouse state is reality. The job of the integration layer is to ensure the aspiration never outruns the reality."*
 
 ---
 
