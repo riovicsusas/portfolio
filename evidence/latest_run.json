@@ -1,6 +1,6 @@
 {
-  "run_id": "2026-11-12T07-40-53-912Z-566faf52",
-  "started_at": "2026-11-12T07:40:53.914Z",
+  "run_id": "2026-11-14T12-43-55-575Z-3281fe89",
+  "started_at": "2026-11-14T12:43:55.579Z",
   "runtime": {
     "node": "v24.18.0",
     "platform": "win32",
@@ -12,7 +12,7 @@
     {
       "id": "freight",
       "status": "passed",
-      "duration_ms": 213,
+      "duration_ms": 248,
       "counts": {
         "passed": 15,
         "failed": 0,
@@ -20,12 +20,12 @@
         "total": 16
       },
       "report": "freight/results.json",
-      "report_sha256": "b1b3d45af3749cc61b3be205962fe954d7c24827fd83434781ddccf61fb43bad"
+      "report_sha256": "f24878fcc770983cf237fc58ad4faef518223a4fd690664b74339d7b0eafd3be"
     },
     {
       "id": "latency",
       "status": "passed",
-      "duration_ms": 6263,
+      "duration_ms": 3296,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -33,12 +33,12 @@
         "total": 34
       },
       "report": "latency/metrics.json",
-      "report_sha256": "4055b1f1ed42c853f2cfb06c6c3bd4806e5ffa92bd481a13f77ca441cfe45269"
+      "report_sha256": "0407a6c6b1acfc79eaf34002e24ac8f3e06da9441b066f4cf796c96e36faca7f"
     },
     {
       "id": "barcodes",
       "status": "passed",
-      "duration_ms": 189,
+      "duration_ms": 165,
       "counts": {
         "passed": 58,
         "failed": 0,
@@ -46,12 +46,12 @@
         "total": 58
       },
       "report": "barcodes/results.json",
-      "report_sha256": "bb0e596a1022165d2c7e6bbd9d7b2cf2dbaafc506a29a4d96e2c55cf0659290d"
+      "report_sha256": "ded48806db80d4c8d420573f3dabc58305a41078e20c7916bd451086c8895a9a"
     },
     {
       "id": "costs",
       "status": "passed",
-      "duration_ms": 174,
+      "duration_ms": 191,
       "counts": {
         "passed": 11,
         "failed": 0,
@@ -59,12 +59,12 @@
         "total": 11
       },
       "report": "costs/sensitivity.json",
-      "report_sha256": "d4226d128d4559687d6567c8dd47ee5aad670d20c00571b79b30f9bd2869650d"
+      "report_sha256": "c423496f236b8a699dcb9cc3600e34b0bc16abc1cf333ebc9026a461c078506f"
     },
     {
       "id": "carrier-recovery",
       "status": "passed",
-      "duration_ms": 186,
+      "duration_ms": 204,
       "counts": {
         "passed": 34,
         "failed": 0,
@@ -72,7 +72,7 @@
         "total": 36
       },
       "report": "carrier-recovery/results.json",
-      "report_sha256": "bfcbc9389d54bcbbc6ccdf7cf1ae8337cdf78219a06423ecf47a80ad74e2ad2f"
+      "report_sha256": "f31ca5f9df1c42e71c89ce581b3aec7ca15a5fbbe0ea3345071db979adbf59cd"
     }
   ],
   "counts": {
@@ -93,8 +93,8 @@
     "costs/bom_inputs.json": "b458061b538de4e0a3501fce3c8293663bf35114c5197e7bca37bdc4aeae756c",
     "costs/money.js": "24e3fbba01f0f1ac2d051b066dcf413b6dce0de3ea220d3220dcf60b7d6ff8a3",
     "costs/run_cost_model.js": "e808812b8041542779ad8e44b267d13099afef77d2ea5a6668a1b0c1432a4bd6",
-    "freight/calculate_freight.js": "cf6b851ecc8bc64b8b2d09ce74218764a591566aa00557fcae7ef2bf70be2eff",
-    "freight/tariffs.json": "2fd30bfb4c14e5603b486c33a5767d5f946f863386e482bff3a5848356593ae6",
+    "freight/calculate_freight.js": "c9ab825501711b36c34e5e60770927dcc59824a8e62fad71dc0245e0e9a78f34",
+    "freight/tariffs.json": "647fc5bb45f8639289a9cb2508f1af5bcf2bc14b9dccdbe937037b5202b510f5",
     "latency/coordinator.js": "626bdfd22f913b9882e7eb3c21ef20c6188a3a05e6fe149fece24e6fc8742add",
     "latency/coordinator_simulator.js": "0f70189c98fa7228a7c2e8750d43ea1a4c7d7c7d8ba894c6c5691400e2a66f85",
     "latency/restart_worker.js": "4d51e5f1eb8ccbf505a380bb9253ee22b8f0f441d822cc5e1308aad823f4aeb8",
@@ -103,6 +103,6 @@
     "run_all.js": "78b6d7a42247fe8e7d8917dcb61497f4edd866571bd2c4b07c90dc012ee6889d",
     "test_report_accounting.js": "5975ef29627904922d908a35e52a045696ebe2a1e765980baae27608b197eb9f"
   },
-  "finished_at": "2026-11-12T07:41:00.988Z",
+  "finished_at": "2026-11-14T12:43:59.733Z",
   "status": "passed"
 }
