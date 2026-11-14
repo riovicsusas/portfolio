@@ -1,10 +1,12 @@
-# The Zombie Order: How a Correct Address Edit Shipped a Parcel to the Wrong Coast
+# 6 Minutes 48 Seconds and One Timeout: The Modeled Cost of a Zombie Order
+
+**A staged reconstruction of one unconfirmed warehouse hold that sends a $98.00 order to the old address and ends at a modeled −$43.84 contribution.**
 
 *Synapse Botanicals Systems Architecture | Riovic Matthew | Compiled 2026-11-06*
 
 ---
 
-## 1. The Address Said San Francisco. The Box Said Philadelphia.
+## 1. The Address Said San Francisco, the Box Said Philadelphia: Staged Reconstruction of Order #35070
 
 If you run an e-commerce operation, or hire the people who do, the most instructive failure is not a server that crashes. It is a distributed architecture where Shopify proudly reports "success" while the warehouse fulfillment hold silently fails, and an expensive customer order heads 3,000 miles to the wrong coast. 
 
@@ -25,7 +27,9 @@ Here is the incident in one frame: At 13:35 on October 17, 2026, a customer supp
 
 ---
 
-## 2. Two Addresses, One Order
+## 2. A Tincture Can't Go Back on the Shelf: Staged Order Profile and FDA Quarantine Stakes
+
+*Lists the purchase, bundle contents, origin node, and both addresses, then explains why a misdirected consumable becomes a write-off rather than a restock.*
 
 Every asynchronous order mutation begins with a race condition between two destinations: where the customer wants the parcel to go, and where the warehouse queue believes it is already headed.
 
@@ -49,7 +53,9 @@ In the dietary supplement and botanical industry, returned or misdirected parcel
 
 ---
 
-## 3. Thirteen Minutes: Following the Clock
+## 3. 6 Minutes 48 Seconds Between Hold and Wave: Staged Event Chronology and the Divergence Seam
+
+*Traces a timestamped log from order placement through the agent's edit, timeouts, and label printing, with a flowchart and the frontline process flaw behind it.*
 
 Every incident has a number that explains it. In this one, the number is **6 minutes 48 seconds**.
 
@@ -125,7 +131,9 @@ flowchart TD
 
 ---
 
-## 4. Two Error Codes: "I Don't Know" vs. "Too Late"
+## 4. A 504 Asks, a 422 Answers: Staged Hold Responses and Their Semantic Gap
+
+*Shows the outbound request and both error replies in full, then compares what each means, how the system should react, and what went wrong.*
 
 The fundamental architectural failure of this integration was treating two completely distinct HTTP response classes as if they meant the same thing.
 
@@ -210,7 +218,9 @@ Date: Sat, 17 Oct 2026 17:50:19 GMT
 
 ---
 
-## 5. Where It Actually Broke (Root-Cause Analysis)
+## 5. Two of Three Failures Were Design Choices: Staged Root Causes and the Specified Coordinator
+
+*Rates each layer of the breakdown by severity and recoverability, then lays out the five-step protocol that locks physically before any digital edit.*
 
 It is tempting to blame the Cloudflare gateway for the 504 timeout, but network transit interruptions are routine in cloud infrastructure. This incident required three separate architectural flaws to align—and only one of them was a network glitch. The other two were design decisions.
 
@@ -234,7 +244,9 @@ To prevent silent state divergence, distributed e-commerce systems must enforce 
 
 ---
 
-## 6. What One Zombie Order Costs (Unit Economic Autopsy)
+## 6. $98.60 of Damage Control on a $98.00 Sale: Modeled Ledger and Exposure Ceiling
+
+*Itemizes a normal order against the replacement branch, adds the chargeback worst case, and scales the cost across 150 monthly address changes, assuming all fail.*
 
 An engineering flaw becomes an executive business case when you calculate its impact on unit economics. Order #35070 began as a flagship, high-margin sale and ended as an operational loss.
 
@@ -285,7 +297,9 @@ At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
 
 ---
 
-## 7. The Three-Minute Triage Plan (Diagnosing a Runaway Parcel)
+## 7. The Customer Found It Before the System Did: Staged Detection and Specified Triage Plan
+
+*Answers three diagnostic questions in order: what Shopify recorded, whether the warehouse lock ever landed, and where the parcel physically is, each with its finding.*
 
 The system’s automated retry loops did not detect this failure. Elena Vance did—**48 hours after dispatch** (`2026-10-19T13:30:00-04:00`), when her tracking number reported:  
 > *"In Transit: Arrived at UPS Sorting Facility — Philadelphia, PA."*
@@ -338,7 +352,9 @@ query inspectFulfillmentOrderState {
 
 ---
 
-## 8. Containing the Blast Radius: UPS Intercept & FDA Quarantine
+## 8. A Return Request Is Not a Returned Parcel: Specified Carrier Intercept and FDA Quarantine
+
+*Presents the offline UPS fixture with simulated outcomes and fees, a six-step regulatory handling table for the tincture, and the replacement, credit, and notification steps.*
 
 After the modeled wave release at 13:42, the proposed playbook switches from address editing to containment. The retained-sale ledger in Section 6 assumes a confirmed return and a fresh replacement.
 
@@ -402,7 +418,9 @@ If the parcel is recovered and returned to Reno, the proposed workflow puts the 
 
 ---
 
-## 9. Why Fifteen Minutes Was the Wrong Clock (The Architecture Fix)
+## 9. Alarm on the First Uncertain Result: Staged Clock Collision and Specified Queue Design
+
+*Compares the warehouse cutoff with the legacy retry schedule, then details the SQS layout, its settings, and how six domains hand off Order #35070.*
 
 The staged retry schedule reached the warehouse cutoff without a confirmed hold.
 
@@ -477,7 +495,9 @@ The table follows one address change on a $98.00 Starter Bundle. The input colum
 
 ---
 
-## 10. The Four Operational Laws of Order Mutation
+## 10. Lock Before Edit, Retry by ID, Escalate the Unknown: Four Operating Laws for Order Mutation
+
+*Distills the case into three prevention rules and one recovery rule, each tied back to the section where its gap appeared.*
 
 Looking across this architectural autopsy, the first three laws govern prevention before the cutoff; the fourth governs recovery afterward:
 
@@ -488,7 +508,9 @@ Looking across this architectural autopsy, the first three laws govern preventio
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed
+## 11. Ten Deliverables, Ten Evidence Labels: Offline Verification Scope Across Six Domains
+
+*Pairs each technical claim with the way it was checked, from integer-cent ledger arithmetic to staged traces and design specifications, and links the related reading.*
 
 In senior systems architecture, credibility requires clearly distinguishing between what has been empirically verified in test harnesses versus what represents an architectural specification.
 
@@ -511,7 +533,7 @@ The cases below illustrate different failures and controls. Order numbers, timin
 
 ---
 
-## 12. The Architectural Takeaway
+## 12. The Fix Is Not Smarter Retries: Closing Takeaway on Visibility, Ownership, and Urgency
 
 Elena Vance's order did not fail because someone typed the wrong address. It failed because Shopify accepted the new address while the warehouse retained the old one, and the one signal that could have reconciled them—a single `504 Gateway Timeout`—was read as a reason to sleep instead of a reason to sound the alarm.
 

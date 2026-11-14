@@ -1,10 +1,12 @@
-# The Order That Sold Below Cost: How Four Stacked Promotions Turned an $80 Cart Into a Loss
+# Nothing Failed. The Order Still Sold Below Cost.
+
+**How four stacked promotions turned an $80 cart into a modeled −$4.52 loss, and the contribution floor that blocks it**
 
 *Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 5*
 
 ---
 
-## 1. The Hook: Checkout Said "Order Placed." The Ledger Said −$4.52
+## 1. Checkout Said "Order Placed." The Ledger Said −$4.52: The Silent Margin Leak
 
 A direct-to-consumer checkout funnel can lose money in two opposite ways. It can fail loudly, with a frozen button, a silent JavaScript crash, and a customer who never returns. Or it can succeed too well, completing an order that was never worth shipping.
 
@@ -49,7 +51,9 @@ The customer paid **$28.20** for physical goods that cost $21.00 just to manufac
 
 ---
 
-## 2. Two Threats, One Checkout
+## 2. Fail Loudly or Succeed Too Well: The Two Storefront Threats
+
+*A glossary of key terms and the two opposite checkout failures: a frozen cart that loses conversions and a stacked order that loses cash.*
 
 ### 2.1 Systems Architecture Glossary
 
@@ -94,6 +98,8 @@ The two threats require opposite technical disciplines. Threat 2 demands rapid f
 ---
 
 ## 3. When Checkout Fails Loudly: The Three-Minute Triage (<60s MTTI)
+
+*A three-tier forensic checklist with 60, 120, and 180-second budgets: the browser network tab, payment gateway decline codes, then the fulfillment queue.*
 
 When a customer or support agent reports a broken checkout, nobody should guess. The protocol enforces three tiers with cumulative time budgets of 60, 120, and 180 seconds. The target for Tier 1 is an MTTI under 60 seconds.
 
@@ -157,6 +163,8 @@ If payment shows `Authorized` and the order is still unfulfilled, use the order 
 ---
 
 ## 4. When Checkout Succeeds Too Well: The 3×3 Discount Matrix
+
+*Which promotion classes may combine, under what subtotals, and how the rules map onto server-side enforcement with Shopify Functions.*
 
 The diagnostic path above resolves errors that prevent orders from completing. We now address the far more dangerous failure mode: **orders that complete smoothly with promotional combinations that destroy contribution margin**.
 
@@ -248,7 +256,9 @@ $$\text{Cart Transform (Normalization)} \longrightarrow \text{Discount API (Calc
 
 ---
 
-## 5. The Contribution Margin Protection Floor
+## 5. How Much Discount a Basket Can Afford: The Contribution Margin Protection Floor
+
+*The margin formula, why fees must be computed on the discounted payment rather than the sticker price, and the per-SKU ceilings on discount.*
 
 Combination rules define which promotions may coexist; they do not determine how much discount a specific basket can afford. To guarantee that no order is ever sold at an operational loss, every catalog SKU enforces an algorithmic **Contribution Margin Protection Floor**:
 
@@ -293,7 +303,9 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 
 ---
 
-## 6. Following Order #29863 (The Collision Simulation)
+## 6. Four Codes, One $80 Cart: The Collision Simulation of Order #29863
+
+*A step-by-step walk through the unprotected checkout, the same order with rules enforced, the whole-cent floor derivation, and why one box beats two.*
 
 ### 6.1 Baseline Order Configuration
 
@@ -414,7 +426,9 @@ The two separate orders use $7.40 in handling ($3.70 × 2) and $11.70 in freight
 
 ---
 
-## 7. Where the Protection Failed
+## 7. The Missing Floor Was the Decisive Failure: The Root-Cause Failure Mode Matrix
+
+*Five failure modes, which rule or guard each one breaks, and which of them actually appeared in Order #29863.*
 
 ### 7.1 Root-Cause Failure Mode Matrix
 
@@ -430,7 +444,9 @@ The decisive failure was **Defect #4**. Rules 1 through 3 are fast, legible prox
 
 ---
 
-## 8. What the Floor Is Worth (Financial Exposure Scaling)
+## 8. $34.76 on One Order, $34,760 on a Campaign: Modeled Financial Exposure
+
+*The financial swing on Order #29863, how it scales across a 1,000-order campaign, and how the floor shifts with freight cost for a kitted bundle.*
 
 ### 8.1 Financial Swing on Order #29863
 
@@ -483,7 +499,9 @@ The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $
 
 ---
 
-## 9. The Protection in Parts
+## 9. Every Threshold in One Place: The Protection's Configuration Parameters
+
+*A reference table of every threshold, rate, and cost input behind the protection, each with its rationale and the section that explains it.*
 
 ### 9.1 Operational Configuration Parameters
 
@@ -501,7 +519,9 @@ The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $
 
 ---
 
-## 10. Four Rules for Prevention and Recovery
+## 10. Classes, Thresholds, Floors, Responses: Four Rules for Prevention and Recovery
+
+*The four rules distilled from the triage protocol, discount matrix, and margin floor, each stated as something a team can enforce.*
 
 1. **One Discount Per Class**: Product, order, and shipping promotions each exclude their own kind. Never allow intra-class stacking.
 2. **Evaluate Thresholds After Discounts**: Free shipping floors and combination minimums apply to the post-discount subtotal, never the sticker price.
@@ -510,7 +530,9 @@ The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed
+## 11. 11 Local Checks Passed, Live Functions Untested: Evidence Scope and Verification Status
+
+*What was executed locally, what is a worked calculation or documented design, and the live-platform acceptance criteria that remain open.*
 
 In accordance with rigorous systems architecture standards, this dossier strictly separates locally executed test suites from operational deployment specifications.
 
@@ -575,7 +597,7 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ---
 
-## 12. The Architectural Takeaway
+## 12. Margin Leaks Don't Alarm: The Architectural Takeaway
 
 Order #29863 completed without a single error. The customer was served, the payment cleared without friction, the warehouse picked the box, and the financial ledger showed an unrecoverable loss.
 

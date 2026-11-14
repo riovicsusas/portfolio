@@ -1,10 +1,12 @@
-# The Barcode That Became a Number: How a Spreadsheet Rewrote a Catalog Before Anyone Pressed Import
+# The File Looked Perfect. Three Cells Were Already Wrong.
+
+**How a five-second pre-flight check kept a corrupted bulk update out of the store, with zero rows committed**
 
 *Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 3*
 
 ---
 
-## 1. The Hook: The Spreadsheet That Rewrote Production
+## 1. Tidy on Screen, Wrong in the File: The Silent Spreadsheet Rewrite
 
 A spreadsheet is built to present data to a human, not to protect the integrity of a relational record. That design choice is harmless when the data is a budget, but dangerous when the data is an e-commerce product catalog. 
 
@@ -49,7 +51,9 @@ Had the file gone through, two products would have carried barcodes that the war
 
 ---
 
-## 2. The Four Hazard Tiers: Role-Based Catalog Governance
+## 2. Every Column Is a Lever: Four Hazard Tiers and Role-Based Access
+
+*How catalog fields are ranked by the damage a wrong value causes, and why the import file itself acts as the permission boundary.*
 
 Every column in a catalog file is a lever on the live store, and the levers are not equally heavy. 
 
@@ -89,7 +93,9 @@ The same logic protects against spreadsheet coercion: silent mathematical conver
 
 ---
 
-## 3. What a Corrupted Catalog Costs: The $3,900 Blast Radius
+## 3. One Bad Release, $3,900 Out of Pocket: The Modeled Blast Radius
+
+*A deterministic cost model for one unmitigated release, annualized by update frequency and error rate, plus the costs the ledger deliberately leaves out.*
 
 An engineering control is only worth building if the failure it prevents carries a real financial cost. The model below prices an unmitigated release of the corrupted file that the gate intercepted. The model is deterministic: every input is a stated operational assumption, and every output is reproducible arithmetic.
 
@@ -138,7 +144,9 @@ The $3,900.00 figure is a conservative financial floor. It prices only the three
 
 ---
 
-## 4. The Anatomy of Two Spreadsheet Traps
+## 4. The Tool Did Exactly What It Was Built For: Numeric Coercion and Handle Mutation
+
+*Why spreadsheets corrupt 12-digit barcodes, what that does at the pack bench, and how a renamed handle breaks inbound links and search history.*
 
 Both failures in this file begin with a software tool doing precisely what it was designed to do.
 
@@ -210,7 +218,9 @@ The barcode formula explicitly tests `ISTEXT` before evaluating the regex. Conve
 
 ---
 
-## 5. The Pre-Flight Validator: Checksum and Mapping Engine
+## 5. Prove the Math, Then Prove the Product: The Checksum and Mapping Validator
+
+*A worked Modulo-10 check, the validator code, and the approved SKU-to-UPC mapping that decide whether a barcode is both consistent and correct.*
 
 The validator performs two functions: it proves a barcode is internally mathematically consistent, and it proves it belongs to the product it is attached to. The first uses the Modulo-10 algorithm. The second uses the approved SKU-to-UPC master mapping.
 
@@ -315,7 +325,9 @@ The first assertion in `validateBarcodeRecord` is a strict `typeof` check. A bar
 
 ---
 
-## 6. The 9-Point Rejection Matrix: Trapping Malformed Identifiers
+## 6. Nine Ways a Barcode Fails: The Rejection Matrix for Malformed Identifiers
+
+*Each failure type with its fixture and fix, including two traps that pass the arithmetic: all-zero placeholders and valid barcodes on the wrong SKU.*
 
 The validation engine groups rejected mutations into nine failure types. For example, a checksum-valid `850041234021` is rejected on `SYN-FSTK-MY` because that SKU requires the exact text `850041234014`. The offline run exercised 16 negative inputs across these failure types. All 16 produced their expected rejection. The [barcode evidence](../evidence/barcodes/summary.md) lists the individual fixtures and outcomes.
 
@@ -339,6 +351,8 @@ The validation engine groups rejected mutations into nine failure types. For exa
 ---
 
 ## 7. Five Seconds to Abort: The Audit of `Catalog_Mutation_v2.xlsx`
+
+*A timestamped log and chronology of the audit, showing which rule fired on each of the three defects and when the circuit breaker tripped.*
 
 The audit evaluated all 12 variants of `Catalog_Mutation_v2.xlsx`, a seasonal bulk update touching barcodes, handles, prices, and costs.
 
@@ -366,7 +380,9 @@ The audit evaluated all 12 variants of `Catalog_Mutation_v2.xlsx`, a seasonal bu
 
 ---
 
-## 8. Remediation and Master Diff: Exact-String Canonical Recovery
+## 8. Restore, Never Reconstruct: Remediation and the Master Diff
+
+*A before-and-after diff of every corrected field, and why damaged barcodes are restored only from the master mapping, never inferred.*
 
 A damaged barcode cannot be repaired by arithmetic. Once an application converts a barcode into `8.40001E+11`, the original trailing digits are gone. Any algorithm that attempts to "guess" the missing numbers will create duplicate, invalid barcodes.
 
@@ -398,7 +414,9 @@ Reconstruction is especially dangerous when it looks plausible: an 11-digit stri
 
 ---
 
-## 9. The Safe MERGE Lifecycle: 5 Gates and a 16.67% Canary
+## 9. Prune, Command, Lint, Canary, Roll Out: The Five-Gate Safe MERGE Lifecycle
+
+*How non-destructive MERGE leaves unlisted fields untouched, and what each gate must pass before the remaining 10 of 12 variants deploy.*
 
 In standard native Shopify CSV imports, partial updates are destructive: blank cells in an imported spreadsheet can inadvertently erase existing product metafields, overwrite secondary images, or reset inventory quantities to zero. 
 
@@ -447,7 +465,9 @@ Every omitted column (`Barcode`, `Handle`, `Inventory Quantity`, `Title`, `Metaf
 
 ---
 
-## 10. The Four Operational Laws of Catalog Governance
+## 10. A Barcode Is Text, a Handle Is an Address: Four Laws of Catalog Governance
+
+*The protocol distilled into four non-negotiable laws, each tied to the earlier section whose gap it closes.*
 
 Four non-negotiable laws govern catalog data across enterprise commerce:
 
@@ -458,7 +478,9 @@ Four non-negotiable laws govern catalog data across enterprise commerce:
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed
+## 11. Verified in Staging, Not on the Scanner: Evidence Scope and Verification Status
+
+*Which results were verified in staging, which are documented specifications or scenario audits, and why physical scanner performance is not inferred.*
 
 Senior engineering architecture requires rigorous intellectual honesty. We clearly delineate what has been proven through empirical staging test suites versus what represents an operational deployment specification.
 
@@ -499,7 +521,7 @@ Local software agreement is verified. The encoder and decoder agree on all twelv
 
 ---
 
-## 12. The Architectural Takeaway
+## 12. An Identifier, Not a Number: The Architectural Takeaway
 
 Three edits in one file looked completely routine to casual inspection: a barcode that displayed as a number, a barcode one digit short, and a URL handle that had been "tidied." 
 

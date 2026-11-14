@@ -1,10 +1,12 @@
-# The Hold That Landed: How a 133-Second Freeze Kept a Correct Address Correct
+# The Customer Fixed His Address in Four Seconds. The Warehouse Never Heard.
+
+**Why a "saved" change can't stop a package already in the queue**
 
 *Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Compiled 2026-11-10*
 
 ---
 
-## 1. The Hook: The 49-Mile Desynchronization
+## 1. Four Seconds to Save, 133 to Stop: The Storefront–Warehouse Desynchronization
 
 Marcus Chen fixes his shipping address on his phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
 
@@ -44,7 +46,7 @@ The wrong label never printed because the order was physically prevented from mo
 
 ---
 
-## 2. The Illusion of "In Progress" (Five Physical Stages, Two Clocks)
+## 2. One Status, Three Risk Levels: The Five-Stage Warehouse State Model
 
 Shopify Admin has one dial for fulfillment. The warehouse has five physical stages. They run on **different clocks**, and the storefront clock is the one that lies.
 
@@ -111,7 +113,7 @@ Stage 2 represents the narrow corridor between the two boundaries. In Stage 2, l
 
 ---
 
-## 3. What One Mis-Shipped Carton Costs (Unit Economics & FDA Scrap)
+## 3. What One Wrong Carton Really Costs: Unit Economics and FDA Scrap
 
 The 133-second protocol kept Order #18404’s two-pack shipment on the correct route. To show how mis-shipment costs accumulate, this section uses a separate single-pack illustration.
 
@@ -205,7 +207,7 @@ A robust integration protocol that freezes warehouse execution in under 18 secon
 
 ---
 
-## 4. The 133-Second Trace: Dissecting Order #18404
+## 4. Anatomy of a 133-Second Freeze: Dissecting Order #18404
 
 ### 4.1 Order & Exception Ingestion Profile
 
@@ -418,7 +420,7 @@ mutation ReleaseOurHoldOnly($id: ID!, $holdIds: [ID!]) {
 
 ---
 
-## 5. The Priority Bypass Seam: Why T+11 Was Already in Queue
+## 5. Why "We Have Four Minutes" Was Wrong: The Expedited Priority Bypass
 
 A support agent sees an order 11 minutes old and reasons: *"Standard orders sit in a 15-minute buffer. We have four minutes."* For Order #18404, that reasoning was wrong.
 
@@ -455,7 +457,7 @@ The 600-second figure is a *design budget*, not a measured wave cadence. Note th
 
 ---
 
-## 6. The Freeze-First Protocol (The 4-Step Lock)
+## 6. Freeze, Verify, Mutate, Release: The Freeze-First Protocol
 
 The Freeze-First protocol enforces a strict, ordered state transition that guarantees the storefront never gets ahead of the warehouse floor.
 
@@ -505,7 +507,7 @@ In this case, Order #18404 received a verified warehouse lock 18 seconds after t
 
 ---
 
-## 7. Reading the Telemetry: "I Don't Know" vs. "Too Late"
+## 7. 200 Means "Got It," Not "Stopped": Reading Warehouse and Shopify Telemetry
 
 Three status codes decide what happens next, and they do not mean what they appear to mean.
 
@@ -541,7 +543,7 @@ Three status codes decide what happens next, and they do not mean what they appe
 
 ---
 
-## 8. Three Operational Playbooks: One Gate
+## 8. One Gate, Three Playbooks: Address Correction, Flavor Exchange, and Hard Lockout
 
 Every customer request, whether address edit, flavor swap, or cancellation, enters through **the same physical-state gate**. The playbooks differ in what happens after it.
 
@@ -614,7 +616,7 @@ Notify the customer`"]
 
 ---
 
-## 9. The Four Operational Laws of Order Lifecycle
+## 9. Four Laws That Keep the Database Honest: Rules for the Order Lifecycle
 
 1. **Freeze First, Mutate Second**: Never change an order that has not been physically held. A mutation without a freeze is a race you have chosen to run.
 2. **Receipt Is Not a Stop (Confirm the Lock, Not the 200)**: An acknowledgment proves only that a packet reached a server. The only signal that clears a mutation is a confirmed `SHIPMENT_ON_HOLD` queue token.
@@ -623,7 +625,7 @@ Notify the customer`"]
 
 ---
 
-## 10. The Architectural Takeaway
+## 10. Invisible When It Works: The Architectural Takeaway
 
 Marcus Chen never learned that his order spent two minutes in suspended animation. His carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
 
@@ -635,7 +637,7 @@ In e-commerce, it is trivial to build software that works when everything goes s
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed
+## 11. Staged Scenario, Tested Mechanics: Evidence Scope and Verification Status
 
 In accordance with rigorous systems architecture principles, this section strictly separates locally verified software test suites from operational specifications.
 

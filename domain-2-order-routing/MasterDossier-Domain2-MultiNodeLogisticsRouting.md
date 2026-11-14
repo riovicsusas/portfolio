@@ -1,10 +1,12 @@
-# The Second Box Was the Expensive One: Why Proximity Routing Bleeds Margin on Multi-Item Baskets
+# The Warehouse 12 Miles Away Was the Expensive One
+
+**Why the closest node quietly bleeds margin on multi-item baskets**
 
 *Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Master Dossier — Domain 2*
 
 ---
 
-## 1. The Local Box Was the Extra One
+## 1. Twelve Miles Away, $8.30 Lost: The Split-Shipment Surcharge Leak
 
 ### 1.1 The Proximity Illusion: How Getting Closer Doubled the Invoice
 
@@ -62,7 +64,9 @@ The routing engine didn't fail because of an unhandled exception or an inventory
 
 ---
 
-## 2. The Physics of the Rate Card: Why Cardboard Beats Mileage
+## 2. Why Cardboard Beats Mileage: The 3PL Rate Card and Carrier Tariffs
+
+*The fee model behind every routing decision, reduced to one formula, and why a second parcel always adds a fixed $2.90 in handling.*
 
 ### 2.1 Systems Architecture & Scenario Glossary
 
@@ -179,7 +183,9 @@ With the contractual physics established—a guaranteed $2.90 handling penalty p
 
 ---
 
-## 3. The Collision Trace: How Independent Line Evaluation Bleeds $8.30
+## 3. Anatomy of an $8.30 Leak: The Bethlehem Collision Trace
+
+*A side-by-side trace of the same order under two routing policies, with a full cost ledger and the audit record each decision should leave.*
 
 From Bethlehem, PA, Allentown is the nearer warehouse (modeled Zone 2). Reno is the farther warehouse (modeled Zone 8). Both policies see the same inventory and delivery promise. They ask different questions of that inventory.
 
@@ -268,7 +274,9 @@ Saving $8.30 on a single basket in Bethlehem proves the concept for Zone 2 versu
 
 ---
 
-## 4. The Consolidation Bound: Mathematical Proof That Proximity Never Outweighs Packaging
+## 4. Stacking the Deck for the Split, and It Still Loses: The Consolidation Bound
+
+*A test of whether a cheap local lane can ever justify a second box, using worst-case zone premiums and a deliberately generous split scenario.*
 
 Bethlehem gives the distance rule a fair shot. Allentown has a cheap local lane, and Reno has the most expensive lane in the schedule. Can that local rate ever make a two-box plan cheaper? The **Consolidation Bound** answers that question under the modeled rate card.
 
@@ -310,7 +318,9 @@ With mathematical proof that a single consolidated box holds an insurmountable $
 
 ---
 
-## 5. Spotting Leakage: The Three-Question Audit Protocol
+## 5. Three Questions That Expose a Leaking Network: The Split-Shipment Audit Protocol
+
+*Three sequential questions that separate avoidable splits from justified ones, and how to price the leak on real orders.*
 
 Fulfillment engineering teams do not need complex algorithms to identify whether their logistics network is bleeding margin. Auditing any order cohort requires asking three sequential questions:
 
@@ -355,7 +365,9 @@ The three-question audit protocol identifies orders where a single box was feasi
 
 ---
 
-## 6. When a Split Is Unavoidable: Controlled Exception Handling
+## 6. When Splitting Is the Right Call: Controlled Exception Handling
+
+*What to do when no single node can ship the whole basket: fallback options, customer communication rules, and when to rebalance inventory.*
 
 When no one-box plan can meet the delivery promise at a competitive cost, the fallback compares three paths. For Bethlehem, the split remains available if Allentown can still reserve the sticks and Reno can still reserve and ship the tincture within the promise.
 
@@ -379,7 +391,9 @@ Mitigating unavoidable splits through backorders and replenishment handles physi
 
 ---
 
-## 7. Where Routing Leaks: Root-Cause Failure Mode Matrix
+## 7. Four Ways Routing Leaks Margin: Root-Cause Failure Mode Matrix
+
+*Four root causes of split-shipment leakage, which are preventable at routing time, and which one is decisive.*
 
 A comprehensive systems analysis of multi-node order routing identified four primary systemic vulnerability modes:
 
@@ -396,7 +410,9 @@ While an $8.30 leakage on Sarah Jenkins's basket in Bethlehem illustrates the me
 
 ---
 
-## 8. What 500 Orders Cost: The Paired-Cohort Simulation ($728k Enterprise Exposure)
+## 8. From $997 to a Modeled $728K: The 500-Order Paired-Cohort Simulation
+
+*A paired comparison of a high-split and a low-split model across 500 orders, then projected to larger volumes as planning estimates, not audited figures.*
 
 The Bethlehem order explains how a split happens. This separate 500-order simulation shows how parcel counts and freight inputs affect fulfillment spend at scale. The two models use the same 1,190 units and take their split counts and freight totals as inputs.
 
@@ -461,7 +477,9 @@ Quantifying a $728,000 annual margin bleed across an enterprise fleet builds the
 
 ---
 
-## 9. The Three-Tier Architecture: Engineering the Shopify Functions Routing Engine
+## 9. Basket First, Distance Second: The Three-Tier Shopify Functions Waterfall
+
+*Routing rules, parameters, and a flowchart for choosing a one-box plan before proximity, plus how each tier maps onto Shopify's routing APIs.*
 
 The first line can decide the fate of the whole order. Check the basket before committing that line, then compare plans that can meet the delivery promise. Reserve the stock for the winning one-box plan before dispatch. If the rate, packaging, or promise rules out that box, keep the best feasible split on the table.
 
@@ -536,7 +554,9 @@ The three-tier waterfall translates commercial rate card physics into determinis
 
 ---
 
-## 10. Four Principles for Multi-Node Fulfillment Governance
+## 10. Check, Price, Protect, Explain: Four Principles for Multi-Node Fulfillment Governance
+
+*Four rules for multi-node fulfillment, each drawn from the failure modes and cost model shown earlier.*
 
 1. **Check the whole basket first.** Never allow an independent line item to select a regional facility before verifying whether another eligible facility can ship 100% of the customer's cart in a single carton.
 2. **Price every parcel.** Evaluate landed fulfillment cost dynamically across both carrier freight and 3PL handling. Never assume geographic proximity saves money without accounting for the irreducible $\$2.90$ fixed handling toll of a second carton.
@@ -547,7 +567,9 @@ Engineering principles are only as credible as the tests that prove them. To est
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed: Evidence Scope & Verification Status
+## 11. 15 Checks, 0 Failures, 1 Honest Skip: Evidence Scope and Verification Status
+
+*Which results were verified by the offline freight suite, which inputs are declared scenario assumptions, and what the checks do not establish.*
 
 To preserve complete engineering credibility, this dossier strictly distinguishes between what has been verified through offline, reproducible test suites and what represents modeled scenarios or architectural specifications.
 
@@ -586,7 +608,7 @@ The freight suite checks that the Order #35070 fixture retains Philadelphia as t
 
 ---
 
-## 12. The Architectural Takeaway
+## 12. Closest Is a Tie-Breaker, Not a Strategy: The Architectural Takeaway
 
 > *“Allentown was the right warehouse for the sticks when the sticks were the only question. The tincture was already coming from Reno. Asking about the whole basket cut the modeled cost from $22.90 to $14.60.”*
 

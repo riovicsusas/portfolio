@@ -1,10 +1,12 @@
-# The Tag That Wouldn't Stop: How Two Helpful Automations Talked an Order Into an Outage
+# Neither Automation Had a Bug. Together They Created 114 Events in 62 Seconds.
+
+**How a tag loop and a synchronized retry storm each turn automation into an outage, and the guards that stop both**
 
 *Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 4*
 
 ---
 
-## 1. The Hook: 114 Events in 62 Seconds
+## 1. A Routine Update, a Closed Ring: The Runaway Loop on Order #24148
 
 Event-driven business automation feels like free labor. A customer updates a shipping address in an online portal, a tag appears on the order, a workflow reacts in the background, a warehouse management system (WMS) receives an updated routing instruction, and not a single human operator touches a keyboard.
 
@@ -52,7 +54,9 @@ The second failure mode is quieter and just as expensive: when a warehouse endpo
 
 ---
 
-## 2. The Two Fatal Automation Traps
+## 2. No Memory of Its Own Work: Tag Recursion and the 504 Retry Storm
+
+*How a platform-side tag loop and a warehouse-side retry storm start, what each exhausts, and how they share one root cause.*
 
 In distributed e-commerce systems, un-governed event-driven automations typically fail in one of two distinct patterns. They appear unrelated because one lives entirely inside the storefront platform while the other operates across the boundary to external warehouse endpoints. Yet they share a single root cause: **a system reacting to events with zero memory of its own earlier work**.
 
@@ -102,7 +106,9 @@ In naive middleware implementations, failed webhook deliveries are re-enqueued o
 
 ---
 
-## 3. What a Runaway Loop Costs (The $2,162 Blast Radius)
+## 3. A $2,162.50 Floor: The Modeled Blast Radius of a Runaway Loop
+
+*A unit-economic model that prices the incident across SLA credits, overselling, and engineering time, then scales it to a peak-season surge.*
 
 Engineers often evaluate API rate-limiting as a temporary capacity inconvenience. To an executive, API starvation is an immediate operational and cash liability.
 
@@ -156,7 +162,9 @@ Furthermore, an unmitigated 30-minute API blackout during peak traffic carries c
 
 ---
 
-## 4. The 62-Second Autopsy: Dissecting Order #24148
+## 4. Detection Was Not Containment: The 62-Second Autopsy of Order #24148
+
+*A timestamped timeline, phase-by-phase resource breakdown, and three lessons on how the loop grew and why it ran so long.*
 
 ### 4.1 Chronological Forensic Timeline
 
@@ -195,7 +203,9 @@ Furthermore, an unmitigated 30-minute API blackout during peak traffic carries c
 
 ---
 
-## 5. The Negative Check Rule (Shopify Flow Guard Architecture)
+## 5. One Condition Ends the Loop: The Negative Check Rule for Shopify Flow
+
+*The mandatory guard condition for any workflow that adds a tag, how it reduces 114 events to two additions, and the gap it leaves open.*
 
 The fundamental architectural principle for eliminating sequential tag recursion is simple, mandatory, and non-negotiable: **The Negative Check Rule**.
 
@@ -244,7 +254,9 @@ With both flows guarded, the ring executes exactly once: Flow 1 adds `Route-East
 
 ---
 
-## 6. The Concurrency Boundary (Why Tag Checks Alone Are Not Locks)
+## 6. A Tag Check Is Not a Lock: The Concurrency Boundary and the Idempotency Triad
+
+*Why a tag check is not an atomic lock, the three primitives that close the race, and how each ledger state maps to a helpdesk action.*
 
 While the Negative Check Rule completely eliminates **sequential** recursion loops, senior systems architects must recognize its boundary: **A tag check is an application-level guard, not an atomic database lock.**
 
@@ -329,7 +341,9 @@ The local duplicate fixture dispatches one warehouse simulator effect. A concurr
 
 ---
 
-## 7. Status-Code Triage: "I Don't Know" vs. "Stop"
+## 7. "I Don't Know" vs. "Stop": Status-Code Triage for Retries
+
+*How to classify each HTTP response as retry, back off, abort, or reconcile, and the three questions an on-call engineer asks in order.*
 
 Retry policy is a classification problem before it is a timing problem. A critical failure in automation design is treating all HTTP error codes identically. Retrying a client-side validation error (`422`) wastes resources; failing to reconcile an ambiguous timeout (`504`) creates silent shipping desynchronization.
 
@@ -381,7 +395,9 @@ When an on-call engineer receives an alert from the automation bus, they answer 
 
 ---
 
-## 8. The Four-Tier Execution Priority Ladder (State-Gated Ordering)
+## 8. Workflows Don't Run in Diagram Order: The Four-Tier Execution Ladder
+
+*Why workflows on the same trigger run in parallel, and how four tiers chained by committed tags enforce a deterministic order.*
 
 A common mistake in Shopify Flow design is assuming that workflows execute in the visual order they are arranged in an architectural diagram.
 
@@ -424,7 +440,9 @@ Because the state gates are committed as order tags, each tier's workflow must a
 
 ---
 
-## 9. The Asynchronous Queue Architecture (SQS, DLQ & Full Jitter)
+## 9. 500 Retries, 8.3 Calls a Second: The SQS, DLQ, and Full Jitter Design
+
+*The queue topology, retry parameters, and backoff math that spread a synchronized 500-request spike over time, as a design not yet load-tested.*
 
 To defuse the Thundering Herd problem (Trap B), Synapse Botanicals decouples synchronous webhooks from external 3PL APIs using an asynchronous message queue topology:
 
@@ -506,7 +524,9 @@ A synchronized **500-request shockwave is mathematically smoothed into a stable 
 
 ---
 
-## 10. The Four Operational Laws of Business Automation
+## 10. See Your Own Earlier Work Before You Act: Four Laws of Business Automation
+
+*The protocol distilled into four non-negotiable laws, each tied to the earlier section whose gap it closes.*
 
 Across distributed commerce architectures, four non-negotiable laws govern event-driven workflows:
 
@@ -517,7 +537,9 @@ Across distributed commerce architectures, four non-negotiable laws govern event
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed
+## 11. 34 Local Checks Passed, Cloud Untested: Evidence Scope and Verification Status
+
+*What was executed locally, what remains a specification or scenario, and the cloud acceptance criteria still open before deployment.*
 
 In accordance with rigorous systems engineering standards, this dossier strictly separates locally executed test suites from operational deployment specifications.
 
@@ -588,7 +610,7 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ---
 
-## 12. The Architectural Takeaway
+## 12. Two Failures of Memory: The Architectural Takeaway
 
 Order #24148 collapsed because two reasonable automations each trusted the other to know when to stop. The retry storm shares the identical failure mode: a cautious-looking fixed schedule, executed simultaneously by hundreds of callers against a system that had just signaled for room.
 

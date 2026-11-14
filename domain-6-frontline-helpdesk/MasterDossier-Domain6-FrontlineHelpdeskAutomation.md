@@ -1,10 +1,12 @@
-# The Hold Before the Hello: How a Helpdesk Rule Freezes an Order Before Anyone Reads the Ticket
+# 8.4 Seconds Against 252 Minutes: The Modeled Race to Freeze an Order
+
+**A scenario-based helpdesk design that commits a Shopify fulfillment hold before the warehouse's 15-minute wave cycle can pick the order.**
 
 *Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 6*
 
 ---
 
-## 1. The Hook: The Ticket Waited 4.2 Hours. The Warehouse Waited 15 Minutes.
+## 1. The Email Lands, the Wave Rolls: Scenario Setup for the 8.4-Second Hold
 
 Customer support is rarely analyzed as a real-time technical control plane, and that omission is an architectural mistake. When an anxious customer emails *"I need to change my shipping address!"* or *"Cancel my order!"*, support is not merely answering an inquiry. It is operating the frontline control interface for an active, stateful order pipeline, and the people staffing that queue are racing a warehouse automation they cannot see.
 
@@ -55,7 +57,9 @@ An API hold in Shopify is not yet a physical stop on the warehouse floor. The ti
 
 ---
 
-## 2. Two Clocks, One Customer
+## 2. Where the Customer's Email Meets the Warehouse's Clock: Glossary and End-to-End Flow
+
+*Defines eleven working terms, then follows an urgent request from intent detection through the WMS reply to the agent's next step.*
 
 ### 2.1 Systems Architecture Glossary
 
@@ -97,7 +101,9 @@ flowchart TD
 
 ---
 
-## 3. The Helpdesk Sidebar and Its Two HTTP Actions
+## 3. A Shopify Hold Is a Request, Not a Stop: Specification of Two Sidebar HTTP Actions
+
+*Shows the call templates, headers, and body fields behind the freeze and release buttons, and why releasing by specific ID protects concurrent fraud-review locks.*
 
 To prevent agents from toggling between five browser tabs (Shopify Admin, ShipBob WMS, USPS tracking, Gorgias, and Stripe), custom HTTP integration widgets sit inside the Gorgias agent interface. The sidebar displays real-time WMS queue state, carrier tracking telemetry, and one-click order mutation buttons. Two of them carry the operational design.
 
@@ -155,7 +161,9 @@ X-Shopify-Access-Token: {{secrets.SHOPIFY_ADMIN_API_TOKEN}}
 
 ---
 
-## 4. The Four Outcomes: What the Tag Says the Agent May Do
+## 4. Only One Tag Unlocks the Address Field: Four Hold Outcomes and Agent Permissions
+
+*Explains what a support rep may and may not do in each ticket state, and how middleware keeps retried requests from dispatching twice.*
 
 A hold request dispatched to a distributed warehouse has four possible states. The ticket carries the current state as an explicit tag. Frontline agents act strictly on the tag, never on what the Shopify Admin UI implies:
 
@@ -186,7 +194,9 @@ flowchart TD
 
 ---
 
-## 5. Three Tickets, Three Outcomes (Forensic Walkthroughs)
+## 5. The Same Rule, Three Different Endings: Illustrative Walkthroughs of Success, Rejection, and Timeout
+
+*Follows three example emails through timestamped steps to show how the state machine guides each agent decision and what the customer hears.*
 
 These reference walkthroughs illustrate how the four-outcome state machine governs operator decisions across three distinct real-world execution paths. Elapsed time is measured from email ingestion (T+0). **Only the 8.4-second hold commitment latency is a stated scenario figure;** other markers illustrate chronological sequence.
 
@@ -229,7 +239,9 @@ These reference walkthroughs illustrate how the four-outcome state machine gover
 
 ---
 
-## 6. The Rules Engine
+## 6. The Rule That Misses 'Apartment': Specified R-01 Freeze, R-02 Gatekeeper, and Forensic Critique
+
+*Lays out each trigger, condition, and automated action, then examines four gaps: unmatched phrasing, repeat firing, unsafe order stages, and cancellation coverage.*
 
 ### 6.1 Rule R-01: "Freeze-Before-Edit" Address Protection
 
@@ -277,7 +289,9 @@ A senior systems architect must evaluate automation rules as a critic, looking f
 
 ---
 
-## 7. Four Frontline Macro Playbooks
+## 7. Asked, Not Yet Stopped: Specified Macros for Edits, Swaps, Claims, and Intercepts
+
+*Walks through each playbook's conditions and checklist, includes the scripted customer messages, and explains why a carrier's electronic acceptance never proves a parcel was recovered.*
 
 ### 7.1 Macro M-01: Pre-PONR Address Mutation Protocol
 
@@ -327,7 +341,9 @@ A senior systems architect must evaluate automation rules as a critic, looking f
 
 ---
 
-## 8. Escalation and Where the Design Can Break
+## 8. Breaking the Design on Paper First: Escalation Tiers and Six Guarded Defects
+
+*Maps three staffing levels to the problems each handles, then pairs every root-cause breakdown with its classification and safeguard, plus a weekly review loop.*
 
 ### 8.1 Escalation Tiers
 
@@ -360,7 +376,9 @@ The single most critical failure is **Defect #1**. If an agent trusts the Shopif
 
 ---
 
-## 9. What the Automation Is Worth
+## 9. $76 Per Mis-Ship, $1,368 a Month: Modeled Cost Ledger and Planning Range
+
+*Separates conservative itemized savings from softer estimates, applies both to the scenario's 18 monthly incidents, and explains the FDA rules behind writing off returned product.*
 
 ### 9.1 Key Operational Performance Metrics
 
@@ -414,7 +432,9 @@ The figure fully supportable from printed inputs is **$1,368.00 a month**.
 
 ---
 
-## 10. Four Operational Laws of Frontline Automation
+## 10. Hold First, Trust the Tag, Intercept Honestly: Four Operating Laws for Frontline Automation
+
+*Boils the dossier's design into numbered rules covering timing, ticket states, duplicate protection, and what to do and say once the warehouse cutoff has passed.*
 
 1. **Hold Before the Human Reads**: The fulfillment hold must fire programmatically on customer intent within seconds. Waiting for agent availability guarantees losing the warehouse race.
 2. **Act on the Tag, Never the Screen**: Only `CS-ADDR-HOLD-APPLIED` permits an address edit. `PENDING` waits, `REJECTED` escalates to carrier intercept, and `UNKNOWN` goes to TechOps triage.
@@ -423,7 +443,9 @@ The figure fully supportable from printed inputs is **$1,368.00 a month**.
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed
+## 11. 34 of 34 Passed, and What That Doesn't Prove: Offline Carrier-Recovery Evidence and Scope Limits
+
+*Separates what ran from what is only specified or planned, lists the check categories and simulator outcomes, and states the acceptance criteria for cloud deployment.*
 
 In accordance with rigorous systems architecture standards, this dossier clearly delineates executed local test suites from operational deployment specifications.
 
@@ -487,7 +509,7 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ---
 
-## 12. The Architectural Takeaway
+## 12. Seconds to Freeze, Confirmation to Edit: Closing Takeaway and Modeled Savings Range
 
 The support ticket waited 4.2 hours because a customer service queue is engineered for conversation, not for an automated clock. A warehouse management system that polls every 15 minutes does not care how polite the queue is.
 
