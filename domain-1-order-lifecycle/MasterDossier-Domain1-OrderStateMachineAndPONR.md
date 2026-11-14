@@ -29,7 +29,7 @@ At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved f
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
 > [!CAUTION]
-> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in §11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
+> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
 
 ### Executive Incident Matrix
 
@@ -39,7 +39,7 @@ The wrong label never printed because the order was physically prevented from mo
 | **Origin & Route** | Origin `LOC-PA-01` (Allentown, PA). Wrong destination: Scranton, PA. Correct destination: Binghamton, NY. **49-mile interstate delta.** | The correction crosses a state line, so zone, node, and tax-jurisdiction inputs all change. |
 | **Ingestion Window** | Ticket received **10:14:00 EST**, 11 minutes after checkout. The order had entered WMS at 10:04:12. | The order was already in the warehouse queue when the customer asked to change it. |
 | **Safety Invariant** | **Freeze-First**: confirm the *physical* queue lock before any mutation; release only the hold you placed. | An unconfirmed freeze is not a freeze. |
-| **Financial Exposure** | Order #18404 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; §3 illustrates these using a separate one-pack example.. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
+| **Financial Exposure** | Order #18404 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; Section 3 illustrates these using a separate one-pack example.. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
 | **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Release confirmed at **10:16:13 EST** after **133 seconds**; order resumed at **10:16:15 EST** after **135 seconds.** |
 
 ---
@@ -182,11 +182,11 @@ A single Focus Stick Pack 30-Pack (`SYN-FSTK-MY`) sells for **$42.00** and costs
 **The mis-shipment leaves a $23.70 loss.** A successful sale would have left **$27.00 in contribution**, so the merchant ends up **$50.70 worse off**. That difference comes from **$42.00 refunded to the customer** and **$8.70 in extra return and disposal costs**. The carton and outbound shipping cost the same either way.
 
 > [!NOTE]
-> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone §6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemizes the replacement branch.
+> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemizes the replacement branch.
 
 ### 3.3 Scaled Monthly Exposure Model
 
-For this projection, all 150 monthly exceptions are assumed to follow the single-pack refund scenario in §3.2:
+For this projection, all 150 monthly exceptions are assumed to follow the single-pack refund scenario in Section 3.2:
 
 $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address Error Rate} \times \text{Unit Cost}$$
 
@@ -256,10 +256,10 @@ A robust integration protocol that freezes warehouse execution in under 18 secon
 | **10:16:13** | +5s | ShipBob WMS | Adapter verifies WMS transition to `READY_FOR_WAVE_BATCH` | **Warehouse API** |
 | **10:16:15** | +2s | ShipBob WMS | Order resumes in wave eligibility with Binghamton shipping label | Warehouse |
 
-Freeze duration: 10:14:00 $\to$ 10:16:13 = **133 seconds**. Native hold and queue lock took **18 seconds** (10:14:00 $\to$ 10:14:18); internal validation, mutation, and release took **115 seconds** (10:14:18 $\to$ 10:16:13).
+Freeze duration: 10:14:00 → 10:16:13 = **133 seconds**. Native hold and queue lock took **18 seconds** (10:14:00 → 10:14:18). Internal validation, mutation, and release took **115 seconds** (10:14:18 → 10:16:13).
 
 > [!NOTE]
-> **Timestamp reconciliation.** The 18s + 115s = 133s split and the 19s/114s split in §4.3 are the fixed invariants. Measured to the order's resumption at 10:16:15, elapsed time is 135 seconds, so this dossier counts the freeze to **release confirmation (10:16:13)** and treats the final 2 seconds as wave re-entry.
+> **Timestamp reconciliation.** The 18s + 115s = 133s split and the 19s/114s split in Section 4.3 are the fixed invariants. Measured to the order's resumption at 10:16:15, elapsed time is 135 seconds, so this dossier counts the freeze to **release confirmation (10:16:13)** and treats the final 2 seconds as wave re-entry.
 
 ### 4.3 The 19-Second Discovery
 
@@ -501,7 +501,7 @@ flowchart TD
    * *Contract*: Pass exact `holdIds` created in Gate 1.
    * *Invariant*: Confirm the WMS status transitions back to `READY_FOR_WAVE_BATCH` with updated metadata.
 
-In this case, Order #18404 received a verified warehouse lock 18 seconds after ticket ingestion and resumed with the corrected Binghamton label. In the separate Capstone case, Order #35070 received a 504 at the hold gateway and still carried the old Philadelphia destination in the Reno queue. That outcome calls for a warehouse state check before any update or retry. [Capstone §§3–5](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) traces the timeout through the warehouse cutoff.
+In this case, Order #18404 received a verified warehouse lock 18 seconds after ticket ingestion and resumed with the corrected Binghamton label. In the separate Capstone case, Order #35070 received a 504 at the hold gateway and still carried the old Philadelphia destination in the Reno queue. That outcome calls for a warehouse state check before any update or retry. [Capstone Sections 3–5](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) traces the timeout through the warehouse cutoff.
 
 ---
 
@@ -582,7 +582,7 @@ Three status codes decide what happens next, and they do not mean what they appe
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Why 504 is the most dangerous signal.** A timeout after the remote side already succeeded looks identical to a timeout where nothing happened. A blind retry with a *fresh* key can double-apply; a retry with the *same* key and a reconciliation read cannot. The offline harness exercises both cases (§11).
+**Why 504 is the most dangerous signal.** A timeout after the remote side already succeeded looks identical to a timeout where nothing happened. A blind retry with a *fresh* key can double-apply; a retry with the *same* key and a reconciliation read cannot. The offline harness exercises both cases (Section 11).
 
 ---
 
