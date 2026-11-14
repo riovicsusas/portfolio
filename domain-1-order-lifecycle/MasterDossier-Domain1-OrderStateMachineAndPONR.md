@@ -29,7 +29,7 @@ At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved f
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
 > [!CAUTION]
-> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
+> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 10 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
 
 ### Executive Incident Matrix
 
@@ -247,10 +247,10 @@ A robust integration protocol that freezes warehouse execution in under 18 secon
 | **10:04:12** | — | ShipBob WMS | Order drops to WMS queue (Stage 1 begins) | Warehouse |
 | **10:14:00** | T+0s | Gorgias | Support ticket `#T-10492` ingested via webhook | Software |
 | **10:14:02** | +2s | Shopify Flow | Idempotency key `MUT-18404-ADDR` assigned; transaction opened | Software |
-| **10:14:04** | +2s | Shopify Admin | `fulfillmentOrderHold` dispatched (`reason: INCORRECT_ADDRESS`) | Software |
+| **10:14:04** | +2s | Shopify Admin | `fulfillmentOrderHold` dispatched automatically while order was queued (Stage 1, `reason: INCORRECT_ADDRESS`) | Software |
 | **10:14:18** | +14s | ShipBob WMS | Adapter confirms WMS queue lock (`SHIPMENT_ON_HOLD`, Queue `#SB-948102`) | **Warehouse API** |
 | **10:15:22** | +64s | USPS CASS | Normalization returns DPV-valid ZIP+4 (`13901-3412`) | Software |
-| **10:15:30** | +8s | Shopify Admin | `orderUpdate` executed with standardized postal payload; ledger delta $0.00 | Software |
+| **10:15:30** | +8s | Shopify Admin | `orderUpdate` executed with standardized postal payload after WMS queue lock confirmation (ledger delta $0.00) | Software |
 | **10:16:00** | +30s | Coordinator | Coordinator verification and un-editable audit logging | Software |
 | **10:16:08** | +8s | Shopify Admin | `fulfillmentOrderReleaseHold` dispatched specifying explicit `holdIds` | Software |
 | **10:16:13** | +5s | ShipBob WMS | Adapter verifies WMS transition to `READY_FOR_WAVE_BATCH` | **Warehouse API** |
@@ -505,52 +505,7 @@ In this case, Order #18404 received a verified warehouse lock 18 seconds after t
 
 ---
 
-## 7. The Deterministic PONR Gate & Hazard Engine
-
-The engine converts physical risk into a quantitative metric that can be audited, logged, and tested:
-
-$$\text{Hazard Score} = (\text{Physical State Weight} \times 0.4) + (\text{Consumable Risk Weight} \times 0.3) + (\text{Financial Delta Weight} \times 0.3)$$
-
-Scores range from 0.00 to 5.00.
-
-### 7.1 Quantitative Factor Scoring
-
-| Evaluation Dimension | Parameter Condition | Score Weight | Component Value | Operational Rationale |
-|---|---|---|---|---|
-| **1. Physical Warehouse State** *(40% Weight)* | **Stage 0 / 1: Pre-Drop or Queue** | 1.0 | 0.40 | Order resting in digital buffer; zero physical floor friction. |
-| | **Stage 2: Wave Batch Assigned** | 2.5 | 1.00 | Tote allocated, pick list printed; requires supervisor queue freeze. |
-| | **Stage 3: Picked / Packing** | 4.0 | 1.60 | Items in physical tote; carton taping in progress. **Lockout.** |
-| | **Stage 4: Manifested / Dock** | 5.0 | 2.00 | Shipping label affixed; carrier custody imminent. **Irreversible.** |
-| **2. Consumable Risk Tier** *(30% Weight)* | Non-consumable gear (branded water bottle) | 1.0 | 0.30 | Can be restocked upon return without sanitary destruction. |
-| | Sealed ambient accessory (pill organizers) | 2.0 | 0.60 | Inspectable packaging; minimal regulatory write-off risk. |
-| | **Ingestible dietary supplement (Stick Packs)** | 5.0 | 1.50 | **Mandatory FDA cGMP scrap** if chain of custody is broken. |
-| **3. Financial Ledger Delta** *(30% Weight)* | **Net $0.00 balance delta** | 1.0 | 0.30 | Address change or 1:1 identical value flavor exchange. |
-| | Minor adjustment ($\le$ $20.00 tax/shipping) | 2.5 | 0.75 | Requires automated secondary capture or refund authorization. |
-| | Major adjustment (> $50.00 line-item swap) | 5.0 | 1.50 | Requires customer re-authorization; high chargeback exposure. |
-
-### Score Band Governance
-
-| Score Band | System Action | Operational Workflow |
-|---|---|---|
-| **< 2.50** | **Automated Fast-Path Hold** | System automatically executes Gate 1 $\to$ Gate 2 $\to$ Gate 3 $\to$ Gate 4. |
-| **2.50 – 3.19** | **Supervisor-Assisted Freeze** | Automated hold placed; supervisor queue exception required to proceed. |
-| **$\ge$ 3.20** | **Hard Programmatic Lockout** | Rejects storefront mutation immediately; failover to Carrier Intercept. |
-
-### 7.2 Incident Evaluation: Order #18404 vs. Runaway Scenario
-
-| Scenario | Physical (40%) | Consumable (30%) | Financial (30%) | Calculation | Score | System Action |
-|---|---:|---:|---:|---|---:|---|
-| **Order #18404** (Stage 1) | 1.0 | 5.0 | 1.0 | $(1.0 \times 0.4) + (5.0 \times 0.3) + (1.0 \times 0.3) = 0.40 + 1.50 + 0.30$ | **2.20 / 5.00** | **Automated Fast-Path Hold** |
-| **Stage 3 Runaway Scenario** | 4.0 | 5.0 | 1.0 | $(4.0 \times 0.4) + (5.0 \times 0.3) + (1.0 \times 0.3) = 1.60 + 1.50 + 0.30$ | **3.40 / 5.00** | **Hard Programmatic Lockout** |
-
-Note what dominates: even at Stage 1 the consumable term contributes 1.50 of the 2.20 score. Ingestible products start every evaluation with a heavy thumb on the scale, by design.
-
-> [!IMPORTANT]
-> **The Deterministic Binary Floor Invariant**: While the Hazard Score provides prioritization telemetry for support dashboards, **the Physical Warehouse State is an absolute binary override**. If the warehouse reports Stage 3 (`Picked`), the system executes a hard programmatic lockout regardless of whether the Hazard Score is high or low. Mathematical scores assist triage; physical state controls execution.
-
----
-
-## 8. Reading the Telemetry: "I Don't Know" vs. "Too Late"
+## 7. Reading the Telemetry: "I Don't Know" vs. "Too Late"
 
 Three status codes decide what happens next, and they do not mean what they appear to mean.
 
@@ -582,11 +537,11 @@ Three status codes decide what happens next, and they do not mean what they appe
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Why 504 is the most dangerous signal.** A timeout after the remote side already succeeded looks identical to a timeout where nothing happened. A blind retry with a *fresh* key can double-apply; a retry with the *same* key and a reconciliation read cannot. The offline harness exercises both cases (Section 11).
+**Why 504 is the most dangerous signal.** A timeout after the remote side already succeeded looks identical to a timeout where nothing happened. A blind retry with a *fresh* key can double-apply; a retry with the *same* key and a reconciliation read cannot. The offline harness exercises both cases (Section 10).
 
 ---
 
-## 9. Three Operational Playbooks: One Gate
+## 8. Three Operational Playbooks: One Gate
 
 Every customer request, whether address edit, flavor swap, or cancellation, enters through **the same physical-state gate**. The playbooks differ in what happens after it.
 
@@ -608,7 +563,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
        └──────────────────┘ └─────────────┘ └──────────────────────────┘
 ```
 
-### 9.1 Playbook A: CASS-Standardized Address Correction
+### 8.1 Playbook A: CASS-Standardized Address Correction
 
 *The Order #18404 Path.*
 
@@ -626,7 +581,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
    [CASS-ADDR-UPDATE] Raw: 142 Court Street, Apt 3B, Binghamton, NY 13901 -> CASS: 142 COURT ST APT 3B, BINGHAMTON NY 13901-3412. Auth: Gorgias #T-10492. HoldId: 89104.
    ```
 
-### 9.2 Playbook B: 1:1 Consumable Flavor Exchange
+### 8.2 Playbook B: 1:1 Consumable Flavor Exchange
 
 *Available only before Boundary 1: Stage 0–1, prior to wave assignment.*
 
@@ -637,7 +592,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
 5. **Zero-Balance Financial Reconciliation**: Subtotals, promotional discounts, jurisdictional sales taxes, and captured payments must reconcile to exactly **$0.00 net delta**.
 6. **Mutate $\to$ Release**: Execute `orderEditCommit` and release with explicit `holdIds`.
 
-### 9.3 Playbook C: Cancellation & Hard Lockout Failover
+### 8.3 Playbook C: Cancellation & Hard Lockout Failover
 
 *Stage 3 and beyond. Storefront mutations are over; the carrier is the only lever left.*
 
@@ -657,7 +612,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
 
 ---
 
-## 10. The Four Operational Laws of Order Lifecycle
+## 9. The Four Operational Laws of Order Lifecycle
 
 1. **Freeze First, Mutate Second**: Never change an order that has not been physically held. A mutation without a freeze is a race you have chosen to run.
 2. **Receipt Is Not a Stop (Confirm the Lock, Not the 200)**: An acknowledgment proves only that a packet reached a server. The only signal that clears a mutation is a confirmed `SHIPMENT_ON_HOLD` queue token.
@@ -666,7 +621,7 @@ Every customer request, whether address edit, flavor swap, or cancellation, ente
 
 ---
 
-## 11. What Is Proven, and What Is Only Designed
+## 10. What Is Proven, and What Is Only Designed
 
 In accordance with rigorous systems architecture principles, this section strictly separates locally verified software test suites from operational specifications.
 
@@ -676,7 +631,7 @@ In accordance with rigorous systems architecture principles, this section strict
 - [Carrier Recovery Contracts](../evidence/carrier-recovery/summary.md)
 - [Reproducible Evidence Suite](../evidence/README.md)
 
-### 11.1 Evidence Scope & Verification Status Matrix
+### 10.1 Evidence Scope & Verification Status Matrix
 
 | System Component / Claim | Evidentiary Status | Verification Source | Not Established / Scope Boundary |
 |---|---|---|---|
@@ -690,11 +645,10 @@ In accordance with rigorous systems architecture principles, this section strict
 | **Accepted ≠ recovered; duplicate events never repeat a fee; terminal states not overwritten** | **Executed locally** | Carrier suite (34 passed) | Physical carrier interception on trailers |
 | **Printed BOM, contribution, and replacement arithmetic reconcile in whole integer cents** | **Executed locally** | Cost suite (11/11 passed) | Real supplier purchasing contracts, net profit |
 | **The 133-second trace, Order #18404** | **Staged scenario** | Narrative scenario inputs | Any production wall-clock measurement |
-| **Hazard weights, band edges, factor scoring values** | **Designed** | Systems policy proposal | Empirical calibration against live incidents |
 | **FDA 21 CFR Part 111 scrap policy and fee lines** | **Scenario policy** | Declared regulatory inputs | Formal regulatory determination, contract rates |
 | **Production latency, SQS delivery, vendor SLAs** | **Not established** | Architectural design | Live third-party platform guarantees |
 
-### 11.2 Executed SQLite Coordinator Benchmark
+### 10.2 Executed SQLite Coordinator Benchmark
 
 **Run Metadata:** `2026-11-09T18-21-14-457Z-59d713d1` · `Node v24.22.1` · **34 Passed, 0 Failed, 0 Skipped**
 
@@ -728,7 +682,7 @@ The coordinator harness uses Node's built-in SQLite for a local persistent opera
 
 ---
 
-## 12. The Architectural Takeaway
+## 11. The Architectural Takeaway
 
 Marcus Chen never learned that his order spent two minutes in suspended animation. His carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
 
