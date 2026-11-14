@@ -194,12 +194,12 @@ $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address E
 |---|---|---|
 | Order Volume | 1,000 orders/day | 30,000 orders/month |
 | Address Error Rate | 0.5% | Industry baseline across DTC checkouts |
-| Tickets Per Month | 150 exception tickets | $30,000 \times 0.005 = 150$ |
+| Tickets Per Month | 150 exception tickets | 30,000 × 0.005 = 150 |
 
 | If the freeze fails on every ticket | Cost Per Carton | Monthly Expense (×150) | Annualized Exposure (×12) |
 |---|---:|---:|---:|
 | **Direct cash drain** | $23.70 | **$3,555.00 / month** | **$42,660.00 / year** |
-| **Contribution deterioration** | $50.70 | **7,605 / month** | **91,260 / year** |
+| **Contribution deterioration** | $50.70 | **$7,605.00 / month** | **$91,260.00 / year** |
 
 A robust integration protocol that freezes warehouse execution in under 18 seconds does not merely improve customer satisfaction—At 150 modeled single-pack refund events per month, the contribution exposure reaches **$7,605 monthly**, or **$91,260 annually**.
 
