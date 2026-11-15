@@ -58,7 +58,7 @@ OPTION B: CONSOLIDATED WATERFALL (1 PARCEL) ───► $14.60  (-$8.30 / -36.2
 ```
 
 > [!CAUTION]
-> **Modeled Scenario Boundary**: The basket, available stock, rates, and zone buckets are declared inputs. The three units fit in one box, both plans meet the same delivery promise, and Reno’s modeled $10.50 freight applies to either box. Section 11 documents what the offline suite checks.
+> **Modeled Scenario Boundary**: The basket, available stock, rates, and zone buckets are declared inputs. The three units fit in one box, both plans meet the same delivery promise, and Reno’s modeled $10.50 freight applies to either box. Section 12 documents what the offline suite checks.
 
 The routing engine didn't fail because of an unhandled exception or an inventory outage. It failed because it was blind to contractual physics: in modern 3PL rate schedules, injecting an extra corrugated carton into a distribution network costs far more than carrier mileage across state lines. To understand why proximity misled the algorithm, we must dissect the contractual rate cards governing warehouse labor and freight.
 
@@ -368,7 +368,7 @@ $$\text{Parcel Ratio} = \frac{\text{Total Dispatched Parcels}}{\text{Total Custo
 In the separate 500-order model, the ratio is **1.314** for Model Alpha (657 parcels) and **1.082** for Model Beta (541 parcels). The fixture counts each split as two parcels, so subtracting 1 from the ratio gives split rates of 31.4% and 8.2%. With stable basket sizes, a rising ratio is a reason to check for avoidable splits.
 
 ### 5.2 Could one node have fulfilled it all?
-For each split order, audit the unreserved ATP at each node at the exact moment of order assignment. Record three discrete facts:
+For each split order, audit the unreserved ATP (available-to-promise inventory) at each node at the exact moment of order assignment. Record three discrete facts:
 1. The routing decision timestamp.
 2. The ATP snapshot timestamp for each regional facility.
 3. The unreserved quantity per SKU at each facility.
@@ -380,7 +380,7 @@ This telemetry uncovers two distinct failure modes:
 ### 5.3 What would one parcel have cost?
 Reprice the best eligible one-box plan for the same delivery promise. Subtract it from the split cost:
 
-$$\text{leak\_usd} = \text{actual\_modeled\_cost} - \text{counterfactual\_single\_parcel\_cost}$$
+$$\text{Avoidable split cost} = \text{Modeled split cost} - \text{Modeled one-box cost}$$
 
 $$\text{Bethlehem basket: } \$22.90 - \$14.60 = \mathbf{\$8.30}$$
 
@@ -491,7 +491,7 @@ Under the declared inputs, 116 fewer splits and $661.00 less freight produce **$
 
 ### 8.3 Planning Scale Sensitivity Projections
 
-The per-order cohort average of **$1.9948** is exact ($997.40 / 500), so the projections below carry zero rounding distortion. Each tier illustrates a distinct operational planning scale applied to the modeled cohort average:
+Model Beta costs **$997.40 less than Model Alpha** across the same 500 orders, a difference of **$1.9948 per order**. The table projects that difference at several order volumes, assuming the same savings per order.
 
 | Operational Planning Scale | Monthly Checkouts | Annual Dispatched Orders | Arithmetic Calculation | Modeled Annualized Savings |
 |---|---:|---:|---|---:|
@@ -503,7 +503,7 @@ The per-order cohort average of **$1.9948** is exact ($997.40 / 500), so the pro
 
 *Note: Projections represent conditional sensitivity calculations based on the declared cohort numerator. They illustrate systemic financial exposure rather than audited historical accounting ledgers.*
 
-Quantifying a $728,000 annual margin bleed across an enterprise fleet builds the executive mandate. Translating that mandate into production code requires moving beyond legacy administrative toggles and engineering a deterministic routing waterfall using modern platform extensions.
+At 365,000 orders per year, that difference would translate to **$728,102 in annual fulfillment savings**. Section 9 shows how the routing waterfall checks the whole basket, compares plans that meet the delivery promise, and handles orders that still need to split.
 
 ---
 
@@ -593,11 +593,21 @@ The three-tier waterfall translates commercial rate card physics into determinis
 3. **Protect the delivery promise.** Compare eligible candidates strictly within the committed customer delivery window. Proximity is a tie-breaker among plans with identical landed cost, not a primary sorting filter.
 4. **Explain every split.** Never permit a split shipment to dispatch without emitting an auditable telemetry record documenting why consolidation was infeasible. Use recurring SKU-pair split patterns to drive data-backed replenishment.
 
+---
+
+## 11. Closest Is a Tie-Breaker, Not a Strategy: The Architectural Takeaway
+
+*Why local optimization blinds logistics engines, and how whole-basket pricing restores margin integrity.*
+
+> *“Allentown was the right warehouse for the sticks when the sticks were the only question. The tincture was already coming from Reno. Asking about the whole basket cut the modeled cost from $22.90 to $14.60.”*
+
+The closest warehouse still has a place in the decision. Give the full basket a chance to stay together first, price the boxes, and make sure the chosen plan keeps the delivery promise.
+
 Engineering principles are only as credible as the tests that prove them. To establish fiduciary confidence, every rate, formula, and boundary condition in this dossier is verified against an offline, reproducible test harness.
 
 ---
 
-## 11. 15 Checks, 0 Failures, 1 Honest Skip: Evidence Scope and Verification Status
+## 12. 15 Checks, 0 Failures, 1 Honest Skip: Evidence Scope and Verification Status
 
 *Which results were verified by the offline freight suite, which inputs are declared scenario assumptions, and what the checks do not establish.*
 
@@ -605,7 +615,7 @@ To preserve complete engineering credibility, this dossier strictly distinguishe
 
 All offline verification tests are fully reproducible via the repository test suite summarized in [Freight Scenario Evidence](../evidence/freight/summary.md), and the overarching test harness is documented in the [Reproducible Evidence Suite](../evidence/README.md).
 
-### 11.1 Evidence Scope & Verification Status Matrix
+### 12.1 Evidence Scope & Verification Status Matrix
 
 | Deliverable / Artifact | Location | Evidentiary Status | Verification Source |
 |---|---|---|---|
@@ -617,7 +627,7 @@ All offline verification tests are fully reproducible via the repository test su
 | **500-Order Cohort Simulation ($997.40)** | Section 8 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
 | **Carrier Scenario Rates** | Section 2.4 | Declared Model Inputs | Fixed rate and zone assumptions. Carrier rate and ZIP-zone verification skipped. |
 
-### 11.2 Executed Freight Checks
+### 12.2 Executed Freight Checks
 
 Run `node evidence/freight/calculate_freight.js` from the repository root. The freight suite passed **15 checks**, with **0 failures** and **1 skip** for independent rate and ZIP-zone verification. [Executable freight checks](../evidence/freight/calculate_freight.js) · [Full results and run metadata](../evidence/freight/summary.md)
 
@@ -629,21 +639,13 @@ Run `node evidence/freight/calculate_freight.js` from the repository root. The f
 | Consolidation bound | Two hypothetical local parcels cost at least $3.20 more than one cross-country parcel under the fixed Ground Advantage scenario rates. |
 | Paired cohort | Both models ship 1,190 units. The supplied split and freight inputs yield a $997.40 difference over 500 orders. |
 
-### 11.3 Boundary Statement
+### 12.3 Boundary Statement
 
 The Bethlehem split follows directly from stock and proximity. Allentown is closer and can cover the sticks. Reno is the only source for the tincture and the only node that can reserve the full order. The offline checks derive the split from those inputs and price both plans.
 
 The Section 3 comparison assumes the same \$10.50 Reno freight in both plans. One-box fit and the delivery promise are assumptions of the comparison. If adding the sticks raises the Reno rate by \$8.30, the two plans tie. Above that, an otherwise feasible split costs less.
 
 The freight suite checks that the Order #35070 fixture retains Philadelphia as the original destination and $7.20 as the declared original freight cost. The Capstone ledger separately records $14.80 as the modeled expedited replacement freight. No live carrier invoices, negotiated commercial discounts, physical mis-shipments, or carrier claims are inferred from these calculations.
-
----
-
-## 12. Closest Is a Tie-Breaker, Not a Strategy: The Architectural Takeaway
-
-> *“Allentown was the right warehouse for the sticks when the sticks were the only question. The tincture was already coming from Reno. Asking about the whole basket cut the modeled cost from $22.90 to $14.60.”*
-
-The closest warehouse still has a place in the decision. Give the full basket a chance to stay together first, price the boxes, and make sure the chosen plan keeps the delivery promise.
 
 ---
 
