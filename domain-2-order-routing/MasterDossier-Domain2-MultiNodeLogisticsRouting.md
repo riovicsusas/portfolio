@@ -77,7 +77,7 @@ The routing engine didn't fail because of an unhandled exception or an inventory
 | **Target Basket** | 2× Focus Stick Packs (`SYN-FSTK-MY`) + 1× Adaptogen Tincture (`SYN-TNCT-AM`). |
 | **Available-to-Promise (ATP)** | Unreserved stock physically present and eligible for immediate picking wave allocation. |
 | **Split vs. Consolidated** | Fulfilling an order across multiple parcels from different nodes vs. shipping 100% in a single carton from one node. |
-| **Handling Formula** | The contractual 3PL fee model: $\text{Handling}(P, U) = \$2.90P + \$0.40U$, where an extra parcel costs an irreducible $\$2.90$. |
+| **Handling Formula** | The contractual 3PL fee model is `Handling(P, U) = $2.90P + $0.40U`, where an extra parcel costs an irreducible \$2.90. |
 | **Surcharge Leakage** | Operating margin destroyed when independent per-line routing heuristics incur avoidable parcel surcharges. |
 
 ### 2.2 Network Topology & Inventory Availability Profile
@@ -136,20 +136,20 @@ $$\text{Handling}(P, U) = \$3.30 \times P + \$0.40 \times (U - P) = \$3.30P + \$
 > This is the platform-wide 3PL handling model used in all dossiers. Base fulfillment ($2.50) + corrugate ($0.80) = $3.30 fixed parcel overhead; $0.40 per additional pick. The simplified coefficient $2.90P + $0.40U is the canonical form also referenced in Domain 5 Section 6 and the evidence/costs package.
 
 Where:
-- $P$ is the total count of dispatched outbound parcels.
-- $U$ is the total count of physical units picked across all parcels.
-- The $\$2.90$ coefficient is not the sum of base and corrugate ($\$3.30$). It is $\$3.30$ less the $\$0.40$ credit that the per-unit term would otherwise assess for each parcel's first pick (which the schedule waives).
+- `P` is the total count of dispatched outbound parcels.
+- `U` is the total count of physical units picked across all parcels.
+- The \$2.90 coefficient is not the sum of base and corrugate (\$3.30). It is \$3.30 less the \$0.40 credit that the per-unit term would otherwise assess for each parcel's first pick (which the schedule waives).
 
 This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units. The separate two-item checkout in Domain 5 uses declared inputs of $4.10 handling and $6.50 freight for the basket. [Domain 5 Section 6](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) applies those inputs to the checkout margin calculation.
 
 Checking the rate card against the formula:
 
-| Parcel Configuration | Parcels ($P$) | Units ($U$) | $\text{Handling} = \$2.90P + \$0.40U$ |
+| Parcel Configuration | Parcels (`P`) | Units (`U`) | `Handling = $2.90P + $0.40U` |
 |---|---:|---:|---:|
-| 1 parcel, 1 unit | 1 | 1 | $\$2.90(1) + \$0.40(1) = \mathbf{\$3.30}$ |
-| 1 parcel, 2 units | 1 | 2 | $\$2.90(1) + \$0.40(2) = \mathbf{\$3.70}$ |
-| 1 parcel, 3 units | 1 | 3 | $\$2.90(1) + \$0.40(3) = \mathbf{\$4.10}$ |
-| 2 parcels, 3 units (1 + 2) | 2 | 3 | $\$2.90(2) + \$0.40(3) = \mathbf{\$7.00}$ |
+| 1 parcel, 1 unit | 1 | 1 | \$2.90 × 1 + \$0.40 × 1 = **\$3.30** |
+| 1 parcel, 2 units | 1 | 2 | \$2.90 × 1 + \$0.40 × 2 = **\$3.70** |
+| 1 parcel, 3 units | 1 | 3 | \$2.90 × 1 + \$0.40 × 3 = **\$4.10** |
+| 2 parcels, 3 units (1 + 2) | 2 | 3 | \$2.90 × 2 + \$0.40 × 3 = **\$7.00** |
 
 Now compare the same customer basket fulfilled as a split versus a consolidated shipment. Because the exact same physical units are picked in both scenarios, **the variable pick labor term cancels out completely**:
 
