@@ -277,40 +277,56 @@ To guarantee financial traceability, every routing decision must emit an auditab
 
 Logging the alternative gives operations and finance a ledger they can audit. They can see why Allentown was a valid choice for the sticks and how much consolidating avoided under the recorded assumptions.
 
-Saving $8.30 on a single basket in Bethlehem proves the concept for Zone 2 versus Zone 8. But an engineering organization cannot govern multi-node fulfillment on single-order anecdotes. What if the customer lived in Chicago (Zone 5)? What if both warehouses were closer? Can an unconstrained split shipment ever be cheaper than consolidation under commercial postal rate cards? The **Consolidation Bound** provides the mathematical answer.
+The Bethlehem basket gives us a Ground Advantage baseline and an \$8.30 saving. What happens to that saving when the Reno leg needs Priority Mail?
 
 ---
 
-## 4. Stacking the Deck for the Split, and It Still Loses: The Consolidation Bound
+## 4. How Much Can Reno Postage Rise Before Splitting Wins?
 
-*A test of whether a cheap local lane can ever justify a second box, using worst-case zone premiums and a deliberately generous split scenario.*
+*The same Bethlehem basket under two Priority Mail scenarios, down to the postage quote where the two plans tie.*
 
-Bethlehem gives the distance rule a fair shot. Allentown has a cheap local lane, and Reno has the most expensive lane in the schedule. Can that local rate ever make a two-box plan cheaper? The **Consolidation Bound** answers that question under the modeled rate card.
+### Both Reno Options Use Priority Mail
 
-We calculate the worst-case cross-country zone penalty and compare it directly against the minimum possible cost of injecting a second parcel into the logistics network:
+Reno still has the only tincture. Assume it needs Priority Mail to meet the delivery promise whether it ships the tincture alone or the whole basket. Allentown can get the sticks to Bethlehem on Ground Advantage. Under the modeled rates in Section 2.4, either Reno carton costs \$15.20 in postage.
 
-| Variable / Parameter | USPS Ground Advantage | Priority Mail Commercial |
-|---|---|---|
-| **Maximum long-zone premium** (Zone 8 minus local) | $10.50 − $5.40 = **$5.10** | $15.20 − $7.80 = **$7.40** |
-| **Minimum added parcel cost** ($2.90 handling plus local freight) | $2.90 + $5.40 = **$8.30** | $2.90 + $7.80 = **$10.70** |
-| **Minimum consolidation advantage in the model** | **$3.20** | **$3.30** |
+| Fulfillment Plan | Carrier Service | Carrier Postage | 3PL Handling | Landed Cost |
+|---|---|---:|---:|---:|
+| **Two Parcels** | Allentown Zone 2 Ground Advantage + Reno Zone 8 Priority Mail | \$5.40 + \$15.20 = \$20.60 | \$7.00 | **\$27.60** |
+| **One Reno Parcel** | Reno Zone 8 Priority Mail | \$15.20 | \$4.10 | **\$19.30** |
 
-Within each service, under fixed per-parcel rates and the same delivery promise, the minimum cost of a second parcel exceeds that service’s largest zone premium. The modeled advantage is at least **$3.20**. That gives the routing engine a reason to check for a single parcel even when the complete basket sits at the farthest warehouse.
+Both plans buy the Reno label. The split buys a second label in Allentown and pays for a second box. Consolidation still saves **\$8.30** by removing **\$5.40** in local postage and **\$2.90** in handling.
 
-### Generous Boundary Verification: The Two-Zone-2 Theoretical Limit
+### Only the One-Box Plan Uses Priority Mail
 
-To demonstrate the mathematical resilience of the bound, consider an extreme theoretical scenario deliberately constructed in favor of the split: assume both split packages could travel to local Zone 2, whereas the consolidated package must travel cross-country to Zone 8:
+Suppose the larger Reno carton is ready later and needs Priority Mail to meet the delivery promise. Both split parcels can still arrive within that same window on Ground Advantage.
 
-| Fulfillment Architecture | Parcels | Total Carrier Postage | Total 3PL Handling | Net Landed Cost |
-|---|---|---|---|---|
-| **Two Split Parcels (Both Zone 2)** | 2 | $5.40 + $5.40 = $10.80 | $2.90 × 2 + $0.40 × 3 = $7.00 | **$17.80** |
-| **One Consolidated Parcel (Zone 8)** | 1 | $10.50 | $2.90 × 1 + $0.40 × 3 = $4.10 | **$14.60** |
-| **Net Consolidation Advantage** | | | | **$3.20 Savings** |
+The split comes in at **\$22.90** (\$15.90 for postage + \$7.00 for handling). The single Reno Priority carton comes in at **\$19.30** (\$15.20 for postage + \$4.10 for handling). The \$4.70 service upgrade runs entirely against the one-box plan, leaving **\$3.60 in consolidation savings**.
 
-> [!IMPORTANT]
-> Two local parcels give the split its best possible prices in this model. Bethlehem has one local leg and one cross-country leg, so its modeled saving is $8.30. Recalculate the bound when parcel weight, dimensions, surcharges, or service requirements change.
+That gives the routing engine a price to check. With the split at \$22.90 and one-box handling at \$4.10, the **break-even Reno postage is \$18.80**. Below that quote, the Reno carton costs less. Above it, the split costs less if both plans can still meet the delivery promise at those costs.
 
-The bound holds because the full incremental cost of a second parcel—$\$2.90$ fixed handling plus the cheapest base carrier rate ($\$5.40$)—totals $\$8.30$, which comfortably exceeds the $\$5.10$ maximum zone premium. Note that the $\$2.90$ handling fee alone is smaller than the $\$5.10$ zone differential; the bound holds because the second parcel must also bear its own independent carrier charge.
+### The Consolidation Bound Under Fixed Rates
+
+Allentown ships the sticks, a hypothetical second Zone 2 warehouse ships the tincture, and Reno remains the only warehouse that can fill the whole basket. The hypothesis is that one Reno parcel still costs less when both parcels in the split get local postage.
+
+<details>
+<summary>Click to read more</summary>
+
+The bound assumes fixed per-parcel rates, the same carrier service, and the same delivery promise. Re-rate the parcels when weight, dimensions, surcharges, or service requirements change.
+
+| Setup | Shipping service | Postage per parcel | Handling for the order | Total cost |
+|---|---|---:|---:|---:|
+| Two local parcels (Zone 2) | Ground Advantage for both | \$5.40 each | \$7.00 | Postage (2 × \$5.40) = \$10.80<br>Handling (2 box fees × \$3.30 + 1 extra pick × \$0.40) = \$7.00<br>\$10.80 + \$7.00 = **\$17.80** |
+| One Reno parcel (Zone 8) | Ground Advantage | \$10.50 | \$4.10 | Postage (1 × \$10.50) = \$10.50<br>Handling (1 box fee × \$3.30 + 2 extra picks × \$0.40) = \$4.10<br>\$10.50 + \$4.10 = **\$14.60** |
+| Two local parcels (Zone 2) | Priority Mail for both | \$7.80 each | \$7.00 | Postage (2 × \$7.80) = \$15.60<br>Handling (2 box fees × \$3.30 + 1 extra pick × \$0.40) = \$7.00<br>\$15.60 + \$7.00 = **\$22.60** |
+| One Reno parcel (Zone 8) | Priority Mail | \$15.20 | \$4.10 | Postage (1 × \$15.20) = \$15.20<br>Handling (1 box fee × \$3.30 + 2 extra picks × \$0.40) = \$4.10<br>\$15.20 + \$4.10 = **\$19.30** |
+
+One Reno parcel saves **\$3.20 with Ground Advantage** and **\$3.30 with Priority Mail**.
+
+</details>
+
+### If Allentown Stocks the Tincture
+
+If Allentown can reserve a tincture alongside the sticks, one Zone 2 carton comes in at **\$9.50** (\$5.40 in modeled Ground Advantage postage + \$4.10 in handling), provided all three units fit and the service meets the delivery promise.
 
 ### Inventory State & Routing Response Matrix
 
@@ -321,7 +337,7 @@ The bound holds because the full incremental cost of a second parcel—$\$2.90$ 
 | **No eligible node can ship the basket in one box** | Inventory, packaging, or service constraint | Evaluate the least-cost feasible split or authorized backorder | Keeps the delivery promise when a second box is needed |
 | **ATP cache stale / in-flight race** | High phantom allocation risk | Re-query real-time unreserved balance at lock time | Prevents committing to an unfulfillable single box |
 
-With mathematical proof that a single consolidated box holds an insurmountable $3.20 advantage across any domestic postal zone, the engineering challenge shifts from theoretical calculation to production telemetry: how do you audit an active fulfillment network to spot and quantify avoidable leakage in real time?
+Bethlehem gives the routing engine a decision it can explain with two parcel quotes and a delivery promise. Across an active fulfillment network, how do you find the orders that paid for a second box they could have avoided?
 
 ---
 
@@ -589,7 +605,8 @@ All offline verification tests are fully reproducible via the repository test su
 | **Three-Tier Routing Waterfall** | Section 9 | Architectural Specification | Validated design; targets Shopify Functions API |
 | **Network Topology & Inventory Profiles** | Section 2.2 | Declared Scenario Model | Defined network model (`LOC-PA-01`, `LOC-NV-02`) |
 | **Bethlehem Basket Autopsy ($22.90 vs $14.60)** | Section 3 | **Verified in Test Suite** | The nearest-stocked rule sends the sticks from Allentown for $9.10 and the tincture from Reno for $13.80. Reno can ship all three units for $14.60. [Freight Scenario Evidence](../evidence/freight/summary.md) |
-| **The Consolidation Bound ($3.20)** | Section 4 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
+| **Bethlehem Priority Mail Comparisons** | Section 4 | Modeled Scenario | Section 2.4 scenario rates and Section 3.2 handling costs |
+| **Ground Advantage Consolidation Bound ($3.20)** | Section 4 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
 | **500-Order Cohort Simulation ($997.40)** | Section 8 | **Verified in Test Suite** | [Freight Scenario Evidence](../evidence/freight/summary.md) |
 | **Carrier Scenario Rates** | Section 2.4 | Declared Model Inputs | Fixed rate and zone assumptions. Carrier rate and ZIP-zone verification skipped. |
 
@@ -609,7 +626,7 @@ Run `node evidence/freight/calculate_freight.js` from the repository root. The f
 
 The Bethlehem split follows directly from stock and proximity. Allentown is closer and can cover the sticks. Reno is the only source for the tincture and the only node that can reserve the full order. The offline checks derive the split from those inputs and price both plans.
 
-The $8.30 saving assumes the same $10.50 Reno freight in both plans. One-box fit and the delivery promise are assumptions of the comparison. If adding the sticks raises the Reno rate by $8.30, the two plans tie. Above that, an otherwise feasible split costs less.
+The Section 3 comparison assumes the same \$10.50 Reno freight in both plans. One-box fit and the delivery promise are assumptions of the comparison. If adding the sticks raises the Reno rate by \$8.30, the two plans tie. Above that, an otherwise feasible split costs less.
 
 The freight suite checks that the Order #35070 fixture retains Philadelphia as the original destination and $7.20 as the declared original freight cost. The Capstone ledger separately records $14.80 as the modeled expedited replacement freight. No live carrier invoices, negotiated commercial discounts, physical mis-shipments, or carrier claims are inferred from these calculations.
 
