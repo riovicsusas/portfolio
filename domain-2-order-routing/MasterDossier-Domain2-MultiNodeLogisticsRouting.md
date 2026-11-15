@@ -1,6 +1,6 @@
-# The Warehouse 12 Miles Away Was the Expensive One
+# Closest Isn’t Cheapest
 
-**Why the closest node quietly bleeds margin on multi-item baskets**
+**How a second box turned a $14.60 fulfillment cost into $22.90**
 
 *Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Master Dossier — Domain 2*
 
