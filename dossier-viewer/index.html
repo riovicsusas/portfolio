@@ -300,6 +300,29 @@
     .md-body strong { color: var(--linen); font-weight: 700; }
     .md-body em { color: var(--isabelline); font-style: italic; }
 
+    @media screen {
+      .md-body details { margin-bottom: 16px; }
+      .md-body details > summary {
+        width: fit-content;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        background: var(--gold);
+        color: var(--bg);
+        font-size: 14px;
+        font-weight: 700;
+        list-style-position: inside;
+        cursor: pointer;
+      }
+      .md-body details > summary:hover { background: var(--linen); }
+      .md-body details > summary:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 3px;
+      }
+      .md-body details[open] > summary { margin-bottom: 12px; }
+    }
+
     /* Inline code */
     .md-body code {
       font-family: 'JetBrains Mono', monospace;
