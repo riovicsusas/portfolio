@@ -1,6 +1,6 @@
 # Closest Isn’t Cheapest
 
-**How a second box turned a $14.60 fulfillment cost into $22.90**
+**How an avoidable second carton turned a $14.60 fulfillment into $22.90 (an $8.30 / 36.2% leak)**
 
 *Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Master Dossier — Domain 2*
 
@@ -68,17 +68,15 @@ The routing engine didn't fail because of an unhandled exception or an inventory
 
 *The fee model behind every routing decision, reduced to one formula, and why a second parcel always adds a fixed $2.90 in handling.*
 
-### 2.1 Systems Architecture & Scenario Glossary
+### 2.1 Benchmark Scenario Profile & Key Variables
 
-| Concept / Identifier | Operational Definition in This Dossier |
-|---|---|
-| **Node** | A physical fulfillment facility. `LOC-PA-01` is Allentown, PA; `LOC-NV-02` is Reno, NV. |
-| **Customer Profile** | Sarah Jenkins (`sarah.jenkins@example.com`) in Bethlehem, PA (`18018`), placing the 3-unit benchmark basket. |
-| **Target Basket** | 2× Focus Stick Packs (`SYN-FSTK-MY`) + 1× Adaptogen Tincture (`SYN-TNCT-AM`). |
-| **Available-to-Promise (ATP)** | Unreserved stock physically present and eligible for immediate picking wave allocation. |
-| **Split vs. Consolidated** | Fulfilling an order across multiple parcels from different nodes vs. shipping 100% in a single carton from one node. |
-| **Handling Formula** | The contractual 3PL fee model is `Handling(P, U) = $2.90P + $0.40U`, where an extra parcel costs an irreducible \$2.90. |
-| **Surcharge Leakage** | Operating margin destroyed when independent per-line routing heuristics incur avoidable parcel surcharges. |
+| Parameter / Variable | Scenario Specification | Operational Role in Routing Decision |
+|---|---|---|
+| **Customer Profile** | Sarah Jenkins (`sarah.jenkins@example.com`) | Destination: Bethlehem, PA (`18018`), ordering a 3-unit benchmark basket. |
+| **Target Basket** | 2× Focus Sticks (`SYN-FSTK-MY`) + 1× Tincture (`SYN-TNCT-AM`) | Multi-category order requiring cross-facility inventory resolution. |
+| **Fulfillment Nodes** | `LOC-PA-01` (Allentown, PA) & `LOC-NV-02` (Reno, NV) | Regional nodes under common 3PL (ShipBob) contractual pricing. |
+| **Available-to-Promise (ATP)** | Allentown: 2 Sticks / 0 Tinctures; Reno: 2 Sticks / 1 Tincture | Physical stock layout forcing an allocation decision. |
+| **Contractual Handling Model** | $\text{Handling}(P, U) = \$2.90P + \$0.40U$ | Every additional parcel incurs an irreducible $\$2.90$ fixed fee. |
 
 ### 2.2 Network Topology & Inventory Availability Profile
 
@@ -173,20 +171,10 @@ The modeled rate card assigns $5.40 to Allentown’s local lane and $10.50 to Re
 | **Zone 7** | 1,401 – 1,800 miles | $9.20 | $13.50 |
 | **Zone 8** | 1,801+ miles (Cross-Country) | $10.50 | $15.20 |
 
+> [!NOTE]
+> **Cross-Reference: Capstone Order #35070 Sourcing vs. State Failure**: Order #35070 illustrates an address-state race condition rather than an allocation mistake. Its bundle was stocked in Reno (`LOC-NV-02`) and remained allocated there, but the warehouse shipped to Philadelphia after the customer updated to San Francisco. The Capstone models **$7.20** in ground freight for the original Philadelphia leg and **$14.80** in expedited freight for the replacement, totaling $22.00 across the two outbound legs ($7.60 service-level delta). Return freight adds $8.40, totaling $30.40 in cumulative carrier charges before handling, intercept, and scrap costs. See [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) for the complete recovery ledger.
+
 With the contractual physics established—a guaranteed $2.90 handling penalty plus independent carrier postage for every extra box—we can now trace Sarah Jenkins's Bethlehem order through the two divergent routing engines.
-
-#### Cross-Reference: Capstone Order #35070
-
-You can read a cross-reference to see how a stale shipping address in Reno’s warehouse queue led to return and replacement freight costs. You can also go over the project itself by going back to the projects folder.
-
-<details>
-<summary>Click to read more</summary>
-
-Order #35070 illustrates a different failure. Its Reno allocation retained the old Philadelphia destination after the customer requested San Francisco. The bundle was stocked in Reno (`LOC-NV-02`), so the incident was an address-state failure rather than an Allentown-versus-Reno allocation mistake.
-
-The Capstone models $7.20 in ground freight for the original shipment to Philadelphia and $14.80 in expedited freight for the replacement. Those two outbound legs total $22.00. The $7.60 difference compares shipments with different service levels. The return adds $8.40, bringing modeled freight across all three legs to $30.40 before handling, intercept, and other costs. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) shows the full recovery ledger.
-
-</details>
 
 ---
 
@@ -277,53 +265,72 @@ To guarantee financial traceability, every routing decision must emit an auditab
 
 Logging the alternative gives operations and finance a ledger they can audit. They can see why Allentown was a valid choice for the sticks and how much consolidating avoided under the recorded assumptions.
 
-The Bethlehem basket gives us a Ground Advantage baseline and an \$8.30 saving. What happens to that saving when the Reno leg needs Priority Mail?
+Saving $8.30 on a single basket in Bethlehem proves the concept for Zone 2 versus Zone 8 Ground Advantage. But can an unconstrained split shipment ever be cheaper than consolidation under commercial postal rate cards? What happens if the cross-country Reno leg requires expedited air postage? The **Consolidation Bound** provides the mathematical answer.
 
 ---
 
-## 4. How Much Can Reno Postage Rise Before Splitting Wins?
+## 4. The Consolidation Bound: Mathematical Proof That Proximity Never Outweighs Packaging
 
-*The same Bethlehem basket under two Priority Mail scenarios, down to the postage quote where the two plans tie.*
+*Why a single cross-country parcel beats two local parcels under commercial rate cards, and how high expedited postage must rise to break the bound.*
 
-### Both Reno Options Use Priority Mail
+### 4.1 The Consolidation Bound Under Fixed Rates
 
-Reno still has the only tincture. Assume it needs Priority Mail to meet the delivery promise whether it ships the tincture alone or the whole basket. Allentown can get the sticks to Bethlehem on Ground Advantage. Under the modeled rates in Section 2.4, either Reno carton costs \$15.20 in postage.
+To prove that consolidation mathematically dominates multi-parcel splits across all domestic postal zones, consider an extreme theoretical scenario deliberately weighted in favor of the split: assume *both* split parcels could travel locally to Zone 2, whereas the consolidated carton must travel cross-country to Zone 8.
 
-| Fulfillment Plan | Carrier Service | Carrier Postage | 3PL Handling | Landed Cost |
+The bound compares the maximum possible cross-country zone premium against the irreducible minimum cost of injecting a second parcel into the logistics network:
+
+| Variable / Parameter | USPS Ground Advantage | Priority Mail Commercial |
+|---|---|---|
+| **Maximum long-zone premium** (Zone 8 minus local) | $10.50 − $5.40 = **$5.10** | $15.20 − $7.80 = **$7.40** |
+| **Minimum added parcel cost** ($2.90 handling plus local freight) | $2.90 + $5.40 = **$8.30** | $2.90 + $7.80 = **$10.70** |
+| **Minimum consolidation advantage in the model** | **$3.20** | **$3.30** |
+
+Within each service class, under fixed commercial rate cards and equal delivery promises, the minimum cost of a second parcel exceeds that service's largest possible zone premium. The modeled consolidation advantage is at least **$3.20 in Ground Advantage** and **$3.30 in Priority Mail**.
+
+#### The Two-Zone-2 Theoretical Verification
+
+| Setup | Shipping Service | Postage per Parcel | Handling for the Order | Landed Cost | Net Advantage |
+|---|---|---:|---:|---:|:---:|
+| **Two Local Parcels (Zone 2)** | Ground Advantage for both | $5.40 each ($10.80) | 2 boxes × $3.30 + 1 pick × $0.40 = **$7.00** | **$17.80** | — |
+| **One Reno Parcel (Zone 8)** | Ground Advantage | $10.50 | 1 box × $3.30 + 2 picks × $0.40 = **$4.10** | **$14.60** | **$3.20 Savings** |
+| **Two Local Parcels (Zone 2)** | Priority Mail for both | $7.80 each ($15.60) | 2 boxes × $3.30 + 1 pick × $0.40 = **$7.00** | **$22.60** | — |
+| **One Reno Parcel (Zone 8)** | Priority Mail | $15.20 | 1 box × $3.30 + 2 picks × $0.40 = **$4.10** | **$19.30** | **$3.30 Savings** |
+
+The bound holds because the second parcel must pay its own independent fixed handling toll ($2.90) and base carrier freight ($5.40 Ground / $7.80 Priority). Even if both split parcels ship locally, the split costs at least $3.20 more than a cross-country consolidated box.
+
+### 4.2 Stress-Testing the Bound: Service-Level Upgrades & Reno Postage Ceiling
+
+What happens if the cross-country Reno leg requires an expedited service upgrade to meet the customer's delivery SLA while local parcels travel ground? We stress-test the Bethlehem basket across two expedited scenarios:
+
+#### Scenario A: Both Options Require Priority Mail from Reno
+Reno holds the only tincture. If meeting the promised delivery window requires Priority Mail for cross-country transit regardless of carton contents, both options incur Reno Priority postage ($15.20). Allentown ships Ground Advantage ($5.40).
+
+| Fulfillment Plan | Carrier Service Lanes | Carrier Postage | 3PL Handling | Landed Cost |
 |---|---|---:|---:|---:|
-| **Two Parcels** | Allentown Zone 2 Ground Advantage + Reno Zone 8 Priority Mail | \$5.40 + \$15.20 = \$20.60 | \$7.00 | **\$27.60** |
-| **One Reno Parcel** | Reno Zone 8 Priority Mail | \$15.20 | \$4.10 | **\$19.30** |
+| **Two Parcels (Split)** | Allentown Zone 2 Ground ($5.40) + Reno Zone 8 Priority ($15.20) | $20.60 | $7.00 | **$27.60** |
+| **One Parcel (Reno)** | Reno Zone 8 Priority Mail | $15.20 | $4.10 | **$19.30** |
 
-Both plans buy the Reno label. The split buys a second label in Allentown and pays for a second box. Consolidation still saves **\$8.30** by removing **\$5.40** in local postage and **\$2.90** in handling.
+Consolidation still saves **$8.30 (30.1%)** by eliminating the second parcel's $5.40 postage and $2.90 handling fee.
 
-### Only the One-Box Plan Uses Priority Mail
+#### Scenario B: Asymmetric Service Upgrade (Only the One-Box Plan Requires Priority Mail)
+Suppose wave release timing forces the consolidated Reno carton onto Priority Mail ($15.20), while both split parcels could have met the SLA on standard Ground Advantage ($5.40 + $10.50 = $15.90).
 
-Suppose the larger Reno carton is ready later and needs Priority Mail to meet the delivery promise. Both split parcels can still arrive within that same window on Ground Advantage.
+* **Split Plan**: $15.90 postage + $7.00 handling = **$22.90**
+* **Consolidated Priority Carton**: $15.20 postage + $4.10 handling = **$19.30**
+* **Net Consolidation Advantage**: **$3.60 Savings** ($22.90 − $19.30)
 
-The split comes in at **\$22.90** (\$15.90 for postage + \$7.00 for handling). The single Reno Priority carton comes in at **\$19.30** (\$15.20 for postage + \$4.10 for handling). The \$4.70 service upgrade runs entirely against the one-box plan, leaving **\$3.60 in consolidation savings**.
+Even with an asymmetric $4.70 service penalty ($15.20 Priority vs. $10.50 Ground), consolidation wins. This establishes the **break-even Reno postage ceiling**:
+$$\text{Break-Even Reno Postage} = \text{Split Cost } (\$22.90) - \text{One-Box Handling } (\$4.10) = \mathbf{\$18.80}$$
+Below $18.80 in carrier postage, shipping the entire basket from Reno in one box remains the cheaper option.
 
-That gives the routing engine a price to check. With the split at \$22.90 and one-box handling at \$4.10, the **break-even Reno postage is \$18.80**. Below that quote, the Reno carton costs less. Above it, the split costs less if both plans can still meet the delivery promise at those costs.
+### 4.3 What if Allentown Stocks the Full Basket?
+If inventory replenishment places the tincture at Allentown alongside the sticks, the entire basket ships from Zone 2 in a single carton:
+$$\text{Landed Cost} = \$5.40 \text{ (Zone 2 Freight)} + \$4.10 \text{ (3-Unit Handling)} = \mathbf{\$9.50}$$
+Consolidation at the local hub cuts fulfillment costs from $22.90 to $9.50—saving **$13.40 (58.5%)**.
 
-### The Consolidation Bound Under Fixed Rates
+### 4.4 Inventory State & Routing Response Matrix
 
-Allentown ships the sticks, a hypothetical second Zone 2 warehouse ships the tincture, and Reno remains the only warehouse that can fill the whole basket. The hypothesis is that one Reno parcel still costs less when both parcels in the split get local postage.
-
-The bound assumes fixed per-parcel rates, the same carrier service, and the same delivery promise. Re-rate the parcels when weight, dimensions, surcharges, or service requirements change.
-
-| Setup | Shipping service | Postage per parcel | Handling for the order | Total cost |
-|---|---|---:|---:|---:|
-| Two local parcels (Zone 2) | Ground Advantage for both | \$5.40 each | \$7.00 | Postage (2 × \$5.40) = \$10.80<br>Handling (2 box fees × \$3.30 + 1 extra pick × \$0.40) = \$7.00<br>\$10.80 + \$7.00 = **\$17.80** |
-| One Reno parcel (Zone 8) | Ground Advantage | \$10.50 | \$4.10 | Postage (1 × \$10.50) = \$10.50<br>Handling (1 box fee × \$3.30 + 2 extra picks × \$0.40) = \$4.10<br>\$10.50 + \$4.10 = **\$14.60** |
-| Two local parcels (Zone 2) | Priority Mail for both | \$7.80 each | \$7.00 | Postage (2 × \$7.80) = \$15.60<br>Handling (2 box fees × \$3.30 + 1 extra pick × \$0.40) = \$7.00<br>\$15.60 + \$7.00 = **\$22.60** |
-| One Reno parcel (Zone 8) | Priority Mail | \$15.20 | \$4.10 | Postage (1 × \$15.20) = \$15.20<br>Handling (1 box fee × \$3.30 + 2 extra picks × \$0.40) = \$4.10<br>\$15.20 + \$4.10 = **\$19.30** |
-
-One Reno parcel saves **\$3.20 with Ground Advantage** and **\$3.30 with Priority Mail**.
-
-### If Allentown Stocks the Tincture
-
-If Allentown can reserve a tincture alongside the sticks, one Zone 2 carton comes in at **\$9.50** (\$5.40 in modeled Ground Advantage postage + \$4.10 in handling), provided all three units fit and the service meets the delivery promise.
-
-### Inventory State & Routing Response Matrix
+In the Bethlehem example, Reno is the only warehouse that can ship the whole basket. This matrix shows how the routing decision changes when several warehouses qualify, when the order needs to split, or when the available stock needs to be checked again before reservation.
 
 | Network Inventory Condition | Operational Reality | Mandatory Routing Action | P&L Impact |
 |---|---|---|---|
@@ -332,7 +339,7 @@ If Allentown can reserve a tincture alongside the sticks, one Zone 2 carton come
 | **No eligible node can ship the basket in one box** | Inventory, packaging, or service constraint | Evaluate the least-cost feasible split or authorized backorder | Keeps the delivery promise when a second box is needed |
 | **ATP cache stale / in-flight race** | High phantom allocation risk | Re-query real-time unreserved balance at lock time | Prevents committing to an unfulfillable single box |
 
-Bethlehem gives the routing engine a decision it can explain with two parcel quotes and a delivery promise. Across an active fulfillment network, how do you find the orders that paid for a second box they could have avoided?
+Bethlehem gives the routing engine a decision it can explain with the costs of two shipping plans and a delivery promise. Across an active fulfillment network, how do you find the orders that paid for a second box they could have avoided?
 
 ---
 
@@ -383,27 +390,32 @@ The three-question audit protocol identifies orders where a single box was feasi
 
 ---
 
-## 6. When Splitting Is the Right Call: Controlled Exception Handling
+## 6. Fault-Tolerant Degraded Modes: Managing Unavoidable Split Exceptions
 
-*What to do when no single node can ship the whole basket: fallback options, customer communication rules, and when to rebalance inventory.*
+*Architectural controls when no single facility can fulfill the entire basket: least-cost parcel fallbacks, customer state synchronization, and automated replenishment economics.*
 
-When no one-box plan can meet the delivery promise at a competitive cost, the fallback compares three paths. For Bethlehem, the split remains available if Allentown can still reserve the sticks and Reno can still reserve and ship the tincture within the promise.
+When inventory stockouts or packaging constraints make single-carton consolidation physically impossible, the routing engine must transition into a controlled degraded mode. In the Bethlehem scenario, if Reno's tincture inventory had been depleted, an unconstrained split becomes the only immediate fulfillment path.
 
-| Mitigation Architecture | Primary Trigger Criteria | Cost & Customer Trade-Off |
-|---|---|---|
-| **Controlled Split** | A single box fails the stock, rate, packaging, or delivery check | Price the feasible parcel combinations. An added box carries $2.90 more handling under the model, and any freight change also enters the comparison. |
-| **Authorized Short-Hold Backorder** | Inbound replenishment container actively receiving at primary hub | Defers dispatch 24–48 hours; avoids second parcel expense; requires proactive customer messaging |
-| **Automated Cross-Dock Transfer** | Chronic split SKU pairing identified in rolling 7-day velocity data | Pays bulk-transfer freight to reduce future splits when the newly stocked facility can fill the basket. |
+### 6.1 Mitigation Architectures for Partitioned Inventory
 
-### Customer Communication Rules
-1. **Upfront Disclosure at Checkout/Confirmation**: Split orders must be disclosed immediately. The customer must be informed that the order will arrive in multiple parcels, with distinct tracking references and carrier delivery windows for each.
-2. **Backorder Choice**: Where a short hold (24–48 hours) enables a single node to fulfill the complete basket, provide the customer with an authorized backorder option as the preferred alternative to split packaging.
-3. **Unified Order Tracking**: Never allow a customer to infer that an item was omitted. Ensure the storefront tracking portal links all outbound parcel tracking numbers to the single parent order record.
+| Mitigation Architecture | Primary Trigger Criteria | Cost & Customer Trade-Off | Operational Execution |
+|---|---|---|---|
+| **Controlled Split** | A single box fails stock, dimensional, or delivery SLA check | Incurs $2.90 handling penalty plus dual freight; preserves fulfillment velocity | Price all feasible parcel combinations; select lowest-cost multi-node vector |
+| **Authorized Short-Hold Backorder** | Inbound replenishment container actively receiving at primary hub | Defers dispatch 24–48 hours; avoids second parcel expense ($8.30 savings) | Holds wave allocation; issues customer opt-in notification for consolidated delivery |
+| **Automated Cross-Dock Transfer** | Chronic split SKU pairing identified in rolling 7-day velocity telemetry | Absorbs bulk freight to eliminate recurring parcel penalties on companion SKUs | Triggers inter-facility pallet transfer from Reno to Allentown |
 
-### Inventory Rebalancing Rules
-1. **Velocity Pairing Telemetry**: Track recurring multi-origin SKU pairings. Group stock-driven splits by SKU so replenishment can target baskets with repeated shortages.
-2. **Transfer Justification Math**: Authorize cross-dock warehouse replenishment when the bulk transfer freight cost is less than the cumulative net saving it creates, calculated as split fulfillment cost minus feasible consolidated fulfillment cost.
-3. **Post-Transfer Verification**: Following a stock transfer, verify that the newly balanced node successfully passes Tier 1 for subsequent checkout cohorts.
+### 6.2 Graceful Degradation & Customer State Synchronization
+When an order must split across multiple facilities, the customer-facing interface and tracking systems must maintain state parity to prevent support ticket escalation:
+1. **Upfront Delivery Window Disclosure**: The storefront checkout and confirmation webhook must explicitly disclose multi-parcel dispatch, presenting independent delivery windows for each shipment.
+2. **Authorized Backorder Selection**: Where a 24–48 hour inbound receiving hold enables single-node consolidation, present the customer with an opt-in "Ship Together" choice as the default alternative to split packaging.
+3. **Unified Parent Order Tracking**: The customer portal must link all outbound tracking identifiers to the single parent order record, preventing customers from assuming an item was omitted.
+
+### 6.3 Automated Replenishment & Cross-Dock Economics
+Unavoidable splits indicate upstream inventory placement imbalances. The routing coordinator feeds split telemetry directly into replenishment workflows:
+1. **Affinity Pairing Telemetry**: Track co-ordered SKU clusters. When two SKUs repeatedly force multi-node splits, log the frequency and calculate cumulative split penalties.
+2. **Transfer Justification Hurdle**: Authorize inter-facility cross-dock transfers only when aggregate bulk freight is less than the cumulative split surcharge:
+   $$\text{Transfer Justified if: } \text{Bulk Freight} < \sum (\text{Split Landed Cost} - \text{Consolidated Landed Cost})$$
+3. **Post-Replenishment Verification**: Following receipt of a transfer, verify that subsequent checkout cohorts achieve Tier 1 single-box consolidation.
 
 Mitigating unavoidable splits through backorders and replenishment handles physical inventory scarcity. But in automated fulfillment networks, the vast majority of split shipments are not caused by warehouse stockouts—they are caused by systemic flaws in software architecture.
 
