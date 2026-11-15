@@ -177,7 +177,7 @@ With the contractual physics established—a guaranteed $2.90 handling penalty p
 
 #### Cross-Reference: Capstone Order #35070
 
-See how a stale shipping address in Reno’s warehouse queue led to return and replacement freight costs.
+You can read a cross-reference to see how a stale shipping address in Reno’s warehouse queue led to return and replacement freight costs. You can also go over the project itself by going back to the projects folder.
 
 <details>
 <summary>Click to read more</summary>
