@@ -8,6 +8,10 @@
 
 ## 1. Four Seconds to Save, 133 to Stop: A Staged Storefront–Warehouse Desync Trace
 
+*How a four-second phone edit triggered a 133-second multi-system hold, preventing an interstate mis-shipment to an outdated address.*
+
+### 1.1 The Desync Paradox: Database Intent vs. Warehouse Reality
+
 Marcus Chen fixes his shipping address on his phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
 
 Nothing on a warehouse floor in Allentown, Pennsylvania has heard about it.
@@ -26,14 +30,14 @@ The save did not stop the order. **Stopping it took 133 seconds** of coordinated
              └──────────── 133 Seconds Total Freeze ────────────┘
 ```
 
-At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#18404** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #18404 re-entered the wave queue at 10:16:15 EST, 135 seconds after ingestion and into the Allentown wave queue with the correct Binghamton shipping label.
+At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#18404** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #18404 re-entered the Allentown wave queue at 10:16:15 EST, 135 seconds after ingestion, carrying the correct Binghamton shipping label.
 
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
 > [!CAUTION]
 > **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
 
-### Executive Incident Matrix
+### 1.2 Executive Incident Matrix
 
 | Dimension | Detail | Why it matters |
 |---|---|---|
@@ -113,6 +117,8 @@ flowchart LR
 
 Stage 2 represents the narrow corridor between the two boundaries. In Stage 2, line-item changes are strictly forbidden, but an address correction may still proceed *if and only if* the WMS confirms an immediate supervisor queue freeze before the physical pick begins.
 
+Allowing an order to cross Boundary 2 without stopping it turns an operational inconvenience into an irreversible financial loss. To understand why preventing mis-shipments justifies automated coordinator freezes, we must examine the unit economics and regulatory mandates governing returned inventory.
+
 ---
 
 ## 3. $50.70 Worse Off Per Carton: Modeled Single-Pack Refund and Scrap-Policy Economics
@@ -141,19 +147,6 @@ Because standard parcel tracking (USPS Ground Advantage, UPS Ground) provides **
 
 This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FSTK-MY`), fully refunded after a mis-shipment, with no replacement or customer shipping revenue. Handling and payment fees not listed below are excluded:
 
-| Component | Cost Type | Amount |
-|---|---|---:|
-| Product cost (COGS) per carton | Cash | $8.50 |
-| Unrecoverable outbound carrier freight | Cash | $6.50 |
-| Carrier return-to-sender (RTS) reverse freight | Cash | $7.20 |
-| 3PL physical quarantine & destruction fee | Cash | $1.50 |
-| **Direct out-of-pocket cash drain** | | **$23.70** |
-| Retail price | | $42.00 |
-| Less COGS | | −$8.50 |
-| Less normal outbound freight | | −$6.50 |
-| **Normal contribution before unlisted fees** ($42.00 − $8.50 − $6.50) | Economic | **$27.00** |
-| **Contribution deterioration per carton** ($27.00 − (−$23.70))| | **$50.70** |
-
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
 │          ONE MIS-SHIPPED CARTON · Focus Stick Pack 30-Pack        │
@@ -174,18 +167,17 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-A single Focus Stick Pack 30-Pack (`SYN-FSTK-MY`) sells for **$42.00** and costs **$8.50** to produce. This standalone example assumes **$6.50** in outbound freight. In the mis-shipment scenario, the merchant issues a full refund, pays to bring the carton back, and has it destroyed. The model excludes replacement shipments, customer shipping revenue, pick-and-pack handling, and payment processing fees.
+| Financial Line Item | Successful Sale Baseline | Mis-Shipment Branch | Cost Type | Operational Context |
+|---|---:|---:|---|---|
+| **Customer Retail Revenue** | $42.00 | $0.00 | Revenue | Full refund issued to customer upon mis-delivery. |
+| **Product COGS (`SYN-FSTK-MY`)** | −$8.50 | −$8.50 | Direct Cash | Outbound inventory lost; destroyed under FDA cGMP quarantine. |
+| **Outbound Carrier Freight** | −$6.50 | −$6.50 | Direct Cash | Initial postage incurred on dispatched carton. |
+| **Carrier Return-to-Sender (RTS)** | $0.00 | −$7.20 | Direct Cash | Reverse logistics freight billed by carrier to return parcel. |
+| **3PL Quarantine & Destruction Fee** | $0.00 | −$1.50 | Direct Cash | Warehouse receiving, cGMP lot documentation, and physical scrap. |
+| **Net Contribution Ledger** | **+$27.00** | **−$23.70** | Cash & Economic | Net retained contribution vs. direct out-of-pocket cash loss. |
+| **Net Contribution Deterioration** | — | **−$50.70** | Delta | Direct cash drain ($23.70) + lost normal contribution ($27.00). |
 
-| Component | Successful sale | Mis-shipment | Why it’s included |
-|---|---:|---:|---|
-| Sales revenue kept | $42.00 | $0.00 | The merchant keeps the sale price when the order succeeds. A full refund leaves no sales revenue. |
-| Product cost (COGS) | $8.50 | $8.50 | Both outcomes use one carton. The merchant sells it in the first case and writes off its cost when the returned carton is destroyed. |
-| Outbound freight | $6.50 | $6.50 | The carrier charges to ship the carton out in both cases. |
-| Return freight | $0.00 | $7.20 | The carrier charges to bring the mis-shipped carton back. |
-| Quarantine and destruction | $0.00 | $1.50 | The warehouse charges to set the returned carton aside and destroy it. |
-| **Contribution after listed costs** | **$27.00 kept** | **$23.70 lost** | Subtract the listed costs from the sales revenue kept in each scenario. |
-
-**The mis-shipment leaves a $23.70 loss.** A successful sale would have left **$27.00 in contribution**, so the merchant ends up **$50.70 worse off**. That difference comes from **$42.00 refunded to the customer** and **$8.70 in extra return and disposal costs**. The carton and outbound shipping cost the same either way.
+**The mis-shipment creates a $23.70 direct cash loss.** Because a successful sale would have generated **$27.00 in contribution**, the merchant ends up **$50.70 worse off per carton** (120.7% of product retail value). That delta consists of the **$42.00 refund** plus **$8.70 in reverse logistics and disposal costs**. The carton and outbound shipping cost the same either way.
 
 > [!NOTE]
 > **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemizes the replacement branch.
@@ -208,6 +200,8 @@ $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address E
 | **Contribution deterioration** | $50.70 | **$7,605.00 / month** | **$91,260.00 / year** |
 
 A robust integration protocol that freezes warehouse execution in about 18 seconds does not merely improve customer satisfaction; it also protects margin. At 150 modeled single-pack refund events per month, the contribution exposure reaches **$7,605 monthly**, or **$91,260 annually**.
+
+Preventing these losses requires understanding where the seconds actually go during an emergency address change. The staged trace of Order #18404 demonstrates how a 133-second freeze successfully immobilized a carton before it crossed Boundary 2.
 
 ---
 
@@ -424,9 +418,13 @@ mutation ReleaseOurHoldOnly($id: ID!, $holdIds: [ID!]) {
 > [!IMPORTANT]
 > **Hold Isolation Rule**: Passing explicit `holdIds` is **mandatory**. In the Shopify Admin API, omitting `holdIds` instructs the system to release **every active hold on the fulfillment order**. If an order has an independent fraud hold or a tax review lock placed by another system, a generic release call will silently clear those holds as well. Enterprise mutations must strictly release only the specific hold ID they created.
 
+The wire payloads execute the mechanics of the save. But why was Order #18404 facing a high-wire, 133-second emergency freeze in the first place? To answer that, we must examine the hidden architectural interaction between carrier service level agreements and storefront hold buffers.
+
 ---
 
 ## 5. No Four-Minute Cushion: Expedited SLA Routing and the 600-Second Design Budget
+
+*Why priority shipping tiers bypass standard edit buffers, shrinking the safe mutation window from fifteen minutes to zero.*
 
 A support agent sees an order 11 minutes old and reasons: *"Standard orders sit in a 15-minute buffer. We have four minutes."* For Order #18404, that reasoning was wrong.
 
@@ -446,7 +444,7 @@ EXPEDITED ORDER (#18404)
  ▲ ticket arrives AFTER the drop: the order is already in the warehouse's hands.
 ```
 
-### The Architectural Explanation: Expedited SLA Routing
+### 5.1 The Architectural Explanation: Expedited SLA Routing
 
 This timing reflects a core e-commerce architectural rule: **Shipping Service Level Agreements (SLAs) override batching buffers.**
 
@@ -460,6 +458,8 @@ Order #18404 cleared fraud scoring at 10:04:10 EST and was pushed to ShipBob two
 **The Rule**: In expedited fulfillment, the safe editing window does not last 15 minutes. It closes in **under 600 seconds** from WMS drop.
 
 The 600-second figure is a *design budget*, not a measured wave cadence. Note the arithmetic: the ticket arrived 588 seconds after drop, and the queue lock was confirmed at 606 seconds after drop. The order was saved with no margin in the budget, not by the budget. This is precisely why the protocol never assumes a buffer exists: **check the physical stage, then freeze.**
+
+Because time-based cushions are an operational illusion in multi-tier fulfillment, safe order mutation requires a deterministic, event-driven state machine. Section 6 defines the four-gate protocol that enforces this invariant.
 
 ---
 
@@ -493,7 +493,7 @@ flowchart TD
     style J fill:#d4edda,stroke:#28a745,stroke-width:2px;
 ```
 
-### The Four Sequential Gates
+### 6.1 The Four Sequential Gates
 
 1. **Gate 1: Freeze (Place Native Hold)**
    * *Target*: Shopify Admin GraphQL `fulfillmentOrderHold`.
@@ -512,6 +512,8 @@ flowchart TD
    * *Invariant*: Confirm the WMS status transitions back to `READY_FOR_WAVE_BATCH` with updated metadata.
 
 In this case, Order #18404 received a verified warehouse lock 18 seconds after ticket ingestion and resumed with the corrected Binghamton label. In the separate Capstone case, Order #35070 received a 504 at the hold gateway and still carried the old Philadelphia destination in the Reno queue. That outcome calls for a warehouse state check before any update or retry. [Capstone Sections 3–5](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) traces the timeout through the warehouse cutoff.
+
+Executing Gate 2 in production requires translating raw HTTP responses into accurate warehouse state assertions. As Section 7 demonstrates, standard HTTP status codes in distributed commerce rarely mean what they seem.
 
 ---
 
@@ -648,6 +650,8 @@ That is what a correct integration layer looks like: invisible when it works, be
 In e-commerce, it is trivial to build software that works when everything goes smoothly. What distinguishes enterprise engineering is how a system behaves when a customer changes their mind while an automated warehouse is already in motion.
 
 > *"In a distributed system, database state is an aspiration; physical warehouse state is reality. The job of the integration layer is to ensure the aspiration never outruns the reality."*
+
+Engineering principles are only as credible as the tests that prove them. To establish complete fiduciary confidence, every state transition, idempotency constraint, and recovery path in this dossier is verified against an offline, reproducible coordinator harness.
 
 ---
 
