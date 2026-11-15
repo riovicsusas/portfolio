@@ -173,7 +173,11 @@ The modeled rate card assigns $5.40 to Allentown’s local lane and $10.50 to Re
 | **Zone 7** | 1,401 – 1,800 miles | $9.20 | $13.50 |
 | **Zone 8** | 1,801+ miles (Cross-Country) | $10.50 | $15.20 |
 
+With the contractual physics established—a guaranteed $2.90 handling penalty plus independent carrier postage for every extra box—we can now trace Sarah Jenkins's Bethlehem order through the two divergent routing engines.
+
 #### Cross-Reference: Capstone Order #35070
+
+See how a stale shipping address in Reno’s warehouse queue led to return and replacement freight costs.
 
 <details>
 <summary>Click to read more</summary>
@@ -183,8 +187,6 @@ Order #35070 illustrates a different failure. Its Reno allocation retained the o
 The Capstone models $7.20 in ground freight for the original shipment to Philadelphia and $14.80 in expedited freight for the replacement. Those two outbound legs total $22.00. The $7.60 difference compares shipments with different service levels. The return adds $8.40, bringing modeled freight across all three legs to $30.40 before handling, intercept, and other costs. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) shows the full recovery ledger.
 
 </details>
-
-With the contractual physics established—a guaranteed $2.90 handling penalty plus independent carrier postage for every extra box—we can now trace Sarah Jenkins's Bethlehem order through the two divergent routing engines.
 
 ---
 
