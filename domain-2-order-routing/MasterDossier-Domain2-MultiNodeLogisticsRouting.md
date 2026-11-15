@@ -308,9 +308,6 @@ That gives the routing engine a price to check. With the split at \$22.90 and on
 
 Allentown ships the sticks, a hypothetical second Zone 2 warehouse ships the tincture, and Reno remains the only warehouse that can fill the whole basket. The hypothesis is that one Reno parcel still costs less when both parcels in the split get local postage.
 
-<details>
-<summary>Click to read more</summary>
-
 The bound assumes fixed per-parcel rates, the same carrier service, and the same delivery promise. Re-rate the parcels when weight, dimensions, surcharges, or service requirements change.
 
 | Setup | Shipping service | Postage per parcel | Handling for the order | Total cost |
@@ -321,8 +318,6 @@ The bound assumes fixed per-parcel rates, the same carrier service, and the same
 | One Reno parcel (Zone 8) | Priority Mail | \$15.20 | \$4.10 | Postage (1 × \$15.20) = \$15.20<br>Handling (1 box fee × \$3.30 + 2 extra picks × \$0.40) = \$4.10<br>\$15.20 + \$4.10 = **\$19.30** |
 
 One Reno parcel saves **\$3.20 with Ground Advantage** and **\$3.30 with Priority Mail**.
-
-</details>
 
 ### If Allentown Stocks the Tincture
 
