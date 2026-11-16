@@ -181,8 +181,9 @@ To understand why these failures occur so reliably in unprotected workflows, we 
 Both failures in this file begin with a software tool doing precisely what it was designed to do.
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph TRAP_A["TRAP A: Numeric Coercion & Barcode Destruction"]
+        direction TB
         A1["Raw Text Entered: '850041234014'"] --> A2["Spreadsheet treats cell as numeric"]
         A2 --> A3["Auto-formats to IEEE 754 float: '8.50041E+11'"]
         A2 --> A4["Or strips leading zero: '012345678901' -> '12345678901'"]
@@ -192,12 +193,15 @@ flowchart TD
     end
 
     subgraph TRAP_B["TRAP B: Handle Mutation & Storefront 404"]
+        direction TB
         B1["Canonical Handle: '.../precision-insulated-tumbler-durable-merchandise'"]
         B1 --> B2["Merchandiser 'cleans up' text to '...-new' in CSV"]
         B2 --> B3["Shopify creates NEW URL path; original URL vanishes"]
         B3 --> B4["Active Meta/Google Ads return HTTP 404 ❌"]
         B4 --> B5["Organic Google Search Ranking History Destroyed ❌"]
     end
+
+    TRAP_A ~~~ TRAP_B
 
     style A6 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
     style B4 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;

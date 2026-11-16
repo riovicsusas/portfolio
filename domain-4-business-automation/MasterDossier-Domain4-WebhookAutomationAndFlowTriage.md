@@ -8,7 +8,7 @@
 
 ## 1. A Routine Update, a Closed Ring: The Runaway Loop on Order #24148
 
-*How two individually valid workflows formed an unconstrained execution loop, burning storewide API quotas in 62 seconds, and the circuit breaker that stopped it.*
+*How two individually valid workflows formed an unconstrained execution loop, burning storewide API quotas in 62 seconds, and the emergency triage that contained it.*
 
 ### 1.1 The Incident Anatomy: How the Closed Ring Ignited
 
@@ -24,13 +24,13 @@ Neither workflow contained a syntax error. Neither workflow had a defect in its 
 * The GraphQL API cost point quota consumed **950 of 1,000 available points** (95.0% budget exhaustion).
 * Middleware webhook ingestion latency surged from an average of **140ms to 4,850ms**—a **34.6× performance collapse**.
 
-**11:03:03 EDT.** An automated circuit breaker tripped, injecting an emergency negative guard condition and killing the execution loop.
+**11:03:03 EDT.** On-call triage contained the loop by deploying an emergency hotfix to Flow 1, inserting the missing negative guard condition (`tags do not contain 'Route-East'`) that terminated recursion on the next cycle.
 
 ### 1.2 Timeline, API Exhaustion, and Blast Radius
 
 ```text
        11:02:01 EDT                                             11:03:03 EDT
-  Order #24148 Tag Added                                    Circuit Breaker Injected
+  Order #24148 Tag Added                                    Emergency Hotfix Applied
 ─────────────●──────────────────────────────────────────────────────────●─────────────►
              │                                                          │
              ├── 11:02:02: FLOW-01 Appends 'Route-East'                 │
@@ -42,7 +42,7 @@ Neither workflow contained a syntax error. Neither workflow had a defect in its 
                                [API BUDGET 98% EXHAUSTED]
 ```
 
-Had the circuit breaker not engaged, the runaway recursion on Order #24148 would have completely starved the entire storefront's API budget—blocking fraud reviews, delaying order fulfillment pushes to 3PL warehouses, and halting customer service updates across thousands of uninvolved customer orders.
+Had on-call triage not intervened, the runaway recursion on Order #24148 would have completely starved the entire storefront's API budget—blocking fraud reviews, delaying order fulfillment pushes to 3PL warehouses, and halting customer service updates across thousands of uninvolved customer orders.
 
 The second failure mode is quieter and just as expensive: when a warehouse endpoint returns `HTTP 504 Gateway Timeout` during a flash sale and every failed call retries on the same fixed schedule, hundreds of retries land in the same instant on a system that is already struggling. Section 2 contrasts both traps.
 
@@ -55,7 +55,7 @@ The second failure mode is quieter and just as expensive: when a warehouse endpo
 | **Incident Scope** | Order #24148 (Single-order recursive execution storm) | Demonstrates how a single order can starve multi-tenant storewide API quotas. |
 | **Trigger Mechanism** | Address update appends `Address-Verified` tag | Unconstrained `Order tags added` listeners create circular dependencies. |
 | **Circular Flow Pair** | `FLOW-01` (`Route-East`) $\leftrightarrow$ `FLOW-02` (`Logistics-Audited`) | Two independent flows listening broadly without negative exit criteria. |
-| **Containment Action** | Negative guard injected into `FLOW-01` at $T+62.1\text{s}$ | Halts sequential recursion immediately; terminates the 114-event storm. |
+| **Containment Action** | Emergency negative guard deployed to `FLOW-01` at $T+62.1\text{s}$ | Halts sequential recursion immediately; terminates the 114-event storm. |
 | **Financial Exposure Floor** | $2,162.50 out-of-pocket baseline | Direct exposure across 3PL SLA credits, inventory overselling, and DevOps triage. |
 
 ---
@@ -67,8 +67,9 @@ The second failure mode is quieter and just as expensive: when a warehouse endpo
 In distributed e-commerce systems, un-governed event-driven automations typically fail in one of two distinct patterns. They appear unrelated because one lives entirely inside the storefront platform while the other operates across the boundary to external warehouse endpoints. Yet they share a single root cause: **a system reacting to events with zero memory of its own earlier work**.
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph TRAP_A["TRAP A: Runaway Tag Recursion (Circular Dependency)"]
+        direction TB
         A1["Flow 1 listens to 'Order tags added'<br/>Action: Appends 'Route-East'"] --> A2["Event Bus emits 'Order tags added'"]
         A2 --> A3["Flow 2 listens to 'Order tags added'<br/>Action: Appends 'Logistics-Audited'"]
         A3 --> A4["Event Bus emits 'Order tags added'"]
@@ -77,11 +78,14 @@ flowchart TD
     end
 
     subgraph TRAP_B["TRAP B: The 504 Retry Storm (Thundering Herd)"]
+        direction TB
         B1["3PL WMS endpoint times out during flash sale (HTTP 504)"] --> B2["500 failed webhook calls enqueue for retry"]
         B2 --> B3["Naive retry schedule: Fixed +15m timer with ZERO jitter"]
         B3 --> B4["T+15m: All 500 requests hammer WMS at the EXACT same second"]
         B4 --> B5["CONSEQUENCE<br/>Downstream gateway crashes; orders permanently dropped ❌"]
     end
+
+    TRAP_A ~~~ TRAP_B
 
     style A5 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
     style B5 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
@@ -188,7 +192,7 @@ Pricing the unit economics demonstrates why immediate intervention is mandatory,
 | *[ ... ]* | *[ ... ]* | *[ ... ]* | *[ 94 recurring iterations executed across 52 seconds ]* | *API Saturated* |
 | **11:02:58.820** | +57.7s | Shopify API | Gateway returns `HTTP 429 Too Many Requests`. REST bucket: 39/40 calls. | **Warning Alarm** |
 | **11:03:00.110** | +59.0s | Middleware | Ingestion latency degrades to 4,850ms; thread pool exhaustion imminent. | High Contention |
-| **11:03:03.250** | +62.1s | **Breaker** | **Emergency negative check injected into Flow 1. Recursion halted.** | **LOOP TERMINATED** |
+| **11:03:03.250** | +62.1s | **On-Call Triage** | **Emergency negative check deployed to Flow 1. Recursion halted.** | **LOOP TERMINATED** |
 
 ### 4.2 Phase Breakdown & Resource Impact
 
@@ -196,7 +200,7 @@ Pricing the unit economics demonstrates why immediate intervention is mandatory,
 |---|---|---|---|
 | **Ignition** | 11:02:01 to 11:02:04 | 3.0s | Initial address trigger, two valid executions, followed immediately by first recursive re-evaluation. |
 | **Sustained Recursion** | 11:02:04 to 11:02:58 | 54.0s | Unbounded loop executes 94 iterations, exhausting REST and GraphQL quotas on each hop. |
-| **Saturation & Containment** | 11:02:58 to 11:03:03 | 5.1s | 429 throttle alarm trips; emergency circuit breaker injects negative guard; loop terminates. |
+| **Saturation & Containment** | 11:02:58 to 11:03:03 | 5.1s | 429 throttle alarm fires; on-call engineer deploys negative guard hotfix to Flow 1; loop terminates. |
 
 | Resource Metric | Baseline Value | Peak Incident Saturation | Systemic Impact |
 |---|---|---|---|
@@ -208,7 +212,7 @@ Pricing the unit economics demonstrates why immediate intervention is mandatory,
 ### 4.3 Reading the Loop
 
 1. **The loop grew linearly, but was completely unbounded**: Each event in a two-flow ring triggered exactly one downstream event—a fan-out of 1, yielding a steady 1.84 events per second. Had a third workflow subscribed to the same tag changes, each event would have spawned two downstream actions, causing the event volume to **double with every generation ($2^N$ exponential explosion)**. Even with a fan-out of 1, the storewide API quota was exhausted in under 60 seconds.
-2. **Detection was not containment**: The monitoring telemetry flagged recursion at 11:02:04 (+3.2s). The circuit breaker did not engage until 11:03:03 (+62.1s). During those 58.9 seconds of containment latency, the automated loop ran unchecked.
+2. **Detection was not containment**: Monitoring telemetry flagged rapid tag additions at 11:02:04 (+3.2s). However, human-in-the-loop intervention and hotfix deployment were not completed until 11:03:03 (+62.1s). During those 58.9 seconds of containment latency, the automated loop ran unchecked.
 3. **A single negative guard halts the loop at Cycle 1**: A guard on Flow 1 requiring that `Route-East` be absent would have terminated execution at 11:02:04, exactly 3.2 seconds after the customer update, consuming 2 API calls instead of 114.
 
 Halting sequential recursion requires an explicit programmatic rule that terminates the circular dependency before it can spawn. Section 5 details the single mandatory guard that neutralizes tag loops.
