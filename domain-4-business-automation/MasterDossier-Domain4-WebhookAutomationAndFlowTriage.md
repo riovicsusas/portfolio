@@ -8,6 +8,10 @@
 
 ## 1. A Routine Update, a Closed Ring: The Runaway Loop on Order #24148
 
+*How two individually valid workflows formed an unconstrained execution loop, burning storewide API quotas in 62 seconds, and the circuit breaker that stopped it.*
+
+### 1.1 The Incident Anatomy: How the Closed Ring Ignited
+
 Event-driven business automation feels like free labor. A customer updates a shipping address in an online portal, a tag appears on the order, a workflow reacts in the background, a warehouse management system (WMS) receives an updated routing instruction, and not a single human operator touches a keyboard.
 
 The fatal vulnerability of event-driven architectures is that **every reaction is itself an event, and unconstrained events compound exponentially**. An unconstrained event wakes every listener that can see it, and each listener's output becomes one more event for downstream listeners to process. Left ungoverned, that chain does not stop on its own.
@@ -21,6 +25,8 @@ Neither workflow contained a syntax error. Neither workflow had a defect in its 
 * Middleware webhook ingestion latency surged from an average of **140ms to 4,850ms**—a **34.6× performance collapse**.
 
 **11:03:03 EDT.** An automated circuit breaker tripped, injecting an emergency negative guard condition and killing the execution loop.
+
+### 1.2 Timeline, API Exhaustion, and Blast Radius
 
 ```text
        11:02:01 EDT                                             11:03:03 EDT
@@ -41,16 +47,16 @@ Had the circuit breaker not engaged, the runaway recursion on Order #24148 would
 The second failure mode is quieter and just as expensive: when a warehouse endpoint returns `HTTP 504 Gateway Timeout` during a flash sale and every failed call retries on the same fixed schedule, hundreds of retries land in the same instant on a system that is already struggling. Section 2 contrasts both traps.
 
 > [!CAUTION]
-> **Controlled Failure Scenario Disclosure**: Order #24148, customer Chloe Bennett (`chloe.bennett@example.com`), is an empirical failure-injection scenario executing within an isolated staging environment. The timeline and API telemetry represent a verified failure trace. Deduplication, idempotency hashing, and cutoff rejection resilience were verified against our local SQLite coordinator test harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). Platform rate-limit figures illustrate standard Shopify Plus leaky-bucket mechanics. Section 11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Controlled Failure Scenario Disclosure**: Order #24148, customer Chloe Bennett (`chloe.bennett@example.com`), is an empirical failure-injection scenario executing within an isolated staging environment. The timeline and API telemetry represent a verified failure trace. Deduplication, idempotency hashing, and cutoff rejection resilience were verified against our local SQLite coordinator test harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). Platform rate-limit figures illustrate standard Shopify Plus leaky-bucket mechanics. Section 12 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
 
-| Incident Dimension | Baseline Parameter Value | Architectural Significance |
+| Incident Dimension | Incident Parameter Value | Architectural Significance |
 |---|---|---|
 | **Customer Profile** | Chloe Bennett (`chloe.bennett@example.com`) | Customer initiating an address modification via storefront self-service portal. |
 | **Incident Scope** | Order #24148 (Single-order recursive execution storm) | Demonstrates how a single order can starve multi-tenant storewide API quotas. |
 | **Trigger Mechanism** | Address update appends `Address-Verified` tag | Unconstrained `Order tags added` listeners create circular dependencies. |
-| **Velocity of Recursion** | 114 timeline events generated in 62 seconds | 1.84 events/sec; saturates 97.5% of REST bucket and 95% of GraphQL quota. |
-| **Systemic Blast Radius** | Middleware latency collapses from 140ms to 4,850ms | $2,162.50 financial exposure across warehouse SLA credits and overselling. |
-| **Remediation Circuit Breaker** | Negative tag check + idempotent queue architecture | Halts sequential recursion; buffers retries through SQS DLQ with Full Jitter. |
+| **Circular Flow Pair** | `FLOW-01` (`Route-East`) $\leftrightarrow$ `FLOW-02` (`Logistics-Audited`) | Two independent flows listening broadly without negative exit criteria. |
+| **Containment Action** | Negative guard injected into `FLOW-01` at $T+62.1\text{s}$ | Halts sequential recursion immediately; terminates the 114-event storm. |
+| **Financial Exposure Floor** | $2,162.50 out-of-pocket baseline | Direct exposure across 3PL SLA credits, inventory overselling, and DevOps triage. |
 
 ---
 
@@ -103,6 +109,8 @@ In naive middleware implementations, failed webhook deliveries are re-enqueued o
 | **How it shows up** | One order's timeline grows faster than total store traffic | Hundreds of orders fail simultaneously at recurring intervals |
 | **What stops it** | Negative guards (Section 5) and state-gated ordering (Section 8) | Classified retries (Section 7), asynchronous queue, DLQ, and Full Jitter (Section 9) |
 | **Shared remedy** | Durable operation identity (Section 6) | Durable operation identity (Section 6) |
+
+Understanding how unconstrained event loops ignite is only the operational symptom; evaluating the financial damage reveals the stakes. Section 3 models the out-of-pocket commercial toll of that 62-second saturation.
 
 ---
 
@@ -160,6 +168,8 @@ That single cost line is more than 3.4× the entire Order #24148 incident toll, 
 
 Furthermore, an unmitigated 30-minute API blackout during peak traffic carries catastrophic unpriced costs: abandoned checkout conversions while payment automations stall, unrecoverable payment gateway transaction fees on refunded orders, chargeback dispute fees, and customer lifetime value (LTV) destruction. Consequently, **$2,162.50 represents the absolute floor** of financial exposure for a single un-intercepted recursion event.
 
+Pricing the unit economics demonstrates why immediate intervention is mandatory, but analyzing the forensic trace reveals why detection took 58 seconds to contain. Section 4 dissects the 62-second autopsy of Order #24148.
+
 ---
 
 ## 4. Detection Was Not Containment: The 62-Second Autopsy of Order #24148
@@ -200,6 +210,8 @@ Furthermore, an unmitigated 30-minute API blackout during peak traffic carries c
 1. **The loop grew linearly, but was completely unbounded**: Each event in a two-flow ring triggered exactly one downstream event—a fan-out of 1, yielding a steady 1.84 events per second. Had a third workflow subscribed to the same tag changes, each event would have spawned two downstream actions, causing the event volume to **double with every generation ($2^N$ exponential explosion)**. Even with a fan-out of 1, the storewide API quota was exhausted in under 60 seconds.
 2. **Detection was not containment**: The monitoring telemetry flagged recursion at 11:02:04 (+3.2s). The circuit breaker did not engage until 11:03:03 (+62.1s). During those 58.9 seconds of containment latency, the automated loop ran unchecked.
 3. **A single negative guard halts the loop at Cycle 1**: A guard on Flow 1 requiring that `Route-East` be absent would have terminated execution at 11:02:04, exactly 3.2 seconds after the customer update, consuming 2 API calls instead of 114.
+
+Halting sequential recursion requires an explicit programmatic rule that terminates the circular dependency before it can spawn. Section 5 details the single mandatory guard that neutralizes tag loops.
 
 ---
 
@@ -339,11 +351,13 @@ For the address hold in Order #24148, the operation ID and normalized payload ha
 
 The local duplicate fixture dispatches one warehouse simulator effect. A concurrent copy receives `PENDING`, and a later replay receives the stored `CONFIRMED` result. [Coordinator checks](../evidence/latency/summary.md) show the executed assertions. [Domain 6 Section 4](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) expands the agent actions for each tag.
 
+An ACID idempotency ledger prevents duplicate mutations internally, but external network requests still fail across warehouse boundaries. Section 7 establishes the HTTP status code triage protocol that separates transient retries from permanent stops.
+
 ---
 
 ## 7. "I Don't Know" vs. "Stop": Status-Code Triage for Retries
 
-*How to classify each HTTP response as retry, back off, abort, or reconcile, and the three questions an on-call engineer asks in order.*
+*How to classify HTTP responses, the three-step reconciliation protocol for 504 timeouts, and the diagnostic triage sequence for on-call engineers.*
 
 Retry policy is a classification problem before it is a timing problem. A critical failure in automation design is treating all HTTP error codes identically. Retrying a client-side validation error (`422`) wastes resources; failing to reconcile an ambiguous timeout (`504`) creates silent shipping desynchronization.
 
@@ -386,12 +400,55 @@ flowchart TD
 > [!IMPORTANT]
 > **The 504 Semantic Rule**: An HTTP 504 Gateway Timeout is not a rejection ("No"). It means **"I don't know what happened."** The upstream gateway closed the HTTP socket waiting for the warehouse database, but the mutation may have landed successfully on the warehouse floor! Retrying a 504 blindly without checking the order ledger can apply mutations twice, duplicate shipping labels, or release holds prematurely.
 
-### 7.2 The Three Diagnostic Questions for Automation Triage
+### 7.2 The 504 Reconciliation Protocol: How Middleware Verifies Unknown State
+
+When an outbound webhook mutation (such as placing a fulfillment hold) terminates with `HTTP 504 Gateway Timeout`, the SQS worker executes a three-phase reconciliation protocol before permitting any retry:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as SQS Worker
+    participant L as SQLite Idempotency Ledger
+    participant G as 3PL API Gateway
+    participant DB as 3PL Warehouse DB
+
+    W->>G: POST /fulfillment_orders/{id}/hold (Attempt 1)
+    G--xW: HTTP 504 Gateway Timeout (Socket closed after 5,000ms)
+    Note over W: Outcome UNKNOWN. Did the hold commit?
+
+    rect rgb(240, 248, 255)
+    Note over W,DB: PHASE 1: Idempotent Read Probe (Zero Side Effects)
+    W->>G: GET /fulfillment_orders/{id}
+    G->>DB: Query current status
+    DB-->>G: Status: ON_HOLD (Reason: address-verification)
+    G-->>W: HTTP 200 OK
+    end
+
+    rect rgb(230, 255, 230)
+    Note over W,L: PHASE 2: Reconcile Ledger & Acknowledge
+    W->>L: UPDATE operations SET state = 'CONFIRMED' WHERE id = op_24148
+    W->>W: Acknowledge & Delete SQS Message (0 Duplicate Side Effects)
+    end
+```
+
+1. **Phase 1: Idempotent Read Probe (GET over POST)**:
+   * The worker never re-attempts the mutating `POST`.
+   * Instead, it queries the read-only endpoint: `GET /fulfillment_orders/{id}` or `GET /orders/{order_id}/holds`. Read operations carry zero side effects and impose minimal load on recovering database pools.
+2. **Phase 2: State Evaluation Against Ledger**:
+   * **State A (Mutation Committed)**: If the remote entity displays `ON_HOLD`, the timeout occurred *after* database persistence. The worker marks the local ledger as `CONFIRMED` and deletes the message from SQS. **Zero duplicate API calls are dispatched.**
+   * **State B (Mutation Dropped)**: If the order remains `OPEN` (pre-wave queue) with no hold attached, the packet dropped before execution. The worker re-enqueues the `POST` mutation carrying the *original* `operation_id` into the work queue with Full Jitter backoff.
+   * **State C (Downstream Read Fails / 503)**: If the read probe also times out or returns `503 Service Unavailable`, the 3PL is experiencing a sustained outage. The worker increments the message receive count and enters SQS visibility backoff.
+3. **Phase 3: Exhaustion & Poison-Pill Quarantine**:
+   * If receive attempts exceed 3 without successful reconciliation, the message is routed directly to the Dead-Letter Queue (DLQ), firing an immediate Sev-2 Ops alert with Gorgias ticket tagging (`CS-ADDR-HOLD-UNKNOWN`).
+
+### 7.3 The Three Diagnostic Questions for Automation Triage
 
 When an on-call engineer receives an alert from the automation bus, they answer three questions in order:
 1. **Is a single order's timeline accelerating faster than baseline traffic?** $\rightarrow$ If yes, an un-guarded tag loop is active (Trap A). Check recent workflow deployments.
 2. **Did the downstream endpoint return a 4xx or 5xx code?** $\rightarrow$ If 422 or 401/403, abort and fix the schema; if 500/503, let SQS retry with jitter; if 504, reconcile state.
 3. **Does the payload match an existing `operation_id`?** $\rightarrow$ If yes, query the ledger; do not re-execute side effects.
+
+Triaging status codes governs the network boundary, but managing concurrent automations inside the store requires architectural hierarchy. Section 8 introduces the four-tier state-gated ladder that replaces diagram order with deterministic execution.
 
 ---
 
@@ -437,6 +494,8 @@ Because the state gates are committed as order tags, each tier's workflow must a
 | `Order Tags Added` | Append tag `Logistics-Verified` | **Infinite recursion loop** with other tag listeners. | Negative Check: `tags_do_not_contain: 'Logistics-Verified'`. |
 | `Fulfillment Order Hold` | Webhook to 3PL Gateway | Race with physical warehouse wave pickers. | Require HTTP 200/202 acknowledgment before customer notification. |
 | `Order Cancelled` | Issue Gateway Refund | Double-refund hazard if capture transaction pending. | Verify payment gateway status == `CAPTURED` before dispatching refund. |
+
+State-gated ordering guarantees deterministic sequence within the storefront, but synchronized retry surges still threaten external 3PL gateways during peak events. Section 9 details the asynchronous queue and Full Jitter backoff topology that defuses the thundering herd.
 
 ---
 
@@ -522,6 +581,8 @@ A synchronized **500-request shockwave is mathematically smoothed into a stable 
 | **422 / 401 / 403 Routing** | Direct to DLQ | Schema and auth rejections cannot resolve through retries. |
 | **504 Threshold** | Upstream timeout > 5,000ms | Enforces "Unknown State" protocol requiring ledger reconciliation before replay. |
 
+Decoupling webhook ingestion from warehouse delivery completes the defensive infrastructure. Section 10 distills the entire operational framework into four non-negotiable laws.
+
 ---
 
 ## 10. See Your Own Earlier Work Before You Act: Four Laws of Business Automation
@@ -535,9 +596,27 @@ Across distributed commerce architectures, four non-negotiable laws govern event
 3. **The Law of Classified Retries**: Client rejections (`422`) must abort; rate limits (`429`) must back off; timeouts (`504`) must reconcile state before replay. Never retry blind. *(Closes the gap in Section 7: retry storms and duplicate mutations).*
 4. **The Law of Idempotent Identity**: Every automated side effect must carry a durable `operation_id` and payload hash to ensure duplicate events cannot corrupt production state. *(Closes the gap in Section 6: concurrent execution).*
 
+These four laws provide the operational safeguards, but their necessity stems from a foundational realization about distributed automation. Section 11 concludes with the architectural takeaway on memory and visibility.
+
 ---
 
-## 11. 34 Local Checks Passed, Cloud Untested: Evidence Scope and Verification Status
+## 11. Two Failures of Memory: The Architectural Takeaway
+
+*Why distributed automations collapse when they cannot see their own earlier work, and the mental model that prevents systemic outages.*
+
+Order #24148 collapsed because two reasonable automations each trusted the other to know when to stop. The retry storm shares the identical failure mode: a cautious-looking fixed schedule, executed simultaneously by hundreds of callers against a system that had just signaled for room.
+
+Both are **failures of memory**. In the loop, the system could not see its own earlier work. In the storm, the system could not determine whether an earlier attempt had already succeeded.
+
+The four operational laws eliminate these failures directly. A negative guard terminates a circular loop at the second hop. An idempotency ledger converts a duplicate from a destructive double-mutation into a sub-millisecond lookup. Full Jitter transforms a 500-request shockwave into an orderly distribution of 8.3 calls per second. State-gated ladders replace visual assumptions with explicit prerequisites, and status-code triage turns every retry into a deliberate architectural decision.
+
+> **Every automated action is an event, and every event can become a loop. Build the system that sees its own earlier work before it acts.**
+
+The architectural philosophy explains why event loops occur; transparent verification proves that our defenses hold. Section 12 establishes the formal evidentiary scope separating local coordinator tests from operational cloud deployment criteria.
+
+---
+
+## 12. 34 Local Checks Passed, Cloud Untested: Evidence Scope and Verification Status
 
 *What was executed locally, what remains a specification or scenario, and the cloud acceptance criteria still open before deployment.*
 
@@ -553,7 +632,7 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 └──────────────────────────────┴─────────────────────────────────────────┘
 ```
 
-### 11.1 Evidence Scope & Verification Status Matrix
+### 12.1 Evidence Scope & Verification Status Matrix
 
 | Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
@@ -565,7 +644,7 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 | **Four-Tier Execution Ladder** | Section 8 | Documented Specification | State-gated priority specifications and trigger-action conflict matrix. |
 | **SQS Work Queue & Full Jitter Model** | Section 9 | Documented Specification | Mathematical backoff model smoothing 500 retry spikes to 8.33 requests/sec. |
 
-### 11.2 Executed Results: 34 of 34 Checks Passed
+### 12.2 Executed Results: 34 of 34 Checks Passed
 
 Run `2026-11-09T18-21-14-457Z-59d713d1` on Node v24.22.1: **34 passed, 0 failed, 0 skipped** ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). The test harness uses Node's built-in SQLite engine to execute atomic claims and conditional updates against virtual WMS and Shopify state. No external network credentials or cloud queues are contacted.
 
@@ -583,7 +662,7 @@ Run `2026-11-09T18-21-14-457Z-59d713d1` on Node v24.22.1: **34 passed, 0 failed,
 * **Burst Concurrency (13.99ms p50)**: 200 attempts at concurrency 25 maintained sub-30ms performance (p99: 28.20ms) with 100% data integrity.
 * **Uncertain Response Reconciliation**: 30 responses dropped after simulator success were safely reconciled with zero double-mutations (30 attempts, 30 effects).
 
-### 11.3 Safety Claims vs. Executed Checks
+### 12.3 Safety Claims vs. Executed Checks
 
 | Safety Property Claimed | Executed Test Suite Assertion ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)) |
 |---|---|
@@ -597,7 +676,7 @@ Run `2026-11-09T18-21-14-457Z-59d713d1` on Node v24.22.1: **34 passed, 0 failed,
 | **Selective release precision** | Selective hold release preserves unrelated order holds. |
 | **Crash recovery durability** | Process restart recovers effect persisted prior to worker termination. |
 
-### 11.4 The Scope Boundary
+### 12.4 The Scope Boundary
 
 The local coordinator suite validates ledger persistence, conditional update logic, and deduplication timing against simulated endpoints. It does not establish cloud-managed distributed locking, live Amazon SQS FIFO guarantees, physical warehouse floor holds, or Shopify Plus multi-tenant leaky-bucket behavior.
 
@@ -609,16 +688,6 @@ Integration acceptance criteria for cloud deployment remain:
 Full test suite documentation is maintained in the evidence directory ([`../evidence/README.md`](../evidence/README.md)).
 
 ---
-
-## 12. Two Failures of Memory: The Architectural Takeaway
-
-Order #24148 collapsed because two reasonable automations each trusted the other to know when to stop. The retry storm shares the identical failure mode: a cautious-looking fixed schedule, executed simultaneously by hundreds of callers against a system that had just signaled for room.
-
-Both are **failures of memory**. In the loop, the system could not see its own earlier work. In the storm, the system could not determine whether an earlier attempt had already succeeded.
-
-The four operational laws eliminate these failures directly. A negative guard terminates a circular loop at the second hop. An idempotency ledger converts a duplicate from a destructive double-mutation into a sub-millisecond lookup. Full Jitter transforms a 500-request shockwave into an orderly distribution of 8.3 calls per second. State-gated ladders replace visual assumptions with explicit prerequisites, and status-code triage turns every retry into a deliberate architectural decision.
-
-> **Every automated action is an event, and every event can become a loop. Build the system that sees its own earlier work before it acts.**
 
 ---
 
