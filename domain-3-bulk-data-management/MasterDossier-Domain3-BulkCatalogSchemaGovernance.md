@@ -8,6 +8,8 @@
 
 ## 1. Tidy on Screen, Wrong in the File: The Silent Spreadsheet Rewrite
 
+*How a spreadsheet's silent data-type decisions rewrote two barcodes and one product URL — and why the pre-flight gate caught all three before a single row committed.*
+
 A spreadsheet is built to present data to a human, not to protect the integrity of a relational record. That design choice is harmless when the data is a budget, but dangerous when the data is an e-commerce product catalog. 
 
 A catalog is the relational schema behind storefront checkout, advertising feeds, warehouse optical scanners, and canonical product URLs. The moment an operator opens a catalog export in Excel or Google Sheets, the application quietly begins making typing decisions on their behalf. A UPC-A barcode—the 12-digit retail code whose last digit is a check digit computed from the first eleven—looks like a number, so the spreadsheet treats it as one: an IEEE 754 floating-point value it is free to convert to scientific notation, round, or strip of leading zeros. No warning dialog appears. The file opens normally, looks visually tidy, and passes casual human review.
@@ -27,7 +29,7 @@ This dossier documents a bulk update to Synapse Botanicals' 12-variant catalog, 
                                 [ZERO BYTES COMMITTED]
 ```
 
-### The Five-Second Stop
+### 1.1 The Five-Second Stop
 
 At 09:15:10 EDT on October 24, 2026, an automated pre-flight linter began scanning `Catalog_Mutation_v2.xlsx`, a 12-variant update spanning 5 core product lines. Within four seconds it identified three blocking defects:
 * **Row 2 (`SYN-FSTK-MY`):** The barcode had been coerced to scientific notation: `8.40001E+11`.
@@ -91,6 +93,8 @@ The principle is usually discussed in terms of user accounts and IAM permissions
 
 The same logic protects against spreadsheet coercion: silent mathematical conversion can only damage columns that actually exist in the file. Tier 1 columns appear in an import file only as match keys, and the linter verifies every match key against the canonical registry before execution proceeds. When the linter reports defects in more than one tier, the lowest-numbered tier is resolved first, because it carries the largest blast radius.
 
+Understanding the tier hierarchy raises the natural question: what does failure actually cost? Section 3 models that figure to the dollar.
+
 ---
 
 ## 3. One Bad Release, $3,900 Out of Pocket: The Modeled Blast Radius
@@ -112,6 +116,30 @@ An engineering control is only worth building if the failure it prevents carries
 | Human error rate per bulk update | 25% | Annualization |
 
 ### 3.2 Incident Ledger: One Unmitigated Release
+
+When an unmitigated release commits to the primary store, the damage does not stay contained in Shopify. It propagates asynchronously across warehouse inventory systems, product feeds, and live paid-media campaigns:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Op as Catalog Import (Corrupted)
+    participant Core as Shopify Core DB
+    participant WMS as ShipBob 3PL WMS
+    participant GMC as Google Merchant Center
+    participant Meta as Meta Catalog / Ads
+
+    Op->>Core: Commit Barcode & Handle Mutation
+    par Asynchronous Inventory Sync
+        Core->>WMS: Inventory Item Webhook (Corrupted Barcode)
+        WMS-->>WMS: Inbound Bin Scan Mismatch (Laser Scan Error ❌)
+    and Feed Ingestion
+        GMC->>Core: Daily XML / API Feed Ingestion
+        GMC-->>GMC: Disapprove Product: GTIN Checksum Invalid ❌
+    and Live Traffic
+        Meta->>Core: User clicks live ad targeting old handle
+        Core-->>Meta: HTTP 404 Not Found ($450/day ad bleed ❌)
+    end
+```
 
 | # | Cost Line | Operational Driver | Calculation | Cost | Share |
 |:---:|---|---|---|:---:|:---:|
@@ -141,6 +169,8 @@ Annual unmitigated exposure  = 2 x $3,900.00                   = $7,800.00 per y
 ### 3.4 What the Ledger Does Not Count
 
 The $3,900.00 figure is a conservative financial floor. It prices only the three cost lines that arrive as direct invoices and payroll. It excludes lost sales contribution: every Focus Sticks Matcha Yuzu order lost to a scan failure or a dead landing page forfeits **$33.50 of gross margin** at the $42.00 retail price and $8.50 COGS (Section 8). It also excludes carrier chargebacks, customer support ticket volume, and the search ranking lag that persists after 301 redirects are deployed.
+
+To understand why these failures occur so reliably in unprotected workflows, we must examine the physical and software mechanics of the spreadsheet traps that produce them.
 
 ---
 
@@ -195,26 +225,26 @@ Rename the handle in a bulk file, and the old address stops resolving. Three los
 
 Unless a redirect is created deliberately, a handle change delivered through a bulk file carries none. That is why a handle rename is an approved redirect project, never a catalog edit (Law 2, Section 10).
 
-### 4.3 Field-Level Validation Formulas
+### 4.3 Client-Side Guardrails: In-Sheet Validation Formulas
 
-The first line of defense is a column of Google Sheets formulas that flag bad values on screen:
+Before a file reaches the automated linter, in-sheet formulas provide immediate visual feedback to catalog operators. Rather than checking every cosmetic field, the template focuses on the three critical hazards where mathematical coercion and margin destruction occur:
 
-| Field Name | Data Type | Hazard Tier | Validation Formula (Google Sheets) |
+| Target Field | Hazard Tier | Validation Formula (Google Sheets) | Enforced Invariant |
 |---|---|---|---|
-| **ID** | Integer | Tier 1 | `=IF(ISNUMBER(A2), "VALID", "ERROR-INVALID-PRIMARY-KEY")` |
-| **Handle** | String | Tier 1 (Lock) | `=IF(REGEXMATCH(B2, "^[a-z0-9-]+$"), "VALID", "ERROR-INVALID-HANDLE")` |
-| **Title** | String | Tier 4 | `=IF(LEN(C2)>0, "VALID", "ERROR-BLANK-TITLE")` |
-| **Variant Price** | Decimal | Tier 2 | `=IF(AND(ISNUMBER(D2), D2>0), "VALID", "ERROR-PRICE")` |
-| **Cost per Item** | Decimal | Tier 2 | `=IF(AND(ISNUMBER(E2), E2<D2), "VALID", "ERROR-NEGATIVE-MARGIN")` |
-| **Variant Barcode** | String | Tier 1 | `=IF(AND(ISTEXT(F2), REGEXMATCH(F2, "^[0-9]{12}$")), "VALID", "ERROR-BARCODE")` |
-| **Variant Weight** | Decimal | Tier 2 | `=IF(AND(ISNUMBER(G2), G2>0), "VALID", "ERROR-WEIGHT")` |
-| **Inventory Quantity**| Integer | Tier 1 | *None. Omitted from import file by design (Schema by Omission)* |
+| **Variant Barcode** | Tier 1 | `=IF(AND(ISTEXT(F2), REGEXMATCH(F2, "^[0-9]{12}$")), "VALID", "ERROR-BARCODE-COERCION")` | Must be a pure 12-digit string; fails if coerced to float or stripped of leading zero. |
+| **Handle** | Tier 1 (Lock) | `=IF(REGEXMATCH(B2, "^[a-z0-9-]+$"), "VALID", "ERROR-INVALID-HANDLE")` | Must remain an immutable URL slug; flags whitespace, uppercase, or special characters. |
+| **Cost per Item** | Tier 2 | `=IF(AND(ISNUMBER(E2), E2<D2), "VALID", "ERROR-NEGATIVE-MARGIN")` | Cost must not exceed selling price (Tier 2 margin defense). |
 
 The barcode formula explicitly tests `ISTEXT` before evaluating the regex. Converting with `TO_TEXT` first would hide the coercion, because a coerced number converted back to text looks identical to text that was never coerced.
+
+> [!NOTE]
+> **Why Client-Side Formulas Are Insufficient**: In-sheet formulas provide immediate operator feedback, but they cannot act as an architectural boundary. An operator can paste values over formulas, ignore error flags, or export to CSV where formula cells are stripped. Client-side formulas are visual aids; the authoritative security boundary is the external, immutable pre-flight linter in Section 5.
 
 ### 4.4 Schema by Omission
 
 `Inventory Quantity` is Tier 1 and has no formula because no spreadsheet formula can make it safe to import. It is protected by being absent. A field that is not being updated must not exist in the import file, ensuring there is nothing to coerce, overwrite, or desynchronize from the warehouse. Gate 1 in Section 9 enforces this rule on every release.
+
+Knowing what can go wrong is only half the protocol. The validator that enforces the other half uses two deterministic proofs: a Modulo-10 checksum and a relational identity check against the master mapping.
 
 ---
 
@@ -281,6 +311,12 @@ function validateBarcodeRecord(inputUpc, sku, approvedMapping) {
   
   return { valid: true, upc: inputUpc, sku, computedCheckDigit };
 }
+
+// Example invocations:
+// validateBarcodeRecord('850041234014', 'SYN-FSTK-MY', approvedMapping);
+// => { valid: true, upc: '850041234014', sku: 'SYN-FSTK-MY', computedCheckDigit: 4 }
+// validateBarcodeRecord('8.40001E+11', 'SYN-FSTK-MY', approvedMapping);
+// => { valid: false, error: 'SCIENTIFIC_NOTATION_DETECTED', details: 'Floating-point notation detected.' }
 ```
 
 ### 5.3 A Worked Check
@@ -296,40 +332,19 @@ Check Digit = (10 - (66 mod 10)) mod 10 = (10 - 6) mod 10 = 4   [Matches 12th di
 
 For `SYN-TNCT-AM` (`850041234052`), the weighted sum is 78 $\rightarrow$ check digit is 2. For `SYN-TMBL-MO` (`850041234090`), the weighted sum is 90 $\rightarrow$ check digit is 0.
 
-### 5.4 Calling the Validator
-
-```javascript
-const approvedMapping = new Map([
-  ['SYN-FSTK-MY',  { upc: '850041234014' }],
-  ['SYN-FSTK-BO',  { upc: '850041234021' }],
-  ['SYN-TNCT-AM',  { upc: '850041234052' }],
-  ['SYN-TMBL-MO',  { upc: '850041234090' }],
-]);
-
-// Valid Record
-validateBarcodeRecord('850041234014', 'SYN-FSTK-MY', approvedMapping);
-// Output: { valid: true, upc: '850041234014', sku: 'SYN-FSTK-MY', computedCheckDigit: 4 }
-
-// Corrupted Scientific Notation
-validateBarcodeRecord('8.40001E+11', 'SYN-FSTK-MY', approvedMapping);
-// Output: { valid: false, error: 'SCIENTIFIC_NOTATION_DETECTED', details: 'Floating-point notation detected.' }
-
-// Checksum Mismatch
-validateBarcodeRecord('850041234017', 'SYN-FSTK-MY', approvedMapping);
-// Output: { valid: false, error: 'CHECKSUM_MODULO_10_MISMATCH', details: 'Expected check digit 4.' }
-```
-
-### 5.5 Why Barcodes Are Strings, Never Numbers
+### 5.4 Why Barcodes Are Strings, Never Numbers
 
 The first assertion in `validateBarcodeRecord` is a strict `typeof` check. A barcode that arrives as a JavaScript number is rejected with `BARCODE_TEXT_REQUIRED` even if its digits happen to be correct, because arriving as a number proves it was parsed through a numeric type—and numeric types cannot preserve leading zeros (`012345678905` becomes `12345678905`). `Number()` appears in the validator in only one place: converting single validated characters to compute the weighted sum.
+
+The validator passes on seven specific conditions. It rejects on nine. Section 6 catalogs every failure type, including two traps that pass the arithmetic and would still corrupt the catalog.
 
 ---
 
 ## 6. Nine Ways a Barcode Fails: The Rejection Matrix for Malformed Identifiers
 
-*Each failure type with its fixture and fix, including two traps that pass the arithmetic: all-zero placeholders and valid barcodes on the wrong SKU.*
+*The nine failure types the validator enforces, including two traps that pass the Modulo-10 arithmetic but would still silently corrupt the catalog.*
 
-The validation engine groups rejected mutations into nine failure types. For example, a checksum-valid `850041234021` is rejected on `SYN-FSTK-MY` because that SKU requires the exact text `850041234014`. The offline run exercised 16 negative inputs across these failure types. All 16 produced their expected rejection. The [barcode evidence](../evidence/barcodes/summary.md) lists the individual fixtures and outcomes.
+The validation engine rejects nine distinct barcode failure types. Two of them — the all-zero placeholder and the valid-UPC-on-wrong-SKU mismatch — are especially dangerous: both pass the Modulo-10 checksum, would be accepted by a naive validator, and would create silent catalog corruption that only surfaces on the warehouse floor. The offline run exercised 16 negative fixtures across all nine types. All 16 produced their expected rejection. The [barcode evidence](../evidence/barcodes/summary.md) lists the individual fixtures and outcomes.
 
 | # | Error Code | Failure Mode | Ground-Truth Fixture Input | Architectural Meaning | Required Remediation Action |
 |:---:|---|---|---|---|---|
@@ -343,20 +358,20 @@ The validation engine groups rejected mutations into nine failure types. For exa
 | **8** | `SKU_NOT_IN_UNIVERSE_A_MASTER` | Unknown catalog SKU | `850041234014` on unapproved SKU | SKU does not exist in master catalog. | Abort import; register SKU in master catalog. |
 | **9** | `SKU_BARCODE_MISMATCH` | Valid UPC on wrong SKU | `850041234021` on `SYN-FSTK-MY` | Checksum is valid, but barcode belongs to another product! | Re-align product SKU with dedicated UPC. |
 
-### Two Critical Architectural Traps
+### 6.1 Two Critical Architectural Traps
 
 * **The 12-Zero Trap (Rule 6)**: `000000000000` mathematically passes the Modulo-10 checksum: eleven zeros produce a weighted sum of 0, and $(10 - 0) \pmod{10} = 0$. A naive validator that checks only the check digit will happily approve twelve zeros. That is why `PLACEHOLDER_BARCODE` executes before the checksum.
 * **The SKU Mismatch Trap (Rule 9)**: `850041234021` is a valid UPC-A (check digit 1) belonging to Blood Orange stick packs (`SYN-FSTK-BO`). If assigned to Matcha Yuzu (`SYN-FSTK-MY`), every arithmetic check passes, the scanner reads it cleanly, and the WMS finds a real product—just the wrong one. Rule 9 enforces that only relational mapping proves product identity.
+
+When these failure modes meet a live production file, the circuit breaker leaves no room for ambiguity. Section 7 presents the five-second trace of the audit that caught them.
 
 ---
 
 ## 7. Five Seconds to Abort: The Audit of `Catalog_Mutation_v2.xlsx`
 
-*A timestamped log and chronology of the audit, showing which rule fired on each of the three defects and when the circuit breaker tripped.*
+*A timestamped telemetry log of the audit, showing which rule fired on each of the three defects and when the circuit breaker tripped.*
 
-The audit evaluated all 12 variants of `Catalog_Mutation_v2.xlsx`, a seasonal bulk update touching barcodes, handles, prices, and costs.
-
-### 7.1 Telemetry Log
+The pre-flight audit evaluated all 12 variants of `Catalog_Mutation_v2.xlsx`, a seasonal bulk update touching barcodes, handles, prices, and costs. Within five seconds, the linter trapped three blocking defects across three separate hazard tiers:
 
 ```text
 09:15:10.042 EDT [AUDIT-INIT] Ingesting Catalog_Mutation_v2.xlsx (12 variants, 7 attributes)
@@ -368,15 +383,9 @@ The audit evaluated all 12 variants of `Catalog_Mutation_v2.xlsx`, a seasonal bu
 09:15:15.015 EDT [AUDIT-STOP] Catalog deployment ABORTED. Zero bytes committed to Shopify Admin.
 ```
 
-### 7.2 Incident Chronology
+At 09:15:15 EDT, the circuit breaker terminated execution with zero bytes dispatched to the Shopify Admin API. By failing closed before network transmission, the linter ensured that the \$3,900 modeled blast radius never materialized on the live store or in warehouse picking queues.
 
-| Time (EDT) | Elapsed | Event Description | Rule That Fired |
-|---|:---:|---|---|
-| **09:15:10** | +0s | Pre-flight validation initiated; 12 rows queued | Gate 3 Linter |
-| **09:15:12** | +2s | Row 2 (`SYN-FSTK-MY`): Barcode coerced to `8.40001E+11` | `SCIENTIFIC_NOTATION_DETECTED` |
-| **09:15:13** | +3s | Row 6 (`SYN-TNCT-AM`): Barcode truncated to 11 digits (`84000103000`) | `INVALID_LENGTH_NOT_12_DIGITS` |
-| **09:15:14** | +4s | Row 10 (`SYN-TMBL-MO`): Handle mutated to `...-new` | `HANDLE_MUTATION_BREACH` (Handle Lock) |
-| **09:15:15** | +5s | **3 blocking errors trapped. Import aborted. Zero database commits.** | Circuit Breaker |
+An abort prevents the commit. What comes next is not a rewrite — it is a restore. And the distinction matters architecturally.
 
 ---
 
@@ -412,13 +421,15 @@ Reconstruction is especially dangerous when it looks plausible: an 11-digit stri
 
 > **Non-Negotiable Law: Never reconstruct a damaged barcode through arithmetic. Restore it only from the authoritative SKU master mapping.**
 
+Restoring canonical data repairs a corrupted export. Preventing corruption from reaching the store in the future requires standardizing the entire import lifecycle. Section 9 details the five-gate deployment pipeline.
+
 ---
 
 ## 9. Prune, Command, Lint, Canary, Roll Out: The Five-Gate Safe MERGE Lifecycle
 
 *How non-destructive MERGE leaves unlisted fields untouched, and what each gate must pass before the remaining 10 of 12 variants deploy.*
 
-In standard native Shopify CSV imports, partial updates are destructive: blank cells in an imported spreadsheet can inadvertently erase existing product metafields, overwrite secondary images, or reset inventory quantities to zero. 
+The gate that stopped the corrupted file is only the third of five. In standard native Shopify CSV imports, partial updates are destructive: blank cells in an imported spreadsheet can inadvertently erase existing product metafields, overwrite secondary images, or reset inventory quantities to zero. Before Gate 3 ever fires, two quieter gates have already reduced the blast radius to near zero.
 
 To prevent destructive writes, Synapse Botanicals standardizes on **Matrixify's Non-Destructive `MERGE` Architecture**:
 
@@ -463,6 +474,34 @@ Every omitted column (`Barcode`, `Handle`, `Inventory Quantity`, `Title`, `Metaf
 | **Gate 4: 16.67% Canary Batch** | Deploy 2 of 12 variants across two product lines | Storefront returns HTTP 200; WMS laser terminal scans barcode cleanly | Halt. 10 of 12 variants remain completely untouched. |
 | **Gate 5: Full Production Rollout** | Deploy remaining 10 variants (83.33%) | Post-import acceptance criteria met; audit diff archived | Halt and invoke rollback from authoritative mapping. |
 
+### 9.3 Automated CI/CD Pre-Flight Pipeline
+
+In enterprise operations, catalog validation cannot depend on manual operator discipline. The pre-flight linter executes as an automated CI/CD gate prior to file ingestion:
+
+```bash
+# Production pre-commit linting gate
+npx catalog-lint --file ./imports/Catalog_Mutation_v2.xlsx --strict --format json
+```
+
+In automated workflows, any workbook uploaded to an S3 staging bucket triggers an event-driven AWS Lambda worker that runs the validator against the canonical SKU mapping registry. Files that fail any Gate 1–3 rule are quarantined immediately, generating an automated Slack alert to TechOps with the exact row and field failure codes. Only files that pass with zero blocking errors receive an authenticated upload signature for Matrixify execution.
+
+### 9.4 Automated Canary & WMS Optical Acceptance
+
+Gate 4 deploys a 16.67% canary batch (2 of 12 variants) across two distinct product families (`SYN-FSTK-MY` and `SYN-TNCT-AM`). The deployment coordinator asserts two independent system boundaries before Gate 5 triggers full rollout:
+
+```bash
+# 1. Assert Storefront HTTP 200 on mutated handle
+curl -s -o /dev/null -w "%{http_code}" https://synapsebotanicals.com/products/focus-sticks-matcha-yuzu
+# Pass criteria: HTTP 200 (not 404 or redirect loop)
+
+# 2. Assert WMS API reflects exact canonical barcode string
+curl -s -H "Authorization: Bearer $WMS_SECRET" \
+  https://api.shipbob.com/1.0/inventory?sku=SYN-FSTK-MY | jq -r '.[0].upc'
+# Pass criteria: exact text match "850041234014" (12 digits, no scientific notation)
+```
+
+In the warehouse, pack bench handheld terminals (Zebra TC52) verify the physical 95-module optical scan against the newly synced inventory record. Once both software and physical optical checks pass, Gate 5 executes the remaining 10 variants (83.33%) with zero risk of widespread store disruption.
+
 ---
 
 ## 10. A Barcode Is Text, a Handle Is an Address: Four Laws of Catalog Governance
@@ -475,6 +514,8 @@ Four non-negotiable laws govern catalog data across enterprise commerce:
 2. **The Law of Immutable Canonical Handles**: A product handle is a live URL address, not a marketing title. Renaming a handle requires a formal redirect project and marketing approval, never a casual bulk spreadsheet edit. *(Closes the gap in Section 3: the 404 ad-spend bleed).*
 3. **The Law of Minimal Column Scope (Schema by Omission)**: If an attribute is not actively being modified, it must not exist in the import file. Blank cells must never be permitted near production databases. *(Closes the gap in Section 9: accidental data destruction).*
 4. **The Law of Authoritative Recovery**: Damaged barcodes must never be reconstructed through arithmetic guessing or truncation padding. They must be restored strictly from the authoritative master SKU catalog mapping. *(Closes the gap in Section 8: unrecoverable precision loss).*
+
+These four laws are only credible if the testing that underpins them is transparent. Section 11 draws the line between what was proven in staging and what remains a specified acceptance criterion.
 
 ---
 
@@ -519,9 +560,13 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 
 Local software agreement is verified. The encoder and decoder agree on all twelve barcodes, every checksum passes, and every defect mode in the negative suite is trapped before commit. Physical warehouse performance on handheld laser terminals (Zebra TC52, Honeywell CT60) under low-light and damaged-label conditions represents an operational acceptance criterion. No licensed GTIN ownership or physical scanner hardware result is inferred from local software tests.
 
+Software verification proves the rules hold; the operational incident proves why they matter. Section 12 concludes with the core architectural principle that separates enterprise catalog governance from casual data entry.
+
 ---
 
 ## 12. An Identifier, Not a Number: The Architectural Takeaway
+
+*Why spreadsheet typing assumptions destroy enterprise catalogs, and how pre-flight validation protects warehouse and storefront integrity.*
 
 Three edits in one file looked completely routine to casual inspection: a barcode that displayed as a number, a barcode one digit short, and a URL handle that had been "tidied." 
 
