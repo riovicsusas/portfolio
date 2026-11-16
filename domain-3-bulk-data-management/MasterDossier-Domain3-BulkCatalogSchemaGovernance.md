@@ -10,7 +10,7 @@
 
 *How a spreadsheet's silent data-type decisions rewrote two barcodes and one product URL — and why the pre-flight gate caught all three before a single row committed.*
 
-A spreadsheet is built to present data to a human, not to protect the integrity of a relational record. That design choice is harmless when the data is a budget, but dangerous when the data is an e-commerce product catalog. 
+A spreadsheet is built to present data to a human, not to protect the integrity of a relational record. That design choice is harmless when the data is a budget, but dangerous when the data is an e-commerce product catalog.
 
 A catalog is the relational schema behind storefront checkout, advertising feeds, warehouse optical scanners, and canonical product URLs. The moment an operator opens a catalog export in Excel or Google Sheets, the application quietly begins making typing decisions on their behalf. A UPC-A barcode—the 12-digit retail code whose last digit is a check digit computed from the first eleven—looks like a number, so the spreadsheet treats it as one: an IEEE 754 floating-point value it is free to convert to scientific notation, round, or strip of leading zeros. No warning dialog appears. The file opens normally, looks visually tidy, and passes casual human review.
 
@@ -41,7 +41,7 @@ At 09:15:15 EDT, the circuit breaker tripped and aborted the import. Zero rows r
 Had the file gone through, two products would have carried barcodes that the warehouse management system (WMS) could not match to physical inventory, and a core product page would have returned HTTP 404 to every ad click, search result, and customer bookmark pointing to the old address. Section 3 models that failure at a **$3,900.00 cash blast radius** for a single unmitigated release.
 
 > [!CAUTION]
-> **Staging Sandbox Disclosure**: Every result in this dossier was produced in a staging environment: an in-memory/SQLite-backed test suite, synthetic GTIN fixtures (test identifiers, not GS1-licensed codes), and deterministic pricing and cost models. No production store, live Matrixify import, or physical warehouse scanner was exercised. Section 11 separates what was verified in staging from what is only specified.
+> **Staging Sandbox Disclosure**: Every result in this dossier was produced in a staging environment: an in-memory/SQLite-backed test suite, synthetic GTIN fixtures (test identifiers, not GS1-licensed codes), and deterministic pricing and cost models. No production store, live Matrixify import, or physical warehouse scanner was exercised. Section 12 separates what was verified in staging from what is only specified.
 
 | Incident Parameter | Baseline Parameter Value | Architectural Significance |
 |---|---|---|
@@ -57,7 +57,7 @@ Had the file gone through, two products would have carried barcodes that the war
 
 *How catalog fields are ranked by the damage a wrong value causes, and why the import file itself acts as the permission boundary.*
 
-Every column in a catalog file is a lever on the live store, and the levers are not equally heavy. 
+Every column in a catalog file is a lever on the live store, and the levers are not equally heavy.
 
 The `Variant ID` and the `Handle` are the primary keys other systems use to locate a product. The `Barcode` is the physical label the warehouse uses to pick and pack it. The `SKU` joins them. Change a product `Title` and a page reads awkwardly. Change a barcode and a pack bench can no longer verify the carton. Synapse Botanicals therefore assigns every field in the 12-variant catalog to one of four hazard tiers, ranked by the operational damage a wrong value causes, and restricts each tier to the smallest role with a legitimate reason to edit it.
 
@@ -87,7 +87,7 @@ flowchart TD
 
 ### 2.2 Least Privilege: In Bulk Imports, the File Is the Permission
 
-The tiers apply the principle of least privilege directly to catalog administration: each role receives the minimum write access its work requires and nothing more. 
+The tiers apply the principle of least privilege directly to catalog administration: each role receives the minimum write access its work requires and nothing more.
 
 The principle is usually discussed in terms of user accounts and IAM permissions, but in a bulk-import workflow **the file itself is the permission**. Matrixify, the Shopify bulk-import application Synapse uses, accepts a `Command` column on every row. Under `MERGE`, it updates only the cells that row populates and leaves every other column untouched. A marketing import file containing only `ID`, `Title`, `Body (HTML)`, `Image Alt Text`, and `SEO Description` is therefore physically incapable of altering a barcode, a price, or a URL handle.
 
@@ -148,7 +148,7 @@ sequenceDiagram
 | **3** | **Emergency TechOps and SEO recovery** | Forensic manual 301 redirect mapping, XML sitemap re-indexing, and cache re-submission | Fixed allocation | **$800.00** | 20.5% |
 | | **TOTAL OUT-OF-POCKET INCIDENT TOLL** | | $2,200 + $900 + $800 | **$3,900.00** | **100.0%** |
 
-Line 1 is the price of the barcode trap. Lines 2 and 3—totaling $1,700.00—are the price of the handle trap. 
+Line 1 is the price of the barcode trap. Lines 2 and 3—totaling $1,700.00—are the price of the handle trap.
 
 Notice an essential operational difference: **the ad-spend line is the only one that grows with detection time**. Every additional day the 404 persists adds $450.00 ($18.75 per hour). The relabeling and technical recovery lines are fixed once the bad file commits. That asymmetry is why the control sits *in front* of the import and not behind it.
 
@@ -299,16 +299,16 @@ function validateBarcodeRecord(inputUpc, sku, approvedMapping) {
   if (!/^[0-9]+$/.test(inputUpc)) return reject('NON_NUMERIC_CHARACTERS', 'Contains non-numeric artifacts or whitespace.');
   if (inputUpc.length !== 12) return reject('INVALID_LENGTH_NOT_12_DIGITS', `Received ${inputUpc.length} digits.`);
   if (/^0{12}$/.test(inputUpc)) return reject('PLACEHOLDER_BARCODE', 'All-zero placeholders are prohibited.');
-  
+
   const computedCheckDigit = calculateModulo10CheckDigit(inputUpc.slice(0, 11));
   if (Number(inputUpc[11]) !== computedCheckDigit) {
     return reject('CHECKSUM_MODULO_10_MISMATCH', `Expected check digit ${computedCheckDigit}.`);
   }
-  
+
   const approved = approvedMapping.get(sku);
   if (!approved) return reject('SKU_NOT_IN_UNIVERSE_A_MASTER', `No approved fixture mapping for ${sku}.`);
   if (approved.upc !== inputUpc) return reject('SKU_BARCODE_MISMATCH', 'Checksum-valid barcode does not match this SKU.');
-  
+
   return { valid: true, upc: inputUpc, sku, computedCheckDigit };
 }
 
@@ -437,7 +437,7 @@ These two canonical costs directly power downstream order modeling across the po
 
 ### 8.2 Why Nothing Was Reconstructed
 
-`8.40001E+11` expands to $840,001,000,000$, not $850,041,234,014$. `84000103000` is not a prefix, suffix, or truncation of `850041234052`. No padding, rounding, or checksum arithmetic applied to either value leads back to the master. 
+`8.40001E+11` expands to $840,001,000,000$, not $850,041,234,014$. `84000103000` is not a prefix, suffix, or truncation of `850041234052`. No padding, rounding, or checksum arithmetic applied to either value leads back to the master.
 
 Reconstruction is especially dangerous when it looks plausible: an 11-digit string can have a valid check digit computed for it, and a rounded string can be padded with zeros. Both results pass Modulo-10 checks, but assign a synthetic barcode that matches no physical packaging, creating silent warehouse inventory exceptions.
 
@@ -537,11 +537,25 @@ Four non-negotiable laws govern catalog data across enterprise commerce:
 3. **The Law of Minimal Column Scope (Schema by Omission)**: If an attribute is not actively being modified, it must not exist in the import file. Blank cells must never be permitted near production databases. *(Closes the gap in Section 9: accidental data destruction).*
 4. **The Law of Authoritative Recovery**: Damaged barcodes must never be reconstructed through arithmetic guessing or truncation padding. They must be restored strictly from the authoritative master SKU catalog mapping. *(Closes the gap in Section 8: unrecoverable precision loss).*
 
-These four laws are only credible if the testing that underpins them is transparent. Section 11 draws the line between what was proven in staging and what remains a specified acceptance criterion.
+These four laws are only the operational expression of a deeper architectural boundary. Section 11 draws out the core principle that separates enterprise catalog governance from casual data entry.
 
 ---
 
-## 11. Verified in Staging, Not on the Scanner: Evidence Scope and Verification Status
+## 11. An Identifier, Not a Number: The Architectural Takeaway
+
+*Why spreadsheet typing assumptions destroy enterprise catalogs, and how pre-flight validation protects warehouse and storefront integrity.*
+
+Three edits in one file looked completely routine to casual inspection: a barcode that displayed as a number, a barcode one digit short, and a URL handle that had been "tidied."
+
+Each was a silent trigger for catastrophic operational failure: physical barcode read errors on warehouse pack benches, immediate HTTP 404 crashes on live advertising traffic, and thousands of dollars in emergency relabeling fees. The audit intercepted the file in five seconds because it refused to trust what a spreadsheet displayed and verified what the file had actually stored.
+
+The ultimate law of catalog data is simple: **A barcode is an identifier, not a number; a product handle is a permanent address, not a title. Build the pre-flight gate that enforces that boundary before anyone clicks import.**
+
+Software verification proves that the rules hold; the operational incident proves why they matter. Section 12 concludes with the transparent evidentiary scope separating local staging tests from physical warehouse deployment criteria.
+
+---
+
+## 12. Verified in Staging, Not on the Scanner: Evidence Scope and Verification Status
 
 *Which results were verified in staging, which are documented specifications or scenario audits, and why physical scanner performance is not inferred.*
 
@@ -557,7 +571,7 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 └──────────────────────────────┴─────────────────────────────────────────┘
 ```
 
-### 11.1 Evidence Scope and Verification Status Matrix
+### 12.1 Evidence Scope and Verification Status Matrix
 
 | Deliverable | Section | Status | Ground-Truth Evidence Source |
 |---|---|---|---|
@@ -572,29 +586,15 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 | **Matrixify Safe MERGE SOP & Canary Lifecycle** | Section 9 | Documented Specification | Standard operating procedure for non-destructive partial imports. |
 | **WMS Optical Scanner Acceptance Test** | Section 9.4 | Specified | Operational acceptance criteria; physical hardware test. |
 
-### 11.2 Evidence Links
+### 12.2 Evidence Links
 
 - The [barcode summary](../evidence/barcodes/summary.md) records 12 of 12 approved SKU mappings and 95-bit software round trips, plus 16 of 16 expected rejections. The encoder and decoder share pattern tables. Physical scanning is outside the test scope.
 - [`evidence/costs/summary.md`](../evidence/costs/summary.md): Tier 2 price, cost, and gross margin sensitivity verification.
 - [`evidence/README.md`](../evidence/README.md): Master evidence index.
 
-### 11.3 The Evidentiary Boundary
+### 12.3 The Evidentiary Boundary
 
 Local software agreement is verified. The encoder and decoder agree on all twelve barcodes, every checksum passes, and every defect mode in the negative suite is trapped before commit. Physical warehouse performance on handheld laser terminals (Zebra TC52, Honeywell CT60) under low-light and damaged-label conditions represents an operational acceptance criterion. No licensed GTIN ownership or physical scanner hardware result is inferred from local software tests.
-
-Software verification proves the rules hold; the operational incident proves why they matter. Section 12 concludes with the core architectural principle that separates enterprise catalog governance from casual data entry.
-
----
-
-## 12. An Identifier, Not a Number: The Architectural Takeaway
-
-*Why spreadsheet typing assumptions destroy enterprise catalogs, and how pre-flight validation protects warehouse and storefront integrity.*
-
-Three edits in one file looked completely routine to casual inspection: a barcode that displayed as a number, a barcode one digit short, and a URL handle that had been "tidied." 
-
-Each was a silent trigger for catastrophic operational failure: physical barcode read errors on warehouse pack benches, immediate HTTP 404 crashes on live advertising traffic, and thousands of dollars in emergency relabeling fees. The audit intercepted the file in five seconds because it refused to trust what a spreadsheet displayed and verified what the file had actually stored.
-
-The ultimate law of catalog data is simple: **A barcode is an identifier, not a number; a product handle is a permanent address, not a title. Build the pre-flight gate that enforces that boundary before anyone clicks import.**
 
 ---
 
