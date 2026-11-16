@@ -391,27 +391,49 @@ An abort prevents the commit. What comes next is not a rewrite — it is a resto
 
 ## 8. Restore, Never Reconstruct: Remediation and the Master Diff
 
-*A before-and-after diff of every corrected field, and why damaged barcodes are restored only from the master mapping, never inferred.*
+*How a tripped circuit breaker transitions into a verified restore workflow, and why canonical registries replace arithmetic guessing.*
 
 A damaged barcode cannot be repaired by arithmetic. Once an application converts a barcode into `8.40001E+11`, the original trailing digits are gone. Any algorithm that attempts to "guess" the missing numbers will create duplicate, invalid barcodes.
 
-### 8.1 Master Diff: Pre-Audit vs. Post-Sanitization
+### 8.1 The Dual-Payload Problem and the Remediation Protocol
 
-| SKU Code | Variant Name | Field Mutated | Pre-Audit Value | Post-Sanitization Value | Verification Status |
+Production catalog updates rarely contain *only* corrupted rows. In practice, bulk spreadsheets are **dual-payload files**: they bundle routine commercial adjustments (price adjustments and BOM reconciliations) alongside catastrophic schema defects (coerced barcodes and mutated handles). The governance engine must be surgical — it must isolate and arrest the Tier 1 operational hazards without discarding the legitimate Tier 2 commercial data.
+
+When the Gate 3 circuit breaker aborted `Catalog_Mutation_v2.xlsx`, remediation followed a four-step recovery protocol rather than a manual spreadsheet re-edit:
+
+1. **Quarantine & Extraction:** The corrupted file was locked, and the linter emitted error coordinates for Rows 2, 6, and 10 into an incident log:
+   ```json
+   [
+     {"row": 2, "sku": "SYN-FSTK-MY", "field": "Barcode", "error": "SCIENTIFIC_NOTATION_DETECTED"},
+     {"row": 6, "sku": "SYN-TNCT-AM", "field": "Barcode", "error": "INVALID_LENGTH_NOT_12_DIGITS"},
+     {"row": 10, "sku": "SYN-TMBL-MO", "field": "Handle", "error": "HANDLE_MUTATION_BREACH"}
+   ]
+   ```
+2. **Relational Registry Lookup:** Using the immutable `Variant SKU` as the query key, the pipeline looked up canonical values directly from the Master Mapping (Section 5.1) — no arithmetic, no inference:
+   * **Row 2 (`SYN-FSTK-MY`):** Discard `8.40001E+11` → query by SKU → canonical string `"850041234014"`.
+   * **Row 6 (`SYN-TNCT-AM`):** Discard `84000103000` → query by SKU → canonical string `"850041234052"`.
+   * **Row 10 (`SYN-TMBL-MO`):** Discard `precision-insulated-tumbler-new` → query handle registry by SKU → canonical handle `"precision-insulated-tumbler-durable-merchandise"`.
+3. **Format-Safe Patching:** Barcode columns were enforced as strict text strings (formatted as `@` in-sheet) to prevent spreadsheet software from silently re-coercing values into floating-point notation on save. Legitimate commercial edits in Rows 4 and 5 were preserved untouched.
+4. **Re-Lint & Diff Generation:** The sanitized file was re-scanned through Gate 3. All 12 rows passed. The system generated the cryptographic Master Diff below, certifying that only the targeted fields were altered before promoting the batch to Gate 4 Canary.
+
+| SKU Code | Variant Name | Field Mutated | Pre-Audit Value | Post-Sanitization Value | Audit Classification & Verification |
 |---|---|---|---|---|---|
-| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Barcode` (Row 2) | `8.40001E+11` *(Scientific Notation)* | `850041234014` | **PASSED**: Resolved from master mapping; check digit 4 |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Barcode` (Row 6) | `84000103000` *(11 Digits, Truncated)* | `850041234052` | **PASSED**: Resolved from master mapping; check digit 2 |
+| **Tier 1: Operational Schema Hazards (Arrested & Restored)** | | | | | |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Barcode` (Row 2) | `8.40001E+11` *(Scientific Notation)* | `850041234014` | **RESTORED**: Overwritten from master mapping; check digit 4 valid |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Barcode` (Row 6) | `84000103000` *(11 Digits, Truncated)* | `850041234052` | **RESTORED**: Overwritten from master mapping; check digit 2 valid |
 | `SYN-TMBL-MO` | Tumbler Matte Obsidian | `Handle` (Row 10) | `precision-insulated-tumbler-new` | `precision-insulated-tumbler-durable-merchandise` | **RESTORED**: Canonical handle reinstated from registry |
-| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Variant Price` | $40.00 | $42.00 | **PASSED**: Tier 2 Valid (Gross margin: 79.76% at $8.50 COGS)¹ |
-| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **PASSED**: Tier 2 Valid (Reconciled to manufacturing BOM)² |
+| **Tier 2: Legitimate Commercial Updates (Validated & Approved)** | | | | | |
+| `SYN-FSTK-MY` | Focus Sticks Matcha Yuzu | `Variant Price` | $40.00 | $42.00 | **APPROVED**: Margin protected (79.76% gross margin at $8.50 COGS) |
+| `SYN-TNCT-AM` | Adaptogen Tincture AM | `Cost per Item` | $13.50 | $12.50 | **APPROVED**: Cost corrected to match manufacturing BOM |
 
-¹ Gross margin = ($42.00 − $8.50) / $42.00 = $33.50 / $42.00 = 79.76%. COGS sourced from platform BOM: [evidence/costs/summary.md](../evidence/costs/summary.md) (Focus Stick Packs 30-Pack unit cost = $8.50).
+#### Downstream Financial & Ledger Continuity
 
-² Scenario cost corrected from erroneous $13.50 to canonical $12.50. Platform BOM: [evidence/costs/summary.md](../evidence/costs/summary.md) (AM Adaptogen Tincture 60ml unit cost = $12.50).
+Rows 4 and 5 illustrate why surgical governance matters: catalog data does not exist in a vacuum — it is the single source of truth for all financial ledgers in the enterprise. The Focus Sticks price increase to **$42.00** defends a **79.76% gross margin** against its **$8.50** production cost. Correcting the tincture cost from an erroneous $13.50 back to the canonical **$12.50** prevents silent margin distortion across accounting and analytics systems.
 
-Notice rows 4 and 5: the file also carried legitimate, intentional Tier 2 price and cost changes. The linter cleanly validated the legitimate financial adjustments while arresting the catastrophic Tier 1 schema defects.
+These two canonical costs directly power downstream order modeling across the portfolio:
+* In **[Domain 5 Section 6.1](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md)**, Order #29863 combines one stick pack ($8.50) and one tincture ($12.50) for a base COGS of **$21.00** before handling, freight, and processing.
+* In the **[Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md)**, Order #35070 bundles these with a $7.00 tumbler and $0.40 kitting charge to establish the Starter Bundle at **$28.40 COGS**.
 
-Those two unit costs carry into separate order models. One pack and one tincture give Order #29863 $8.50 + $12.50 = **$21.00 in COGS** before handling, freight, and processing. The Capstone’s Order #35070 adds a $7.00 tumbler and $0.40 of kitting materials, bringing the Starter Bundle to **$28.40 in COGS**. [Domain 5 Section 6.1](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) and [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) show how those costs enter the respective ledgers.
 
 ### 8.2 Why Nothing Was Reconstructed
 
