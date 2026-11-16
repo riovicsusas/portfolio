@@ -286,20 +286,27 @@ sequenceDiagram
     participant D1 as Delivery Thread 1
     participant D2 as Delivery Thread 2
     participant O as Order #24148 Tags
-    participant F as External API (3PL / Fraud)
+    participant F as 3PL / External API
 
-    D1->>O: Read tags (No 'Fraud-Review-Processed')
-    D2->>O: Read tags (No 'Fraud-Review-Processed')
-    Note over D1,D2: Both threads pass Condition 2 simultaneously!
-    D1->>F: HTTP POST Request (Side Effect 1 Dispatched)
-    D2->>F: HTTP POST Request (Side Effect 2 Dispatched ❌)
-    D1->>O: Add tag 'Fraud-Review-Processed'
-    D2->>O: Add tag 'Fraud-Review-Processed'
+    Note over D1,D2: T+0ms: Parallel delivery of duplicate webhooks
+    D1->>O: T+0ms: Read tags (Finds NO 'Fraud-Review-Processed')
+    D2->>O: T+5ms: Read tags (Finds NO 'Fraud-Review-Processed')
+
+    rect rgb(255, 235, 235)
+    Note over D1,F: CRITICAL 115ms RACE WINDOW -- Condition passed, tag uncommitted
+    D1->>F: T+25ms: HTTP POST Request (Side Effect 1 Dispatched)
+    D2->>F: T+30ms: HTTP POST Request (Side Effect 2 Dispatched -- DUPLICATE)
+    F-->>D1: T+110ms: HTTP 200 OK (Hold #1 Created)
+    F-->>D2: T+115ms: HTTP 200 OK (Hold #2 Created)
+    end
+
+    D1->>O: T+120ms: Append tag 'Fraud-Review-Processed'
+    D2->>O: T+125ms: Append tag 'Fraud-Review-Processed' (Too late)
 ```
 
-1. Delivery Thread 1 and Delivery Thread 2 read the order record simultaneously at $T_0$.
-2. Both threads evaluate Condition 2 (`tags_do_not_contain: 'Fraud-Review-Processed'`). Both evaluate to **True**, because neither thread has committed Action 2 yet.
-3. Both threads execute Action 1, triggering duplicate downstream API calls and double mutations.
+1. **T+0ms to T+5ms (Simultaneous Read):** Thread 1 and Thread 2 read the order record 5ms apart. Both evaluate Condition 2 (`tags_do_not_contain: 'Fraud-Review-Processed'`) to **True**, because neither thread has committed Action 2 yet.
+2. **T+25ms to T+30ms (The Blind Mutation Gap):** While Action 1 is making its slow network hop to the external warehouse API, Thread 2 dispatches an identical HTTP POST. Both requests are accepted by the warehouse, creating **two duplicate fulfillment holds**.
+3. **T+120ms (Too Late):** Thread 1 finally writes the tag back to Shopify, but the duplicate side effect is already live.
 
 ### 6.2 The Distributed Idempotency Triad
 
