@@ -285,14 +285,13 @@ sequenceDiagram
     autonumber
     participant D1 as Delivery Thread 1
     participant D2 as Delivery Thread 2
-    participant O as Order #24148 Tags
+    participant O as "Order Tags"
     participant F as 3PL / External API
 
-    Note over D1,D2: T+0ms: Parallel delivery of duplicate webhooks
     D1->>O: T+0ms: Read tags (Finds NO 'Fraud-Review-Processed')
     D2->>O: T+5ms: Read tags (Finds NO 'Fraud-Review-Processed')
 
-    rect rgb(255, 235, 235)
+    rect rgb(30, 41, 59)
     Note over D1,F: CRITICAL 115ms RACE WINDOW -- Condition passed, tag uncommitted
     D1->>F: T+25ms: HTTP POST Request (Side Effect 1 Dispatched)
     D2->>F: T+30ms: HTTP POST Request (Side Effect 2 Dispatched -- DUPLICATE)
@@ -427,7 +426,7 @@ sequenceDiagram
     G--xW: HTTP 504 Gateway Timeout (Socket closed after 5,000ms)
     Note over W: Outcome UNKNOWN. Did the hold commit?
 
-    rect rgb(240, 248, 255)
+    rect rgb(30, 41, 59)
     Note over W,DB: PHASE 1: Idempotent Read Probe (Zero Side Effects)
     W->>G: GET /fulfillment_orders/{id}
     G->>DB: Query current status
@@ -435,7 +434,7 @@ sequenceDiagram
     G-->>W: HTTP 200 OK
     end
 
-    rect rgb(230, 255, 230)
+    rect rgb(30, 41, 59)
     Note over W,L: PHASE 2: Reconcile Ledger & Acknowledge
     W->>L: UPDATE operations SET state = 'CONFIRMED' WHERE id = op_24148
     W->>W: Acknowledge & Delete SQS Message (0 Duplicate Side Effects)
