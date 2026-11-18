@@ -104,15 +104,14 @@ The brand relies on an interconnected operational stack where data integrity, sp
 
 ## 5. Core Operational Challenges (The TechOps Mandate)
 
-Because Synapse Botanicals operates at the intersection of perishable health supplements, multi-location logistics, and high-velocity promotional marketing, the Technical Operations role enforces six primary operational disciplines across the architecture, synthesized by an integrated Capstone:
+Because Synapse Botanicals operates at the intersection of perishable health supplements, multi-location logistics, and high-velocity promotional marketing, the Technical Operations role enforces five primary operational disciplines across the architecture, synthesized by an integrated Capstone:
 
 1. **Order State Machine & Point-of-No-Return Protocol (Domain 1):** Managing physical-to-digital order synchronization across Shopify and 3PL WMS, enforcing fulfillment holds, and defining irreversible operational cutoffs.
 2. **Bi-Coastal Multi-Node Logistics & Freight Cost Optimization (Domain 2):** Preventing multi-node stockouts and misallocated split shipments that trigger redundant pick/pack and carrier freight surcharges.
 3. **Enterprise Matrixify Migration & Barcode Schema Governance (Domain 3):** Enforcing strict schema governance and plain-text data typing to prevent catastrophic catalog corruptions (e.g. numeric coercion of 12-digit UPC barcodes or accidental handle mutations).
 4. **Business Logic Automation & Webhook Recursion Triage (Domain 4):** Building event-driven workflows in Shopify Flow equipped with state-check guards, queue-level retries, and dead-letter queues.
 5. **Algorithmic Margin Defense & Storefront Cart Diagnostics (Domain 5):** Auditing multi-tier discount combinations (Product, Order, and Shipping) to eliminate negative-margin coupon stacking, while isolating client-side cart exceptions and payment gateway errors.
-6. **Frontline Helpdesk Automation & HTTP Webhook Actions (Domain 6):** Standardizing Gorgias macro payloads, automated order exception holds, and SLA-governed frontline response paths.
-7. **Asynchronous Order Mutations & Distributed Webhook Failure Architecture (Capstone):** Synthesizing all foundational domains (D1–D6) into an empirical autopsy of distributed state divergence ("Zombie Orders") when asynchronous webhooks fail across system seams.
+6. **Asynchronous Order Mutations & Distributed Webhook Failure Architecture (Capstone):** Synthesizing all foundational domains (D1–D5) into an empirical autopsy of distributed state divergence ("Zombie Orders") when asynchronous webhooks fail across system seams.
 
 ---
 

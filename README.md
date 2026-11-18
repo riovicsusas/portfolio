@@ -43,7 +43,6 @@ Each dossier is an in-depth systems specification combining operational SOPs, ma
 | **Domain 3: Bulk Data** | [`MasterDossier-Domain3-BulkCatalogSchemaGovernance.md`](domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) |
 | **Domain 4: Automation** | [`MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md`](domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) |
 | **Domain 5: Diagnostics** | [`MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md`](domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) |
-| **Domain 6: Helpdesk** | [`MasterDossier-Domain6-FrontlineHelpdeskAutomation.md`](domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) |
 
 > 💡 **Print / Save as PDF:** Every document in the interactive viewer can be saved as a print-optimized PDF with one click using the **"Save as PDF"** button (or `Ctrl+P`).
 
@@ -69,7 +68,6 @@ Each dossier is an in-depth systems specification combining operational SOPs, ma
 ├── domain-3-bulk-data-management/  # Bulk catalog schema and migration
 ├── domain-4-business-automation/  # Webhook triage and Shopify Flow
 ├── domain-5-technical-diagnosis/   # Cart diagnostics and margin defense
-├── domain-6-frontline-helpdesk/    # Gorgias and HTTP automation
 └── evidence/                      # Offline harness, fixtures, and reports
 ```
 

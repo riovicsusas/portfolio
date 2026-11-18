@@ -359,7 +359,7 @@ For the address hold in Order #24148, the operation ID and normalized payload ha
 | `REJECTED` | `CS-ADDR-HOLD-REJECTED` | A cutoff rejection blocks the edit. Escalate for carrier recovery when eligible. |
 | `UNKNOWN` | `CS-ADDR-HOLD-UNKNOWN` | Ask TechOps to verify the warehouse outcome before deciding whether to replay. |
 
-The local duplicate fixture dispatches one warehouse simulator effect. A concurrent copy receives `PENDING`, and a later replay receives the stored `CONFIRMED` result. [Coordinator checks](../evidence/latency/summary.md) show the executed assertions. [Domain 6 Section 4](../domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md) expands the agent actions for each tag.
+The local duplicate fixture dispatches one warehouse simulator effect. A concurrent copy receives `PENDING`, and a later replay receives the stored `CONFIRMED` result. The [coordinator test suite](../evidence/latency/summary.md) verifies the executed assertions and state transitions across all four tags.
 
 An ACID idempotency ledger prevents duplicate mutations internally, but external network requests still fail across warehouse boundaries. Section 7 establishes the HTTP status code triage protocol that separates transient retries from permanent stops.
 
