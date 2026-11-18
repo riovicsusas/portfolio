@@ -269,7 +269,7 @@ $$\text{Cart Transform (Normalization)} \longrightarrow \text{Discount API (Calc
 | Gate in This Architecture | Shopify Function API Target | Runtime Role in the Pipeline |
 |---|---|---|
 | **Cart Normalization** | Cart Transform (`cart_transform`) | Runs first. Adjusts line pricing and bundle presentation (merge, expand) so discount math begins from a clean cart. |
-| **Discount Calculation & Floor Cap** | Discount Function API (line & delivery) | Computes line and shipping discounts. Caps line discounts at the SKU maximum allowable ceiling (Section 5.1) and evaluates free shipping post-discount. |
+| **Discount Calculation & Floor Cap** | Discount Function API (line & delivery) | Computes line and shipping discounts. Caps line discounts at the SKU maximum allowable ceiling (Section 5.2) and evaluates free shipping post-discount. |
 | **Final Validation Gate** | Cart and Checkout Validation (`cart_checkout_validation`) | Runs last on the discounted cart. Emits blocking checkout errors if an invalid combination, subtotal breach, or below-floor payable is detected. |
 
 > [!NOTE]
@@ -283,44 +283,61 @@ $$\text{Cart Transform (Normalization)} \longrightarrow \text{Discount API (Calc
 
 Combination rules define which promotions may coexist; they do not determine how much discount a specific basket can afford. To guarantee that no order is ever sold at an operational loss, every catalog SKU enforces an algorithmic **Contribution Margin Protection Floor**:
 
-$$CM = (\text{Retail Price} - \text{Total Discount}) - (\text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \text{Processing Fee})$$
+$CM = (\text{Retail Price} - \text{Total Discount}) - (\text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \text{Processing Fee})$
 
-$$\text{Processing Fee} = \text{round}(0.029 \times \text{Customer Payment} + \$0.30)$$
+$\text{Processing Fee} = \text{round}(0.029 \times \text{Customer Payment} + \$0.30) \quad \text{\small (rounded half-up to the nearest cent)}$
 
-### 5.1 Dynamic Breakeven vs. Static Breakeven
+### 5.1 Naive vs. Dynamic Gateway Breakeven
 
-A critical mathematical flaw in naive retail modeling is calculating merchant processing fees against the full retail sticker price:
+A critical mathematical flaw in naive retail modeling is calculating payment gateway fees against the full retail sticker price:
 
-$$P_{\text{static}} = \text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \text{round}(0.029 \times \text{Retail Price} + \$0.30)$$
+$P_{\text{static}} = \text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \text{round}(0.029 \times \text{Retail Price} + \$0.30)$
 
-Because payment gateway fees scale directly with the actual cash captured ($2.9\% + \$0.30$), evaluating fees on full retail overstates costs on discounted orders. The true dynamic breakeven solves for the payment $P'$ where contribution equals exactly zero:
+Because credit card processors charge strictly on the cash actually captured ($2.9\% + \$0.30$), evaluating fees on full retail overstates costs on discounted orders:
 
-$$P' - (\text{COGS} + \text{3PL Handling} + \text{Carrier Freight}) - (0.029\,P' + \$0.30) = 0$$
+```text
+  STATIC MODEL (Naive):   $42.00 Retail × 2.9% + $0.30 = $1.52 Fee  ──► Breakeven: $19.57
+  DYNAMIC MODEL (Exact):  $18.90 Floor  × 2.9% + $0.30 = $0.85 Fee  ──► Breakeven: $18.90
+  ────────────────────────────────────────────────────────────────────────────────────────
+  RESULT: Naive static pricing overstates costs, needlessly withholding $0.67 in discount headroom.
+```
 
-$$P' \times (1 - 0.029) = \text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \$0.30$$
+The true dynamic breakeven solves for the customer payment $P'$ where net contribution equals exactly zero:
 
-$$P' = \frac{\text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \$0.30}{1 - 0.029}$$
+$P' - (\text{COGS} + \text{3PL Handling} + \text{Carrier Freight}) - (0.029\,P' + \$0.30) = 0$
 
-The published dynamic floor is the smallest whole-cent payment whose contribution is non-negative when fees are rounded half-up, and whose immediately preceding cent is negative.
+$P' \times (1 - 0.029) = \text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \$0.30$
 
-### 5.2 Unit Economics & Maximum Allowable Discount Thresholds
+$P' = \frac{\text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \$0.30}{1 - 0.029}$
+
+**Whole-Cent Integer Resolution**: Because merchant banking rails cannot capture fractional pennies, continuous solutions (e.g., Focus Sticks $P' = \$18.896$) cannot be applied directly as raw floats. The operational dynamic floor is the smallest whole-cent payment whose contribution remains non-negative when credit card fees are rounded half-up, and whose immediately preceding cent leaves a negative balance.
+
+### 5.2 Catalog Unit Economics & Discount Ceilings
+
+Applying the dynamic formula across the catalog establishes the maximum allowable discount each product can withstand:
 
 | SKU | Variant Name | Retail Price | COGS | 3PL Handling | Carrier Freight | Static Breakeven (Full-Fee) | Dynamic Floor ($P'$) | Max Allowable Discount ($) | Max Allowable Discount (%) |
 |---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack | $42.00 | $8.50 | $3.70 | $5.85² | $19.57 | **$18.90** | **$23.10** | **55.0%** |
-| `SYN-TNCT-AM` | Adaptogen Tincture 60ml | $38.00 | $12.50 | $3.70 | $5.85² | $23.45 | **$23.02** | **$14.98** | **39.4%** |
+| `SYN-FSTK-MY` | Focus Stick Packs 30-Pack | $42.00 | $8.50 | $3.70 | $5.85 | $19.57 | **$18.90** | **$23.10** | **55.0%** |
+| `SYN-TNCT-AM` | Adaptogen Tincture 60ml | $38.00 | $12.50 | $3.70 | $5.85 | $23.45 | **$23.02** | **$14.98** | **39.4%** |
 | `SYN-TMBL-MO` | Precision Insulated Tumbler | $34.00 | $7.00 | $3.70 | $5.85 | $17.84 | **$17.35** | **$16.65** | **49.0%** |
 | `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $11.66 | **$11.53** | **$4.47** | **27.9%** |
 | `SYN-BNDL-MAO` | Starter Bundle (Kitted Scenario)* | $82.00 | $28.40 | $4.50 | $7.20 | $42.78 | **$41.61** | **$40.39** | **49.3%** |
 
-² The single-SKU illustrations declare $3.70 handling and $5.85 freight per shipment. Order #29863 declares $4.10 handling and $6.50 freight for one parcel containing both items. These are the inputs used in Section 6.5. The separate routing model charges $2.50 base fulfillment plus $0.80 corrugate per parcel and $0.40 for each physical unit picked after the first. That schedule gives $3.30 for one unit and $4.10 for three units in one parcel. [Domain 2 Section 2.3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) derives that schedule and applies it to the three-unit Bethlehem basket.
+> [!NOTE]
+> **Logistics Schedule & Bundle BOM Baseline**:
+> * **Single-Item vs. Multi-Item Parcel**: The single-SKU illustrations above reflect standalone shipments ($3.70 handling, $5.85 freight). When multiple items share a single box in Order #29863, handling totals $4.10 ($3.70 base pick/pack + $0.40 second unit pick) and freight is $6.50. Section 6.5 details how parcel consolidation lowers the basket floor.
+> * **Bundle BOM**: The Starter Bundle reflects $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).
 
-*\*Bundle BOM reflects the $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).*
+### 5.3 Merchandising Impact: Unlocked Headroom vs. Low-Margin Hazards
 
-**Quantifying Withheld Headroom**: The static column overstates the floor in every catalog row: by **$0.67** for Focus Sticks, **$0.43** for Tincture, **$0.49** for Tumbler, **$0.13** for Whisk, and **$1.17** for the Bundle. That represents legitimate promotional discount headroom that a static model needlessly withholds from marketing.
+Evaluating dynamic floors reveals two critical commercial insights for growth and finance teams:
+
+1. **Unlocking Legitimate Promotional Headroom**: The static column overstates the floor in every catalog row: by **$0.67** for Focus Sticks, **$0.43** for Tincture, **$0.49** for Tumbler, **$0.13** for Whisk, and **$1.17** for the Bundle. Calculating fees statically penalizes marketing by withholding valid promotional headroom that remains fully profitable.
+2. **Exposing the Low-Margin Hazard**: While high-margin consumables tolerate aggressive discounting (Focus Sticks withstand 55.0%), low-margin accessories (*Micro-Foam Electric Whisk* with a **27.9% ceiling**) and high-cost consumables (*Adaptogen Tincture* with a **39.4% ceiling**) represent extreme operational vulnerabilities.
 
 > [!IMPORTANT]
-> **The Low-Margin Hazard**: Low-margin accessories (*Micro-Foam Electric Whisk* with a **27.9% ceiling**) and high-cost consumables (*Adaptogen Tincture* with a **39.4% ceiling**) represent extreme vulnerability. Stacking a 20% coupon with a $5.00 order credit takes $8.20 off a $16.00 whisk against a ceiling of $4.47. On the $38.00 tincture, a 20% coupon plus a $10.00 credit takes $17.60 off against a ceiling of $14.98. Both stacks sell deeply below cost.
+> **The Low-Margin Hazard in Practice**: Stacking a standard 20% coupon with a $5.00 order credit takes $8.20 off a $16.00 whisk against a ceiling of $4.47. On the $38.00 tincture, a 20% coupon plus a $10.00 credit takes $17.60 off against a ceiling of $14.98. Both combinations breach the unit floor, causing the merchant to pay the customer to take inventory.
 
 Deriving mathematical breakeven floors establishes the theoretical defense, but testing those limits against an unconstrained checkout reveals how quickly combinations fail. Section 6 simulates the four-code collision on Order #29863.
 
@@ -328,35 +345,40 @@ Deriving mathematical breakeven floors establishes the theoretical defense, but 
 
 ## 6. Four Codes, One $80 Cart: The Collision Simulation of Order #29863
 
-*A step-by-step walk through the unprotected checkout, the same order with rules enforced, the whole-cent floor derivation, and why one box beats two.*
+*Establishing the basket's discount capacity, tracing the four-code collision through a burn-down ledger, demonstrating layered rule protection, and proving the discrete whole-cent floor.*
 
-### 6.1 Baseline Order Configuration
+### 6.1 Baseline Order Configuration & Allowable Discount Capacity
 
 - **Order Identifier**: `#29863`
 - **Line Item 1**: 1× Focus Stick Packs 30-Pack (`SYN-FSTK-MY`) = $42.00 (COGS: $8.50)
 - **Line Item 2**: 1× Adaptogen Tincture 60ml (`SYN-TNCT-AM`) = $38.00 (COGS: $12.50)
-- **Gross Merchandise Value**: **$80.00**
-- **Per-Order Operational Overhead**: This two-item basket uses one parcel with declared handling of $4.10 and freight of $6.50. With $21.00 in COGS, the basket costs $31.60 before processing.
+- **Gross Merchandise Value (GMV)**: **$80.00**
+- **Direct Operational Costs**: Packaged into a single consolidated parcel with declared handling of $4.10 and freight of $6.50. Combined with $21.00 in product COGS, the basket carries **$31.60 in physical costs** before transaction processing.
+- **Dynamic Breakeven Floor**: Using the dynamic formula derived in Section 5.1, the minimum payment required to achieve non-negative contribution is **$32.85** (verified discretely in Section 6.4).
+- **Maximum Allowable Discount Capacity**:
+  $$\text{Basket Discount Allowance} = \text{GMV } (\$80.00) - \text{Floor } (\$32.85) = \mathbf{\$47.15} \quad (58.94\% \text{ ceiling})$$
+
+Before any promotional code is entered, the basket establishes a total discount allowance of **$47.15**. Every promotional coupon, reward credit, or fee absorption spends directly against this allowance. Any combination that deducts more than $47.15 pushes the order below cost.
 
 ### 6.2 The Unrestricted Collision Event
 
-During checkout, four separate promotions collided without exclusivity rules:
+During checkout, four separate promotions collided without exclusivity rules, rapidly exhausting the $47.15 discount allowance:
 
-| Sequence Step | Promotional Code | Type & Value | Incremental Deduction | Running Payable |
-|:---:|---|---|:---:|:---:|
-| **0** | Baseline Cart | Gross merchandise value | — | $80.00 |
-| **1** | `VIP20` | Product discount (20% off items) | −$16.00 | $64.00 |
-| **2** | `WELCOME25` | Order discount ($25.00 off cart) | −$25.00 | $39.00 |
-| **3** | `LOYALTY10` | Customer loyalty reward credit | −$10.80 | **$28.20** |
-| **4** | `FREESHIP` | Free ground shipping promotion | −$6.50 (Merchant absorbed) | $28.20 |
+| Step | Promotion Code | Class & Offer | Incremental Deduction | Customer Payable | Remaining Discount Headroom | Operational Status |
+|:---:|---|---|:---:|:---:|:---:|:---:|
+| **0** | Initial Cart | Baseline $80.00 basket | — | $80.00 | **+$47.15** | Full Headroom Available |
+| **1** | `VIP20` | Product (20% off items) | −$16.00 | $64.00 | **+$31.15** | Within Safe Threshold |
+| **2** | `WELCOME25` | Order ($25.00 off cart) | −$25.00 | $39.00 | **+$6.15** | Critical Buffer Remaining |
+| **3** | `LOYALTY10` | Customer reward tender | −$10.80 | **$28.20** | **−$4.65** | **CRITICAL OVERDRAW (Breach ❌)** |
+| **4** | `FREESHIP` | Shipping ($6.50 freight absorbed) | $6.50 absorbed | **$28.20** | **−$4.65** | Deficit Shipped Out-of-Pocket ❌ |
 
 ```mermaid
 flowchart TD
     subgraph P1["Phase 1: Revenue Leakage ($51.80 of Discounts)"]
         G["Gross Basket Value<br/><b>$80.00</b>"]
-        A["After VIP20<br/><b>$64.00</b>"]
-        B["After WELCOME25<br/><b>$39.00</b>"]
-        C["Collected from Customer<br/><b>$28.20</b>"]
+        A["After VIP20<br/><b>$64.00</b> (Allowance: $31.15)"]
+        B["After WELCOME25<br/><b>$39.00</b> (Allowance: $6.15)"]
+        C["Collected from Customer<br/><b>$28.20</b> (Overdrawn: -$4.65)"]
     end
 
     subgraph P2["Phase 2: Cost to Serve ($32.72)"]
@@ -394,12 +416,17 @@ ORDER #29863: PRE-FIX FINANCIAL DISASTER AUDIT
   (With optional $0.28 gateway authorization fee: -$4.80)
 ```
 
-### 6.3 Post-Remediation Execution (With Matrix Protection Applied)
+**Reconciling the $4.65 Overdraw with the −$4.52 Net Loss**: The customer received $51.80 in total discounts, overdrawing the $47.15 allowance by exactly **$4.65**. The final net contribution loss was −$4.52 rather than −$4.65 because the lower collected payment ($28.20 vs. $32.85) reduced credit card fees from $1.25 down to $1.12 ($2.9% × $28.20 + $0.30). This dynamic fee reduction provided **$0.13 in processing fee relief** ($4.65 − $0.13 = $4.52).
 
-With the 3×3 Combinatorial Matrix enforced:
-1. The customer applies `VIP20` $\to$ Applied (−$16.00). Subtotal is **$64.00**.
-2. The customer attempts `WELCOME25` $\to$ **Blocked by Checkout Rules**:
+**The Shipping Decoy**: While `FREESHIP` did not reduce the customer payable below $28.20, absorbing $6.50 in freight sealed the operational loss. Had the customer been charged standard ground shipping, collected revenue would have reached $34.70 ($28.20 + $6.50)—comfortably clearing the $32.85 floor and yielding a +$1.70 profit despite the stacked discounts.
+
+### 6.3 Post-Remediation Execution (Layered Protection Applied)
+
+With the 3×3 Combinatorial Matrix and checkout validation enforced:
+1. The customer applies `VIP20` $\to$ Applied (−$16.00). Subtotal is **$64.00**. Remaining discount allowance is **$31.15**.
+2. The customer attempts `WELCOME25` $\to$ **Blocked by Rule 2**:
    > *"Discount code WELCOME25 cannot be combined with VIP20 on carts under $85.00."*
+   Notice that Rule 2 intercepts the combination at the storefront boundary *before* the basket approaches its $32.85 floor.
 3. Loyalty credit stacking is restricted to non-conflicting payment tenders.
 4. **Shipping Qualification**: Because the post-discount subtotal ($64.00) clears the $\ge \$50.00$ threshold (Rule 3), Free Ground Shipping is granted ($6.50 freight absorbed by merchant).
 
@@ -412,10 +439,10 @@ ORDER #29863: POST-FIX PROTECTED CONTRIBUTION
   Payment Gateway Fee:                      -$2.16  (round(2.9% × $64.00 + $0.30))
   ───────────────────────────────────────────────────────
   NET ORDER CONTRIBUTION:                  +$30.24  (47.25% Contribution Margin!)
-
-  (Under alternative policy where customer pays $6.50 freight:
-   Collected $70.50, gateway $2.34, net contribution +$36.56)
 ```
+
+> [!NOTE]
+> **Shipping Qualification Sensitivity**: Free ground shipping was granted because the post-discount subtotal ($64.00) cleared Rule 3's $\ge \$50.00$ threshold. Under an alternative policy where the customer pays the $6.50 freight charge, collected revenue rises to $70.50, gateway fee becomes $2.34, and net contribution reaches **+$36.56** — an additional $6.32 of margin headroom available to operators who set a tighter free-shipping floor.
 
 ### 6.4 Worked Discrete Whole-Cent Basket Floor Derivation
 
@@ -425,7 +452,7 @@ For Order #29863, total fixed physical costs are:
 $$\text{Fixed Costs} = \text{COGS } (\$21.00) + \text{3PL Handling } (\$4.10) + \text{Freight } (\$6.50) = \$31.60$$
 
 Using discrete whole-cent search with half-up rounded gateway fees:
-* **Step 1: Closed-Form Estimate**:
+* **Step 1: Closed-Form Continuous Estimate**:
   $$P' = \frac{\$31.60 + \$0.30}{1 - 0.029} = \frac{\$31.90}{0.971} \approx \$32.8527$$
 * **Step 2: Whole-Cent Boundary Test at \$32.85**:
   $$\text{Fee} = \text{round}(0.029 \times \$32.85 + \$0.30) = \text{round}(\$0.95265 + \$0.30) = \text{round}(\$1.25265) = \$1.25$$
@@ -434,12 +461,7 @@ Using discrete whole-cent search with half-up rounded gateway fees:
   $$\text{Fee} = \text{round}(0.029 \times \$32.84 + \$0.30) = \text{round}(\$0.95236 + \$0.30) = \text{round}(\$1.25236) = \$1.25$$
   $$\text{Contribution} = \$32.84 - \$31.60 - \$1.25 = \mathbf{-\$0.01} \quad (\text{Negative: DEFICIT})$$
 
-The lowest whole-cent payment that breaks even for Order #29863 is **$32.85**. The separate `alternative_promo` bundle model uses $28.40 in COGS and $4.90 in handling. With the same 2.9% + $0.30 fee, rounded to cents, its minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. Section 8.3 shows both calculations and the full range. The [freight sensitivity report](../evidence/costs/summary.md) records the offline results.
-
-The maximum allowable discount the basket could withstand without bleeding cash was:
-$$\text{Max Allowable Discount} = \$80.00 - \$32.85 = \$47.15 \quad (58.94\%)$$
-
-The customer was granted **$51.80 in total discounts**, exceeding the breakeven threshold by exactly **$4.65** ($51.80 − 47.15$). The modeled loss is $4.52 and not $4.65 because the processing fee falls from $1.25 to $1.12 at the lower collected payment ($4.65 − 0.13 = \$4.52$).
+The lowest whole-cent payment that breaks even for Order #29863 is **$32.85**. The separate `alternative_promo` bundle model uses $28.40 in COGS and $4.90 in handling. With the same 2.9% + $0.30 fee, rounded to cents, its minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. Section 8.2 shows both calculations and the full range. The [freight sensitivity report](../evidence/costs/summary.md) records the offline results.
 
 ### 6.5 Multi-Item Box Economy of Scale
 
@@ -483,72 +505,15 @@ Examining the five failure modes reveals a fundamental hierarchy between operati
 1. **Heuristic Policy Proxies (Defects #1, #2, #3)**: Rules such as class-exclusivity boundaries, subtotal minimums ($85.00), and post-discount shipping thresholds ($50.00) serve as operational friction. They are easily configured in storefront admin interfaces and immediately intelligible to marketing operators. However, proxy rules are inherently fragile: launching a new high-percentage coupon (e.g., a 40% VIP flash sale) or shifting catalog product costs can satisfy all proxy rules while still breaching profitability.
 2. **The Decisive Defect (Defect #4 — Zero Margin Protection Floor)**: The catastrophic vulnerability in Order #29863 was not merely that codes combined, but that the checkout engine possessed no server-side awareness of direct fulfillment costs. A dynamic margin protection floor acts as an absolute mathematical invariant: regardless of what promotional codes are presented, the transaction is rejected or pruned if customer payment falls below $P'_{\text{dynamic}}$. Had Defect #4 been mitigated, the checkout would have automatically rejected the final promotional deduction at $32.85, preserving contribution even in the total absence of Rules 1 through 3.
 
-Resilient storefront architecture enforces both layers: policy proxies guide customer behavior and preserve promotional clarity, while the algorithmic margin floor guarantees capital preservation.
+Resilient storefront architecture enforces both layers: policy proxies guide customer behavior and preserve promotional clarity, while the algorithmic margin floor guarantees capital preservation. Section 8 details the production configuration parameters, geographic shipping sensitivities, and runtime architecture required to enforce this defense.
 
 ---
 
-## 8. $34.76 on One Order, $34,760 on a Campaign: Modeled Financial Exposure
+## 8. Every Threshold in One Place: The Protection's Configuration Parameters
 
-*The financial swing on Order #29863, how it scales across a 1,000-order campaign, and how the floor shifts with freight cost for a kitted bundle.*
+*Operational configuration parameters, why dynamic floors must account for geographic shipping zones, and the sub-5ms runtime pipeline that enforces them.*
 
-### 8.1 Financial Swing on Order #29863
-
-| Financial Metric | Pre-Fix (Unrestricted Collision) | Post-Fix (Matrix Protected) | Net Operational Swing |
-|---|:---:|:---:|:---:|
-| **Collected from Customer** | $28.20 | $64.00 | +$35.80 |
-| **Contribution (Standard Gateway Fee)** | **−$4.52** | **+$30.24** | **+$34.76** |
-| **Contribution (With Optional $0.28 Auth Fee)** | −$4.80 | +$30.24 | +$35.04 |
-| **Net Contribution Margin (%)** | **−16.03%** | **+47.25%** | **+63.28%** |
-
-Enforcing combinatorial rules swings this single order by **+$34.76**.
-
-### 8.2 Scaled Campaign Exposure Model
-
-To an executive, a −$4.52 loss on a single order may appear negligible. Consider an uncontrolled marketing or affiliate campaign generating 1,000 stacked orders matching Order #29863:
-
-| Campaign Exposure Metric | Calculation | Financial Result |
-|---|---|---:|
-| **Protected Contribution (Rules Enforced)** | 1,000 orders × +$30.24 | **+$30,240.00** |
-| **Unprotected Modeled Contribution (4 Stacked Codes)** | 1,000 orders × (−$4.52) | **−$4,520.00** |
-| **Net Operational Swing: Capital Preserved** | $30,240.00 − (−$4,520.00) | **+$34,760.00** |
-
-```
-                  ┌────────────────────────────────────────────────────────┐
-  1,000 Orders    │ Unconstrained Stacking Loss:   -$4,520.00  (Cash Drain)│
-  Colliding       │ Matrix Protected Contribution:+$30,240.00  (Net Profit)│
-  ────────────────┼────────────────────────────────────────────────────────┤
-  NET RECOVERY    │ TOTAL CASH PRESERVED:         +$34,760.00  (Per Campaign)
-                  └────────────────────────────────────────────────────────┘
-```
-
-A marketing promotion generating 1,000 orders under unconstrained stacking turns an expected **+$30,240.00 profit into an out-of-pocket cash loss of −$4,520.00**—hemorrhaging **$34,760.00 in unrecoverable merchant capital**.
-
-### 8.3 Kitted-Bundle Freight Sensitivity Analysis
-
-The `alternative_promo` scenario holds the $82.00 merchandise price, $28.40 kitted COGS, and $4.90 handling fixed. It assumes zero shipping revenue and tax. The fee is 2.9% of the payment plus $0.30, rounded half-up to cents. Only the declared freight input varies.
-
-| Outbound Freight Cost | Total Direct Costs | Net Contribution ($82 Retail) | Dynamic Minimum Payable Floor | Delta vs. $6.50 Baseline | Max Allowable Discount ($) |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| **$4.50 (Local Zone 1)** | $37.80 | $41.52 | **$39.24** | −$2.06 | $42.76 (52.1%) |
-| **$6.50 (Standard Zone 3)** | $39.80 | $39.52 | **$41.30** | *Baseline* | $40.70 (49.6%) |
-| **$8.50 (Regional Zone 5)** | $41.80 | $37.52 | **$43.36** | +$2.06 | $38.64 (47.1%) |
-| **$10.50 (Zone 6)** | $43.80 | $35.52 | **$45.42** | +$4.12 | $36.58 (44.6%) |
-| **$14.60 (Cross-Country Zone 8)** | $47.90 | $31.42 | **$49.64** | **+$8.34** | $32.36 (39.5%) |
-| **$17.80 (Remote / AK / HI)** | $51.10 | $28.22 | **$52.93** | +$11.63 | $29.07 (35.5%) |
-
-At $6.50 freight, fixed costs are $39.80 ($28.40 + $4.90 + $6.50). A $41.30 payment less its $1.50 fee leaves $39.80. At $14.60 freight, fixed costs are $47.90 and a $49.64 payment less its $1.74 fee leaves $47.90. One cent less leaves a one-cent deficit in either case. The higher freight input raises the floor by **$8.34**.
-
-The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $28.40 in COGS, $4.50 in handling, $7.20 in freight, and $3.14 in processing from a $98.00 sale, leaving $54.76 before recovery. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) follows that separate order through its replacement branch.
-
-Quantifying the financial exposure across single orders and broad campaigns proves the commercial necessity of margin defense. Section 9 consolidates every threshold, cost input, and rate card behind the protection into a single reference matrix.
-
----
-
-## 9. Every Threshold in One Place: The Protection's Configuration Parameters
-
-*A reference table of every threshold, rate, and cost input behind the protection, followed by the platform architecture and data pipelines required to govern them.*
-
-### 9.1 Operational Configuration Parameters
+### 8.1 Operational Configuration Parameters
 
 | Parameter | Production Value | Architectural Rationale | Cross-Reference |
 |---|---|---|:---:|
@@ -559,12 +524,31 @@ Quantifying the financial exposure across single orders and broad campaigns prov
 | **Contribution Revenue Base** | Excludes remitted sales tax | Sales tax collected is a fiduciary liability, not merchant revenue. | Section 5 |
 | **Floor Search Algorithm** | Whole cents, asserting preceding cent is negative | Resolves discrete whole-cent breakeven payment. | Sections 5 and 6.4 |
 | **Order #29863 Cost Inputs** | COGS $21.00, 3PL $4.10, freight $6.50 | One Focus Stick pack ($8.50) and one tincture ($12.50) share one parcel. The handling and freight amounts are declared basket inputs. The [BOM](../evidence/costs/summary.md) records the product costs. | Section 6 |
-| **Triage Time Budget** | Tier 1: 60s; Tier 2: 120s; Tier 3: 180s | Enforces disciplined, systematic forensic investigation. | Section 3 |
-| **Tier 1 MTTI Target** | Under 60 seconds | Cart failures must be immediately isolated in browser Network tab. | Section 3.1 |
 
-### 9.2 Enforcement Architecture & Platform Governance
+### 8.2 Geographic Volatility: Why Dynamic Floors Require Zone-Aware Freight
 
-Deploying these configuration parameters into a direct-to-consumer storefront requires isolating responsibilities across three architectural tiers:
+A major blindspot in naive margin defense is treating fulfillment freight as a single, static national constant (e.g., standardizing on $6.50). In reality, carrier shipping costs fluctuate dramatically across geographic zones. If a merchant sets a static nationwide breakeven floor, orders shipped locally may remain profitable, while identical orders shipped cross-country bleed cash.
+
+To demonstrate this geographic sensitivity, consider the **Starter Bundle** (`SYN-BNDL-MAO`, $82.00 retail, $28.40 kitted COGS, $4.90 handling) modeled across standard carrier ground zones (with 2.9% + $0.30 fee rounded half-up):
+
+| Outbound Freight Cost | Total Direct Costs | Net Contribution ($82 Retail) | Dynamic Minimum Payable Floor | Delta vs. $6.50 Baseline | Max Allowable Discount ($) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **$4.50 (Local Zone 1)** | $37.80 | $41.52 | **$39.24** | −$2.06 | $42.76 (52.1%) |
+| **$6.50 (Standard Zone 3)** | $39.80 | $39.52 | **$41.30** | *Baseline* | $40.70 (49.6%) |
+| **$8.50 (Regional Zone 5)** | $41.80 | $37.52 | **$43.36** | +$2.06 | $38.64 (47.1%) |
+| **$10.50 (Zone 6)** | $43.80 | $35.52 | **$45.42** | +$4.12 | $36.58 (44.6%) |
+| **$14.60 (Cross-Country Zone 8)** | $47.90 | $31.42 | **$49.64** | **+$8.34** | $32.36 (39.5%) |
+| **$17.80 (Remote / AK / HI)** | $51.10 | $28.22 | **$52.93** | +$11.63 | $29.07 (35.5%) |
+
+At $6.50 freight (Zone 3), fixed costs are $39.80 and the dynamic floor is **$41.30**. But when that same package is shipped cross-country to Zone 8 ($14.60 freight), fixed costs rise to $47.90, driving the required floor up to **$49.64**—an **+$8.34 swing** in required customer payment. In remote destinations (Alaska/Hawaii), the floor spikes to **$52.93** (+11.63).
+
+**The Architectural Implication**: A promotional discount of $40.00 on this $82.00 bundle leaves a $42.00 customer payment. That payment is fully profitable in Zone 1 (clearing the $39.24 floor), but generates an immediate operational loss in Zone 8 (failing the $49.64 floor). Therefore, checkout validation cannot rely on static catalog averages; it must dynamically resolve the floor against the customer's actual destination postal zone.
+
+*(Note: The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $28.40 in COGS, $4.50 in handling, $7.20 in freight, and $3.14 in processing from a $98.00 sale, leaving $54.76 before recovery. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) follows that separate order through its replacement branch. The [freight sensitivity report](../evidence/costs/summary.md) records the offline test harness verification.)*
+
+### 8.3 Three-Tier Production Enforcement: Sub-5ms Checkout Validation
+
+Deploying these configuration parameters and zone-aware freight inputs into a live direct-to-consumer storefront requires isolating responsibilities across three architectural tiers:
 
 ```mermaid
 flowchart TD
@@ -594,7 +578,47 @@ flowchart TD
 * **Execution Envelope**: Validation logic executing at the checkout boundary cannot perform live external HTTP calls to ERPs or databases. All cost inputs (COGS, 3PL handling, carrier freight brackets) are synced asynchronously from the ERP ledger into Shopify private metafields, enabling the WebAssembly function to evaluate dynamic floors in under 5 milliseconds.
 * **Fail-Closed vs. Fail-Open Governance**: If cost metafields are corrupted or unavailable, the validation function fails closed on combination allowances: it falls back strictly to single-code exclusivity, guaranteeing that catalog data discrepancies cannot trigger a silent margin leak.
 
-Consolidating the parameter thresholds and governance architecture completes the configuration baseline. Section 10 distills the entire operational framework into four non-negotiable rules for prevention and recovery.
+With the production enforcement architecture firmly in place, Section 9 models the quantified financial returns—measuring the exact capital preserved across individual orders and scaled marketing campaigns.
+
+---
+
+## 9. $34.76 on One Order, $34,760 on a Campaign: Modeled Financial Exposure
+
+*The financial swing on Order #29863 and how preventing uncontrolled coupon stacking scales across a 1,000-order marketing campaign.*
+
+### 9.1 Financial Swing on Order #29863
+
+| Financial Metric | Pre-Fix (Unrestricted Collision) | Post-Fix (Matrix Protected) | Net Operational Swing |
+|---|:---:|:---:|:---:|
+| **Collected from Customer** | $28.20 | $64.00 | +$35.80 |
+| **Contribution (Standard Gateway Fee)** | **−$4.52** | **+$30.24** | **+$34.76** |
+| **Contribution (With Optional $0.28 Auth Fee)** | −$4.80 | +$30.24 | +$35.04 |
+| **Net Contribution Margin (%)** | **−16.03%** | **+47.25%** | **+63.28%** |
+
+Enforcing combinatorial rules swings this single order by **+$34.76**.
+
+### 9.2 Scaled Campaign Exposure Model
+
+To an executive, a −$4.52 loss on a single order may appear negligible. Consider an uncontrolled marketing or affiliate campaign generating 1,000 stacked orders matching Order #29863:
+
+| Campaign Exposure Metric | Calculation | Financial Result |
+|---|---|---:|
+| **Protected Contribution (Rules Enforced)** | 1,000 orders × +$30.24 | **+$30,240.00** |
+| **Unprotected Modeled Contribution (4 Stacked Codes)** | 1,000 orders × (−$4.52) | **−$4,520.00** |
+| **Net Operational Swing: Capital Preserved** | $30,240.00 − (−$4,520.00) | **+$34,760.00** |
+
+```
+                  ┌────────────────────────────────────────────────────────┐
+  1,000 Orders    │ Unconstrained Stacking Loss:   -$4,520.00  (Cash Drain)│
+  Colliding       │ Matrix Protected Contribution:+$30,240.00  (Net Profit)│
+  ────────────────┼────────────────────────────────────────────────────────┤
+  NET RECOVERY    │ TOTAL CASH PRESERVED:         +$34,760.00  (Per Campaign)
+                  └────────────────────────────────────────────────────────┘
+```
+
+A marketing promotion generating 1,000 orders under unconstrained stacking turns an expected **+$30,240.00 profit into an out-of-pocket cash loss of −$4,520.00**—hemorrhaging **$34,760.00 in unrecoverable merchant capital**.
+
+Proving the commercial payoff across live campaign volumes completes the quantitative defense. Section 10 distills the entire operational framework into four non-negotiable rules for prevention and recovery.
 
 ---
 
@@ -656,9 +680,9 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 | **Three-Minute Diagnostic Protocol** | Section 3 | Documented Specification | Standardized Chrome DevTools and ISO 8583 payment gateway triage protocol. |
 | **3×3 Discount Matrix & Rules** | Section 4 | Documented Specification | Combinatorial exclusivity ruleset designed for Shopify Functions enforcement. |
 | **Contribution Margin Floor Engine** | Section 5 | **Verified in Staging** | Local cost test suite ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Integer-cent discrete search with half-up rounding. |
-| **Order #29863 Collision & Campaign Model** | Sections 6, 8.1, and 8.2 | Staged Scenario | Modeled contribution calculation; 1,000-order campaign scaling is arithmetic. |
+| **Order #29863 Collision & Campaign Model** | Sections 6, 9.1, and 9.2 | Staged Scenario | Modeled contribution calculation; 1,000-order campaign scaling is arithmetic. |
 | **Basket-Level Floor ($32.85)** | Section 6.4 | **Worked calculation** | Against $31.60 in physical costs and a rounded $1.25 fee, $32.85 yields $0.00 and $32.84 yields −$0.01. |
-| **Kitted-Bundle Freight Sensitivity** | Section 8.3 | **Verified in Staging** | Cost model runner ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Evaluated across $4.50 to $17.80 freight ranges. |
+| **Kitted-Bundle Freight Sensitivity** | Section 8.2 | **Verified in Staging** | Cost model runner ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Evaluated across $4.50 to $17.80 freight ranges. |
 
 ### 12.2 Executed Results: 11 of 11 Checks Passed
 
@@ -696,8 +720,6 @@ Integration acceptance criteria for cloud deployment:
 3. Automated monthly financial audits reconciling Stripe gross transaction capture against physical 3PL invoices.
 
 Full test suite documentation is maintained in the evidence directory ([`../evidence/README.md`](../evidence/README.md)).
-
----
 
 ---
 
