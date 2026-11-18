@@ -6,15 +6,25 @@
 
 ---
 
-## 1. Checkout Said "Order Placed." The Ledger Said −$4.52: The Silent Margin Leak
+## 1. Item Sold. Ledger Said −$4.52: The $80 Cart That Drained in Silence
 
-A direct-to-consumer checkout funnel can lose money in two opposite ways. It can fail loudly, with a frozen button, a silent JavaScript crash, and a customer who never returns. Or it can succeed too well, completing an order that was never worth shipping.
+*How four promotions stacked without exclusivity on an $80 basket to produce an order that cost money to ship, and the contribution floor that prevents it.*
 
-This dossier establishes the forensic triage protocol to isolate storefront failures in under three minutes, proves the unit-economic mechanics by which stacked promotions collapse contribution margin, and derives the algorithmic floor: the lowest customer payment a product or basket can accept before the order costs the merchant money.
+### 1.1 The Incident Paradox: Selling Below Direct Cost
 
-The case in one frame: Order **#29863** placed by customer **David Miller** (`david.miller@example.com`) was an $80.00 gross merchandise basket of one Focus Stick Packs 30-Pack at $42.00 and one Adaptogen Tincture 60ml at $38.00. The customer applied four promotions in a single checkout: `VIP20` (20% off products), `WELCOME25` ($25.00 off the order), `LOYALTY10` (a $10.80 reward credit), and `FREESHIP` (free ground shipping).
+The checkout returned no errors. The order confirmation fired. The warehouse picked, packed, and dispatched the parcel. By every signal the platform exposes — conversion event, fulfillment status, payment captured — Order **#29863** was a success.
 
-The customer paid **$28.20** for physical goods that cost $21.00 just to manufacture, before accounting for warehouse pick-and-pack handling ($4.10), outbound carrier freight ($6.50), and payment processing fees ($1.12). Modeled contribution came to **−$4.52** (or **−$4.80** if an optional gateway authorization fee applies). With combinatorial combination rules enforced, that exact same basket yields **+$30.24 in net contribution**.
+The ledger disagreed.
+
+Customer **David Miller** (`david.miller@example.com`) placed an $80.00 basket — one Focus Stick Packs 30-Pack at $42.00 and one Adaptogen Tincture 60ml at $38.00 — and applied four promotional codes in a single session: `VIP20` (20% off products), `WELCOME25` ($25.00 off the order), `LOYALTY10` (a $10.80 loyalty credit), and `FREESHIP` (free ground shipping). None of the codes blocked each other. The checkout accepted them all.
+
+The customer paid **$28.20**. Manufacturing those goods cost $21.00. Picking, packing, and boxing them cost $4.10. Shipping them cost $6.50. Processing the payment cost $1.12. Total out-of-pocket: **$32.72** — against $28.20 collected.
+
+**Modeled net contribution: −$4.52.** The platform raised no alarm, logged no failure, and shipped the parcel anyway. With combinatorial rules enforced, that exact same basket yields **+$30.24**.
+
+This case study establishes the forensic triage protocol to isolate storefront failures in under three minutes, proves the unit-economic mechanics by which stacked promotions collapse contribution margin, and derives the algorithmic floor: the lowest customer payment a basket can accept before the order costs the merchant money.
+
+### 1.2 Timeline and Contribution Collapse
 
 ```text
        REVENUE COLLECTED                               PHYSICAL COSTS & FEES
@@ -35,71 +45,75 @@ The customer paid **$28.20** for physical goods that cost $21.00 just to manufac
 ```
 
 > [!CAUTION]
-> **Controlled Failure Scenario Disclosure**: Order #29863, customer David Miller (`david.miller@example.com`), is an empirical failure-injection scenario executed within an isolated staging environment. The contribution calculation, unit costs, 3PL handling rates, and gateway fees represent a verified financial model. Deduplication, component BOM arithmetic, integer-cent rounding, and dynamic breakeven floors were verified against our local cost test harness ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)). Storefront DevTools error payloads and ISO 8583 decline codes represent standard payment processing specifications. Section 11 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Controlled Failure Scenario Disclosure**: Order #29863, customer David Miller (`david.miller@example.com`), is an empirical failure-injection scenario executed within an isolated staging environment. The contribution calculation, unit costs, 3PL handling rates, and gateway fees represent a verified financial model. Deduplication, component BOM arithmetic, integer-cent rounding, and dynamic breakeven floors were verified against our local cost test harness ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)). Storefront DevTools error payloads and ISO 8583 decline codes represent standard payment processing specifications. Section 12 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
 
-| Incident Dimension | Observed Value | Architectural Significance |
-|---|---|---|
-| **Customer Profile** | David Miller (`david.miller@example.com`) | Returning loyalty tier member stacking multiple promotional codes across separate marketing campaigns. |
-| **Order Profile** | #29863: $80.00 gross basket (1× Focus Stick Packs $42, 1× Adaptogen Tincture $38) | Small basket falling below the $85.00 minimum for combining product and order discounts. |
-| **Promotions Stacked** | `VIP20`, `WELCOME25`, `LOYALTY10`, `FREESHIP` | Product, order, and shipping promotions plus loyalty credit combined with zero exclusivity. |
-| **Customer Payment** | $28.20 collected after $51.80 in total discounts | Payment landed $4.65 below the required $32.85 basket floor (Section 6.4). |
-| **System Signal** | Zero errors reported; checkout succeeded and shipped | Margin leaks raise no automated alarms; failure is silent by construction. |
-| **Modeled Contribution** | **−$4.52** (−$4.80 with optional $0.28 auth fee) | Completed, "successful" order operating at negative contribution margin. |
-| **Protected Outcome** | **+$30.24** (47.25% margin on $64.00 collected) | Enforcing combinatorial rules swings this single order by **+$34.76** (Section 8.1). |
-| **Systemic Exposure** | Every cart that stacks the same promotional codes | Operational loss scales linearly with marketing campaign volume (Section 8.2). |
-| **Remediation Control** | 3×3 Combinatorial Matrix + Algorithmic Margin Floor | Enforces exclusivity; blocks order stacking below the dynamic breakeven floor ($32.85). |
+| Diagnostic Vector | Observed Value |
+|---|---|
+| **Incident Scope** | Order #29863 — $80.00 gross basket, 2 SKUs |
+| **Promotional Collision** | `VIP20` + `WELCOME25` + `LOYALTY10` + `FREESHIP` — four codes, zero class exclusivity |
+| **Settlement Delta** | $28.20 collected vs. $32.85 dynamic breakeven — $4.65 below the cash floor |
+| **Financial Reversal** | **−$4.52** unprotected → **+$30.24** protected — a **+$34.76** swing on a single basket |
+| **Remediation Guard** | 3×3 Combinatorial Matrix + sub-5ms WASM Margin Floor |
+
+Understanding how one order drains margin is the first step; defending the entire storefront requires recognizing that checkout funnels fail in two opposite directions. Section 2 establishes the dual-threat landscape.
 
 ---
 
 ## 2. Fail Loudly or Succeed Too Well: The Two Storefront Threats
 
-*A glossary of key terms and the two opposite checkout failures: a frozen cart that loses conversions and a stacked order that loses cash.*
+*The two opposite checkout failures (a stacked order that loses cash and a frozen cart that loses conversions), and their contrasting diagnostic signatures.*
 
-### 2.1 Systems Architecture Glossary
-
-| Term | Architectural Definition |
-|---|---|
-| **COGS** | Cost of Goods Sold: Direct bill-of-materials and packaging manufacturing cost. |
-| **3PL Handling** | Warehouse fulfillment fee to pick, pack, box, and prepare an order for carrier induction. |
-| **Contribution Margin (CM)** | Net cash remaining after deducting COGS, 3PL handling, carrier freight, and card fees from customer payment. |
-| **Protection Floor** | The lowest customer payment at which contribution is zero or better, with the gateway fee recomputed at that payment. Also called the *dynamic floor*. |
-| **Static Breakeven** | Breakeven calculated with the card fee charged on full retail price. Overstates fees on discounted orders. |
-| **Discount Class** | Shopify's taxonomy grouping promotions into **Product**, **Order**, and **Shipping** discounts. |
-| **AJAX Cart** | Storefront theme asynchronous requests dispatched to `/cart/add.js` or `/cart/change.js`. |
-| **HTTP 422** | Unprocessable Entity: Webhook or API call understood by the server but rejected due to business constraints (e.g., zero available stock). |
-| **MTTI** | Mean Time to Identify: The duration required for an engineer to isolate the root cause of an operational incident. |
-| **ISO 8583** | International standard for financial card-originated transaction messaging; defines raw bank decline codes. |
-| **ATS** | Available-to-Sell: Physical inventory balance minus existing allocations and warehouse holds. |
-
-### 2.2 The Two Storefront Threats
+### 2.1 The Two Storefront Threats
 
 In direct-to-consumer e-commerce, the checkout funnel is vulnerable to two distinct yet equally damaging technical failure modes:
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph THREAT_1["THREAT 1: Unrestricted Coupon Stacking Collision (Quiet Cash Drain)"]
+        direction TB
         T1A["Marketing launches separate promos:<br/>'VIP20' + 'WELCOME25' + 'FREESHIP'"] --> T1B["Customer stacks all three on an $80 basket"]
         T1B --> T1C["Discounts ($51.80) exceed gross margin"]
         T1C --> T1D["CONSEQUENCE<br/>Order completes smoothly at -$4.52 net loss.<br/>Merchant bleeds cash on every unit shipped ❌"]
     end
 
     subgraph THREAT_2["THREAT 2: Storefront AJAX Cart Freeze (Loud Conversion Drop)"]
+        direction TB
         T2A["Theme JavaScript calls /cart/add.js"] --> T2B["Inventory race condition returns HTTP 422 Unprocessable"]
         T2B --> T2C["Theme lacks error handling; UI freezes"]
         T2C --> T2D["CONSEQUENCE<br/>Customer clicks 'Checkout' repeatedly,<br/>assumes site is broken, and abandons cart ❌"]
     end
 
+    THREAT_1 ~~~ THREAT_2
+
     style T1D fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
     style T2D fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
 ```
 
-The two threats require opposite technical disciplines. Threat 2 demands rapid forensic triage to restore conversion, so we address it first.
+### 2.2 Asymmetric Failure Profiles: Margin vs. Conversion
+
+While both failure modes occur within the checkout funnel, they exhibit opposite operational and diagnostic signatures:
+
+| Diagnostic Dimension | Threat 1: Silent Margin Leak (Coupon Collision) | Threat 2: Loud Cart Freeze (AJAX State Error) |
+|---|---|---|
+| **Primary Symptom** | Zero errors reported; checkout completes smoothly | Buttons become unresponsive; checkout blocked |
+| **Telemetry Signal** | Clean `HTTP 200 OK` across all requests | Browser DevTools logs `HTTP 422` or unhandled JS exception |
+| **Discovery Channel** | Post-settlement ledger audit or monthly P&L review | Immediate customer complaint or drop in top-of-funnel conversion |
+| **Financial Impact** | Cumulative out-of-pocket cash loss on every unit shipped | Immediate top-line revenue loss from abandoned carts |
+| **Remediation Layer** | Server-side discount exclusivity & dynamic margin floor | Client-side error handling & real-time inventory validation |
+| **Resolution Urgency** | Architectural redesign (Permanent prevention) | Rapid operational triage (<3 minute MTTI) |
+
+The two threats require opposite technical disciplines and separate remediation tracks:
+
+- **Threat 2 (Loud Cart Freeze)**: The checkout is broken and customers cannot complete purchases. The operational priority is speed: an on-call engineer must isolate the failing layer in under three minutes.
+- **Threat 1 (Silent Margin Leak)**: The checkout completes smoothly while silently hemorrhaging cash on every shipped unit. The operational priority is mathematical precision: contribution floors, discount class rules, and combinatorial exclusivity.
+
+We address the loud failure first: an active storefront freeze is an operational emergency hemorrhaging conversions and customer trust in real time. Section 3 introduces the three-tier forensic triage protocol to diagnose and resolve this failure in under three minutes, before Section 4 turns to the architectural defense of the order ledger.
 
 ---
 
 ## 3. When Checkout Fails Loudly: The Three-Minute Triage (<60s MTTI)
 
-*A three-tier forensic checklist with 60, 120, and 180-second budgets: the browser network tab, payment gateway decline codes, then the fulfillment queue.*
+*A three-tier forensic checklist with 60, 120, and 180-second budgets: Tier 1 (browser network tab), Tier 2 (order timeline and gateway decline codes), and Tier 3 (the fulfillment queue).*
 
 When a customer or support agent reports a broken checkout, nobody should guess. The protocol enforces three tiers with cumulative time budgets of 60, 120, and 180 seconds. The target for Tier 1 is an MTTI under 60 seconds.
 
@@ -119,7 +133,7 @@ flowchart TD
     style I fill:#d4edda,stroke:#28a745,stroke-width:2px;
 ```
 
-### 3.1 Storefront Network Tab Inspection (<60s)
+### 3.1 Tier 1: Browser Network Tab Inspection (<60s)
 
 1. Open Chrome Developer Tools (`F12`), select the **Network** tab, and filter by `Fetch/XHR`.
 2. Replicate the user action (e.g., clicking "Add to Cart" or "Proceed to Checkout").
@@ -135,11 +149,11 @@ flowchart TD
 
 *Diagnostic Outcome*: Identified in under 45 seconds. The database holds zero Available-to-Sell (ATS) inventory at the customer's designated fulfillment location. The storefront theme failed to parse the 422 response, silently freezing the checkout button.
 
-### 3.2 Payment Gateway Raw Error Codes (<120s)
+### 3.2 Tier 2: Order Timeline & Gateway Decline Codes (<120s)
 
 If the cart request returns `HTTP 200 OK`, proceed to the order timeline. Payment declines must be diagnosed via the **raw payment gateway response string**, never the generic, user-facing error message displayed on the storefront:
 
-| Raw Gateway Error String | ISO 8583 Code | Root Cause | Operator Action | Customer Guidance |
+| Raw Gateway Decline String | ISO 8583 Code | Root Cause | Operator Action | Customer Guidance |
 |---|:---:|---|---|---|
 | `"decline_code": "insufficient_funds"` | `51` | Customer account lacks required liquidity | Zero storefront bug; close ticket | Advise customer to use alternative card. |
 | `"decline_code": "card_velocity_exceeded"` | `75`† | Cardholder bank automated fraud velocity trip | Automated fraud defense engaged | Customer must contact issuing bank. |
@@ -151,14 +165,21 @@ If the cart request returns `HTTP 200 OK`, proceed to the order timeline. Paymen
 >
 > † Published network code tables list `75` as *"allowable number of PIN tries exceeded"*, and list declines for exceeding frequency limits under `65`. The `75` mapping for the velocity decline is retained here as the scenario's convention and must be verified before production reliance.
 
-### 3.3 Fulfillment Queue Webhook Audit (<180s)
+### 3.3 Tier 3: Fulfillment Queue Webhook Audit (<180s)
 
-If payment shows `Authorized` and the order is still unfulfilled, use the order ID to find its fulfillment export and the middleware response. Check the warehouse state and the operation ledger before deciding what to do.
+If payment shows `Authorized` and the order remains unfulfilled, the failure occurred downstream in the fulfillment export pipeline. The analyst uses the Order ID to inspect the middleware event log, correlating the outbound dispatch attempt against the 3PL's response status:
 
-- **HTTP 504** leaves the warehouse outcome unknown. Check whether the original operation took effect before replaying it.
-- **HTTP 422** means the middleware rejected the request. Inspect the response body. Correct a schema error before submitting a corrected request. If the rejection says `PONR_EXCEEDED`, the warehouse cutoff has passed and the mutation stays blocked.
+| HTTP Status | Semantic State | Immediate Operator Triage Protocol |
+|:---:|---|---|
+| **422 Unprocessable** | Business Rejection | **Do not replay blindly.** Inspect payload: if `PONR_EXCEEDED`, the order crossed the warehouse Point of No Return. If a schema lint error, patch before re-submitting. |
+| **504 Gateway Timeout** | **Unknown State** | **Never retry without verification.** The socket closed, but the warehouse database may have committed the mutation. Probe 3PL state via `GET` before re-dispatching. |
+| **429 Too Many Requests** | Rate Limited | **Pause and back off.** Do not re-trigger manual sync; ensure middleware honors `Retry-After` headers to avoid exhausting API burst quotas. |
+| **500 / 502 / 503 Error** | Downstream Server Fault | **Transient 3PL outage.** Check warehouse API status page. Verify message is enqueued with jittered exponential backoff rather than dropped. |
+| **401 / 403 Forbidden** | Auth / Scope Failure | **Fatal integration fault.** Halt exports immediately; alert on-call engineer to refresh expired OAuth tokens or rotated HMAC secret keys. |
 
-[Domain 4 Section 7.1](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) covers the remaining response codes and escalation rules.
+*(For the complete architectural implementation of dead-letter queues, exponential backoff with full jitter, and two-phase 504 ledger reconciliation, see [Domain 4 Section 7.1](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md).)*
+
+Rapid forensic triage restores conversion when checkout breaks, but unblocking the transaction pipeline is only half the battle. Once orders flow freely, the storefront must defend against checkouts that succeed at the direct expense of profitability. Section 4 introduces the 3×3 combinatorial matrix that prevents uncontrolled promotional stacking.
 
 ---
 
@@ -223,7 +244,7 @@ flowchart TD
     C2 -- "Yes" --> D
     D -- "Yes" --> D2{"Post-discount subtotal ≥ $50.00?"}
     D -- "No" --> F{"Payable ≥ Basket Floor?<br/>(see Sections 5 and 6.4)"}
-    D2 -- "No" --> X3["BLOCK: Shipping Threshold<br/>(Rule 3)"]
+    D2 -- "No" --> X3["BLOCK: Post-Discount Shipping Threshold<br/>(Rule 3)"]
     D2 -- "Yes" --> F
     F -- "No" --> X4["BLOCK: Below Contribution Floor<br/>(Margin Defense)"]
     F -- "Yes" --> E["APPLY PROMOTION<br/>Recalculate dynamic contribution"]
@@ -300,6 +321,8 @@ The published dynamic floor is the smallest whole-cent payment whose contributio
 
 > [!IMPORTANT]
 > **The Low-Margin Hazard**: Low-margin accessories (*Micro-Foam Electric Whisk* with a **27.9% ceiling**) and high-cost consumables (*Adaptogen Tincture* with a **39.4% ceiling**) represent extreme vulnerability. Stacking a 20% coupon with a $5.00 order credit takes $8.20 off a $16.00 whisk against a ceiling of $4.47. On the $38.00 tincture, a 20% coupon plus a $10.00 credit takes $17.60 off against a ceiling of $14.98. Both stacks sell deeply below cost.
+
+Deriving mathematical breakeven floors establishes the theoretical defense, but testing those limits against an unconstrained checkout reveals how quickly combinations fail. Section 6 simulates the four-code collision on Order #29863.
 
 ---
 
@@ -422,13 +445,26 @@ The customer was granted **$51.80 in total discounts**, exceeding the breakeven 
 
 Why does the basket floor ($32.85) differ from the sum of the individual SKU floors ($18.90 + $23.02 = $41.92)?
 
-The two separate orders use $7.40 in handling ($3.70 × 2) and $11.70 in freight ($5.85 × 2). The combined parcel uses $4.10 in handling and $6.50 in freight, saving $8.50 in physical costs. At their respective floors, the two payments incur $0.85 + $0.97 in processing versus $1.25 for the combined payment, a further $0.57 difference. Together, those differences explain the **$9.07** gap between the sum of the separate floors and the basket floor.
+The two separate orders use $7.40 in handling ($3.70 × 2) and $11.70 in freight ($5.85 × 2). The combined parcel uses $4.10 in handling and $6.50 in freight, saving $8.50 in physical costs. At their respective floors, the two payments incur $0.85 + $0.97 in processing versus $1.25 for the combined payment, a further $0.57 difference. Together, those differences explain the **$9.07** gap between the sum of the separate floors and the basket floor:
+
+| Cost & Fee Component | Two Separate Shipments (Sum of SKU Floors) | One Consolidated Shipment (Order #29863) | Net Consolidation Savings |
+|---|:---:|:---:|:---:|
+| **Product COGS** | $21.00 ($8.50 + $12.50) | $21.00 ($8.50 + $12.50) | $0.00 (Unchanged) |
+| **3PL Warehouse Handling** | $7.40 ($3.70 × 2) | $4.10 (Single box pick/pack) | **+$3.30** |
+| **Carrier Outbound Freight** | $11.70 ($5.85 × 2) | $6.50 (Single box ground) | **+$5.20** |
+| **Subtotal Physical Direct Costs** | **$40.10** | **$31.60** | **+$8.50** |
+| **Payment Gateway Processing Fees** | $1.82 ($0.85 + $0.97) | $1.25 (On $32.85 collected) | **+$0.57** |
+| **Dynamic Breakeven Floor ($P'$)** | **$41.92** ($18.90 + $23.02) | **$32.85** | **+$9.07 Lower Floor** |
+
+Consolidating items into a single parcel preserves **$8.50 in direct physical overhead** ($3.30 handling + $5.20 freight). Because the lower physical cost reduces the breakeven revenue threshold, the card processing fee drops from $1.82 to $1.25, contributing an additional **$0.57 in fee relief** for a total **$9.07 economy of scale**.
+
+Tracing the physical savings of consolidated shipping explains the basket mechanics, but preventing recurrence requires isolating which controls failed. Section 7 presents the root-cause failure mode matrix.
 
 ---
 
 ## 7. The Missing Floor Was the Decisive Failure: The Root-Cause Failure Mode Matrix
 
-*Five failure modes, which rule or guard each one breaks, and which of them actually appeared in Order #29863.*
+*Five failure modes, which rule or guard each one breaks, and the crucial distinction between operational proxy rules and mathematical floors.*
 
 ### 7.1 Root-Cause Failure Mode Matrix
 
@@ -440,7 +476,14 @@ The two separate orders use $7.40 in handling ($3.70 × 2) and $11.70 in freight
 | **4** | Discounts exceed physical costs | Zero margin protection floor | Dynamic Floor | Per-basket floor validation gate backed by cost inputs (Sections 5 and 6.4). | **YES**: $28.20 collected against $32.85 floor. |
 | **5** | Storefront theme freezes on out-of-stock item | Silent failure on 422 | Tier 1 Triage | Visible theme error boundaries & 422 JSON telemetry monitoring. | *No (Belongs to Threat 2).* |
 
-The decisive failure was **Defect #4**. Rules 1 through 3 are fast, legible proxies; the dynamic contribution floor is the underlying mathematical truth.
+### 7.2 The Decisive Root Cause: Proxy Rules vs. Mathematical Floors
+
+Examining the five failure modes reveals a fundamental hierarchy between operational heuristics and mathematical guarantees:
+
+1. **Heuristic Policy Proxies (Defects #1, #2, #3)**: Rules such as class-exclusivity boundaries, subtotal minimums ($85.00), and post-discount shipping thresholds ($50.00) serve as operational friction. They are easily configured in storefront admin interfaces and immediately intelligible to marketing operators. However, proxy rules are inherently fragile: launching a new high-percentage coupon (e.g., a 40% VIP flash sale) or shifting catalog product costs can satisfy all proxy rules while still breaching profitability.
+2. **The Decisive Defect (Defect #4 — Zero Margin Protection Floor)**: The catastrophic vulnerability in Order #29863 was not merely that codes combined, but that the checkout engine possessed no server-side awareness of direct fulfillment costs. A dynamic margin protection floor acts as an absolute mathematical invariant: regardless of what promotional codes are presented, the transaction is rejected or pruned if customer payment falls below $P'_{\text{dynamic}}$. Had Defect #4 been mitigated, the checkout would have automatically rejected the final promotional deduction at $32.85, preserving contribution even in the total absence of Rules 1 through 3.
+
+Resilient storefront architecture enforces both layers: policy proxies guide customer behavior and preserve promotional clarity, while the algorithmic margin floor guarantees capital preservation.
 
 ---
 
@@ -497,18 +540,20 @@ At $6.50 freight, fixed costs are $39.80 ($28.40 + $4.90 + $6.50). A $41.30 paym
 
 The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $28.40 in COGS, $4.50 in handling, $7.20 in freight, and $3.14 in processing from a $98.00 sale, leaving $54.76 before recovery. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) follows that separate order through its replacement branch.
 
+Quantifying the financial exposure across single orders and broad campaigns proves the commercial necessity of margin defense. Section 9 consolidates every threshold, cost input, and rate card behind the protection into a single reference matrix.
+
 ---
 
 ## 9. Every Threshold in One Place: The Protection's Configuration Parameters
 
-*A reference table of every threshold, rate, and cost input behind the protection, each with its rationale and the section that explains it.*
+*A reference table of every threshold, rate, and cost input behind the protection, followed by the platform architecture and data pipelines required to govern them.*
 
 ### 9.1 Operational Configuration Parameters
 
 | Parameter | Production Value | Architectural Rationale | Cross-Reference |
 |---|---|---|:---:|
-| **Product + Order Combination Floor** | Cart Subtotal $\ge \$85.00$ | Proxy keeping small baskets from combining order-level cash discounts. | Section 4.2 |
-| **Free Shipping Threshold** | Post-discount subtotal $\ge \$50.00$ | Evaluated **strictly after** promotional discounts are deducted. | Section 4.2 |
+| **Inter-Class Combination Minimum (Rule 2)** | Cart Subtotal $\ge \$85.00$ | Proxy keeping small baskets from combining product and order discounts. | Section 4.2 |
+| **Post-Discount Shipping Threshold (Rule 3)** | Post-discount subtotal $\ge \$50.00$ | Evaluated **strictly after** promotional discounts are deducted. | Section 4.2 |
 | **Merchant Processing Rate** | 2.9% + $0.30 | Recomputed dynamically against the discounted payment amount. | Section 5 |
 | **Processing Fee Base** | Includes shipping & taxes | Gateway charges percentage fee on gross transaction capture. | Section 5 |
 | **Contribution Revenue Base** | Excludes remitted sales tax | Sales tax collected is a fiduciary liability, not merchant revenue. | Section 5 |
@@ -516,6 +561,40 @@ The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $
 | **Order #29863 Cost Inputs** | COGS $21.00, 3PL $4.10, freight $6.50 | One Focus Stick pack ($8.50) and one tincture ($12.50) share one parcel. The handling and freight amounts are declared basket inputs. The [BOM](../evidence/costs/summary.md) records the product costs. | Section 6 |
 | **Triage Time Budget** | Tier 1: 60s; Tier 2: 120s; Tier 3: 180s | Enforces disciplined, systematic forensic investigation. | Section 3 |
 | **Tier 1 MTTI Target** | Under 60 seconds | Cart failures must be immediately isolated in browser Network tab. | Section 3.1 |
+
+### 9.2 Enforcement Architecture & Platform Governance
+
+Deploying these configuration parameters into a direct-to-consumer storefront requires isolating responsibilities across three architectural tiers:
+
+```mermaid
+flowchart TD
+    subgraph TIER1["1. Storefront Checkout Boundary (Shopify Functions / WASM)"]
+        F1["Cart Validation Function<br/>(Sub-5ms Execution Budget)"] --> F2{"Dynamic Floor Check:<br/>Payment >= P'?"}
+        F2 -- "Pass" --> F3["Allow Checkout Progression"]
+        F2 -- "Fail" --> F4["Prune Conflicting Promotion &<br/>Return Explanatory Message to Customer"]
+    end
+
+    subgraph TIER2["2. Platform Configuration (Shopify Admin / Combinations API)"]
+        A1["Promotion Setup"] --> A2["Native 'combinesWith' Settings<br/>Enforce Intra-Class Exclusivity (Rule 1)"]
+        A2 --> A3["Order Subtotal Triggers<br/>Enforce $85 / $50 Thresholds (Rules 2 & 3)"]
+    end
+
+    subgraph TIER3["3. ERP & Supply Chain Data Pipeline (Asynchronous Cost Sync)"]
+        E1["ERP / WMS Ledger"] --> E2["Nightly Rate Card & BOM Sync<br/>(COGS, Handling, Freight Rate Cards)"]
+        E2 --> E3["Storefront Private Metafields<br/>(Cached for Sub-Millisecond Function Access)"]
+    end
+
+    TIER3 -.->|"Populates Cost Inputs"| TIER1
+    TIER2 -.->|"Guards Standard Rules"| TIER1
+
+    style F3 fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    style F4 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
+```
+
+* **Execution Envelope**: Validation logic executing at the checkout boundary cannot perform live external HTTP calls to ERPs or databases. All cost inputs (COGS, 3PL handling, carrier freight brackets) are synced asynchronously from the ERP ledger into Shopify private metafields, enabling the WebAssembly function to evaluate dynamic floors in under 5 milliseconds.
+* **Fail-Closed vs. Fail-Open Governance**: If cost metafields are corrupted or unavailable, the validation function fails closed on combination allowances: it falls back strictly to single-code exclusivity, guaranteeing that catalog data discrepancies cannot trigger a silent margin leak.
+
+Consolidating the parameter thresholds and governance architecture completes the configuration baseline. Section 10 distills the entire operational framework into four non-negotiable rules for prevention and recovery.
 
 ---
 
@@ -528,9 +607,32 @@ The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $
 3. **Know the Floor for Every Basket**: Derive breakeven dynamically from physical costs with fees recomputed at the discounted payment. Block any combination that breaches the floor.
 4. **Read the Response, Not the Screen**: When checkout fails, inspect the raw DevTools `Fetch/XHR` payload and the raw ISO 8583 payment decline string. Replace guessing with forensic triage.
 
+These four rules provide the operational safeguards, but their urgency comes from recognizing the fundamental difference between an outage and a margin leak. Section 11 concludes with the architectural takeaway on silent failures.
+
 ---
 
-## 11. 11 Local Checks Passed, Live Functions Untested: Evidence Scope and Verification Status
+## 11. Margin Leaks Don't Alarm: The Architectural Takeaway
+
+*Why unconstrained discount stacking is quieter and more dangerous than a site crash, and how automated floors protect unit economics.*
+
+Order #29863 completed without a single error. The customer was served, the payment cleared without friction, the warehouse picked the box, and the financial ledger showed an unrecoverable loss.
+
+That is what separates margin leaks from outages: **they do not alarm**. When a database crashes or an API rate limit trips, monitoring dashboards turn red and on-call engineers wake up. When a promotion stack sells an order below cost, the storefront celebrates an increment to the sales counter, while cash silently drains out of the business.
+
+A margin leak is quieter than an outage, but every bit as destructive: nothing alarms, and the damage is visible only in arithmetic.
+
+The four operational laws eliminate this vulnerability at the boundary:
+* Three-minute forensic triage identifies and fixes conversion-blocking errors before customers churn.
+* A 3×3 combinatorial matrix stops promotional stacking before checkout can proceed.
+* An algorithmic contribution floor guarantees that every completed order defends its unit economics.
+
+> **A sale is not a success until the contribution margin is positive. Protect the floor before you publish the code.**
+
+The architectural philosophy explains why margin leaks persist undetected; transparent verification proves that our financial models hold. Section 12 establishes the formal evidentiary scope separating locally executed cost tests from live platform specifications.
+
+---
+
+## 12. 11 Local Checks Passed, Live Functions Untested: Evidence Scope and Verification Status
 
 *What was executed locally, what is a worked calculation or documented design, and the live-platform acceptance criteria that remain open.*
 
@@ -547,7 +649,7 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 └──────────────────────────────┴─────────────────────────────────────────┘
 ```
 
-### 11.1 Evidence Scope & Verification Status Matrix
+### 12.1 Evidence Scope & Verification Status Matrix
 
 | Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
@@ -558,7 +660,7 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 | **Basket-Level Floor ($32.85)** | Section 6.4 | **Worked calculation** | Against $31.60 in physical costs and a rounded $1.25 fee, $32.85 yields $0.00 and $32.84 yields −$0.01. |
 | **Kitted-Bundle Freight Sensitivity** | Section 8.3 | **Verified in Staging** | Cost model runner ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)): Evaluated across $4.50 to $17.80 freight ranges. |
 
-### 11.2 Executed Results: 11 of 11 Checks Passed
+### 12.2 Executed Results: 11 of 11 Checks Passed
 
 Run `2026-11-09T18-21-14-457Z-59d713d1` on Node v24.22.1: **11 passed, 0 failed, 0 skipped** ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)). All monetary values are handled in integer cents with rational half-up rounding.
 
@@ -576,7 +678,7 @@ Run `2026-11-09T18-21-14-457Z-59d713d1` on Node v24.22.1: **11 passed, 0 failed,
 | 10 | Processing includes shipping and tax, but contribution excludes tax liability | Fee base & revenue rules | ✅ **PASSED** |
 | 11 | Increasing a declared cost cannot increase contribution or reduce its floor | Monotonic sensitivity | ✅ **PASSED** |
 
-### 11.3 Scope Boundary Matrix
+### 12.3 Scope Boundary Matrix
 
 The local cost suite validates integer-cent arithmetic, BOM fixtures, and discrete breakeven search against declared scenario rates. It stops at that boundary:
 
@@ -596,21 +698,6 @@ Integration acceptance criteria for cloud deployment:
 Full test suite documentation is maintained in the evidence directory ([`../evidence/README.md`](../evidence/README.md)).
 
 ---
-
-## 12. Margin Leaks Don't Alarm: The Architectural Takeaway
-
-Order #29863 completed without a single error. The customer was served, the payment cleared without friction, the warehouse picked the box, and the financial ledger showed an unrecoverable loss.
-
-That is what separates margin leaks from outages: **they do not alarm**. When a database crashes or an API rate limit trips, monitoring dashboards turn red and on-call engineers wake up. When a promotion stack sells an order below cost, the storefront celebrates an increment to the sales counter, while cash silently drains out of the business.
-
-A margin leak is quieter than an outage, but every bit as destructive: nothing alarms, and the damage is visible only in arithmetic.
-
-The four operational laws eliminate this vulnerability at the boundary:
-* Three-minute forensic triage identifies and fixes conversion-blocking errors before customers churn.
-* A 3×3 combinatorial matrix stops promotional stacking before checkout can proceed.
-* An algorithmic contribution floor guarantees that every completed order defends its unit economics.
-
-> **A sale is not a success until the contribution margin is positive. Protect the floor before you publish the code.**
 
 ---
 
