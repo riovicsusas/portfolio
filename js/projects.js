@@ -31,9 +31,9 @@ function renderFlagshipGrid() {
   const container = document.getElementById('projectsGrid');
   if (!container) return;
 
-  const filtered = currentFilter === 'all' 
-    ? FLAGSHIP_PROJECTS 
-    : FLAGSHIP_PROJECTS.filter(p => p.filterCat === currentFilter);
+  const filtered = currentFilter === 'all'
+    ? FLAGSHIP_PROJECTS
+    : FLAGSHIP_PROJECTS.filter(project => project.filterCat === currentFilter);
 
   container.innerHTML = filtered.map((p, idx) => {
     const delay = (idx % 7) + 1;

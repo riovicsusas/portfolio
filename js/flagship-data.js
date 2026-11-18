@@ -128,26 +128,5 @@ const FLAGSHIP_PROJECTS = [
     "dossierUrl": "domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md",
     "pdfUrl": "",
     "specName": "SOP - TechnicalDiagnosisAndAuditLogging - Parent.md"
-  },
-  {
-    "id": "d6-helpdesk-sop",
-    "isFeatured": false,
-    "title": "Frontline Helpdesk Automation & HTTP Webhook Actions",
-    "subtitle": "Automated Exception Routing & SLA Management",
-    "domain": "Frontline Helpdesk",
-    "category": "Standard Operating Procedure (SOP)",
-    "filterCat": "automations",
-    "loomDuration": "6–8 min defense",
-    "image": "https://images.unsplash.com/photo-1534536281715-e28d76689b4d?auto=format&fit=crop&w=1200&q=80",
-    "desc": "Automated Gorgias helpdesk workflows integrating custom HTTP actions to place real-time fulfillment holds and trigger address updates directly against Shopify Fulfillment Orders API with zero human latency.",
-    "tags": [
-      "Gorgias Academy",
-      "HTTP Actions",
-      "Shopify Orders API",
-      "SLA Workflows"
-    ],
-    "dossierUrl": "domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md",
-    "pdfUrl": "",
-    "specName": "SOP - HelpdeskOperationsAndMacroAutomation - Parent.md"
   }
 ];

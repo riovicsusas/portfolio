@@ -945,68 +945,6 @@ const DEFAULT_PROJECTS = [
     }
   },
   {
-    "id": "d6-helpdesk-sop",
-    "folder": "Frontline Helpdesk",
-    "folderIcon": "ph-headset",
-    "icon": "ph-headset",
-    "title": "Helpdesk Operations & Macro Automation Protocol",
-    "category": "Standard Operating Procedure (SOP)",
-    "subtitle": "Master Helpdesk Governance & Triage Protocol — Frontline State Machine Hooks & Gorgias Rules",
-    "short": "Transforms customer support from a disconnected ticketing silo into an integrated state machine gatekeeper, deploying zero-latency fulfillment holds and automated Gorgias macros.",
-    "overview": "Transforms customer support from a disconnected ticketing silo into an integrated state machine gatekeeper, deploying zero-latency fulfillment holds and automated Gorgias macros.",
-    "fullOverview": "This master Standard Operating Procedure defines frontline customer service engineering standards for Synapse Botanicals. It connects Gorgias Helpdesk directly into the Shopify order state machine via HTTP integration actions, deploying automated 'freeze-before-edit' fulfillment holds, strict Point of No Return (PONR) verification rules, flavor swap workflows, and carrier delivery intercept protocols.",
-    "dossierUrl": "domain-6-frontline-helpdesk/MasterDossier-Domain6-FrontlineHelpdeskAutomation.md",
-    "pdfUrl": "",
-    "image": "",
-    "tags": [
-      "Gorgias Helpdesk",
-      "Shopify Admin GraphQL",
-      "Shopify Flow",
-      "ShipBob 3PL WMS",
-      "Order State Machine",
-      "Macro Automation",
-      "Carrier Intercept"
-    ],
-    "references": {
-      "lineage": "Domain 1.1 State Machine ➔ Domain 1.2 PONR Matrix ➔ Domain 4.1 Flow Rules ➔ Helpdesk Operations SOP",
-      "architectureScope": [
-        {
-          "name": "Gorgias Helpdesk API",
-          "role": "Omnichannel ticket ingestion, intent parsing, and macro execution"
-        },
-        {
-          "name": "Shopify GraphQL Admin API",
-          "role": "Fulfillment order hold placement and release mutation execution"
-        },
-        {
-          "name": "Shopify Flow Engine",
-          "role": "State tag synchronization and anti-loop guard enforcement"
-        },
-        {
-          "name": "ShipBob 3PL WMS",
-          "role": "Warehouse pick/pack polling verification and carrier label gating"
-        }
-      ],
-      "dependencies": [
-        {
-          "code": "Domain 1.1 SOP",
-          "title": "SOP — Order Exception Mutation Protocol",
-          "role": "Codifies the native fulfillment order hold lifecycle and edit workflows."
-        },
-        {
-          "code": "Domain 1.2 Matrix",
-          "title": "Matrix — Order State Point of No Return",
-          "role": "Defines the physical PONR gates enforced by Gorgias Rule R-02."
-        },
-        {
-          "code": "Domain 2.1 Spec",
-          "title": "Architecture — Multi-Node Routing Engine Spec",
-          "role": "Informs multi-location split shipment explanations in Macro M-03."
-        }
-      ]
-    }
-  },
-  {
     "id": "capstone-cross-domain",
     "folder": "Capstone Cross-Domain Analysis",
     "folderIcon": "ph-crown",

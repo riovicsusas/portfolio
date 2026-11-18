@@ -1,6 +1,6 @@
 /**
  * Portfolio Activity Feed & Latest Updates
- * Directly linked to the 7 Flagship Engineering Case Studies
+ * Directly linked to the 6 Flagship Engineering Case Studies
  */
 const LATEST_UPDATES = [
   {
@@ -110,24 +110,6 @@ const LATEST_UPDATES = [
       { val: "100%", label: "Stacking Rule Verification" }
     ],
     tags: ["Chrome DevTools", "Margin Defense", "Cart Diagnostics", "HTTP 422 Triage"]
-  },
-  {
-    id: "update-d6",
-    projectId: "d6-helpdesk-sop",
-    date: "Aug 2026",
-    tag: "Frontline Operations",
-    domain: "Frontline Helpdesk",
-    icon: "ph-headset",
-    title: "Frontline Helpdesk Automation & HTTP Webhook Actions",
-    short: "Configured Gorgias custom HTTP webhook actions to place instant fulfillment holds directly against Shopify Orders API.",
-    problem: "Customer cancellation and address update requests sat in frontline helpdesk queues during peak hours, allowing 3PL warehouses to ship orders before human agents could manually intervene.",
-    solution: "Integrated Gorgias automated macro triggers with custom HTTP webhook requests that immediately query and lock Shopify Fulfillment Orders API, slashing exception response times from hours to sub-second execution.",
-    metrics: [
-      { val: "50%", label: "SLA Response Time Reduction" },
-      { val: "0s", label: "Automated Hold Execution Latency" },
-      { val: "100%", label: "Downstream Address Sync" }
-    ],
-    tags: ["Gorgias Academy", "HTTP Actions", "Shopify Admin API", "SLA Workflows"]
   }
 ];
 
