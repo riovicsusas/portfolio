@@ -236,14 +236,14 @@ Triage confirmed the physical parcel had reached the wrong coast while Shopify r
 
 ## 5. A 504 Asks, a 422 Answers: Network Responses, Semantic Chasms, and Structural Failures
 
-*Examining the outbound hold payload, contrasting the 504 timeout with the 422 cutoff rejection, and identifying the three structural failures behind the incident.*
+*Contrasting the 504 timeout with the 422 cutoff rejection and tracing the four structural failures behind the incident.*
 
 The fundamental architectural failure of this integration was treating two completely distinct HTTP response classes as if they meant the same thing.
 
 > [!NOTE]
 > **Raw HTTP payloads** (the outbound hold `POST`, the `504` timeout body, and the `422 PONR_EXCEEDED` rejection) are reproduced in [Appendix A — Integration Payloads](#appendix-a-integration-payloads) at the end of this document. The architectural analysis continues below.
 
-### 5.4 The Semantic Chasm Between 504 and 422
+### 5.1 The Semantic Chasm Between 504 and 422
 
 | Status Code & Error | Semantic Meaning | Correct Architectural Response | Operational Failure in Scenario |
 | :--- | :--- | :--- | :--- |
@@ -257,7 +257,7 @@ The fundamental architectural failure of this integration was treating two compl
 >
 > *The Mailbox Analogy:* Treating a 504 as a reason to wait is like dropping an urgent stop-work notice into a mailbox during a blizzard, having no idea if anyone collected it, and assuming an automated assembly line down the road will politely pause for fifteen minutes while you check back. The line does not pause. It runs on its own clock.
 
-### 5.5 The Structural Failures
+### 5.2 The Structural Failures
 
 It is tempting to blame the Cloudflare gateway for the 504 timeout, but network transit interruptions are routine in cloud infrastructure. This incident required four distinct operational and architectural flaws to align:
 
@@ -371,7 +371,7 @@ An engineering flaw becomes an executive business case when you calculate its im
 
 Starter Bundle COGS is modeled at **$28.40** (Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00, kitting $0.40, per [BOM inputs](../evidence/costs/bom_inputs.json)). Payment gateway processing is 2.9% of the $98.00 payment plus $0.30, rounded half-up to **$3.14**.
 
-The three containment streams executed in Section 6 add **$98.60 in incremental damage control costs**: $45.20 in carrier intercept and replacement freight (Streams 1 and 3), a $28.40 inventory write-off under Synapse QA SOP-QA-402 (Stream 2), and a $25.00 courtesy credit (Stream 3). This flips order contribution from **+$54.76** down to **−$43.84**:
+The recovery in Section 6 adds **$98.60 in incremental damage control costs**. Carrier fees and fulfillment account for $45.20, covering the intercept, return freight, replacement handling, and replacement air freight. The fresh replacement kit adds $28.40, and the courtesy credit adds $25.00. The original kit’s cost is already in the baseline. Together, these recovery costs flip order contribution from **+$54.76** down to **−$43.84**.
 
 ```text
 NORMAL ORDER ECONOMICS (#35070 Baseline):
@@ -403,12 +403,14 @@ ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
 ### 7.2 Worst-Case Dispute Exposure & Scaled Monthly Risk
 
 If the customer initiates a payment dispute due to delivery disruption, the store absorbs the chargeback reversal and gateway penalty on top of the recovery toll:
-$\text{Net Loss} = -\$43.84 - \$98.00 \text{ (Chargeback Reversal)} - \$15.00 \text{ (Gateway Penalty)} = -\mathbf{\$156.84}$
+
+$$\text{Net Loss} = -\$43.84 - \$98.00 \text{ (Chargeback Reversal)} - \$15.00 \text{ (Gateway Penalty)} = -\mathbf{\$156.84}$$
 
 At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
 * Assuming a modest **0.5% address change rate** (150 orders/month subject to modification).
 * The modeled full-failure ceiling assumes that all 150 monthly address changes incur the same $98.60 recovery cost:
-  $150 \text{ incidents} \times \$98.60 = \mathbf{\$14,790.00 / \text{month in modeled contribution loss}} \quad (\mathbf{\$177,480 / \text{year}})$
+
+$$150 \text{ incidents} \times \$98.60 = \mathbf{\$14,790.00 / \text{month in modeled contribution loss}} \quad (\mathbf{\$177,480 / \text{year}})$$
 
 Quantifying the $98.60 damage control toll transforms an engineering incident into an urgent commercial mandate. Section 8 details the first layer of permanent architectural prevention: the Hold-Confirm-Update Coordinator.
 
@@ -637,7 +639,7 @@ The cases below illustrate different failures and controls. Order numbers, timin
 | **Matrixify Schema Audit** | The synthetic mapping assigns Focus Stick SKU `SYN-FSTK-MY` the 12-digit text `850041234014`. The import gate checks exact text, the Modulo-10 check digit, and the SKU-to-UPC mapping. All 12 approved fixtures retain their identifiers through the 95-bit software round trip. | Local software fixtures | [Domain 3 Sections 5–6](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) · [Barcode checks](../evidence/barcodes/summary.md) |
 | **Shopify Flow Webhook Triage** | In Order #24148, a tag feedback loop generates 114 events in 62 seconds. A repeated operation with the same ID and payload hash receives its existing status or outcome. A conflicting payload is rejected, and an unknown warehouse outcome is reconciled before replay. | Scenario trace. Local fixtures check duplicate, conflict, and reconciliation behavior. | [Domain 4 Sections 4 and 6](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) · [Coordinator checks](../evidence/latency/summary.md) |
 | **Algorithmic Margin Defense** | Order #29863 costs $8.50 for sticks + $12.50 for tincture + $4.10 handling + $6.50 freight = $31.60. At a $32.85 payment, the 2.9% + $0.30 fee rounds to $1.25, leaving $31.60. One cent less leaves a deficit. In the separate promotional bundle model, $28.40 COGS and $4.90 handling are fixed. With the same fee, minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. | Worked basket calculation. Offline cost suite checks the promotional bundle sweep. | [Domain 5 Sections 6.4 and 8.2](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) · [Cost checks](../evidence/costs/summary.md) |
-| **Frontline Helpdesk Integration** | A reference address-change ticket triggers a warehouse hold at 8.4 seconds. The ticket stays `PENDING` until the warehouse confirms a pre-wave lock. Only `LOCKED` permits address mutation, advancing to `COMPLETED` upon verified read-back and release. An uncertain outcome goes to TechOps for reconciliation. | Helpdesk design and scenario timings. Local fixtures verify the underlying hold behavior. | [Coordinator checks](../evidence/latency/summary.md) |
+| **Frontline Helpdesk Integration** | The address-change ticket stays `PENDING` until the warehouse confirms a pre-wave lock. Only `LOCKED` permits the edit. The ticket advances to `COMPLETED` after the coordinator verifies the address in both systems and confirms release. TechOps reconciles uncertain outcomes. | Proposed helpdesk workflow. Local fixtures verify the underlying hold behavior. | [Coordinator checks](../evidence/latency/summary.md) |
 | **GraphQL Order State Query** | Shopify returned San Francisco as the destination, while the WMS manifest still showed a Philadelphia label. The comparison exposes the state divergence. | Diagnostic example | Section 4.3 |
 | **Carrier Intercept Integration** | The simulator keeps an electronically accepted request pending until a recovery event arrives. The confirmed-return fixture records one $17.50 fee. | Pinned contract checks and local event fixtures | Section 6.1 · [Carrier recovery checks](../evidence/carrier-recovery/summary.md) |
 | **Amazon SQS DLQ Topology** | The proposed queue keeps the operation ID across deliveries, checks the physical outcome before replay, and sends exhausted retries to a dead-letter queue. | Architecture specification | Section 9.2 |
