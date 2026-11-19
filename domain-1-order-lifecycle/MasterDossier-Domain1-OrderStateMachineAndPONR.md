@@ -343,7 +343,7 @@ Authorization: Bearer <token>
 }
 ```
 
-**Proceed only if** `queue_lock == "SHIPMENT_ON_HOLD"` **and** `wave_id == null` **and** `pick_status == "NOT_PICKED"`. A Shopify 200 on Step 1 does not satisfy this gate.
+**Proceed only if** `queue_lock == "SHIPMENT_ON_HOLD"` **and** (`wave_id == null` or `supervisor_override == true`) **and** `pick_status == "NOT_PICKED"`. A Shopify 200 on Step 1 does not satisfy this gate.
 
 #### Step 3: Mutate (`orderUpdate` with CASS-Standardized Input)
 
@@ -501,7 +501,7 @@ flowchart TD
    * *Invariant*: This halts automated Shopify fulfillment workers but does *not* prove the warehouse floor has stopped. Persist `fulfillmentHold.id` immediately.
 2. **Gate 2: Verify (Obtain Physical WMS Queue Lock)**
    * *Target*: 3PL Adapter `GET /shipments?order_id={id}`.
-   * *Contract*: Assert `queue_lock == "SHIPMENT_ON_HOLD"`, `wave_id == null`, and `pick_status == "NOT_PICKED"`.
+   * *Contract*: Assert `queue_lock == "SHIPMENT_ON_HOLD"`, `wave_id == null` (or deallocated via supervisor override), and `pick_status == "NOT_PICKED"`.
    * *Invariant*: An HTTP 200 response from the warehouse API confirms message delivery, *not* a floor freeze. Mutation remains blocked until the queue lock token is returned.
 3. **Gate 3: Mutate (Apply Record Update)**
    * *Target*: Shopify GraphQL `orderUpdate` (for address) or `orderEditCommit` (for line items).

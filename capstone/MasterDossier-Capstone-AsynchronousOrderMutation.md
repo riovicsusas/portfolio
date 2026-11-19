@@ -44,7 +44,7 @@ DIGITAL CONTROL PLANE (Shopify Admin)         PHYSICAL FULFILLMENT PLANE (Reno W
 | **Order Profile** | #35070, The Daily Protocol Starter Bundle, $98.00 GMV |
 | **Customer** | Elena Vance (`elena.vance@example.com`) |
 | **The Trigger Failure** | Outbound 3PL fulfillment hold timed out (`504 Gateway Timeout`); upstream state remained unknown |
-| **The Point of No Return** | Reno warehouse wave picking released 6 minutes 48 seconds after the first hold dispatch. |
+| **The Automated Cutoff** | Reno warehouse wave released 6 minutes 48 seconds after the first hold dispatch; physical picking commenced at 13:45:00. |
 | **The Blast Radius** | Cross-country mis-shipment, $98.60 damage control toll, $156.84 worst-case dispute loss, and mandatory FDA quarantine |
 
 Understanding how a silent timeout created a cross-country shipping disaster begins with the physical product inside the carton. Section 2 examines the consumable nature of the bundle and why an address error in botanicals cannot simply be restocked.
@@ -92,7 +92,7 @@ Every incident has a number that explains it. In this one, the number is **6 min
 
 Distributed systems don't fail in abstract diagrams—they fail in seconds. At 13:35:12, Shopify Flow dispatched a fulfillment hold request to the 3PL. Three seconds later (13:35:15), the request timed out with a 504: not a refusal, not an acceptance, just silence. At 13:42:00, Reno Wave Plan #8812 automatically released Order #35070 to the warehouse floor.
 
-Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sat a window of **6 minutes 48 seconds** (6 minutes 45 seconds from the 504 timeout). A retry at 13:40:15 also timed out, leaving the warehouse state unconfirmed at cutoff. The next attempt returned `422 PONR_EXCEEDED` at 13:50:18.
+Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sat a window of **6 minutes 48 seconds** (6 minutes 45 seconds from the 504 timeout). A retry at 13:40:15 also timed out, leaving the warehouse state unconfirmed at cutoff. Wave release at 13:42:00 crossed the automated edit cutoff. Because the gateway timeouts were swallowed without alerting operations, no supervisor was paged during the final 3-minute window before the 13:45:00 physical pick—the hard Point of No Return where physical custody transferred to the tote. The next attempt returned `422 PONR_EXCEEDED` at 13:50:18.
 
 ### 3.1 Incident Event Chronology
 
@@ -112,8 +112,8 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 | **13:35:12** | T+20m02s | WMS Adapter | **Action 2: Adapter attempts Step 1 of sequential script: POST /1.0/webhook/order/hold** | Request Dispatched |
 | **13:35:15** | T+20m05s | Cloudflare Gateway | **Hold request times out (3.0s). Sequential script aborts before sending Step 2 (Address Update). Buffer remaining: 6m45s** | **504 Gateway Timeout** |
 | **13:40:15** | T+25m05s | Retry Transport | **Retry Attempt 2 dispatches; times out. Buffer remaining: 1m45s** | **504 Gateway Timeout** |
-| **13:42:00** | T+26m50s | ShipBob WMS | **Wave Plan #8812 auto-releases: Order allocated to batch pick with original Philadelphia address** | **PONR BREACHED** |
-| **13:45:00** | T+29m50s | Warehouse Floor | Floor technician picks Starter Bundle into Tote #44 | Pick Confirmed |
+| **13:42:00** | T+26m50s | ShipBob WMS | **Wave Plan #8812 auto-releases: Order allocated to batch pick with original Philadelphia address** | **AUTOMATED CUTOFF CROSSED** |
+| **13:45:00** | T+29m50s | Warehouse Floor | Floor technician picks Starter Bundle into Tote #44 | **HARD PONR CROSSED (Picked)** |
 | **13:48:00** | T+32m50s | Pack Bench | Barcode scanned; thermal label prints: **Philadelphia, PA** | `PACKED` |
 | **13:48:45** | T+33m35s | Outbound Sorter / WMS | Carton placed onto Gaylord sort lane; status advances to `READY_FOR_DISPATCH` | Staged for Carrier |
 | **13:50:18** | T+35m08s | Retry Transport | **Retry Attempt 3 arrives at WMS adapter post-wave; rejected. Error logged to stdout without alerting operations.** | **422 PONR_EXCEEDED (Silent)** |
@@ -139,7 +139,7 @@ flowchart TD
         WMS["ShipBob Reno Queue<br/>Retains: Philadelphia, PA ⚠️"]
     end
 
-    subgraph Divergence["13:42:00 — Point of No Return Crossed"]
+    subgraph Divergence["13:42:00 — Automated Cutoff & Wave Release"]
         Wave["Wave Plan #8812 Auto-Releases"]
         Pick["Physical Pick & Pack Commences"]
         Label["Label Generated: PHILADELPHIA, PA"]
@@ -647,7 +647,7 @@ The cases below illustrate different failures and controls. Order numbers, timin
 | Technical Deliverable | Inputs, decision, and result | Verification scope | Related reading and evidence |
 | :--- | :--- | :--- | :--- |
 | **Capstone recovery ledger** | Order #35070 starts at $54.76 contribution on a $98.00 sale. The replacement branch adds $98.60 of recovery costs, leaving −$43.84 if the sale is retained. Section 7.1 itemizes both branches. | Modeled ledger checked in integer cents | [Cost reconciliation](../evidence/costs/summary.md) |
-| **Point-of-No-Return Engine** | In Order #18404, the warehouse queue lock is confirmed 18 seconds after the ticket arrives. The coordinator verifies the lock, updates the address, and releases the specific hold at 133 seconds. After wave release, the gate blocks the mutation. | Staged trace. Local fixtures test cutoff rejection and selective release. | [Domain 1 Sections 4 and 6](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **Point-of-No-Return Engine** | In Order #18404, the warehouse queue lock is confirmed 18 seconds after the ticket arrives. The coordinator verifies the lock, updates the address, and releases the specific hold at 133 seconds. After wave release, the gate blocks automated mutations (requiring a supervisor queue freeze before physical pick). | Staged trace. Local fixtures test cutoff rejection and selective release. | [Domain 1 Sections 4 and 6](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) · [Coordinator checks](../evidence/latency/summary.md) |
 | **Multi-Node Freight Waterfall** | For a separate Bethlehem, PA basket, the closest stocked node sends two Focus Stick packs from nearby Allentown ($5.40 freight + $3.70 handling). Only Reno has the tincture ($10.50 freight + $3.30 handling). The two parcels cost $22.90. Reno also stocks the sticks and can ship all three items together for $10.50 freight + $4.10 handling = $14.60, saving $8.30 under the same delivery promise. | Modeled allocation and arithmetic on declared stock and rates | [Domain 2 Section 3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) · [Freight checks](../evidence/freight/summary.md) |
 | **Matrixify Schema Audit** | The synthetic mapping assigns Focus Stick SKU `SYN-FSTK-MY` the 12-digit text `850041234014`. The import gate checks exact text, the Modulo-10 check digit, and the SKU-to-UPC mapping. All 12 approved fixtures retain their identifiers through the 95-bit software round trip. | Local software fixtures | [Domain 3 Sections 5–6](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) · [Barcode checks](../evidence/barcodes/summary.md) |
 | **Shopify Flow Webhook Triage** | In Order #24148, a tag feedback loop generates 114 events in 62 seconds. A repeated operation with the same ID and payload hash receives its existing status or outcome. A conflicting payload is rejected, and an unknown warehouse outcome is reconciled before replay. | Scenario trace. Local fixtures check duplicate, conflict, and reconciliation behavior. | [Domain 4 Sections 4 and 6](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) · [Coordinator checks](../evidence/latency/summary.md) |
