@@ -20,9 +20,7 @@ At 13:15:10 EDT on October 17, 2026, **Elena Vance** bought a $98.00 botanical s
 
 At 13:35:08, the agent saved Elena's San Francisco address in Shopify Admin. The green confirmation appeared, and the agent told her she was all set. Four seconds later, the warehouse hold request went out. It timed out. At 13:42:00, Wave Plan #8812 released the order to the warehouse floor with the original Philadelphia address still on record. Six minutes later, that address printed on the carton label. Elena learned where it had gone when tracking showed it at the Philadelphia hub — 44 hours after the trailer left Reno.
 
-Elena’s 15-minute edit window closed at 13:30:10, when her order entered Reno’s warehouse queue. At 13:35:12, the system sent a hold request. The warehouse would assign the order to a picking wave 6 minutes 48 seconds later.
-
-Just three seconds into those 6 minutes 48 seconds, the hold request timed out. The system still had 6 minutes 45 seconds to raise the alarm and check whether Reno had stopped the order. It waited five minutes and tried again. That request timed out too. At 13:42:00, the warehouse assigned the order to the wave with the Philadelphia address still on file.
+The 6 minutes 48 seconds between the first hold dispatch (13:35:12) and the picking wave release (13:42:00) was the margin of safety the system wasted. Just three seconds in, Cloudflare timed out the hold. The system still had 6 minutes 45 seconds to sound the alarm and verify whether Reno had frozen the order. Instead, it waited five silent minutes and retried. That request timed out too. At 13:42:00, the wave released with the Philadelphia destination still on the box.
 
 ### 1.2 Incident Snapshot and Blast Radius
 
@@ -47,7 +45,7 @@ DIGITAL CONTROL PLANE (Shopify Admin)         PHYSICAL FULFILLMENT PLANE (Reno W
 | **Customer** | Elena Vance (`elena.vance@example.com`) |
 | **The Trigger Failure** | Outbound 3PL fulfillment hold timed out (`504 Gateway Timeout`); upstream state remained unknown |
 | **The Point of No Return** | Reno warehouse wave picking released 6 minutes 48 seconds after the first hold dispatch. |
-| **The Blast Radius** | Cross-country mis-shipment, $98.60 damage control toll, $113.00 chargeback exposure, and mandatory FDA quarantine |
+| **The Blast Radius** | Cross-country mis-shipment, $98.60 damage control toll, $156.84 worst-case dispute loss, and mandatory FDA quarantine |
 
 Understanding how a silent timeout created a cross-country shipping disaster begins with the physical product inside the carton. Section 2 examines the consumable nature of the bundle and why an address error in botanicals cannot simply be restocked.
 
@@ -202,7 +200,9 @@ At 13:35:10, having seen Shopify report clean success, the agent responded in Go
 
 ### 4.2 Question 2: Did the warehouse hold ever land?
 
-**Diagnostic Finding:** The warehouse hold never landed. Forensic inspection of ShipBob WMS ingress gateway access logs and internal audit tables confirmed that neither the initial hold request nor the 13:40:15 retry ever generated an entry in ShipBob's `order_holds` table. Both requests terminated at the Cloudflare edge proxy due to a 3000ms upstream gateway timeout, never reaching the application layer. WMS allocation records confirmed the order transitioned directly from `UNALLOCATED` to `ALLOCATED` during the 13:42:00 wave release with `hold_state: null`. When Attempt 3 arrived post-wave at 13:50:18, the warehouse rejected it with `422 PONR_EXCEEDED`. Because the legacy adapter implemented a naive sequential pipeline (`Hold` → `Update Address` → `Release`), the timeout on Step 1 aborted the script — ensuring the San Francisco address mutation payload was never even dispatched to the warehouse.
+**Diagnostic Finding:** The warehouse hold never landed on the application layer. Forensic inspection of ShipBob WMS ingress gateway access logs and internal audit tables confirmed that neither the initial hold request nor the 13:40:15 retry ever generated an entry in ShipBob's `order_holds` table. Both requests terminated at the Cloudflare edge proxy due to a 3000ms upstream gateway timeout. Consequently, WMS allocation records confirmed the order transitioned directly from `UNALLOCATED` to `ALLOCATED` during the 13:42:00 wave release with `hold_state: null`.
+
+When Attempt 3 arrived post-wave at 13:50:18, the warehouse rejected it with `422 PONR_EXCEEDED`. Crucially, because the legacy adapter implemented a naive sequential pipeline (`Hold` → `Update Address` → `Release`), the timeout on Step 1 aborted the chained script immediately—ensuring the San Francisco address mutation payload was never even dispatched to the warehouse.
 
 ### 4.3 Question 3: Where is the parcel physically traveling?
 
@@ -285,6 +285,8 @@ The fundamental architectural failure of this integration was treating two compl
 > **A 504 leaves the result unknown. A 422 with `PONR_EXCEEDED` closes the edit path.**
 >
 > The system treated the first like a reason to wait, and by the time it heard the second, waiting had already cost the order.
+
+*(The raw HTTP POST request, 504 gateway timeout HTML, and 422 PONR_EXCEEDED response bodies are documented in [Appendix A — Integration Payloads](#appendix-a-integration-payloads).)*
 
 ### 5.2 The Structural Failures
 
@@ -594,6 +596,8 @@ The proposed queue separates request acknowledgment from the physical warehouse 
 ```
 
 When an uncertain outcome (`HTTP 504`) occurs, the worker does not delete the message; it extends the message visibility timeout (`ChangeMessageVisibility`) and dispatches a Sev-1 alert to the Ops Alert Bus. If manual reconciliation confirms the hold landed, the worker marks `LOCK_ACQUIRED` and acknowledges the message. If the message reaches the `maxReceiveCount` limit (3 receives: 1 initial delivery plus 2 retries) without resolution, SQS automatically dead-letters the message into the DLQ. At that point, the message is purged from the active work queue to prevent poison-pill redeliveries, and durable ownership transfers to a **TechOps Incident Ticket** generated via Amazon EventBridge, requiring human sign-off before any re-drive.
+
+With the asynchronous queue topology and alerting triggers specified, Section 10 synthesizes the incident into four non-negotiable operating laws for order mutation across the tech stack.
 
 ---
 
