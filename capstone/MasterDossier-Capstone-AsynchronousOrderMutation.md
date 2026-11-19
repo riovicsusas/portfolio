@@ -78,7 +78,7 @@ Every asynchronous order mutation begins with a race condition between two desti
 
 Elena’s order was not apparel or inert hardware—it contained ingestible dietary supplements (`SYN-TNCT-AM` tincture and `SYN-FSTK-MY` stick packs).
 
-In the dietary supplement and botanical industry, returned or misdirected parcels cannot simply be re-taped and placed back on warehouse shelves. Under **FDA 21 CFR Part 111 (Current Good Manufacturing Practice for Dietary Supplements, Subpart N)**, any consumable product that leaves the direct physical custody of the fulfillment facility is subject to mandatory quarantine and formal quality disposition review upon return. When an ingestible combination kit leaves the facility, recovering it requires full regulatory quarantine; and under Synapse QA standard operating procedures, un-kitting labor and contamination liabilities ultimately convert the returned bundle into a 100% inventory write-off rather than restockable merchandise.
+In the dietary supplement and botanical industry, returned or misdirected parcels cannot simply be re-taped and placed back on warehouse shelves. Under **FDA 21 CFR Part 111 (Subpart N)**, returned dietary supplements cannot simply be restocked; they must enter mandatory quarantine pending formal quality disposition review. While the regulations permit salvage of non-supplement components, Synapse's internal quality policy (**SOP-QA-402**) mandates whole-bundle destruction because the labor and testing required to sanitize and re-kit the $7.00 tumbler ($7.00 rework expense) equals its replacement cost while introducing cross-contamination liability. Consequently, un-kitting labor and contamination liabilities convert the returned bundle into a 100% inventory write-off ($28.40 COGS) rather than restockable merchandise.
 
 With the regulatory and inventory stakes established, the incident comes down to a race against the warehouse clock. Section 3 reconstructs the timestamped chronology and the critical 6-minute-and-48-second divergence seam.
 
@@ -413,7 +413,7 @@ NORMAL ORDER ECONOMICS (#35070 Baseline):
   Carrier Outbound Ground Freight:              -$7.20
   Credit Card Gateway Processing (2.9% + $0.30):-$3.14
   ─────────────────────────────────────────────────────
-  NET CONTRIBUTION MARGIN:                      +$54.76 (+55.9% Net Margin)
+  NET UNIT CONTRIBUTION:                        +$54.76 (+55.9% Contribution Margin)
 
 ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
   Gross Merchandise Value Collected:            +$98.00
@@ -428,7 +428,7 @@ ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
   Customer Goodwill Credit (Concession):        -$25.00
   Payment Gateway Transaction Processing:       -$3.14
   ─────────────────────────────────────────────────────
-  FINAL NET CONTRIBUTION:                       -$43.84
+  FINAL ORDER CONTRIBUTION:                     -$43.84
   TOTAL INCREMENTAL DAMAGE CONTROL COST:         $98.60
 ```
 
@@ -438,11 +438,15 @@ If the customer initiates a payment dispute due to delivery disruption, the stor
 
 $$\text{Net Loss} = -\$43.84 - \$98.00 \text{ (Chargeback Reversal)} - \$15.00 \text{ (Gateway Penalty)} = -\mathbf{\$156.84}$$
 
-At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
-* Assuming a modest **0.5% address change rate** (150 orders/month subject to modification).
-* The modeled full-failure ceiling assumes that all 150 monthly address changes incur the same $98.60 recovery cost:
+At an enterprise scale of **1,000 orders/day (30,000 orders/month)**, assuming a modest **0.5% address change rate** (150 orders/month subject to post-purchase modification):
 
-$$150 \text{ incidents} \times \$98.60 = \mathbf{\$14,790.00 / \text{month in modeled contribution loss}} \quad (\mathbf{\$177,480 / \text{year}})$$
+| Failure Rate Scenario | Unresolved Incidents / Mo | Modeled Monthly Contribution Loss | Annualized Risk Exposure |
+| :--- | :---: | :---: | :---: |
+| **Low Defect (10%)** | 15 | **$1,479.00** | $17,748 / year |
+| **Moderate Defect (25%)** | 37.5 | **$3,697.50** | $44,370 / year |
+| **Full-Failure Ceiling (100%)** | 150 | **$14,790.00** | $177,480 / year |
+
+$$150 \text{ incidents} \times 100\% \times \$98.60 = \mathbf{\$14,790.00 / \text{month ceiling}} \quad (\mathbf{\$177,480 / \text{year}})$$
 
 Quantifying the $98.60 damage control toll transforms an engineering incident into an urgent commercial mandate. Section 8 details the first layer of permanent architectural prevention: the Hold-Confirm-Update Coordinator.
 
