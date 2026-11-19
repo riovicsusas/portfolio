@@ -101,7 +101,7 @@ flowchart LR
     Reno, NV
     ─────────────────
     Primary West & Mountain Hub
-    Carrier: USPS / FedEx
+    Carrier: USPS / FedEx / UPS
     Active On-Hand Inventory:
     Full Catalog (Tinctures & Bundles staged here)"]
 
@@ -131,7 +131,7 @@ $$\text{Variable Pick Labor} = \$0.40 \text{ for each unit picked after the firs
 
 $$\text{Handling}(P, U) = \$3.30 \times P + \$0.40 \times (U - P) = \$3.30P + \$0.40U - \$0.40P = \mathbf{\$2.90P + \$0.40U}$$
 
-> This is the platform-wide 3PL handling model used in all dossiers. Base fulfillment ($2.50) + corrugate ($0.80) = $3.30 fixed parcel overhead; $0.40 per additional pick. The simplified coefficient $2.90P + $0.40U is the canonical form also referenced in Domain 5 Section 6 and the evidence/costs package.
+> This is the baseline 3PL handling model ($2.90P + $0.40U) for standard non-fragile dry goods. Base fulfillment ($2.50) + corrugate ($0.80) = $3.30 fixed parcel overhead; $0.40 per additional pick. Specific product configurations (such as fragile liquid tincture packaging in Order #29863 or presentation gift kitting in the Capstone) include declared scenario surcharges documented in `evidence/costs/bom_inputs.json`.
 
 Where:
 - `P` is the total count of dispatched outbound parcels.

@@ -326,7 +326,7 @@ Applying the dynamic formula across the catalog establishes the maximum allowabl
 
 > [!NOTE]
 > **Logistics Schedule & Bundle BOM Baseline**:
-> * **Single-Item vs. Multi-Item Parcel**: The single-SKU illustrations above reflect standalone shipments ($3.70 handling, $5.85 freight). When multiple items share a single box in Order #29863, handling totals $4.10 ($3.70 base pick/pack + $0.40 second unit pick) and freight is $6.50. Section 6.5 details how parcel consolidation lowers the basket floor.
+> * **Single-Item vs. Multi-Item Parcel**: The single-SKU illustrations above reflect standalone shipments ($3.70 handling includes $3.30 base + $0.40 fragile glass packaging allowance, $5.85 freight). When multiple items share a single box in Order #29863, handling totals $4.10 ($3.70 base pick/pack + $0.40 second unit pick) and freight is $6.50. Section 6.5 details how parcel consolidation lowers the basket floor.
 > * **Bundle BOM**: The Starter Bundle reflects $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).
 
 ### 5.3 Merchandising Impact: Unlocked Headroom vs. Low-Margin Hazards
@@ -529,7 +529,7 @@ Resilient storefront architecture enforces both layers: policy proxies guide cus
 
 A major blindspot in naive margin defense is treating fulfillment freight as a single, static national constant (e.g., standardizing on $6.50). In reality, carrier shipping costs fluctuate dramatically across geographic zones. If a merchant sets a static nationwide breakeven floor, orders shipped locally may remain profitable, while identical orders shipped cross-country bleed cash.
 
-To demonstrate this geographic sensitivity, consider the **Starter Bundle** (`SYN-BNDL-MAO`, $82.00 retail, $28.40 kitted COGS, $4.90 handling) modeled across standard carrier ground zones (with 2.9% + $0.30 fee rounded half-up):
+To demonstrate this geographic sensitivity, consider the **Starter Bundle** (`SYN-BNDL-MAO`, modeled under the **Promotional Campaign Scenario** at $82.00 retail with $28.40 kitted COGS and $4.90 promotional handling, per `evidence/costs/bom_inputs.json` scenario `alternative_promo`) across standard carrier ground zones:
 
 | Outbound Freight Cost | Total Direct Costs | Net Contribution ($82 Retail) | Dynamic Minimum Payable Floor | Delta vs. $6.50 Baseline | Max Allowable Discount ($) |
 |:---:|:---:|:---:|:---:|:---:|:---:|
@@ -544,7 +544,7 @@ At $6.50 freight (Zone 3), fixed costs are $39.80 and the dynamic floor is **$41
 
 **The Architectural Implication**: A promotional discount of $40.00 on this $82.00 bundle leaves a $42.00 customer payment. That payment is fully profitable in Zone 1 (clearing the $39.24 floor), but generates an immediate operational loss in Zone 8 (failing the $49.64 floor). Therefore, checkout validation cannot rely on static catalog averages; it must dynamically resolve the floor against the customer's actual destination postal zone.
 
-*(Note: The Capstone uses the same $28.40 kit for Order #35070. Its baseline subtracts $28.40 in COGS, $4.50 in handling, $7.20 in freight, and $3.14 in processing from a $98.00 sale, leaving $54.76 before recovery. [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) follows that separate order through its replacement branch. The [freight sensitivity report](../evidence/costs/summary.md) records the offline test harness verification.)*
+*(Note: In contrast to this $82.00 promotional benchmark, the Capstone models Elena Vance's Order #35070 at its full standard MSRP of $98.00 ($28.40 COGS, $4.50 handling, $7.20 freight, $3.14 processing = $54.76 baseline contribution). Both scenario variants are checked integer-cent inputs in `evidence/costs/bom_inputs.json`. [Capstone Sections 2.1 and 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemize Elena's baseline and replacement ledgers.)*
 
 ### 8.3 Three-Tier Production Enforcement: Sub-5ms Checkout Validation
 
