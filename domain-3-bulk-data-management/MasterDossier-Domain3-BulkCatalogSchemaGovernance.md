@@ -89,7 +89,7 @@ flowchart TD
 
 The tiers apply the principle of least privilege directly to catalog administration: each role receives the minimum write access its work requires and nothing more.
 
-The principle is usually discussed in terms of user accounts and IAM permissions, but in a bulk-import workflow **the file itself is the permission**. Matrixify, the Shopify bulk-import application Synapse uses, accepts a `Command` column on every row. Under `MERGE`, it updates only the cells that row populates and leaves every other column untouched. A marketing import file containing only `ID`, `Title`, `Body (HTML)`, `Image Alt Text`, and `SEO Description` is therefore physically incapable of altering a barcode, a price, or a URL handle.
+The principle is usually discussed in terms of user accounts and IAM permissions, but in a bulk-import workflow **the file itself is the permission**. Matrixify, the Shopify bulk-import application Synapse uses, accepts a `Command` column on every row. Under `MERGE`, updates are scoped strictly to the columns present in the file. Crucially, **omitting an unmutated column entirely (Targeted Column Pruning)** is the primary architectural safety control: if an unmutated column is left in the spreadsheet with empty cells, those blank cells can inadvertently overwrite or wipe live values. Physically stripping unmutated columns guarantees the import is physically incapable of altering unlisted fields. A marketing import file containing only `ID`, `Title`, `Body (HTML)`, `Image Alt Text`, and `SEO Description` cannot alter a barcode, a price, or a URL handle because those columns do not exist in the file.
 
 The same logic protects against spreadsheet coercion: silent mathematical conversion can only damage columns that actually exist in the file. Tier 1 columns appear in an import file only as match keys, and the linter verifies every match key against the canonical registry before execution proceeds. When the linter reports defects in more than one tier, the lowest-numbered tier is resolved first, because it carries the largest blast radius.
 
@@ -455,7 +455,7 @@ Restoring canonical data repairs a corrupted export. Preventing corruption from 
 
 *How non-destructive MERGE leaves unlisted fields untouched, and what each gate must pass before the remaining 10 of 12 variants deploy.*
 
-The gate that stopped the corrupted file is only the third of five. In standard native Shopify CSV imports, partial updates are destructive: blank cells in an imported spreadsheet can inadvertently erase existing product metafields, overwrite secondary images, or reset inventory quantities to zero. Before Gate 3 ever fires, two quieter gates have already reduced the blast radius to near zero.
+The gate that stopped the corrupted file is only the third of five. In native Shopify CSV imports and unpruned spreadsheets, partial updates are hazardous: present columns with blank cells can inadvertently erase existing product metafields, overwrite secondary images, or clear inventory. Before Gate 3 ever fires, Gate 1 (*Targeted Column Pruning*) removes unmutated columns completely, while Gate 2 (*`MERGE` Command Configuration*) instructs Matrixify to update only the fields explicitly provided in the file.
 
 To prevent destructive writes, Synapse Botanicals standardizes on **Matrixify's Non-Destructive `MERGE` Architecture**:
 
@@ -482,13 +482,15 @@ flowchart TD
 
 ### 9.1 Targeted Column Pruning (The Pruned File Example)
 
-Under Matrixify's `MERGE` command, only populated cells are updated. An import file updating the price of Focus Sticks Matcha Yuzu contains only three columns:
+Under Matrixify's `MERGE` command, safe partial updates require strict column omission. While `MERGE` updates populated cells, keeping unnecessary columns in the file creates severe risk: empty cells in a retained column can be interpreted as instructions to clear existing field values. Therefore, Gate 1 enforces **physical column pruning**: every attribute not undergoing active mutation is stripped from the file entirely.
+
+An import file updating the price of Focus Sticks Matcha Yuzu contains only three columns:
 
 | Variant SKU | Command | Variant Price |
 |:---|:---:|:---:|
 | `SYN-FSTK-MY` | `MERGE` | `42.00` |
 
-Every omitted column (`Barcode`, `Handle`, `Inventory Quantity`, `Title`, `Metafields`) is absent, making it physically impossible to overwrite or desynchronize.
+Every omitted column (`Barcode`, `Handle`, `Inventory Quantity`, `Title`, `Metafields`) is absent from the sheet structure, making it physically impossible to clear, overwrite, or desynchronize unmanaged data.
 
 ### 9.2 The Five-Gate Enforcement Matrix
 

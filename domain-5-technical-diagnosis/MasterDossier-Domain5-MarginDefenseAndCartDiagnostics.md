@@ -270,7 +270,7 @@ $$\text{Cart Transform (Normalization)} \longrightarrow \text{Discount API (Calc
 |---|---|---|
 | **Cart Normalization** | Cart Transform (`cart_transform`) | Runs first. Adjusts line pricing and bundle presentation (merge, expand) so discount math begins from a clean cart. |
 | **Discount Calculation & Floor Cap** | Discount Function API (line & delivery) | Computes line and shipping discounts. Caps line discounts at the SKU maximum allowable ceiling (Section 5.2) and evaluates free shipping post-discount. |
-| **Final Validation Gate** | Cart and Checkout Validation (`cart_checkout_validation`) | Runs last on the discounted cart. Emits blocking checkout errors if an invalid combination, subtotal breach, or below-floor payable is detected. |
+| **Final Validation Gate** | Cart and Checkout Validation (`cart_checkout_validation`) | Runs last on the discounted cart with `blockOnFailure: true` declared in `shopify.extension.toml`. Emits blocking checkout errors if an invalid combination, subtotal breach, or below-floor payable is detected. |
 
 > [!NOTE]
 > **API Index Specification**: Custom applications implementing Function APIs require Shopify Plus. Earlier platform documentation referred to a *discounts allocator* target in preview; current Shopify Functions index under the unified Discount API. Target naming reflects the 2026-10 specification.
@@ -576,7 +576,8 @@ flowchart TD
 ```
 
 * **Execution Envelope**: Validation logic executing at the checkout boundary cannot perform live external HTTP calls to ERPs or databases. All cost inputs (COGS, 3PL handling, carrier freight brackets) are synced asynchronously from the ERP ledger into Shopify private metafields, enabling the WebAssembly function to evaluate dynamic floors in under 5 milliseconds.
-* **Fail-Closed vs. Fail-Open Governance**: If cost metafields are corrupted or unavailable, the validation function fails closed on combination allowances: it falls back strictly to single-code exclusivity, guaranteeing that catalog data discrepancies cannot trigger a silent margin leak.
+* **Fail-Closed Governance (`blockOnFailure: true`)**: Shopify Validation Functions run under host-level execution controls. In `shopify.extension.toml`, the extension specifies `meta.validation.block_on_failure = true`. If the WASM runtime exceeds its 5ms CPU budget, throws an unhandled exception, or finds cost metafields corrupted or missing, the platform blocks checkout progression rather than failing open.
+* **Single-Coupon Floor Defense**: Margin defense cannot assume that floor violations only occur through multi-code collisions. A single oversized coupon can breach the contribution floor on an entry-level item—for example, a 40% discount applied to the $16.00 Bamboo Whisk collects $9.60 from the customer, instantly breaching the $11.53 dynamic breakeven floor and producing a contribution loss. The Cart and Checkout Validation Function enforces the dynamic floor as an absolute gate against the net payable, regardless of whether discounts originate from four stacked codes or a single misconfigured promotion.
 
 With the production enforcement architecture firmly in place, Section 9 models the quantified financial returns—measuring the exact capital preserved across individual orders and scaled marketing campaigns.
 
