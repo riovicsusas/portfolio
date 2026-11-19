@@ -20,7 +20,10 @@ At 13:15:10 EDT on October 17, 2026, **Elena Vance** bought a $98.00 botanical s
 
 At 13:35:08, the agent saved Elena's San Francisco address in Shopify Admin. The green confirmation appeared, and the agent told her she was all set. Four seconds later, the warehouse hold request went out. It timed out. At 13:42:00, Wave Plan #8812 released the order to the warehouse floor with the original Philadelphia address still on record. Six minutes later, that address printed on the carton label. Elena learned where it had gone when tracking showed it at the Philadelphia hub — 44 hours after the trailer left Reno.
 
-The distinction a recruiter can follow is what each clock measures. The 15 minutes are Synapse's standard merchant edit policy. The 11 minutes 50 seconds are how long this particular order waited in Reno's queue before its first eligible wave. The 6 minutes 48 seconds in the title begin when the hold request went out. Support could check the order's warehouse state, but the queue wait was never a promised extension of the edit window.
+Elena’s 15-minute edit window closed at 13:30:10, when her order entered Reno’s warehouse queue. At 13:35:12, the system sent a hold request. The warehouse would assign the order to a picking wave 6 minutes 48 seconds later.
+
+Just three seconds into those 6 minutes 48 seconds, the hold request timed out. The system still had 6 minutes 45 seconds to raise the alarm and check whether Reno had stopped the order. It waited five minutes and tried again. That request timed out too. At 13:42:00, the warehouse assigned the order to the wave with the Philadelphia address still on file.
+
 ### 1.2 Incident Snapshot and Blast Radius
 
 ```text
@@ -161,7 +164,7 @@ flowchart TD
     Physical --> Loss
 ```
 
-The carton was staged for dispatch at 13:48 and departed on the 17:30 UPS trailer with zero operational alarms raised. The system did not detect the divergence—the customer did. Section 4 presents the 48-hour discovery event and the three-question diagnostic protocol used to trace the divergence.
+The carton was staged for dispatch at 13:48 and departed on the 17:30 UPS trailer with zero operational alarms raised. The system did not detect the divergence—the customer did. Section 4 presents the customer discovery at the Philadelphia hub and the three-question diagnostic protocol used to trace the divergence.
 
 ---
 
