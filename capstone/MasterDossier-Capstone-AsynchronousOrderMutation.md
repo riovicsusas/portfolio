@@ -234,7 +234,35 @@ query inspectFulfillmentOrderState {
 }
 ```
 
-* **Diagnostic Finding:** While the GraphQL `destination` field returned San Francisco, cross-referencing the ShipBob manifest confirmed the shipping label was printed for **Philadelphia, PA**. Tracking confirmed the parcel had already arrived at the UPS Philadelphia regional sorting facility—stationary before final-mile dispatch. That hub scan proved the cross-country misdirection, but because the carton was not yet out for delivery on a neighborhood delivery truck, an emergency carrier intercept window was still open.
+**Worked example — destination excerpts for Order #35070**
+
+Before the agent saved Elena’s correction, the query would show the Philadelphia address from checkout.
+
+```json
+{
+  "destination": {
+    "address1": "1420 Chestnut St",
+    "city": "Philadelphia",
+    "province": "PA",
+    "zip": "19102"
+  }
+}
+```
+
+When Ops checked the same fulfillment order during triage, Shopify showed the corrected destination.
+
+```json
+{
+  "destination": {
+    "address1": "820 Market St",
+    "city": "San Francisco",
+    "province": "CA",
+    "zip": "94102"
+  }
+}
+```
+
+* **Diagnostic Finding.** Shopify’s record explained why the agent told Elena the change had worked. Reno’s shipping manifest showed that **Philadelphia, PA** went on the box. The latest UPS scan placed the carton at the Philadelphia hub before final-mile dispatch, while Ops could still request an intercept.
 
 Triage confirmed the physical parcel had reached the wrong coast while Shopify reported success. To understand how the system allowed this divergence to occur, Section 5 dissects the network responses and exposes the semantic chasm between HTTP 504 and HTTP 422.
 
@@ -245,9 +273,6 @@ Triage confirmed the physical parcel had reached the wrong coast while Shopify r
 *Contrasting the 504 timeout with the 422 cutoff rejection and tracing the four structural failures behind the incident.*
 
 The fundamental architectural failure of this integration was treating two completely distinct HTTP response classes as if they meant the same thing.
-
-> [!NOTE]
-> **Raw HTTP payloads** (the outbound hold `POST`, the `504` timeout body, and the `422 PONR_EXCEEDED` rejection) are reproduced in [Appendix A — Integration Payloads](#appendix-a-integration-payloads) at the end of this document. The architectural analysis continues below.
 
 ### 5.1 The Semantic Chasm Between 504 and 422
 
@@ -260,8 +285,6 @@ The fundamental architectural failure of this integration was treating two compl
 > **A 504 leaves the result unknown. A 422 with `PONR_EXCEEDED` closes the edit path.**
 >
 > The system treated the first like a reason to wait, and by the time it heard the second, waiting had already cost the order.
->
-> *The Mailbox Analogy:* Treating a 504 as a reason to wait is like dropping an urgent stop-work notice into a mailbox during a blizzard, having no idea if anyone collected it, and assuming an automated assembly line down the road will politely pause for fifteen minutes while you check back. The line does not pause. It runs on its own clock.
 
 ### 5.2 The Structural Failures
 
@@ -275,6 +298,7 @@ It is tempting to blame the Cloudflare gateway for the 504 timeout, but network 
 | **4. Timing Layer** | **Clock Mismatch:** Legacy software retry schedule (+5m, +15m) operated completely out of sync with physical warehouse wave releases (13:42:00 cutoff). | **Critical Design Flaw** | The trace reaches cutoff without a confirmed lock. |
 
 Understanding why the failure occurred explains the breakdown, but an active mis-shipment requires immediate containment. Section 6 details the operational containment playbook: carrier package interception, FDA quarantine protocols, and customer goodwill concessions.
+
 ---
 
 ## 6. A Return Request Is Not a Returned Parcel: Specified Carrier Intercept and FDA Quarantine
