@@ -489,12 +489,12 @@ sequenceDiagram
         alt Shopify Timeout / Network Glitch (Outcome Unknown)
             Shopify-->>Coord: HTTP 504 / Connection Timeout
             Coord->>Shopify: query { order { shippingAddress } } (Read-Back)
-            Note over Coord,Shopify: If SF committed → proceed to WMS; If PA retained → retry or alert TechOps
+            Note over Coord,Shopify: If SF committed → proceed to WMS<br/>If PA retained → retry or alert TechOps
         else Shopify Mutation Fails (userErrors)
             Shopify-->>Coord: userErrors: [...]
             Coord->>DB: Update State: SHOPIFY_MUTATE_FAILED (Hold Retained)
             Coord-)Helpdesk: Trigger Sev-1 Alert ("HOLD ACTIVE - SHOPIFY MUTATION FAILED")
-            Note over Coord,Shopify: Hold stays locked; address unmutated; TechOps reconciles
+            Note over Coord,Shopify: Hold stays locked and address stays unchanged<br/>TechOps reconciles
         else Shopify Mutation Verified (userErrors: [])
             Shopify-->>Coord: 200 OK (userErrors: [], address verified)
             Coord->>WMS: PUT /orders/{id}/address (820 Market St, Ste 400, SF)
@@ -506,27 +506,27 @@ sequenceDiagram
                 Note over Coord,WMS: Phase 3: Selective Hold Release & Polling
                 Coord->>WMS: DELETE /order/hold?op={operation_id}
                 alt Release Confirmed (< 600ms)
-                    WMS-->>Coord: HTTP 200 OK (Hold Released; Re-queued if no other holds active)
+                    WMS-->>Coord: HTTP 200 OK (Hold released, re-queued if no other holds are active)
                     Coord->>DB: Update State: MUTATION_COMPLETED
                     Coord-->>Helpdesk: HTTP 200 OK: COMPLETED ("Destination Verified Safely")
                 else Release Times Out / 504
                     WMS-->>Coord: HTTP 504 Timeout
                     Coord->>DB: Update State: RELEASE_UNCONFIRMED
                     Coord->>WMS: GET /orders/{id}/holds (Poll op_id clearance)
-                    Note over Coord,WMS: If op_id cleared → COMPLETED; If unconfirmed/exhausted → TechOps on-call clears hold
+                    Note over Coord,WMS: If op_id cleared → COMPLETED<br/>If unconfirmed/exhausted → TechOps on-call clears hold
                 end
             else WMS Write Fails / Times Out / Mismatch
                 WMS-->>Coord: 5xx / Timeout / Read-Back Mismatch
                 Coord->>DB: Update State: WMS_SYNC_FAILED (Hold Retained)
                 Coord-)Helpdesk: Trigger Sev-1 Alert ("HOLD ACTIVE - WMS WRITE/SYNC FAILED")
-                Note over Coord,WMS: Hold stays locked; TechOps reconciles manually
+                Note over Coord,WMS: Hold stays locked<br/>TechOps reconciles manually
             end
         end
     else PONR Breached: WMS Rejects Lock (HTTP 422 PONR_EXCEEDED)
         WMS-->>Coord: HTTP 422 PONR_EXCEEDED
         Coord->>DB: Update State: PONR_BREACHED (Halt Mutate)
         Coord-->>Helpdesk: HTTP 422 Rejection ("CUTOFF_EXCEEDED: Address Locked")
-        Note over Coord,Helpdesk: Edit blocked; auto-route tracking to Carrier Recovery
+        Note over Coord,Helpdesk: Edit blocked<br/>Route tracking to Carrier Recovery
     else Timeout Path: Gateway 504 / Network Drop
         WMS-->>Coord: HTTP 504 Gateway Timeout (3.0s)
         Coord->>DB: Update State: UNKNOWN (Halt Mutate)

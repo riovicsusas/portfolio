@@ -1140,10 +1140,14 @@
         return res.text();
       })
       .then(function (md) {
-        return renderDoc(md, filePath);
+        return renderDoc(md, filePath).catch(function (err) {
+          console.error('Could not render dossier:', err);
+          showError('Please reload the page or return to Projects.', 'Dossier Could Not Be Displayed');
+        });
       })
       .catch(function (err) {
-        showError('Could not load <code>' + filePath + '</code>.<br>Make sure the file exists in your portfolio directory and you are running this via a local server.<br><em>Error: ' + err.message + '</em>');
+        console.error('Could not load dossier:', err);
+        showError('Check the dossier link or return to Projects.');
       });
 
     /* ── Strip internal prep sections (Loom scripts & Grill Me FAQs) for recruiters ── */
@@ -1242,49 +1246,39 @@
         pre.setAttribute('aria-label', 'Code or text block — scroll horizontally when needed');
       });
 
-      // Transform language-mermaid code blocks into .mermaid containers
+      // Mermaid measures labels after the document and its fonts are laid out.
+      qs('#doc-wrap').style.display = 'block';
+      if (document.fonts) await document.fonts.ready;
+
       var mermaidBlocks = qsa('pre code.language-mermaid', qs('#md-body'));
-      mermaidBlocks.forEach(function (codeBlock, idx) {
+      var diagramFailed = false;
+      for (var idx = 0; idx < mermaidBlocks.length; idx++) {
+        var codeBlock = mermaidBlocks[idx];
         var pre = codeBlock.parentElement;
-        var rawCode = codeBlock.textContent.trim();
         var wrap = document.createElement('div');
         wrap.className = 'mermaid-wrap';
         wrap.tabIndex = 0;
         wrap.setAttribute('role', 'region');
         wrap.setAttribute('aria-label', 'Diagram ' + (idx + 1) + ' — scroll horizontally when needed');
-        var mermaidDiv = document.createElement('div');
-        mermaidDiv.className = 'mermaid';
-        mermaidDiv.id = 'mermaid-diagram-' + idx;
-        mermaidDiv.textContent = rawCode;
-        wrap.appendChild(mermaidDiv);
         pre.parentNode.replaceChild(wrap, pre);
-      });
 
-      // Mermaid measures labels: the document and its fonts must be laid out first.
-      qs('#doc-wrap').style.display = 'block';
-      if (document.fonts) await document.fonts.ready;
-
-      // Render mermaid diagrams
-      if (typeof mermaid !== 'undefined' && mermaidBlocks.length > 0) {
+        var diagram = document.createElement('div');
+        diagram.className = 'mermaid';
+        wrap.appendChild(diagram);
         try {
-          if (typeof mermaid.run === 'function') {
-            await mermaid.run({ querySelector: '.mermaid' });
-          } else if (typeof mermaid.init === 'function') {
-            await mermaid.init(undefined, qsa('.mermaid'));
+          if (typeof mermaid === 'undefined') {
+            throw new Error('Mermaid failed to load.');
           }
-        } catch (mErr) {
-          // Preserve the source if a diagram cannot render, rather than exporting an error SVG.
-          qsa('.mermaid-wrap', qs('#md-body')).forEach(function (wrap, index) {
-            var pre = document.createElement('pre');
-            var code = document.createElement('code');
-            code.textContent = mermaidBlocks[index].textContent;
-            pre.appendChild(code);
-            wrap.replaceWith(pre);
-          });
-          throw new Error('A diagram could not be rendered. Please reload before exporting.');
+          var rendered = await mermaid.render('mermaid-diagram-' + idx, codeBlock.textContent.trim(), diagram);
+          diagram.innerHTML = rendered.svg;
+          if (rendered.bindFunctions) rendered.bindFunctions(diagram);
+        } catch (err) {
+          diagramFailed = true;
+          console.warn('Could not render diagram ' + (idx + 1) + ':', err);
+          var notice = document.createElement('p');
+          notice.textContent = 'This diagram could not be rendered. Reload the page to try again.';
+          wrap.replaceChildren(notice, pre);
         }
-      } else if (mermaidBlocks.length > 0) {
-        throw new Error('The diagram renderer could not load. Please reload before exporting.');
       }
 
       qsa('.mermaid svg', qs('#md-body')).forEach(function (svg, index) {
@@ -1333,10 +1327,10 @@
       qs('#loading').style.display = 'none';
       qs('#doc-wrap').style.display = 'block';
       preparePrintLayout();
-      document.documentElement.dataset.documentState = 'ready';
+      document.documentElement.dataset.documentState = diagramFailed ? 'partial' : 'ready';
       qs('.viewer-main').setAttribute('aria-busy', 'false');
-      qs('#btn-print').disabled = false;
-      qs('#btn-print').title = 'Save as PDF';
+      qs('#btn-print').disabled = diagramFailed;
+      qs('#btn-print').title = diagramFailed ? 'Reload to render all diagrams before saving as PDF' : 'Save as PDF';
       qs('#btn-copy').disabled = false;
 
       // Copy link button
@@ -1418,11 +1412,13 @@
     }
 
     /* ── Error state ── */
-    function showError(msg) {
+    function showError(msg, title) {
       document.documentElement.dataset.documentState = 'error';
       qs('.viewer-main').setAttribute('aria-busy', 'false');
       qs('#loading').style.display = 'none';
+      qs('#doc-wrap').style.display = 'none';
       var errEl = qs('#error');
+      if (title) qs('h3', errEl).textContent = title;
       errEl.style.display = 'flex';
       qs('#error-msg').innerHTML = msg;
     }
