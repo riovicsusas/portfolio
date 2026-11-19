@@ -37,7 +37,7 @@ DIGITAL CONTROL PLANE (Shopify Admin)         PHYSICAL FULFILLMENT PLANE (Reno W
 ```
 
 > [!CAUTION]
-> **Scenario and evidence scope.** Order #35070 is a staged reconstruction. Its timestamps, platform responses, and warehouse events are scenario inputs. The checked-in offline suite verifies selected coordinator behaviors, financial calculations, and carrier fixtures. Authenticated UPS CIE calls and physical parcel recovery were outside the scope of those checks. Section 12 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Scenario and evidence scope.** Order #35070 is a staged reconstruction. Its timestamps, platform responses, and warehouse events are scenario inputs. The repository verifies selected hold-coordination, lease-fencing, and race mechanics locally (`evidence/latency/coordinator.js`); the complete vendor-integrated mutation workflow is an architectural deployment specification. Authenticated UPS CIE calls and physical parcel recovery were outside the scope of offline checks. Section 12 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
 
 | Incident Dimension | Baseline Scenario Parameter |
 | :--- | :--- |
@@ -450,7 +450,7 @@ Quantifying the $98.60 damage control toll transforms an engineering incident in
 
 ## 8. Lock Before Wave: The Hold-Confirm-Update Coordinator Pattern
 
-*The two-phase orchestrated saga that enforces physical warehouse confirmation before digital and physical order destinations mutate.*
+*The orchestrated Hold–Update–Release saga that enforces physical warehouse confirmation before digital and physical order destinations mutate.*
 
 In the proposed workflow, Support submits Elena’s new address through the helpdesk widget. The coordinator waits for Reno to confirm a hold on her order before changing the destination in Shopify or the warehouse system.
 
@@ -528,7 +528,7 @@ When network timeouts, validation errors, or partial writes occur during Phase 2
 | **Phase 2: Shopify** | `HTTP 504 / Connection Timeout` | `SHOPIFY_SYNC_PENDING` | Executes read-back query (`query { order { shippingAddress } }`). Warehouse hold remains **LOCKED**. | If SF address committed $\to$ proceeds to WMS. If PA address retained $\to$ retries mutation or alerts TechOps. Zero physical divergence possible. |
 | **Phase 2: Shopify** | GraphQL `userErrors` (e.g., postal invalid) | `SHOPIFY_MUTATE_FAILED` | Halts mutation chain. Warehouse hold remains **LOCKED**. | Displays specific validation error to agent; Reno queue stays frozen until resolved or released. |
 | **Phase 2: WMS** | HTTP 5xx, timeout, or 6-field read-back mismatch | `WMS_SYNC_FAILED` | Halts execution before release. Warehouse hold remains **LOCKED**. | Prevents order from entering picking wave with mismatched address; alerts Reno DC queue manager for manual sync. |
-| **Phase 3: Release** | `HTTP 504 / Gateway Timeout` | `RELEASE_UNCONFIRMED` | Background worker initiates deterministic polling (`GET /orders/{id}/holds?op={id}`). | If hold confirmed cleared $\to$ marks `MUTATION_COMPLETED`. If polling exhausts $\to$ alerts TechOps to clear lock manually. Order safely stays on hold rather than shipping to wrong destination. |
+| **Phase 3: Release** | `HTTP 504 / Gateway Timeout` | `RELEASE_UNCONFIRMED` | Release status is unknown. Background worker initiates deterministic polling (`GET /orders/{id}/holds?op={id}`). | Both destinations were fully verified before release dispatch. If polling confirms clearance $\to$ marks `MUTATION_COMPLETED`. If polling exhausts $\to$ alerts TechOps to reconcile hold status manually. |
 ---
 
 ## 9. Alarm on the First Uncertain Result
@@ -638,7 +638,7 @@ The architectural philosophy explains why distributed failures persist unnoticed
 
 *Pairs each technical claim with the way it was checked, from integer-cent ledger arithmetic to staged traces and design specifications, and links the related reading.*
 
-In senior systems architecture, credibility requires clearly distinguishing between what has been empirically verified in test harnesses versus what represents an architectural specification.
+In senior systems architecture, credibility requires clearly distinguishing between what has been empirically verified in test harnesses versus what represents an architectural specification. The repository demonstrates local proof of core distributed primitives—atomic operation claims, competing hold resolution, and idempotency ledgers—while complete end-to-end multi-SaaS orchestrations are specified for cloud deployment.
 
 ### 12.1 Evidence Scope & Verification Matrix
 
