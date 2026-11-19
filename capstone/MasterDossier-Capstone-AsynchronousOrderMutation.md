@@ -228,9 +228,9 @@ query inspectFulfillmentOrderState {
 }
 ```
 
-* **Diagnostic Finding:** While the GraphQL `destination` field returned San Francisco, cross-referencing the ShipBob manifest confirmed the shipping label was printed for **Philadelphia, PA**. The parcel was in flight on a cross-country line-haul trailer.
+* **Diagnostic Finding:** While the GraphQL `destination` field returned San Francisco, cross-referencing the ShipBob manifest confirmed the shipping label was printed for **Philadelphia, PA**. Tracking confirmed the parcel had already arrived at the UPS Philadelphia regional sorting facility—stationary before final-mile dispatch. That hub scan proved the cross-country misdirection, but because the carton was not yet out for delivery on a neighborhood delivery truck, an emergency carrier intercept window was still open.
 
-Triage confirmed the physical parcel was heading to the wrong coast while Shopify reported success. To understand how the system allowed this divergence to occur, Section 5 dissects the network responses and exposes the semantic chasm between HTTP 504 and HTTP 422.
+Triage confirmed the physical parcel had reached the wrong coast while Shopify reported success. To understand how the system allowed this divergence to occur, Section 5 dissects the network responses and exposes the semantic chasm between HTTP 504 and HTTP 422.
 
 ---
 
@@ -288,7 +288,12 @@ The detailed containment streams below define the execution rules for this recov
 
 ### 6.1 Stream 1: In-Flight Package Interception (UPS Delivery Intercept v2)
 
-For an eligible shipment with active tracking, the proposed workflow submits a return request and tracks the carrier response against the internal operation ID. The JSON below is the checked-in offline fixture. It uses a separate tracking number and the fixture’s canceled-shipment reason `AM`. The adapter stores `idempotency_key` internally, outside the UPS request body.
+The pinned [UPS Delivery Intercept v2 contract](../evidence/carrier-recovery/contracts/ups_delivery_intercept_v2.openapi.json#L2549) provides three primary electronic disposition request types for eligible shipments before delivery: Return to Sender (`RS`), Alternate Address Redirect (`AA`), or Will Call (`WC`). Operations explicitly selected **Return to Sender (`RS`) + Priority Reshipment from Reno** over an in-flight alternate address redirect (`AA`):
+
+1. **Transit Latency and Churn Mitigation:** In modeled carrier ground freight transit, redirecting (`AA`) a ground package already at the destination hub across the continent back to California is estimated to add 5–6 additional business days of freight and hub re-sorting, pushing delivery out to October 26–27 (7–8 business days / 9–10 calendar days post-checkout). By contrast, the staged recovery path dispatched a fresh replacement bundle (`#35070-R`) directly from Reno DC via **UPS Next Day Air**, achieving confirmed customer delivery in San Francisco the very next afternoon (October 20).
+2. **Product Quality & Regulatory Risk:** Dietary supplement adaptogens and liquid tinctures subjected to prolonged multi-leg ground transit across uncontrolled ambient temperatures risk thermal degradation and package fatigue. Sending a fresh, factory-sealed kit from Reno ensured full active potency and satisfied Synapse's cGMP product release standards under 21 CFR Part 111.
+
+For an eligible shipment with active tracking, the proposed workflow submits a return request (`RS`) and tracks the carrier response against the internal operation ID. The JSON below is the checked-in offline fixture. It uses a separate tracking number and the fixture’s canceled-shipment reason `AM`. The adapter stores `idempotency_key` internally, outside the UPS request body.
 
 ```json
 {
@@ -326,13 +331,6 @@ The pinned contract uses HTTP 200 for the response examples. The simulator check
 > **Carrier Physics Reality**: An electronic intercept request does not stop a trailer in transit on I-80. Interception occurs only when the parcel is physically scanned at the carrier's destination sort facility (e.g., Philadelphia hub). If the package is sorted to "Out for Delivery" before the intercept scan executes, interception fails and the parcel delivers to the old address.
 >
 > The $17.50 and $0.00 values are scenario assumptions. The checked-in suite skips authenticated UPS CIE execution and physical recovery. [Request and response fixtures](../evidence/carrier-recovery/fixtures.json) · [Carrier verification scope](../evidence/carrier-recovery/summary.md)
-
-#### Operational Rationale: Return + Replacement vs. In-Flight Redirect
-
-The pinned [UPS Delivery Intercept v2 contract](../evidence/carrier-recovery/contracts/ups_delivery_intercept_v2.openapi.json#L2549) provides three primary electronic disposition request types for eligible shipments before delivery: Return to Sender (`RS`), Alternate Address Redirect (`AA`), or Will Call (`WC`). Operations explicitly selected **Return to Sender (`RS`) + Priority Reshipment from Reno** over an in-flight alternate address redirect (`AA`):
-
-1. **Transit Latency and Churn Mitigation:** In modeled carrier ground freight transit, redirecting (`AA`) a ground package already at the destination hub across the continent back to California is estimated to add 5–6 additional business days of freight and hub re-sorting, pushing delivery out to October 26–27 (7–8 business days / 9–10 calendar days post-checkout). By contrast, the staged recovery path dispatched a fresh replacement bundle (`#35070-R`) directly from Reno DC via **UPS Next Day Air**, achieving confirmed customer delivery in San Francisco the very next afternoon (October 20).
-2. **Product Quality & Regulatory Risk:** Dietary supplement adaptogens and liquid tinctures subjected to prolonged multi-leg ground transit across uncontrolled ambient temperatures risk thermal degradation and package fatigue. Sending a fresh, factory-sealed kit from Reno ensured full active potency and satisfied Synapse's cGMP product release standards under 21 CFR Part 111.
 
 ### 6.2 Stream 2: Consumable Product Quarantine (FDA 21 CFR Part 111 Compliance)
 
@@ -412,11 +410,6 @@ At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
 * The modeled full-failure ceiling assumes that all 150 monthly address changes incur the same $98.60 recovery cost:
   $150 \text{ incidents} \times \$98.60 = \mathbf{\$14,790.00 / \text{month in modeled contribution loss}} \quad (\mathbf{\$177,480 / \text{year}})$
 
-At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
-* Assuming a modest **0.5% address change rate** (150 orders/month subject to modification).
-* The modeled full-failure ceiling assumes that all 150 monthly address changes incur the same $98.60 recovery cost:
-  $150 \text{ incidents} \times \$98.60 = \mathbf{\$14,790.00 / \text{month in modeled contribution loss}} \quad (\mathbf{\$177,480 / \text{year}})$
-
 Quantifying the $98.60 damage control toll transforms an engineering incident into an urgent commercial mandate. Section 8 details the first layer of permanent architectural prevention: the Hold-Confirm-Update Coordinator.
 
 ---
@@ -429,22 +422,15 @@ To prevent silent state divergence, distributed e-commerce systems must enforce 
 
 ### 8.1 The Five-Step Coordination Protocol
 
-1. **Persist a Durable Operation ID:** Assign an immutable `operation_id` to the modification request across all retries.
-2. **Engage the Physical Lock First:** Require the WMS to transition the order from `OPEN` to `ON_HOLD` and acknowledge with an HTTP 200 before mutating any database fields. Tag operation as `LOCK_ACQUIRED`. If the WMS rejects with HTTP 422 (`PONR_EXCEEDED`), the order has crossed the cutoff: the Coordinator halts mutation, marks `PONR_BREACHED`, rejects the edit in the Helpdesk, and auto-routes tracking to carrier recovery.
-3. **Apply Destination Mutation & Full-Address Verification:** Once the lock is acquired, the Coordinator calls Shopify Admin GraphQL (`orderUpdate`). If the Shopify request times out or returns a 5xx error, **the Coordinator retains the warehouse hold (`HOLD_APPLIED`) and does not assume the write failed**. Because a timeout leaves the remote state unknown, the Coordinator executes a read-back query against Shopify (`query { order(id) { shippingAddress { ... } } }`). If Shopify reflects the updated San Francisco destination, the Coordinator proceeds to WMS synchronization; if the old address remains, it safely retries the mutation. If the retry fails or times out, the Coordinator retains the hold, marks `SHOPIFY_MUTATE_FAILED`, and alerts TechOps.
-   Once Shopify is confirmed, the Coordinator pushes the destination to the WMS (`PUT /orders/{id}/address`) and executes an immediate read-back query (`GET /orders/{id}`). The Coordinator performs a normalized, field-level equality comparison on the entire street address across both systems:
-   * Address1: `"820 Market St"`
-   * Address2: `"Suite 400"`
-   * City: `"San Francisco"`
-   * State/Province: `"CA"`
-   * Postal Code: `"94102"`
-   * Country: `"US"`
-   If Shopify returns `userErrors`, or if the WMS read-back fails, times out, or reports any field mismatch, **the Coordinator retains the warehouse hold (`HOLD_APPLIED`)**, sets the saga state to `WMS_SYNC_FAILED`, and alerts TechOps. Never release a hold when destinations fail verification across both systems.
-4. **Release Hold with Targeted Operation Polling:** Once full-address verification succeeds across both systems, the Coordinator dispatches a selective release (`DELETE /order/hold?op={operation_id}`). If the release request times out or returns a 504, the Coordinator transitions to `RELEASE_UNCONFIRMED`. Because a network timeout leaves the physical release outcome unknown, the Coordinator polls the WMS holds list (`GET /orders/{id}/holds`):
-   * **Operation Hold Cleared (`operation_id` absent):** This operation's hold was successfully removed. The Coordinator then checks whether any independent operational holds (e.g. an unrelated billing or compliance lock) remain on the order. If no other holds exist, the order returns to the wave allocation queue. If other independent holds remain, the order stays safely held under those separate locks, while this address mutation saga completes. In both cases, the saga advances to `MUTATION_COMPLETED` and the Helpdesk ticket advances to `COMPLETED`.
-   * **Operation Hold Still Active (`operation_id` present):** Coordinator retries the release up to 2 times.
-   * **Status Check Fails / Unreadable Result:** If the polling query itself times out, fails, or returns an ambiguous status, **the Coordinator cannot verify whether the hold remained active or cleared**. As a fail-safe, the Coordinator retains the operation in `RELEASE_UNCONFIRMED`, keeps the Helpdesk ticket in `RELEASE_PENDING`, and escalates an urgent Sev-2 alert to TechOps. TechOps on-call engineers take over ownership via the Ops Console to inspect the order in the ShipBob portal and manually verify or clear the lock. The order is never presumed released without confirmed clearance.
-5. **Reconcile Unknown Outcomes:** A 504 during the initial hold phase moves the operation to **UNKNOWN**. The Coordinator blocks the edit, alerts operations immediately, and verifies the WMS state before replaying the hold under the same operation ID.
+The coordinator executes order mutations through a strict five-step progression before warehouse wave release:
+
+1. **Persist a Durable Operation ID:** Assign an immutable `operation_id` across all mutation attempts to guarantee idempotent execution.
+2. **Engage the Physical Lock First:** Require the WMS to freeze the picking wave (`POST /1.0/webhook/order/hold`) and confirm with an HTTP 200 (`LOCK_ACQUIRED`) before modifying any digital records.
+3. **Mutate and Verify Shopify:** Call Shopify Admin GraphQL (`orderUpdate`). Verify zero `userErrors` and confirm the San Francisco destination via read-back before touching the warehouse destination.
+4. **Mutate and Verify WMS:** Push the new address to the warehouse (`PUT /orders/{id}/address`) and execute an immediate read-back query (`GET /orders/{id}`), verifying normalized equality across all six address fields (Street, Suite, City, State, ZIP, Country).
+5. **Targeted Hold Release:** Dispatch a selective release (`DELETE /order/hold?op={operation_id}`) that frees only this operation's lock, ensuring any independent billing or compliance holds remain active.
+
+*The sequence diagram below illustrates the complete architecture, including timeout handling, read-back verification loops, and fail-safe escalations when any step deviates from the main path:*
 
 ### 8.2 Coordinator Sequence Architecture
 
