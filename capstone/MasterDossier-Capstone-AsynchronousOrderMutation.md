@@ -16,7 +16,11 @@ If you run an e-commerce operation, or hire the people who do, the most instruct
 
 This case follows an address change from the initial customer checkout to the warehouse cutoff, then traces the operational decisions that govern recovery and its cost.
 
-Here is the incident in one frame: At 13:00 on October 17, 2026, customer **Elena Vance** purchased a $98.00 botanical starter bundle. Her browser checkout profile automatically filled her previous apartment address in Philadelphia — a valid, deliverable address that USPS address validation passed without objection. The order entered a standard 30-minute post-purchase modification grace window. At 13:30:00, reviewing her order confirmation email, Elena noticed the incorrect address just before the grace window expired. By the time she initiated a live chat at 13:32:15, the 30-minute window had elapsed and the order had transferred into the Reno warehouse allocation queue — though physical picking had not yet started. That distinction is critical: the edit was still possible in principle before the 13:42:00 wave cutoff, but it now required a confirmed warehouse fulfillment hold to freeze the queue. Instead, at 13:35:08, a customer support agent updated the shipping address directly in Shopify Admin, clicked Save, and assured Elena that her order was updated. Shopify Admin accepted the mutation instantly. Thirteen minutes later, a sealed carton bearing the *old* Philadelphia address rolled across a warehouse conveyor belt in Reno, Nevada. Between those two events, zero operational alarms were raised — leaving Elena to discover the error only when tracking alerted her in Philadelphia 44 hours after Reno line-haul departure (48 hours 30 minutes post-checkout).
+At 13:15:10 EDT on October 17, 2026, **Elena Vance** bought a $98.00 botanical starter bundle with standard ground shipping. Shop Pay filled in her previous Philadelphia apartment address. The address passed postal validation. Elena spotted the wrong destination in her confirmation email at 13:30:00 — ten seconds before the standard 15-minute edit window closed. By the time she opened live chat at 13:32:15, the order had been in Reno's allocation queue for two minutes and five seconds. Picking had yet to begin. Support could still change the destination if the warehouse confirmed a hold.
+
+At 13:35:08, the agent saved Elena's San Francisco address in Shopify Admin. The green confirmation appeared, and the agent told her she was all set. Four seconds later, the warehouse hold request went out. It timed out. At 13:42:00, Wave Plan #8812 released the order to the warehouse floor with the original Philadelphia address still on record. Six minutes later, that address printed on the carton label. Elena learned where it had gone when tracking showed it at the Philadelphia hub — 44 hours after the trailer left Reno.
+
+The distinction a recruiter can follow is what each clock measures. The 15 minutes are Synapse's standard merchant edit policy. The 11 minutes 50 seconds are how long this particular order waited in Reno's queue before its first eligible wave. The 6 minutes 48 seconds in the title begin when the hold request went out. Support could check the order's warehouse state, but the queue wait was never a promised extension of the edit window.
 ### 1.2 Incident Snapshot and Blast Radius
 
 ```text
@@ -57,19 +61,18 @@ Every asynchronous order mutation begins with a race condition between two desti
 | Attribute | Incident Record |
 | :--- | :--- |
 | **Customer Profile** | Elena Vance (`elena.vance@example.com`) |
-| **Order Placement Timestamp** | `2026-10-17T13:00:10-04:00` (EDT) |
+| **Order Placement Timestamp** | `2026-10-17T13:15:10-04:00` (EDT) |
 | **Payment Status** | Captured ($98.00) via Shopify Payments (Stripe) |
 | **Purchased Item** | 1× The Daily Protocol Starter Bundle (`SYN-BNDL-MAO`, $98.00) |
 | **Physical Bundle Contents** | • 1× Focus Stick Packs 30-Pack (Matcha Yuzu, `SYN-FSTK-MY`) — COGS $8.50<br/>• 1× Adaptogen Tincture 60ml (AM Focus, `SYN-TNCT-AM`) — COGS $12.50<br/>• 1× Precision Insulated Tumbler 500ml (Matte Obsidian, `SYN-TMBL-MO`) — COGS $7.00<br/>• Kitting Material Allowance — $0.40<br/>• Bundle COGS Total: $28.40 (matches `evidence/costs/bom_inputs.json`) |
-| **Assigned Warehouse Batch** | Synapse 30-minute customer edit policy held fulfillment order in middleware until 13:30:10; released directly to Reno DC queue for Wave Plan #8812 (first eligible picking wave, scheduled cutoff: 13:42:00 EDT) *(see Note below)* |
+| **Assigned Warehouse Batch** | Standard ground shipping carried a 15-minute edit window. At 13:30:10 EDT, Synapse sent the order to Reno's allocation queue. Wave Plan #8812, its first eligible picking batch, released at 13:42:00 EDT. |
 | **Fulfillment Origin** | Reno Distribution Center, NV (`LOC-NV-02`) |
 | **Original Shipping Address** | 1420 Chestnut St, Apt 4B, Philadelphia, PA 19102 (Zone 8 from NV) |
 | **Requested Destination** | 820 Market St, Suite 400, San Francisco, CA 94102 (Zone 2 from NV) |
 
 > [!NOTE]
 > **The Postal Validation Paradox (Why USPS CASS Passed It).** USPS Coding Accuracy Support System (CASS) validates that an address is a *deliverable postal location* — it confirms street, city, state, and ZIP code resolve to a real delivery point. It does not verify that the address belongs to the person placing the order, nor does it check whether the destination matches the customer's intent. Elena's Philadelphia apartment passed CASS validation because it is a valid deliverable address. This is the gap: a technically correct address can still be operationally wrong. The correct guardrail is a checkout address confirmation step, not postal validation.
->
-> **Buffer Policy Coexistence (15-Minute vs. 30-Minute Windows).** While Domain 1 models a baseline 15-minute automated order-editing buffer for standard single-item catalog orders, Synapse Risk & Compliance enforces an extended **30-minute hold** on combination bundles containing ingestible dietary supplements (`SYN-BNDL-MAO`). This extended window accommodates asynchronous fraud velocity scoring and USPS CASS address verification before releasing the order to physical 3PL wave allocation.
+
 ### 2.2 The Ingestible Product Stake: Why This Was Not Just a Misplaced Box
 
 Elena’s order was not apparel or inert hardware—it contained ingestible dietary supplements (`SYN-TNCT-AM` tincture and `SYN-FSTK-MY` stick packs).
@@ -96,26 +99,26 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 
 | Timestamp | Elapsed | Actor / System | Real-World Operational Event | State / Result |
 | :--- | :---: | :--- | :--- | :---: |
-| **13:00:10** | T+0m | Customer / Shopify | Order #35070 placed; Shop Pay autofills saved Philadelphia address. Payment captured ($98.00). Synapse 30-minute edit grace window initiated in middleware. | 200 OK |
-| **13:30:00** | T+29m50s | Customer | Elena reviews order confirmation email and notices the Philadelphia destination | — |
-| **13:30:10** | T+30m00s | Middleware / WMS | 30-minute grace window elapses. Middleware dispatches fulfillment order to Reno allocation queue for Wave Plan #8812 (first eligible picking batch). | `OPEN / UNALLOCATED` |
-| **13:32:15** | T+32m05s | Customer / Gorgias | Elena initiates live chat; support ticket #T-10842 opened: address change requested to SF | Ticket Created |
-| **13:33:30** | T+33m20s | Gorgias Agent | Agent accepts ticket, locates Order #35070, and confirms San Francisco destination with Elena | Agent Engaged |
-| **13:35:08** | T+34m58s | Shopify Admin | Agent mutates shipping address directly in Admin UI *(see Note below)* | Address Updated |
-| **13:35:10** | T+35m00s | Gorgias Agent | Agent observes green success banner, reassures Elena (*"All set! Updated to San Francisco."*), and marks ticket `Solved` | Ticket Solved (False Reassurance) |
-| **13:35:10** | T+35m00s | Middleware Bus | `orders/updated` webhook fires downstream integration | Execution Started |
-| **13:35:11** | T+35m01s | Shopify Core | Action 1: Flow applies internal tag `flow-hold:customer-edit` | 200 OK |
-| **13:35:12** | T+35m02s | WMS Adapter | **Action 2: Adapter attempts Step 1 of sequential script: POST /1.0/webhook/order/hold** | Request Dispatched |
-| **13:35:15** | T+35m05s | Cloudflare Gateway | **Hold request times out (3.0s). Sequential script aborts before sending Step 2 (Address Update). Buffer remaining: 6m45s** | **504 Gateway Timeout** |
-| **13:40:15** | T+40m05s | Retry Transport | **Retry Attempt 2 dispatches; times out. Buffer remaining: 1m45s** | **504 Gateway Timeout** |
-| **13:42:00** | T+41m50s | ShipBob WMS | **Wave Plan #8812 auto-releases: Order allocated to batch pick with original Philadelphia address** | **PONR BREACHED** |
-| **13:45:00** | T+44m50s | Warehouse Floor | Floor technician picks Starter Bundle into Tote #44 | Pick Confirmed |
-| **13:48:00** | T+47m50s | Pack Bench | Barcode scanned; thermal label prints: **Philadelphia, PA** | `PACKED` |
-| **13:48:45** | T+48m35s | Outbound Sorter / WMS | Carton placed onto Gaylord sort lane; status advances to `READY_FOR_DISPATCH` | Staged for Carrier |
-| **13:50:18** | T+50m08s | Retry Transport | **Retry Attempt 3 arrives at WMS adapter post-wave; rejected. Error logged to stdout without alerting operations.** | **422 PONR_EXCEEDED (Silent)** |
-| **13:50:19** | T+50m09s | Architecture | **"Zombie Order" state established: Digital and physical states permanently diverged** | **DIVERGED** |
-| **17:30:00** | T+4h29m50s | UPS Line-Haul | UPS Line-Haul Trailer #NV-402 departs Reno DC — physical warehouse dock retrieval no longer possible; parcel in transit | Departed |
-| **October 19, 13:30** | T+48h30m (44h post-departure) | Customer / Operations | Elena checks tracking: *"In Transit: Arrived at UPS Facility — Philadelphia, PA"*; contacts support. Intercept window opens. | Incident Discovered |
+| **13:15:10** | T+0m | Customer / Shopify | Elena places Order #35070 with standard ground shipping. Shop Pay fills in her saved Philadelphia address. Shopify captures $98.00, and the 15-minute edit window opens. | 200 OK |
+| **13:30:00** | T+14m50s | Customer | Elena reviews order confirmation email and notices the Philadelphia destination | — |
+| **13:30:10** | T+15m00s | Middleware / WMS | The 15-minute edit window closes. Synapse sends the order to Reno, where it waits unassigned for Wave Plan #8812. | `OPEN / UNALLOCATED` |
+| **13:32:15** | T+17m05s | Customer / Gorgias | Elena initiates live chat; support ticket #T-10842 opened: address change requested to SF | Ticket Created |
+| **13:33:30** | T+18m20s | Gorgias Agent | Agent accepts ticket, locates Order #35070, and confirms San Francisco destination with Elena | Agent Engaged |
+| **13:35:08** | T+19m58s | Shopify Admin | Agent mutates shipping address directly in Admin UI *(see Note below)* | Address Updated |
+| **13:35:10** | T+20m00s | Gorgias Agent | Agent observes green success banner, reassures Elena (*"All set! Updated to San Francisco."*), and marks ticket `Solved` | Ticket Solved (False Reassurance) |
+| **13:35:10** | T+20m00s | Middleware Bus | `orders/updated` webhook fires downstream integration | Execution Started |
+| **13:35:11** | T+20m01s | Shopify Core | Action 1: Flow applies internal tag `flow-hold:customer-edit` | 200 OK |
+| **13:35:12** | T+20m02s | WMS Adapter | **Action 2: Adapter attempts Step 1 of sequential script: POST /1.0/webhook/order/hold** | Request Dispatched |
+| **13:35:15** | T+20m05s | Cloudflare Gateway | **Hold request times out (3.0s). Sequential script aborts before sending Step 2 (Address Update). Buffer remaining: 6m45s** | **504 Gateway Timeout** |
+| **13:40:15** | T+25m05s | Retry Transport | **Retry Attempt 2 dispatches; times out. Buffer remaining: 1m45s** | **504 Gateway Timeout** |
+| **13:42:00** | T+26m50s | ShipBob WMS | **Wave Plan #8812 auto-releases: Order allocated to batch pick with original Philadelphia address** | **PONR BREACHED** |
+| **13:45:00** | T+29m50s | Warehouse Floor | Floor technician picks Starter Bundle into Tote #44 | Pick Confirmed |
+| **13:48:00** | T+32m50s | Pack Bench | Barcode scanned; thermal label prints: **Philadelphia, PA** | `PACKED` |
+| **13:48:45** | T+33m35s | Outbound Sorter / WMS | Carton placed onto Gaylord sort lane; status advances to `READY_FOR_DISPATCH` | Staged for Carrier |
+| **13:50:18** | T+35m08s | Retry Transport | **Retry Attempt 3 arrives at WMS adapter post-wave; rejected. Error logged to stdout without alerting operations.** | **422 PONR_EXCEEDED (Silent)** |
+| **13:50:19** | T+35m09s | Architecture | **"Zombie Order" state established: Digital and physical states permanently diverged** | **DIVERGED** |
+| **17:30:00** | T+4h14m50s | UPS Line-Haul | UPS Line-Haul Trailer #NV-402 departs Reno DC — physical warehouse dock retrieval no longer possible; parcel in transit | Departed |
+| **October 19, 13:30** | T+48h14m50s (44h post-departure) | Customer / Operations | Elena checks tracking: *"In Transit: Arrived at UPS Facility — Philadelphia, PA"*; contacts support. Intercept window opens. | Incident Discovered |
 
 > [!NOTE]
 > **Frontline process flaw.** At 13:35:08, the agent saved the San Francisco address directly in Shopify Admin while the Reno warehouse queue was still active — before the warehouse hold was confirmed. The corrected protocol (the Hold-Confirm-Update Coordinator) is detailed in Section 8.
@@ -164,9 +167,9 @@ The carton was staged for dispatch at 13:48 and departed on the 17:30 UPS traile
 
 ## 4. The Customer Found It Before the System Did: Staged Detection and Three-Question Triage
 
-*How Elena Vance reported the misdirection 44 hours after trailer departure (48 hours 30 minutes post-checkout), and the three diagnostic questions that isolated the digital-physical divergence.*
+*How Elena Vance reported the misdirection 44 hours after trailer departure, and the three diagnostic questions that isolated the digital-physical divergence.*
 
-The system’s automated retry loops did not detect this failure. Elena Vance did—**44 hours after Reno line-haul departure (48h30m post-checkout)** (`2026-10-19T13:30:00-04:00`), when her tracking number reported:
+The system’s automated retry loops did not detect this failure. Elena Vance did—**44 hours after the trailer left Reno** (`2026-10-19T13:30:00-04:00`), when her tracking number reported:
 > *"In Transit: Arrived at UPS Sorting Facility — Philadelphia, PA."*
 
 Because the parcel was scanned upon arrival at the regional sorting hub—and was not yet out for delivery on a neighborhood delivery truck—an emergency carrier intercept window was still open. Operations initiated a standardized 3-minute diagnostic triage protocol answering three distinct architectural questions:
@@ -179,7 +182,7 @@ Forensic diagnosis requires comparing what the support agent saw against what do
 
 | Time (EDT) | Event Displayed in Shopify Admin UI | Operational Takeaway for Agent |
 |---|---|---|
-| **13:00:10** | Order #35070 placed; payment captured ($98.00). Shipping address: Philadelphia, PA. | Order active; held in 30-minute customer edit window. |
+| **13:15:10** | Order #35070 placed; payment captured ($98.00). Shipping address: Philadelphia, PA. | Order active. The standard 15-minute edit window opened at checkout. |
 | **13:35:08** | Shipping address updated to 820 Market St, Suite 400, San Francisco, CA. | Green success badge displayed: *"Shipping address updated."* |
 
 At 13:35:10, having seen Shopify report clean success, the agent responded in Gorgias: *"All set, Elena! Your order has been updated to Market St, San Francisco"*, and closed ticket #T-10842 as `Solved`.
