@@ -16,7 +16,7 @@ If you run an e-commerce operation, or hire the people who do, the most instruct
 
 This case follows an address change from the initial customer checkout to the warehouse cutoff, then traces the operational decisions that govern recovery and its cost.
 
-Here is the incident in one frame: At 13:00 on October 17, 2026, customer **Elena Vance** purchased a $98.00 botanical starter bundle. Her browser checkout profile automatically filled her previous apartment address in Philadelphia — a valid, deliverable address that USPS address validation passed without objection. The order entered a standard 30-minute post-purchase modification grace window. Thirty minutes later, upon reviewing her order confirmation email, Elena opened a live chat requesting a destination change to San Francisco. At 13:35:08, a customer support agent updated the shipping address in Shopify Admin, clicked Save, and assured Elena that her order was updated. Shopify Admin accepted the mutation instantly. Thirteen minutes later, a sealed carton bearing the *old* Philadelphia address rolled across a warehouse conveyor belt in Reno, Nevada. Between those two events, zero operational alarms were raised — leaving Elena to discover the error only when tracking alerted her in Philadelphia 44 hours after Reno line-haul departure (48 hours 30 minutes post-checkout).
+Here is the incident in one frame: At 13:00 on October 17, 2026, customer **Elena Vance** purchased a $98.00 botanical starter bundle. Her browser checkout profile automatically filled her previous apartment address in Philadelphia — a valid, deliverable address that USPS address validation passed without objection. The order entered a standard 30-minute post-purchase modification grace window. At 13:30:00, reviewing her order confirmation email, Elena noticed the incorrect address just before the grace window expired. By the time she initiated a live chat at 13:32:15, the 30-minute window had elapsed and the order had transferred into the Reno warehouse allocation queue — though physical picking had not yet started. That distinction is critical: the edit was still possible in principle before the 13:42:00 wave cutoff, but it now required a confirmed warehouse fulfillment hold to freeze the queue. Instead, at 13:35:08, a customer support agent updated the shipping address directly in Shopify Admin, clicked Save, and assured Elena that her order was updated. Shopify Admin accepted the mutation instantly. Thirteen minutes later, a sealed carton bearing the *old* Philadelphia address rolled across a warehouse conveyor belt in Reno, Nevada. Between those two events, zero operational alarms were raised — leaving Elena to discover the error only when tracking alerted her in Philadelphia 44 hours after Reno line-haul departure (48 hours 30 minutes post-checkout).
 ### 1.2 Incident Snapshot and Blast Radius
 
 ```text
@@ -196,12 +196,7 @@ At 13:35:10, having seen Shopify report clean success, the agent responded in Go
 
 ### 4.2 Question 2: Did the warehouse hold ever land?
 
-**Adapter Retry & Middleware Ledger Inspection:**
-* Attempt 1 (`13:35:15 EDT`): `HTTP 504 Gateway Timeout` (6m45s buffer remaining to wave release).
-* Attempt 2 (`13:40:15 EDT`): `HTTP 504 Gateway Timeout` (1m45s buffer remaining to wave release).
-* Attempt 3 (`13:50:18 EDT`): `HTTP 422 Unprocessable Entity` (`PONR_EXCEEDED`, 8m18s post-wave release).
-
-**Diagnostic Finding:** The warehouse hold never landed. Forensic inspection of ShipBob WMS ingress gateway access logs and internal audit tables confirmed that neither the 13:35:12 request nor the 13:40:15 retry ever generated an entry in ShipBob's `order_holds` table. Both requests terminated at the Cloudflare edge proxy due to a 3000ms upstream gateway timeout, never reaching the application layer. Furthermore, WMS allocation records confirm the order transitioned directly from `UNALLOCATED` to `ALLOCATED` during the 13:42:00 wave release with `hold_state: null`. Because the legacy adapter implemented a naive sequential pipeline (`Hold` → `Update Address` → `Release`), the timeout on Step 1 aborted the script — ensuring the San Francisco address mutation payload was never even dispatched to the warehouse.
+**Diagnostic Finding:** The warehouse hold never landed. Forensic inspection of ShipBob WMS ingress gateway access logs and internal audit tables confirmed that neither the initial hold request nor the 13:40:15 retry ever generated an entry in ShipBob's `order_holds` table. Both requests terminated at the Cloudflare edge proxy due to a 3000ms upstream gateway timeout, never reaching the application layer. WMS allocation records confirmed the order transitioned directly from `UNALLOCATED` to `ALLOCATED` during the 13:42:00 wave release with `hold_state: null`. When Attempt 3 arrived post-wave at 13:50:18, the warehouse rejected it with `422 PONR_EXCEEDED`. Because the legacy adapter implemented a naive sequential pipeline (`Hold` → `Update Address` → `Release`), the timeout on Step 1 aborted the script — ensuring the San Francisco address mutation payload was never even dispatched to the warehouse.
 
 ### 4.3 Question 3: Where is the parcel physically traveling?
 
@@ -370,25 +365,15 @@ Enacting these three containment streams halted further customer friction and sa
 
 ## 7. $98.60 of Damage Control on a $98.00 Sale: Modeled Ledger and Exposure Ceiling
 
-*Mapping the three containment streams to their exact ledger costs, contrasting normal baseline economics against the recovery toll, and modeling scaled monthly exposure.*
+*Contrasting normal baseline economics against the dual-fulfillment recovery ledger, chargeback exposure, and scaled monthly risk.*
 
 An engineering flaw becomes an executive business case when you calculate its impact on unit economics. Order #35070 began as a flagship, high-margin sale and ended as an operational loss.
 
-### 7.1 Direct Containment Cost Mapping
+### 7.1 Baseline vs. Dual-Fulfillment Recovery Ledger
 
-Every dollar of recovery expense corresponds directly to an operational containment stream executed in Section 6:
+Starter Bundle COGS is modeled at **$28.40** (Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00, kitting $0.40, per [BOM inputs](../evidence/costs/bom_inputs.json)). Payment gateway processing is 2.9% of the $98.00 payment plus $0.30, rounded half-up to **$3.14**.
 
-| Operational Recovery Stream | Associated Ledger Impact | Incremental Cost |
-| :--- | :--- | :---: |
-| **Stream 1: Carrier Intercept & RTS** | Modeled carrier intercept fee ($17.50) + Return-to-sender freight ($8.40) | **$25.90** |
-| **Stream 2: QA Disposition & Scrap** | 100% inventory write-off of returned starter bundle under Synapse QA SOP-QA-402 (interpreting FDA 21 CFR Part 111 quarantine rules) | **$28.40** |
-| **Stream 3: Second Fulfillment & Concession** | Replacement parcel fulfillment ($4.50 3PL + $14.80 Air) + Courtesy credit ($25.00) | **$44.30** |
-| **Total Incremental Recovery Toll** | Net reduction in order contribution margin (cash outlays + asset write-off + concession liability) | **+$98.60** |
-
-The $98.60 toll spans three economic categories: direct cash outlays ($45.20 in carrier and freight fees), inventory write-off ($28.40 under Synapse QA SOP-QA-402), and customer concession liability ($25.00 store credit). The full ledger is in Section 7.2.
-### 7.2 Baseline vs. Dual-Fulfillment Recovery Ledger
-
-Starter Bundle COGS is modeled at **$28.40**. The $28.00 component total consists of Focus Sticks at $8.50, AM Tincture at $12.50, and a Precision Tumbler at $7.00. Kitting adds $0.40. Processing is 2.9% of the $98.00 payment plus $0.30, rounded half-up to **$3.14**. The [BOM and scenario inputs](../evidence/costs/bom_inputs.json) are the source for these amounts.
+The three containment streams executed in Section 6 add **$98.60 in incremental damage control costs**: $45.20 in carrier intercept and replacement freight (Streams 1 and 3), a $28.40 inventory write-off under Synapse QA SOP-QA-402 (Stream 2), and a $25.00 courtesy credit (Stream 3). This flips order contribution from **+$54.76** down to **−$43.84**:
 
 ```text
 NORMAL ORDER ECONOMICS (#35070 Baseline):
@@ -417,14 +402,15 @@ ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
   TOTAL INCREMENTAL DAMAGE CONTROL COST:         $98.60
 ```
 
-### 7.3 Financial Comparison & Worst-Case Dispute Exposure
+### 7.2 Worst-Case Dispute Exposure & Scaled Monthly Risk
 
-* **Normal baseline** — $54.76 in modeled contribution (+55.9% margin).
-* **Retained-sale replacement branch** — −$43.84 in modeled contribution after $98.60 of added recovery costs.
-* **Worst-Case Chargeback Branch:** If the customer initiates a payment dispute due to delivery delay, the store absorbs:
-  $$\text{Net Loss} = -\$43.84 - \$98.00 \text{ (Chargeback Reversal)} - \$15.00 \text{ (Gateway Penalty)} = -\mathbf{\$156.84}$$
+If the customer initiates a payment dispute due to delivery disruption, the store absorbs the chargeback reversal and gateway penalty on top of the recovery toll:
+$\text{Net Loss} = -\$43.84 - \$98.00 \text{ (Chargeback Reversal)} - \$15.00 \text{ (Gateway Penalty)} = -\mathbf{\$156.84}$
 
-### 7.4 Scaled Monthly Exposure Model
+At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
+* Assuming a modest **0.5% address change rate** (150 orders/month subject to modification).
+* The modeled full-failure ceiling assumes that all 150 monthly address changes incur the same $98.60 recovery cost:
+  $150 \text{ incidents} \times \$98.60 = \mathbf{\$14,790.00 / \text{month in modeled contribution loss}} \quad (\mathbf{\$177,480 / \text{year}})$
 
 At an enterprise scale of **1,000 orders/day (30,000 orders/month)**:
 * Assuming a modest **0.5% address change rate** (150 orders/month subject to modification).
@@ -659,7 +645,7 @@ The cases below illustrate different failures and controls. Order numbers, timin
 
 | Technical Deliverable | Inputs, decision, and result | Verification scope | Related reading and evidence |
 | :--- | :--- | :--- | :--- |
-| **Capstone recovery ledger** | Order #35070 starts at $54.76 contribution on a $98.00 sale. The replacement branch adds $98.60 of recovery costs, leaving −$43.84 if the sale is retained. Section 7.2 itemizes both branches. | Modeled ledger checked in integer cents | [Cost reconciliation](../evidence/costs/summary.md) |
+| **Capstone recovery ledger** | Order #35070 starts at $54.76 contribution on a $98.00 sale. The replacement branch adds $98.60 of recovery costs, leaving −$43.84 if the sale is retained. Section 7.1 itemizes both branches. | Modeled ledger checked in integer cents | [Cost reconciliation](../evidence/costs/summary.md) |
 | **Point-of-No-Return Engine** | In Order #18404, the warehouse queue lock is confirmed 18 seconds after the ticket arrives. The coordinator verifies the lock, updates the address, and releases the specific hold at 133 seconds. After wave release, the gate blocks the mutation. | Staged trace. Local fixtures test cutoff rejection and selective release. | [Domain 1 Sections 4 and 6](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) · [Coordinator checks](../evidence/latency/summary.md) |
 | **Multi-Node Freight Waterfall** | For a separate Bethlehem, PA basket, the closest stocked node sends two Focus Stick packs from nearby Allentown ($5.40 freight + $3.70 handling). Only Reno has the tincture ($10.50 freight + $3.30 handling). The two parcels cost $22.90. Reno also stocks the sticks and can ship all three items together for $10.50 freight + $4.10 handling = $14.60, saving $8.30 under the same delivery promise. | Modeled allocation and arithmetic on declared stock and rates | [Domain 2 Section 3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) · [Freight checks](../evidence/freight/summary.md) |
 | **Matrixify Schema Audit** | The synthetic mapping assigns Focus Stick SKU `SYN-FSTK-MY` the 12-digit text `850041234014`. The import gate checks exact text, the Modulo-10 check digit, and the SKU-to-UPC mapping. All 12 approved fixtures retain their identifiers through the 95-bit software round trip. | Local software fixtures | [Domain 3 Sections 5–6](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) · [Barcode checks](../evidence/barcodes/summary.md) |
