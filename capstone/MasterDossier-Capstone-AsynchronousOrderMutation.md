@@ -450,7 +450,7 @@ Quantifying the $98.60 damage control toll transforms an engineering incident in
 
 *The two-phase orchestrated saga that enforces physical warehouse confirmation before digital and physical order destinations mutate.*
 
-To prevent silent state divergence, distributed e-commerce systems must enforce a strict **Hold-Confirm-Update Coordination Protocol**:
+In the proposed workflow, Support submits Elena’s new address through the helpdesk widget. The coordinator waits for Reno to confirm a hold on her order before changing the destination in Shopify or the warehouse system.
 
 ### 8.1 The Five-Step Coordination Protocol
 
@@ -462,9 +462,9 @@ The coordinator executes order mutations through a strict five-step progression 
 4. **Mutate and Verify WMS:** Push the new address to the warehouse (`PUT /orders/{id}/address`) and execute an immediate read-back query (`GET /orders/{id}`), verifying normalized equality across all six address fields (Street, Suite, City, State, ZIP, Country).
 5. **Targeted Hold Release:** Dispatch a selective release (`DELETE /order/hold?op={operation_id}`) that frees only this operation's lock, ensuring any independent billing or compliance holds remain active.
 
-*The sequence diagram below illustrates the complete architecture, including timeout handling, read-back verification loops, and fail-safe escalations when any step deviates from the main path:*
+*The sequence diagram below illustrates the coordinator's primary saga execution, followed by the failure handling matrix for partial writes and network edge cases:*
 
-### 8.2 Coordinator Sequence Architecture
+### 8.2 Coordinator Sequence Architecture: The Primary Saga
 
 ```mermaid
 sequenceDiagram
@@ -472,7 +472,7 @@ sequenceDiagram
     participant Helpdesk as Helpdesk Agent UI
     participant Coord as Coordinator Adapter
     participant DB as Idempotency Ledger
-    participant WMS as ShipBob WMS
+    participant WMS as ShipBob WMS (Reno)
     participant Shopify as Shopify Admin API
 
     Note over Helpdesk,Shopify: Phase 1: Physical Warehouse Lock
@@ -480,76 +480,80 @@ sequenceDiagram
     Coord->>DB: Record State: PENDING (operation_id)
     Coord->>WMS: POST /1.0/webhook/order/hold (operation_id)
 
-    alt Lock Acquired: WMS Confirms Lock (< 600ms)
+    alt Path A (Happy Path): WMS Confirms Lock (< 600ms)
         WMS-->>Coord: HTTP 200 OK (ON_HOLD confirmed)
         Coord->>DB: Update State: LOCK_ACQUIRED
         Coord-->>Helpdesk: Status: LOCKED (Agent UI Unlocked)
+
         Note over Coord,Shopify: Phase 2: Dual Mutation & Full-Address Verification
         Coord->>Shopify: GraphQL orderUpdate (820 Market St, Ste 400, SF)
-        alt Shopify Timeout / Network Glitch (Outcome Unknown)
-            Shopify-->>Coord: HTTP 504 / Connection Timeout
-            Coord->>Shopify: query { order { shippingAddress } } (Read-Back)
-            Note over Coord,Shopify: If SF committed → proceed to WMS<br/>If PA retained → retry or alert TechOps
-        else Shopify Mutation Fails (userErrors)
-            Shopify-->>Coord: userErrors: [...]
-            Coord->>DB: Update State: SHOPIFY_MUTATE_FAILED (Hold Retained)
-            Coord-)Helpdesk: Trigger Sev-1 Alert ("HOLD ACTIVE - SHOPIFY MUTATION FAILED")
-            Note over Coord,Shopify: Hold stays locked and address stays unchanged<br/>TechOps reconciles
-        else Shopify Mutation Verified (userErrors: [])
-            Shopify-->>Coord: 200 OK (userErrors: [], address verified)
-            Coord->>WMS: PUT /orders/{id}/address (820 Market St, Ste 400, SF)
-            alt WMS Address Write & Read-Back Verified
-                WMS-->>Coord: HTTP 200 OK (Address Accepted)
-                Coord->>WMS: GET /orders/{id} (Read-Back Full Destination)
-                WMS-->>Coord: 200 OK ("820 Market St, Suite 400, SF, CA 94102")
-                Coord->>DB: Update State: DESTINATION_VERIFIED
-                Note over Coord,WMS: Phase 3: Selective Hold Release & Polling
-                Coord->>WMS: DELETE /order/hold?op={operation_id}
-                alt Release Confirmed (< 600ms)
-                    WMS-->>Coord: HTTP 200 OK (Hold released, re-queued if no other holds are active)
-                    Coord->>DB: Update State: MUTATION_COMPLETED
-                    Coord-->>Helpdesk: HTTP 200 OK: COMPLETED ("Destination Verified Safely")
-                else Release Times Out / 504
-                    WMS-->>Coord: HTTP 504 Timeout
-                    Coord->>DB: Update State: RELEASE_UNCONFIRMED
-                    Coord->>WMS: GET /orders/{id}/holds (Poll op_id clearance)
-                    Note over Coord,WMS: If op_id cleared → COMPLETED<br/>If unconfirmed/exhausted → TechOps on-call clears hold
-                end
-            else WMS Write Fails / Times Out / Mismatch
-                WMS-->>Coord: 5xx / Timeout / Read-Back Mismatch
-                Coord->>DB: Update State: WMS_SYNC_FAILED (Hold Retained)
-                Coord-)Helpdesk: Trigger Sev-1 Alert ("HOLD ACTIVE - WMS WRITE/SYNC FAILED")
-                Note over Coord,WMS: Hold stays locked<br/>TechOps reconciles manually
-            end
-        end
-    else PONR Breached: WMS Rejects Lock (HTTP 422 PONR_EXCEEDED)
+        Shopify-->>Coord: HTTP 200 OK (userErrors: [], SF verified)
+        Coord->>WMS: PUT /orders/{id}/address (820 Market St, Ste 400, SF)
+        WMS-->>Coord: HTTP 200 OK (Address Accepted)
+        Coord->>WMS: GET /orders/{id} (Read-Back Full Destination)
+        WMS-->>Coord: HTTP 200 OK (6 fields verified: Street, Suite, City, State, ZIP, Country)
+        Coord->>DB: Update State: DESTINATION_VERIFIED
+
+        Note over Coord,WMS: Phase 3: Targeted Hold Release
+        Coord->>WMS: DELETE /order/hold?op={operation_id}
+        WMS-->>Coord: HTTP 200 OK (Operation hold released)
+        Coord->>DB: Update State: MUTATION_COMPLETED
+        Coord-->>Helpdesk: HTTP 200 OK: COMPLETED ("Destination Verified Safely")
+
+    else Path B (Cutoff Breach): WMS Rejects Lock
         WMS-->>Coord: HTTP 422 PONR_EXCEEDED
         Coord->>DB: Update State: PONR_BREACHED (Halt Mutate)
         Coord-->>Helpdesk: HTTP 422 Rejection ("CUTOFF_EXCEEDED: Address Locked")
-        Note over Coord,Helpdesk: Edit blocked<br/>Route tracking to Carrier Recovery
-    else Timeout Path: Gateway 504 / Network Drop
-        WMS-->>Coord: HTTP 504 Gateway Timeout (3.0s)
+        Note over Coord,Helpdesk: Edit blocked · Auto-route to Carrier Recovery (§6)
+
+    else Path C (Network Fault): Gateway 504 Timeout (3.0s)
+        WMS-->>Coord: HTTP 504 Gateway Timeout
         Coord->>DB: Update State: UNKNOWN (Halt Mutate)
-        Coord-->>Helpdesk: HTTP 409 Conflict ("HOLD_UNCONFIRMED: Manual Reconciliation Required")
-        Note over Coord,DB: Urgent Ops Escalation
-        Coord-)Helpdesk: Trigger Sev-1 Alert (Slack / PagerDuty: 6m45s to Cutoff)
+        Coord-->>Helpdesk: HTTP 409 Conflict ("HOLD_UNCONFIRMED: Manual Check Required")
+        Coord-)Helpdesk: Trigger Sev-1 Alert (6m45s Buffer to Cutoff)
+        Note over Coord,DB: Urgent TechOps escalation before wave release
     end
 ```
+
+### 8.3 Failure & Exception Handling Matrix
+
+When network timeouts, validation errors, or partial writes occur during Phase 2 or Phase 3, the coordinator guarantees zero silent divergence: the physical warehouse hold remains **LOCKED**, and execution halts until deterministically resolved:
+
+| Phase & Step | Failure Mode / HTTP Status | Idempotency Ledger State | Coordinator Defensive Action | Frontline & Operational Resolution |
+| :--- | :--- | :---: | :--- | :--- |
+| **Phase 1: Lock** | `HTTP 504 Gateway Timeout` (3.0s) | `UNKNOWN` | Halts execution immediately; does **not** write to Shopify or WMS. | Triggers immediate Sev-1 alert; TechOps reconciles Reno queue state within the remaining 6m45s buffer before wave release. |
+| **Phase 1: Lock** | `HTTP 422 PONR_EXCEEDED` | `PONR_BREACHED` | Halts execution; marks order ineligible for modification. | Helpdesk displays `"CUTOFF_EXCEEDED"`; triggers Section 6 Carrier Intercept and Replacement workflow. |
+| **Phase 2: Shopify** | `HTTP 504 / Connection Timeout` | `SHOPIFY_SYNC_PENDING` | Executes read-back query (`query { order { shippingAddress } }`). Warehouse hold remains **LOCKED**. | If SF address committed $\to$ proceeds to WMS. If PA address retained $\to$ retries mutation or alerts TechOps. Zero physical divergence possible. |
+| **Phase 2: Shopify** | GraphQL `userErrors` (e.g., postal invalid) | `SHOPIFY_MUTATE_FAILED` | Halts mutation chain. Warehouse hold remains **LOCKED**. | Displays specific validation error to agent; Reno queue stays frozen until resolved or released. |
+| **Phase 2: WMS** | HTTP 5xx, timeout, or 6-field read-back mismatch | `WMS_SYNC_FAILED` | Halts execution before release. Warehouse hold remains **LOCKED**. | Prevents order from entering picking wave with mismatched address; alerts Reno DC queue manager for manual sync. |
+| **Phase 3: Release** | `HTTP 504 / Gateway Timeout` | `RELEASE_UNCONFIRMED` | Background worker initiates deterministic polling (`GET /orders/{id}/holds?op={id}`). | If hold confirmed cleared $\to$ marks `MUTATION_COMPLETED`. If polling exhausts $\to$ alerts TechOps to clear lock manually. Order safely stays on hold rather than shipping to wrong destination. |
 ---
 
-## 9. Alarm on the First Uncertain Result: Staged Clock Collision and Specified Queue Design
+## 9. Alarm on the First Uncertain Result
 
-*Compares the warehouse cutoff with the legacy retry schedule, details the SQS work queue and dead-letter architecture, and traces how the core architecture domains hand off Order #35070.*
+*Shows how the legacy retries ran past the warehouse cutoff and how the proposed queue alerts TechOps and preserves the request for reconciliation.*
 
 The staged retry schedule reached the warehouse cutoff without a confirmed hold.
 
-### 9.1 The Clock Collision: Software Backoff vs. Warehouse Waves
+### 9.1 How the Retry Schedule Ran Past the Warehouse Cutoff
 
 * **The Warehouse Clock:** The relevant wave release was scheduled for **13:42:00**, leaving **6 minutes 48 seconds** after the first hold dispatch.
 * **The Legacy Retry Clock:** First retry at +5m (13:40:15); second retry at +15m (13:50:18).
 * **The Defect:** Attempt 2 arrived with only 1 minute and 45 seconds of buffer. When Attempt 2 timed out, Attempt 3 arrived at **13:50:18—8 minutes 18 seconds after wave release**.
 
-### 9.2 The SQS Work Queue & Dead-Letter Queue (DLQ) Architecture
+### 9.2 SQS Queue Configuration Parameters
+
+The proposed queue alerts TechOps on the first unconfirmed hold and keeps the request available for reconciliation. These settings govern how the worker handles repeat deliveries and how long messages are retained.
+
+| Parameter | Proposed Value | Architectural Rationale |
+| :--- | :---: | :--- |
+| **Visibility Timeout** | 30 seconds | Gives the worker time to record the outcome before the message can be delivered again. |
+| **Max Receive Count** | 3 | Bounded retries prevent poison-pill message looping. |
+| **Alerting Trigger** | **First uncertain result** | In the staged trace, the first 504 leaves 6 minutes 45 seconds for a warehouse state check before cutoff. |
+| **Dead-Letter Retention** | 14 days | Preserves failed payloads for postmortem telemetry and root cause analysis. |
+| **Message Retention** | 4 days | Sets the retention window for unconsumed work messages. |
+
+### 9.3 The SQS Work Queue & Dead-Letter Queue (DLQ) Architecture
 
 The proposed queue separates request acknowledgment from the physical warehouse result. The worker records the hold outcome before acknowledging the queue message and reconciles an unknown result before replay.
 
@@ -590,31 +594,6 @@ The proposed queue separates request acknowledgment from the physical warehouse 
 ```
 
 When an uncertain outcome (`HTTP 504`) occurs, the worker does not delete the message; it extends the message visibility timeout (`ChangeMessageVisibility`) and dispatches a Sev-1 alert to the Ops Alert Bus. If manual reconciliation confirms the hold landed, the worker marks `LOCK_ACQUIRED` and acknowledges the message. If the message reaches the `maxReceiveCount` limit (3 receives: 1 initial delivery plus 2 retries) without resolution, SQS automatically dead-letters the message into the DLQ. At that point, the message is purged from the active work queue to prevent poison-pill redeliveries, and durable ownership transfers to a **TechOps Incident Ticket** generated via Amazon EventBridge, requiring human sign-off before any re-drive.
-
-### 9.3 SQS Queue Configuration Parameters
-
-| Parameter | Proposed Value | Architectural Rationale |
-| :--- | :---: | :--- |
-| **Visibility Timeout** | 30 seconds | Gives the worker time to record the outcome before the message can be delivered again. |
-| **Max Receive Count** | 3 | Bounded retries prevent poison-pill message looping. |
-| **Alerting Trigger** | **First uncertain result** | In the staged trace, the first 504 leaves 6 minutes 45 seconds for a warehouse state check before cutoff. |
-| **Dead-Letter Retention** | 14 days | Preserves failed payloads for postmortem telemetry and root cause analysis. |
-| **Message Retention** | 4 days | Sets the retention window for unconsumed work messages. |
-
-### 9.4 How the Architecture Domains Hand Off Order #35070
-
-The table follows one address change on a $98.00 Starter Bundle chronologically through the architecture. The input column describes the staged incident. The decision column shows the proposed response at each handoff. Section 12.1 links the separate domain cases and their evidence.
-
-| Lifecycle Stage & Domain | Local Input for #35070 | Decision and Handoff | Architectural Role |
-|---|---|---|---|
-| **1 · Frontline Intake** | Elena initiates live chat at 13:32:15; agent engages at 13:33:30; address saved at 13:35:08 before warehouse lock confirmation. | Direct Admin UI saves disabled. Agent submits destination to Helpdesk mutation widget; ticket marks `PENDING`. Pre-wave lock advances ticket to `LOCKED`. Coordinator updates Shopify and WMS, verifies read-back, releases hold, and advances ticket to `COMPLETED`. If gate rejects after cutoff, route tracking to carrier recovery. | Staged live chat intake and frontline operator rules. |
-| **2 · Domain 1 (Lifecycle)** | The hold is sent at 13:35:12. Reno releases wave at 13:42:00, 6 minutes 48 seconds later. | Keep edit blocked until WMS confirms pre-wave lock. Pass confirmed lock to update step or send cutoff rejection to recovery path. | Scenario cutoff. Local fixtures exercise cutoff rejection and selective hold release. |
-| **3 · Domain 2 (Routing)** | Reno is the existing fulfillment node. Requested destination changes from Philadelphia to San Francisco. | Pass Reno’s shipment and requested destination to hold gate. System evaluates available inventory and freight if edit requires node reassignment. | Existing Reno allocation in trace. Reassignment is a separate design path. |
-| **4 · Domain 3 (Catalog)** | Starter Bundle `SYN-BNDL-MAO` contains one Focus Stick pack, one tincture, and one tumbler. Request mutates address only. | Carry existing SKU and quantities into fulfillment. Exact catalog validation required before any item mutation. | Catalog identity is a prerequisite. Trace has no item mutation. |
-| **5 · Domain 4 (Automation)** | First `504` arrives at 13:35:15; 13:40:15 retry times out. At 13:50:18 WMS returns `422 PONR_EXCEEDED`. | On `504`, record `UNKNOWN` against operation ID, alert operations, and reconcile before replay. On `PONR_EXCEEDED`, stop retries and trigger recovery triage. | Staged responses. Local fixtures exercise duplicate delivery and unknown-outcome reconciliation. |
-| **6 · Domain 5 (Contribution)** | $98.00 sale less $28.40 COGS, $4.50 handling, $7.20 freight, and $3.14 processing leaves $54.76 baseline. Dual-fulfillment adds $98.60. | Expose resulting −$43.84 contribution to recovery owner when comparing replacement, refund, and dispute exposure. | Modeled recovery ledger checked in integer cents. |
-
-Coordinating these five domains across a unified queue architecture transforms unmanaged race conditions into deterministic handoffs. Section 10 distills the incident into four non-negotiable operating laws that govern order mutation across the entire tech stack.
 
 ---
 
@@ -672,7 +651,7 @@ The cases below illustrate different failures and controls. Order numbers, timin
 | **Frontline Helpdesk Integration** | The address-change ticket stays `PENDING` until the warehouse confirms a pre-wave lock. Only `LOCKED` permits the edit. The ticket advances to `COMPLETED` after the coordinator verifies the address in both systems and confirms release. TechOps reconciles uncertain outcomes. | Proposed helpdesk workflow. Local fixtures verify the underlying hold behavior. | [Coordinator checks](../evidence/latency/summary.md) |
 | **GraphQL Order State Query** | Shopify returned San Francisco as the destination, while the WMS manifest still showed a Philadelphia label. The comparison exposes the state divergence. | Diagnostic example | Section 4.3 |
 | **Carrier Intercept Integration** | The simulator keeps an electronically accepted request pending until a recovery event arrives. The confirmed-return fixture records one $17.50 fee. | Pinned contract checks and local event fixtures | Section 6.1 · [Carrier recovery checks](../evidence/carrier-recovery/summary.md) |
-| **Amazon SQS DLQ Topology** | The proposed queue keeps the operation ID across deliveries, checks the physical outcome before replay, and sends exhausted retries to a dead-letter queue. | Architecture specification | Section 9.2 |
+| **Amazon SQS DLQ Topology** | The proposed queue keeps the operation ID across deliveries, checks the physical outcome before replay, and sends exhausted retries to a dead-letter queue. | Architecture specification | Section 9.3 |
 
 ---
 
