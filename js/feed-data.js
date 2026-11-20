@@ -6,7 +6,7 @@ const LATEST_UPDATES = [
   {
     id: "update-capstone",
     projectId: "capstone-cross-domain",
-    date: "Nov 2026",
+    date: "2026-10-24",
     tag: "Forensic Post-Mortem",
     domain: "Master Capstone Architecture",
     icon: "ph-crown",
@@ -24,7 +24,7 @@ const LATEST_UPDATES = [
   {
     id: "update-d1",
     projectId: "d1-order-lifecycle",
-    date: "Oct 2026",
+    date: "2026-09-11",
     tag: "State Machine SOP",
     domain: "Order Lifecycle",
     icon: "ph-arrows-clockwise",
@@ -42,7 +42,7 @@ const LATEST_UPDATES = [
   {
     id: "update-d2",
     projectId: "d2-routing-spec",
-    date: "Oct 2026",
+    date: "2026-09-15",
     tag: "Logistics Specification",
     domain: "Routing & Logistics",
     icon: "ph-truck",
@@ -60,7 +60,7 @@ const LATEST_UPDATES = [
   {
     id: "update-d3",
     projectId: "d3-catalog-sop",
-    date: "Sep 2026",
+    date: "2026-09-15",
     tag: "Data Governance SOP",
     domain: "Bulk Data Management",
     icon: "ph-database",
@@ -78,7 +78,7 @@ const LATEST_UPDATES = [
   {
     id: "update-d4",
     projectId: "d4-automation-sop",
-    date: "Sep 2026",
+    date: "2026-09-22",
     tag: "Automation Architecture",
     domain: "Business Automation",
     icon: "ph-cpu",
@@ -96,7 +96,7 @@ const LATEST_UPDATES = [
   {
     id: "update-d5",
     projectId: "d5-storefront-casestudy",
-    date: "Aug 2026",
+    date: "2026-09-29",
     tag: "Empirical Case Study",
     domain: "Technical Diagnosis",
     icon: "ph-browsers",
@@ -110,6 +110,34 @@ const LATEST_UPDATES = [
       { val: "100%", label: "Stacking Rule Verification" }
     ],
     tags: ["Chrome DevTools", "Margin Defense", "Cart Diagnostics", "HTTP 422 Triage"]
+  },
+  {
+    id: "update-gorgias-agent",
+    date: "2026-10-04",
+    tag: "Certification Earned",
+    domain: "Gorgias Certification",
+    icon: "ph-certificate",
+    title: "Gorgias Certified Agent",
+    short: "Earned the Gorgias Certified Agent certification.",
+    attachment: {
+      label: "View Certificate",
+      href: "../assets/certifications/gorgias-certified-agent-susas.pdf",
+      preview: "../assets/certifications/gorgias-certified-agent-susas.pdf"
+    }
+  },
+  {
+    id: "update-gorgias-admin",
+    date: "2026-10-04",
+    tag: "Certification Earned",
+    domain: "Gorgias Certification",
+    icon: "ph-certificate",
+    title: "Gorgias Certified Admin",
+    short: "Earned the Gorgias Certified Admin certification.",
+    attachment: {
+      label: "View Certificate",
+      href: "../assets/certifications/gorgias-certified-admin-susas.pdf",
+      preview: "../assets/certifications/gorgias-certified-admin-susas.pdf"
+    }
   }
 ];
 

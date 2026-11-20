@@ -547,29 +547,41 @@
   <script src="../js/feed-data.js"></script>
   <script>
     // ─── GROUP FEED BY PERIOD ─────────────────────────────────────────────────
-    const PERIODS = [
-      { label: "Nov 2026", ids: ["update-capstone"] },
-      { label: "Oct 2026", ids: ["update-d1", "update-d2"] },
-      { label: "Sep 2026", ids: ["update-d3", "update-d4"] },
-      { label: "Aug 2026", ids: ["update-d5"] },
-    ];
-
     let currentFeed = [];
+
+    function formatFeedDate(value) {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC'
+      }).format(new Date(`${value}T00:00:00Z`));
+    }
+
+    function formatFeedMonth(value) {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC'
+      }).format(new Date(`${value}T00:00:00Z`));
+    }
 
     // ─── RENDER TIMELINE ──────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-      currentFeed = getFeed();
+      currentFeed = getFeed().slice().sort((a, b) => b.date.localeCompare(a.date));
       const container = document.getElementById('tlEntries');
       if (!container || !currentFeed) return;
 
-      // Build a lookup map
-      const feedMap = {};
-      currentFeed.forEach(item => { feedMap[item.id] = item; });
+      const groupedPeriods = new Map();
+      currentFeed.forEach(item => {
+        const label = formatFeedMonth(item.date);
+        if (!groupedPeriods.has(label)) groupedPeriods.set(label, []);
+        groupedPeriods.get(label).push(item);
+      });
 
       let html = '';
-      PERIODS.forEach(period => {
-        const items = period.ids.map(id => feedMap[id]).filter(Boolean);
-        if (!items.length) return;
+      groupedPeriods.forEach((items, label) => {
+        const period = { label };
 
         // Build cards for this period
         const cardsHtml = items.map(item => `
@@ -580,7 +592,7 @@
             <div class="tl-card-body">
               <div class="tl-card-meta">
                 <span class="tl-card-tag">${item.tag}</span>
-                <span class="tl-card-date">${item.date}</span>
+                <span class="tl-card-date">${formatFeedDate(item.date)}</span>
               </div>
               <div class="tl-card-title">${item.title}</div>
               <p class="tl-card-desc">${item.short}</p>
@@ -588,9 +600,15 @@
                 <button class="tl-card-btn-primary" onclick="event.stopPropagation(); openLatestModal('${item.id}')">
                   <i class="ph ph-eye"></i> Quick Overview
                 </button>
-                <a href="../projects/?id=${item.projectId}" class="tl-card-btn-secondary" onclick="event.stopPropagation()">
-                  View Case Study <i class="ph ph-arrow-right"></i>
-                </a>
+                ${item.attachment ? `
+                  <a href="${item.attachment.href}" class="tl-card-btn-secondary" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                    <i class="ph ph-file-pdf"></i> ${item.attachment.label}
+                  </a>
+                ` : `
+                  <a href="../projects/?id=${item.projectId}" class="tl-card-btn-secondary" onclick="event.stopPropagation()">
+                    View Case Study <i class="ph ph-arrow-right"></i>
+                  </a>
+                `}
               </div>
             </div>
             <div class="tl-card-arrow">
@@ -610,7 +628,7 @@
             <div class="tl-content-col">
               <div class="tl-mobile-date">${period.label}</div>
               <div class="tl-period-label">${period.label}</div>
-              <p class="tl-summary">${items.length} update${items.length > 1 ? 's' : ''} · ${items.map(i => i.domain).join(' &amp; ')}</p>
+              <p class="tl-summary">${items.length} update${items.length > 1 ? 's' : ''} · ${[...new Set(items.map(i => i.domain))].join(' &amp; ')}</p>
               <div class="tl-cards-grid">
                 ${cardsHtml}
               </div>
@@ -671,7 +689,7 @@
             <div class="modal-title-area">
               <div class="modal-badges-row">
                 <span class="modal-pill-tag">${item.domain}</span>
-                <span class="modal-pill-tag" style="background:rgba(201,183,159,0.15); border-color:var(--warm1);">${item.date}</span>
+                <span class="modal-pill-tag" style="background:rgba(201,183,159,0.15); border-color:var(--warm1);">${formatFeedDate(item.date)}</span>
               </div>
               <h2 style="margin-top:6px;">${item.title}</h2>
             </div>
@@ -682,51 +700,77 @@
         </div>
 
         <!-- PROBLEM & ROOT CAUSE -->
-        <div class="modal-section-block">
-          <div class="modal-section-heading">
-            <i class="ph ph-warning-circle" style="color:#E57373;"></i> Operational Problem &amp; Root Cause
+        ${item.attachment ? `
+          <div class="modal-section-block">
+            <div class="modal-section-heading">
+              <i class="ph ph-certificate" style="color:var(--hunter);"></i> Certificate
+            </div>
+            <div style="width:100%; aspect-ratio:1.4; max-height:460px; background:#fff; border-radius:8px; overflow:hidden;">
+              <iframe src="${item.attachment.preview}#toolbar=0&navpanes=0&view=FitH" title="${item.title} certificate preview" style="display:block; width:100%; height:100%; border:0;"></iframe>
+            </div>
           </div>
-          <p class="modal-section-paragraph">${item.problem}</p>
-        </div>
+        ` : ''}
 
-        <!-- ENGINEERED SOLUTION -->
-        <div class="modal-section-block">
-          <div class="modal-section-heading">
-            <i class="ph ph-shield-check" style="color:var(--hunter);"></i> Engineered Solution &amp; Governance
+        ${item.problem ? `
+          <!-- PROBLEM & ROOT CAUSE -->
+          <div class="modal-section-block">
+            <div class="modal-section-heading">
+              <i class="ph ph-warning-circle" style="color:#E57373;"></i> Operational Problem &amp; Root Cause
+            </div>
+            <p class="modal-section-paragraph">${item.problem}</p>
           </div>
-          <p class="modal-section-paragraph">${item.solution}</p>
-        </div>
+        ` : ''}
 
-        <!-- IMPACT METRICS -->
-        <div class="modal-section-block">
-          <div class="modal-section-heading">
-            <i class="ph ph-chart-line-up" style="color:var(--isabelline);"></i> Key Outcomes &amp; Measurable Verification
+        ${item.solution ? `
+          <!-- ENGINEERED SOLUTION -->
+          <div class="modal-section-block">
+            <div class="modal-section-heading">
+              <i class="ph ph-shield-check" style="color:var(--hunter);"></i> Engineered Solution &amp; Governance
+            </div>
+            <p class="modal-section-paragraph">${item.solution}</p>
           </div>
-          <div class="modal-metrics-grid">
-            ${item.metrics.map(m => `
-              <div class="modal-metric-card">
-                <div class="modal-metric-val">${m.val}</div>
-                <div class="modal-metric-label">${m.label}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
+        ` : ''}
 
-        <!-- TECH STACK -->
-        <div class="modal-section-block" style="margin-bottom:12px;">
-          <div class="modal-section-heading">
-            <i class="ph ph-stack" style="color:var(--muted);"></i> Technical Stack &amp; Protocols
+        ${item.metrics?.length ? `
+          <!-- IMPACT METRICS -->
+          <div class="modal-section-block">
+            <div class="modal-section-heading">
+              <i class="ph ph-chart-line-up" style="color:var(--isabelline);"></i> Key Outcomes &amp; Measurable Verification
+            </div>
+            <div class="modal-metrics-grid">
+              ${item.metrics.map(m => `
+                <div class="modal-metric-card">
+                  <div class="modal-metric-val">${m.val}</div>
+                  <div class="modal-metric-label">${m.label}</div>
+                </div>
+              `).join('')}
+            </div>
           </div>
-          <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            ${item.tags.map(t => `<span class="modal-pill-tag">${t}</span>`).join('')}
+        ` : ''}
+
+        ${item.tags?.length ? `
+          <!-- TECH STACK -->
+          <div class="modal-section-block" style="margin-bottom:12px;">
+            <div class="modal-section-heading">
+              <i class="ph ph-stack" style="color:var(--muted);"></i> Technical Stack &amp; Protocols
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              ${item.tags.map(t => `<span class="modal-pill-tag">${t}</span>`).join('')}
+            </div>
           </div>
-        </div>
+        ` : ''}
 
         <!-- FOOTER ACTIONS -->
         <div class="modal-actions-footer">
-          <a href="../projects/?id=${item.projectId}" class="modal-primary-cta">
-            <i class="ph ph-book-open"></i> View In-Depth Case Study &amp; Technical Defense <i class="ph ph-arrow-right"></i>
-          </a>
+          ${item.attachment ? `
+            <a href="${item.attachment.href}" class="modal-primary-cta" target="_blank" rel="noopener">
+              <i class="ph ph-file-pdf"></i> Open Certificate PDF <i class="ph ph-arrow-right"></i>
+            </a>
+          ` : `
+            <a href="../projects/?id=${item.projectId}" class="modal-primary-cta">
+              <i class="ph ph-book-open"></i> View In-Depth Case Study &amp; Technical Defense <i class="ph ph-arrow-right"></i>
+            </a>
+          `}
           <button class="modal-secondary-cta" onclick="closeLatestModal()">
             Close Overview
           </button>
