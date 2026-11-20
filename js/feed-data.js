@@ -122,7 +122,7 @@ const LATEST_UPDATES = [
     attachment: {
       label: "View Certificate",
       href: "../assets/certifications/gorgias-certified-agent-susas.pdf",
-      preview: "../assets/certifications/gorgias-certified-agent-susas.pdf"
+      preview: "../assets/certifications/gorgias-certified-agent-susas.png"
     }
   },
   {
@@ -136,7 +136,7 @@ const LATEST_UPDATES = [
     attachment: {
       label: "View Certificate",
       href: "../assets/certifications/gorgias-certified-admin-susas.pdf",
-      preview: "../assets/certifications/gorgias-certified-admin-susas.pdf"
+      preview: "../assets/certifications/gorgias-certified-admin-susas.png"
     }
   }
 ];

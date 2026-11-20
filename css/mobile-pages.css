@@ -56,9 +56,9 @@
   .responsive-page .timeline-page-title { font-size: clamp(24px, 7vw, 34px); line-height: 1.15; }
   .responsive-page .timeline-page-subtitle { font-size: 13px; line-height: 1.7; }
   .responsive-page .tl-entry { gap: 12px; padding: 24px 0; }
-  .responsive-page .tl-dot-col { width: 24px; }
+  .responsive-page .tl-dot-col { width: 24px; top: 12px; }
   .responsive-page .tl-track { left: 11px; }
-  .responsive-page .tl-dot-ring { width: 24px; height: 24px; top: 12px; }
+  .responsive-page .tl-dot-ring { width: 24px; height: 24px; }
   .responsive-page .tl-dot-inner { width: 8px; height: 8px; }
   .responsive-page .tl-mobile-date { font-size: clamp(20px, 5vw, 26px); margin-bottom: 10px; }
   .responsive-page .tl-summary { margin-bottom: 18px; font-size: 12px; }
@@ -68,10 +68,21 @@
   .responsive-page .tl-card-title { font-size: clamp(15px, 4.3vw, 18px); }
   .responsive-page .tl-card-tag { max-width: 100%; white-space: normal; line-height: 1.4; }
   .responsive-page .tl-card-btn-primary, .responsive-page .tl-card-btn-secondary { white-space: normal; min-height: 38px; }
-  .responsive-page .latest-modal-overlay { padding: 12px; }
-  .responsive-page .latest-modal-sheet { width: 100%; max-height: calc(100dvh - 24px); padding: 20px; }
+  .responsive-page .latest-modal-overlay { --latest-modal-inset: 8px; --latest-modal-padding: 14px; }
+  .responsive-page .latest-modal-sheet { border-radius: 18px; }
+  .responsive-page .modal-header-top { gap: 8px; padding-block: 12px; }
+  .responsive-page .modal-header-left { gap: 10px; }
+  .responsive-page .modal-domain-icon { width: 36px; height: 36px; font-size: 18px; }
+  .responsive-page .modal-title-area h2 { font-size: clamp(17px, 4.8vw, 22px); }
   .responsive-page .modal-metrics-grid { grid-template-columns: minmax(0, 1fr); }
-  .responsive-page .modal-actions-footer { flex-wrap: wrap; }
+  .responsive-page .modal-actions-footer { gap: 8px; padding-block: 10px; }
+  .responsive-page .modal-actions-footer > * {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 44px;
+    padding: 9px 12px;
+    text-align: center;
+  }
 
   /* Testimonial portrait, quote, and controls scale with the content width. */
   .responsive-page .testimonial-carousel-container { margin: 20px auto; }
