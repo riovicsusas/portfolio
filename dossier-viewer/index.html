@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dossier Viewer — Riovic Matthew G. Susas</title>
+  <title>Technical Case Study Viewer — Riovic Matthew G. Susas</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <!-- marked.js: lightweight MD → HTML parser (CDN, ~50KB) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -438,7 +438,7 @@
       margin: 32px 0;
     }
 
-    /* Fenced metadata block (the ``` at top of dossiers) */
+    /* Fenced metadata block (the ``` at top of case studies) */
     .md-body pre.meta-block {
       background: rgba(24, 51, 75, 0.6);
       border-color: rgba(201,183,159,0.3);
@@ -838,17 +838,17 @@
         </svg>
         <span class="label-full">Back to Projects</span><span class="label-short">Projects</span>
       </a>
-      <span class="topbar-title" id="topbar-title">Loading dossier…</span>
+      <span class="topbar-title" id="topbar-title">Loading case study…</span>
     </div>
     <div class="topbar-actions">
-      <button class="btn-copy" id="btn-copy" title="Copy dossier link" aria-label="Copy dossier link" disabled>
+      <button class="btn-copy" id="btn-copy" title="Copy case study link" aria-label="Copy case study link" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
         <span class="label-full">Copy Link</span><span class="label-short">Copy</span>
       </button>
-      <button class="btn-print" id="btn-print" aria-label="Save dossier as PDF" title="Preparing document…" disabled>
+      <button class="btn-print" id="btn-print" aria-label="Save case study as PDF" title="Preparing document…" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 6 2 18 2 18 9"></polyline>
           <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
@@ -873,7 +873,7 @@
     <!-- Loading -->
     <div id="loading">
       <div class="spinner"></div>
-      <span>Loading dossier…</span>
+      <span>Loading case study…</span>
     </div>
 
     <!-- Error -->
@@ -881,7 +881,7 @@
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9B79F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
-      <h3>Dossier Not Found</h3>
+      <h3>Case Study Not Found</h3>
       <p id="error-msg">No <code>?file=</code> parameter was provided, or the file could not be loaded.</p>
       <p style="margin-top:12px"><a href="../projects/" style="color:var(--gold)">← Return to Projects</a></p>
     </div>
@@ -890,7 +890,7 @@
     <div class="doc-wrap" id="doc-wrap" style="display:none">
       <div class="doc-meta">
         <div class="doc-meta-left">
-          <div class="doc-domain-badge" id="doc-badge">Master Dossier</div>
+          <div class="doc-domain-badge" id="doc-badge">Technical Case Study</div>
           <div class="doc-filename" id="doc-filename"></div>
         </div>
         <div class="doc-date" id="doc-date"></div>
@@ -1113,11 +1113,11 @@
     var filePath = params.get('file');
 
     if (!filePath) {
-      showError('No <code>?file=</code> parameter provided. Open a dossier from the Projects page or use a link such as <code>?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md</code>.');
+      showError('No <code>?file=</code> parameter provided. Open a case study from the Projects page or use a link such as <code>?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md</code>.');
       return;
     }
 
-    // Keep previously shared viewer links working after removing the duplicate dossiers.
+    // Keep previously shared viewer links working after removing duplicate case study files.
     var legacyDossierFolders = new Map([
       ['MasterDossier-Capstone-AsynchronousOrderMutation.md', 'capstone'],
       ['MasterDossier-Domain1-OrderStateMachineAndPONR.md', 'domain-1-order-lifecycle'],
@@ -1141,13 +1141,13 @@
       })
       .then(function (md) {
         return renderDoc(md, filePath).catch(function (err) {
-          console.error('Could not render dossier:', err);
-          showError('Please reload the page or return to Projects.', 'Dossier Could Not Be Displayed');
+          console.error('Could not render case study:', err);
+          showError('Please reload the page or return to Projects.', 'Case Study Could Not Be Displayed');
         });
       })
       .catch(function (err) {
-        console.error('Could not load dossier:', err);
-        showError('Check the dossier link or return to Projects.');
+        console.error('Could not load case study:', err);
+        showError('Check the case study link or return to Projects.');
       });
 
     /* ── Strip internal prep sections (Loom scripts & Grill Me FAQs) for recruiters ── */
@@ -1408,7 +1408,7 @@
       if (str.indexOf('domain-3') !== -1 || str.indexOf('domain3') !== -1 || str.indexOf('bulk-data') !== -1 || str.indexOf('catalog') !== -1 || str.indexOf('matrixify') !== -1) return 'Domain 3 — Bulk Catalog Governance';
       if (str.indexOf('domain-4') !== -1 || str.indexOf('domain4') !== -1 || str.indexOf('business-automation') !== -1 || str.indexOf('webhook') !== -1 || str.indexOf('flow') !== -1) return 'Domain 4 — Business Automations';
       if (str.indexOf('domain-5') !== -1 || str.indexOf('domain5') !== -1 || str.indexOf('technical-diagnosis') !== -1 || str.indexOf('discount') !== -1 || str.indexOf('cartdiagnostics') !== -1) return 'Domain 5 — Technical Diagnosis';
-      return 'Master Technical Dossier';
+      return 'Technical Case Study';
     }
 
     /* ── Error state ── */

@@ -42,7 +42,7 @@ Split reduction: 116 orders, 73.89% relative and 23.2 percentage points absolute
 
 At 1700 orders/month: **$3391.16/month** and **$40693.92** for twelve identical months. The separate 1000-orders/day, 365-day scale yields **$728102.00/year**. These scales are distinct sensitivity scenarios.
 
-The dossier's previously reported $445.40 handling delta and $1,106.40 total do not follow this handling model. This execution validates the conditional arithmetic; it does not certify those reported totals or replace them with new observed savings.
+The previously reported $445.40 handling delta and $1,106.40 total do not follow this handling model. This execution validates the conditional arithmetic; it does not certify those reported totals or replace them with new observed savings.
 
 ## Capstone boundary
 
@@ -50,7 +50,7 @@ Order #35070's original destination is **Philadelphia, PA 19102**, requested des
 
 ## Executed checks
 
-Run: `2026-11-20T12-15-58-901Z-bb6b6b9f` · Node v24.18.0
+Run: `2026-11-20T14-04-24-973Z-74618b33` · Node v24.18.0
 
 Passed: 15; failed: 0; skipped: 1.
 

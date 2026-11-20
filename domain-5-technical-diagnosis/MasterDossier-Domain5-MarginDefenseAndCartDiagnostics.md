@@ -2,7 +2,7 @@
 
 **How four stacked promotions turned an $80 cart into a modeled −$4.52 loss, and the contribution floor that blocks it**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 5*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 5*
 
 ---
 
@@ -326,7 +326,7 @@ Applying the dynamic formula across the catalog establishes the maximum allowabl
 
 > [!NOTE]
 > **Logistics Schedule & Bundle BOM Baseline**:
-> * **Declared Fulfillment Inputs**: The Focus Sticks, tincture, and tumbler standalone rows each declare $3.70 handling and $5.85 freight. The whisk declares $3.30 handling and $4.50 freight. Order #29863 declares $4.10 handling and $6.50 freight for its two-unit carton. These inputs are recorded under `declared_fulfillment_inputs` in the [input ledger](../evidence/costs/bom_inputs.json). Each amount belongs to its declared configuration. The current cost runner executes bundle `scenarios`; these standalone and basket records remain declared dossier inputs.
+> * **Declared Fulfillment Inputs**: The Focus Sticks, tincture, and tumbler standalone rows each declare $3.70 handling and $5.85 freight. The whisk declares $3.30 handling and $4.50 freight. Order #29863 declares $4.10 handling and $6.50 freight for its two-unit carton. These inputs are recorded under `declared_fulfillment_inputs` in the [input ledger](../evidence/costs/bom_inputs.json). Each amount belongs to its declared configuration. The current cost runner executes bundle `scenarios`; these standalone and basket records remain declared fulfillment inputs.
 > * **Three Bundle Fixtures, Three Named Inputs**: The $98.00 `capstone` order uses $4.50 handling and $7.20 freight. The $82.00 `catalog_bundle_82` table row holds those fulfillment inputs fixed. The separate $82.00 `alternative_promo` benchmark uses $4.90 handling and $6.50 baseline freight. Price and fulfillment assumptions travel with the scenario ID.
 > * **Bundle BOM**: The Starter Bundle reflects $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).
 
@@ -690,14 +690,14 @@ The architectural philosophy explains why margin leaks persist undetected; trans
 
 *What was executed locally, what is a worked calculation or documented design, and the live-platform acceptance criteria that remain open.*
 
-In accordance with rigorous systems architecture standards, this dossier strictly separates locally executed test suites from operational deployment specifications.
+In accordance with rigorous systems architecture standards, this case study strictly separates locally executed test suites from operational deployment specifications.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        EVIDENCE STATUS SUMMARY                         │
 ├──────────────────────────────┬─────────────────────────────────────────┤
 │ [✔] Executed Locally         │ Cost arithmetic: 11 of 11 checks passed │
-│ [!] Derived in Dossier       │ Basket-level floor ($32.85) derived     │
+│ [!] Derived in Case Study    │ Basket-level floor ($32.85) derived     │
 │ [○] Staged Scenario          │ Order #29863 modeled contribution trace  │
 │ [~] Specified Architecture   │ 3x3 ruleset & Shopify Functions WASM    │
 └──────────────────────────────┴─────────────────────────────────────────┘
@@ -705,7 +705,7 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 
 ### 12.1 Evidence Scope & Verification Status Matrix
 
-| Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
+| Architectural Deliverable | Case Study Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
 | **Three-Minute Diagnostic Protocol** | Section 3 | Documented Specification | Standardized Chrome DevTools and ISO 8583 payment gateway triage protocol. |
 | **3×3 Discount Matrix & Rules** | Section 4 | Documented Specification | Combinatorial exclusivity ruleset designed for Shopify Functions enforcement. |
@@ -754,4 +754,4 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 5*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 5*

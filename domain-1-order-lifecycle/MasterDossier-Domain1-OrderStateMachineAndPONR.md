@@ -35,7 +35,7 @@ At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved f
 The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
 
 > [!CAUTION]
-> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this dossier are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
+> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this case study are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
 
 ### 1.2 Executive Incident Matrix
 
@@ -257,7 +257,7 @@ Preventing these losses requires understanding where the seconds actually go dur
 Freeze duration: 10:14:00 → 10:16:13 = **133 seconds**. Native hold and queue lock took **18 seconds** (10:14:00 → 10:14:18). Internal validation, mutation, and release took **115 seconds** (10:14:18 → 10:16:13).
 
 > [!NOTE]
-> **Timestamp reconciliation.** The 18s + 115s = 133s split and the 19s/114s split in Section 4.3 are the fixed invariants. Measured to the order's resumption at 10:16:15, elapsed time is 135 seconds, so this dossier counts the freeze to **release confirmation (10:16:13)** and treats the final 2 seconds as wave re-entry.
+> **Timestamp reconciliation.** The 18s + 115s = 133s split and the 19s/114s split in Section 4.3 are the fixed invariants. Measured to the order's resumption at 10:16:15, elapsed time is 135 seconds, so this case study counts the freeze to **release confirmation (10:16:13)** and treats the final 2 seconds as wave re-entry.
 
 ### 4.3 The 19-Second Discovery
 

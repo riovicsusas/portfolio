@@ -2,7 +2,7 @@
 
 **How a five-second pre-flight check kept a corrupted bulk update out of the store, with zero rows committed**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 3*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 3*
 
 ---
 
@@ -14,7 +14,7 @@ A spreadsheet is built to present data to a human, not to protect the integrity 
 
 A catalog connects storefront checkout, advertising feeds, warehouse scanners, and canonical product URLs. A UPC-A contains twelve digits, but those digits identify a product; they do not describe a quantity. IEEE 754 binary64 can represent every twelve-digit integer exactly. The operational danger comes when a spreadsheet drops a leading zero or an export writes a shortened scientific-notation display back into the file. The screen can look tidy while the identifier crossing into the WMS has changed.
 
-This dossier uses Synapse Botanicals' 12-variant catalog and synthetic malformed identifiers to test that boundary. The `8.40001E+11` and `84000103000` fixtures are deliberately bad inputs, not recorded transformations of the approved `850041...` identifiers. The five-second workbook timeline is a reconstructed scenario; the executable evidence proves barcode validation and mapping behavior, not a live Excel export or Matrixify deployment.
+This case study uses Synapse Botanicals' 12-variant catalog and synthetic malformed identifiers to test that boundary. The `8.40001E+11` and `84000103000` fixtures are deliberately bad inputs, not recorded transformations of the approved `850041...` identifiers. The five-second workbook timeline is a reconstructed scenario; the executable evidence proves barcode validation and mapping behavior, not a live Excel export or Matrixify deployment.
 
 ```
        09:15:10 EDT                                             09:15:15 EDT
@@ -587,7 +587,7 @@ Senior engineering architecture requires rigorous intellectual honesty. We clear
 | **Pre-Flight Audit Telemetry** (`Catalog_Mutation_v2.xlsx`) | Section 7 | Scenario Audit | Reconstructed 5-second circuit breaker trace across 12 variants. |
 | **Field Hazard Taxonomy & RBAC** | Section 2 | Documented Specification | Role-based catalog governance schema mapping access tiers. |
 | **Unmitigated Cost Model** ($3,900.00 release / $7,800/yr) | Section 3 | Documented Specification | Deterministic model incorporating 3PL relabeling fees and paid ad spend. |
-| **Spreadsheet Validation Formulas** | Section 4 | Specified | Template formulas in this dossier; not executed against live sheet. |
+| **Spreadsheet Validation Formulas** | Section 4 | Specified | Template formulas in this case study; not executed against live sheet. |
 | **Matrixify Safe MERGE SOP & Canary Lifecycle** | Section 9 | Documented Specification | Standard operating procedure for non-destructive partial imports. |
 | **WMS Optical Scanner Acceptance Test** | Section 9.4 | Specified | Operational acceptance criteria; physical hardware test. |
 
@@ -603,4 +603,4 @@ Local software agreement is verified. The encoder and decoder agree on all twelv
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 3*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 3*

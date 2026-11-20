@@ -31,18 +31,18 @@ The [recorded smoke run](evidence/latest_run.json) covers local simulations and 
 
 ---
 
-## 🗂️ Master Flagship Dossiers & Case Studies
+## Featured Technical Case Studies
 
-Each dossier is an in-depth systems specification combining operational SOPs, mathematical decision engines, simulation run sheets, and forensic incident autopsies.
+Each case study presents an operational problem, the proposed systems design, modeled decisions, and the evidence distinguishing tested behavior from scenario assumptions.
 
-| Domain | Master Dossier | Interactive Viewer |
+| Domain | Technical Case Study | Read Online |
 | :--- | :--- | :--- |
-| **★ Capstone** | [`MasterDossier-Capstone-AsynchronousOrderMutation.md`](capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) |
-| **Domain 1: Order Lifecycle** | [`MasterDossier-Domain1-OrderStateMachineAndPONR.md`](domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) |
-| **Domain 2: Routing & Logistics** | [`MasterDossier-Domain2-MultiNodeLogisticsRouting.md`](domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) |
-| **Domain 3: Bulk Data** | [`MasterDossier-Domain3-BulkCatalogSchemaGovernance.md`](domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) |
-| **Domain 4: Automation** | [`MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md`](domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) |
-| **Domain 5: Diagnostics** | [`MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md`](domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) | [Open in Viewer →](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) |
+| **★ Capstone** | [Capstone Technical Case Study](capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) |
+| **Domain 1: Order Lifecycle** | [Domain 1 Technical Case Study](domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) |
+| **Domain 2: Routing & Logistics** | [Domain 2 Technical Case Study](domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) |
+| **Domain 3: Bulk Data** | [Domain 3 Technical Case Study](domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) |
+| **Domain 4: Automation** | [Domain 4 Technical Case Study](domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) |
+| **Domain 5: Diagnostics** | [Domain 5 Technical Case Study](domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) |
 
 > 💡 **Print / Save as PDF:** Every document in the interactive viewer can be saved as a print-optimized PDF with one click using the **"Save as PDF"** button (or `Ctrl+P`).
 
@@ -54,7 +54,7 @@ Each dossier is an in-depth systems specification combining operational SOPs, ma
 ├── index.html                      # Homepage
 ├── about/index.html                # Bio, certifications, and skills
 ├── contact/index.html              # Contact channels
-├── dossier-viewer/index.html       # Markdown, equations, diagrams, and PDF export
+├── dossier-viewer/index.html       # Interactive case study viewer and PDF export
 ├── latest/index.html               # Portfolio updates
 ├── projects/index.html             # Project catalogue and case studies
 ├── resume/                         # Résumé page and downloadable PDF
@@ -62,7 +62,7 @@ Each dossier is an in-depth systems specification combining operational SOPs, ma
 ├── assets/hero/                    # Built homepage assets
 ├── components/ and src/            # Homepage React source
 ├── css/ and js/                    # Shared styles and static page scripts
-├── capstone/                       # Cross-domain capstone dossier
+├── capstone/                       # Cross-domain capstone case study
 ├── domain-1-order-lifecycle/       # Order state machine and cutoff rules
 ├── domain-2-order-routing/         # Multi-node logistics and freight
 ├── domain-3-bulk-data-management/  # Bulk catalog schema and migration

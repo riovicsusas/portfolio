@@ -2,7 +2,7 @@
 
 **How two timed-out webhook requests turned a $98.00 flagship sale into a cross-country mis-shipment, an SOP-directed bundle write-off, and a modeled -$43.84 contribution.**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Capstone*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Capstone*
 
 ---
 
@@ -744,4 +744,4 @@ Date: Sat, 17 Oct 2026 17:50:19 GMT
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Capstone*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Capstone*

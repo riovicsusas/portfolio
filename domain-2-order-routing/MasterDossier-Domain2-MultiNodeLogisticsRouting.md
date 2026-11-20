@@ -2,7 +2,7 @@
 
 **How an avoidable second carton drove fulfillment from $14.60 to $22.90; and consolidation recovered $8.30, a 36.2% saving against the split baseline**
 
-*Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Master Dossier — Domain 2*
+*Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Technical Case Study — Domain 2*
 
 ---
 
@@ -611,7 +611,7 @@ Engineering principles are only as credible as the evidence behind them. The off
 
 *Which results were verified by the offline freight suite, which inputs are declared scenario assumptions, and what the checks do not establish.*
 
-To preserve complete engineering credibility, this dossier strictly distinguishes between what has been verified through offline, reproducible test suites and what represents modeled scenarios or architectural specifications.
+To preserve complete engineering credibility, this case study strictly distinguishes between what has been verified through offline, reproducible test suites and what represents modeled scenarios or architectural specifications.
 
 All offline verification tests are fully reproducible via the repository test suite summarized in [Freight Scenario Evidence](../evidence/freight/summary.md), and the overarching test harness is documented in the [Reproducible Evidence Suite](../evidence/README.md).
 

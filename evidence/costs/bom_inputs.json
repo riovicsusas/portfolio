@@ -15,7 +15,7 @@
   },
   "processing": { "rate_numerator": 29, "rate_denominator": 1000, "fixed_cents": 30, "rounding": "half up to the nearest cent" },
   "declared_fulfillment_inputs": {
-    "classification": "Declared dossier fulfillment inputs. Aggregate handling amounts; no dynamic surcharge engine or procurement contract is represented. These standalone and basket records are not consumed by the current bundle cost runner.",
+    "classification": "Declared project fulfillment inputs. Aggregate handling amounts; no dynamic surcharge engine or procurement contract is represented. These standalone and basket records are not consumed by the current bundle cost runner.",
     "records": [
       {
         "id": "standalone_catalog",

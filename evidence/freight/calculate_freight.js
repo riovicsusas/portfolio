@@ -257,7 +257,7 @@ Split reduction: ${modeledCohort.eliminated_split_orders} orders, ${modeledCohor
 
 At ${modeledCohort.monthly_projection.orders} orders/month: **${money(modeledCohort.monthly_projection.saving_cents)}/month** and **${money(modeledCohort.matching_12_month_projection.saving_cents)}** for twelve identical months. The separate ${cohort.planning_orders_per_day}-orders/day, ${cohort.planning_days_per_year}-day scale yields **${money(modeledCohort.separate_planning_projection.saving_cents)}/year**. These scales are distinct sensitivity scenarios.
 
-The dossier's previously reported $445.40 handling delta and $1,106.40 total do not follow this handling model. This execution validates the conditional arithmetic; it does not certify those reported totals or replace them with new observed savings.
+The previously reported $445.40 handling delta and $1,106.40 total do not follow this handling model. This execution validates the conditional arithmetic; it does not certify those reported totals or replace them with new observed savings.
 
 ## Capstone boundary
 

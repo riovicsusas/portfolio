@@ -2,7 +2,7 @@
 
 **A scenario-based helpdesk design that commits a Shopify fulfillment hold before the warehouse's 15-minute wave cycle can pick the order.**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 6*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 6*
 
 ---
 
@@ -10,7 +10,7 @@
 
 Customer support is rarely analyzed as a real-time technical control plane, and that omission is an architectural mistake. When an anxious customer emails *"I need to change my shipping address!"* or *"Cancel my order!"*, support is not merely answering an inquiry. It is operating the frontline control interface for an active, stateful order pipeline, and the people staffing that queue are racing a warehouse automation they cannot see.
 
-This dossier codifies the bi-directional architecture that eliminates frontline communication latency from the order-mutation path. The helpdesk commands the storefront and warehouse, and the warehouse reports its state back to the ticket as a tag. It defines the four-state machine that governs physical order mutations, and it itemizes the modeled financial mechanics of warehouse scrap prevention.
+This case study codifies the bi-directional architecture that eliminates frontline communication latency from the order-mutation path. The helpdesk commands the storefront and warehouse, and the warehouse reports its state back to the ticket as a tag. It defines the four-state machine that governs physical order mutations, and it itemizes the modeled financial mechanics of warehouse scrap prevention.
 
 The operational gap, in numbers:
 * In a general support queue, an incoming ticket waits an average First-Response Time (FRT) of **4.2 hours (252 minutes)**.
@@ -434,7 +434,7 @@ The figure fully supportable from printed inputs is **$1,368.00 a month**.
 
 ## 10. Hold First, Trust the Tag, Intercept Honestly: Four Operating Laws for Frontline Automation
 
-*Boils the dossier's design into numbered rules covering timing, ticket states, duplicate protection, and what to do and say once the warehouse cutoff has passed.*
+*Boils the case study's design into numbered rules covering timing, ticket states, duplicate protection, and what to do and say once the warehouse cutoff has passed.*
 
 1. **Hold Before the Human Reads**: The fulfillment hold must fire programmatically on customer intent within seconds. Waiting for agent availability guarantees losing the warehouse race.
 2. **Act on the Tag, Never the Screen**: Only `CS-ADDR-HOLD-APPLIED` permits an address edit. `PENDING` waits, `REJECTED` escalates to carrier intercept, and `UNKNOWN` goes to TechOps triage.
@@ -447,7 +447,7 @@ The figure fully supportable from printed inputs is **$1,368.00 a month**.
 
 *Separates what ran from what is only specified or planned, lists the check categories and simulator outcomes, and states the acceptance criteria for cloud deployment.*
 
-In accordance with rigorous systems architecture standards, this dossier clearly delineates executed local test suites from operational deployment specifications.
+In accordance with rigorous systems architecture standards, this case study clearly delineates executed local test suites from operational deployment specifications.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -462,7 +462,7 @@ In accordance with rigorous systems architecture standards, this dossier clearly
 
 ### 11.1 Evidence Scope and Verification Status Matrix
 
-| Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
+| Architectural Deliverable | Case Study Section | Evidence Status | Ground-Truth Evidence Source |
 |---|:---:|---|---|
 | **Fulfillment Hold Actions** (`freeze_order_mutation`, `release_order_hold`) | Section 3 | Documented Specification | Standard Shopify Admin API fulfillment order hold/release schema. |
 | **Four-Outcome State Taxonomy** | Section 4 | Documented Specification | Tag taxonomy designed to eliminate frontline race conditions. |
@@ -513,7 +513,7 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 The support ticket waited 4.2 hours because a customer service queue is engineered for conversation, not for an automated clock. A warehouse management system that polls every 15 minutes does not care how polite the queue is.
 
-The architecture established in this dossier closes that seam forever:
+The architecture established in this case study closes that seam forever:
 * It acts on customer intent in **8.4 seconds** (a scenario planning figure), programmatically freezing the order before the warehouse can pick it.
 * It enforces a strict **four-outcome state machine**, refusing to let human operators mutate order data until the physical warehouse confirms the lock.
 * It provides an **auditor-grade financial defense**, proving that eliminating mis-shipments preserves **$1,368.00 to $4,199.94** in monthly cash that would otherwise be lost to consumable scrap write-offs and carrier penalties.
@@ -522,4 +522,4 @@ The architecture established in this dossier closes that seam forever:
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 6*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 6*

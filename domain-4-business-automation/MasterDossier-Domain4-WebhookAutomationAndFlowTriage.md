@@ -2,7 +2,7 @@
 
 **How a tag loop and a synchronized retry storm each turn automation into an outage, and the guards that stop both**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 4*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 4*
 
 ---
 
@@ -91,7 +91,7 @@ flowchart LR
 
 Shopify Flow has no native **Order tags added** trigger. The proposed connector subscribes to `orders/updated`, verifies the webhook signature, durably records event identity, and compares order-tag state against an authoritative prior snapshot. Duplicate delivery is not a new business event; a repeated tag write with no tag delta must not wake the chain.
 
-When a genuine addition exists, the app invokes a registered custom Flow trigger through Admin GraphQL **`flowTriggerReceive(handle: "order-tags-added", payload: ...)`**. The registered payload schema carries the order ID, event identity, and added tags. This dossier's `Order tags added` label names that custom connector event. A webhook subscription alone does not register a Flow trigger. Persist identity and serialize state comparison per order before dispatching it. [Shopify custom-trigger API](https://shopify.dev/docs/api/admin-graphql/latest/mutations/flowTriggerReceive)
+When a genuine addition exists, the app invokes a registered custom Flow trigger through Admin GraphQL **`flowTriggerReceive(handle: "order-tags-added", payload: ...)`**. The registered payload schema carries the order ID, event identity, and added tags. This case study's `Order tags added` label names that custom connector event. A webhook subscription alone does not register a Flow trigger. Persist identity and serialize state comparison per order before dispatching it. [Shopify custom-trigger API](https://shopify.dev/docs/api/admin-graphql/latest/mutations/flowTriggerReceive)
 
 The reconstructed failure model deliberately omits those guards and assigns three REST calls to each recursive delivery attempt: order fetch, metadata query, and tag mutation. Its 5.52 attempted calls/sec exceeds the Standard bucket's 2/sec leak before background traffic. Native Flow actions and `flowTriggerReceive` use GraphQL and carry a separate cost budget; do not count them as REST calls. A production adapter must record actual calls, costs, and outcomes before attributing a throttle to this model.
 
@@ -618,7 +618,7 @@ The architectural philosophy explains why event loops occur; transparent verific
 
 *What was executed locally, what remains a specification or scenario, and the cloud acceptance criteria still open before deployment.*
 
-In accordance with rigorous systems engineering standards, this dossier strictly separates locally executed test suites from operational deployment specifications.
+In accordance with rigorous systems engineering standards, this case study strictly separates locally executed test suites from operational deployment specifications.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -632,7 +632,7 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 
 ### 12.1 Evidence Scope & Verification Status Matrix
 
-| Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
+| Architectural Deliverable | Case Study Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
 | **Order #24148 Feedback Scenario** | Sections 1 and 4 | Reconstructed Scenario | 114 event/delivery-attempt entries in 62 seconds. The three-REST-calls/event amplification model and resource snapshots are declared illustrations, not captured Shopify telemetry. |
 | **Financial Blast Radius Model** | Section 3 | Modeled Scenario | Unit-economic cost model incorporating 3PL SLA credits and inventory overselling. |
@@ -677,4 +677,4 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Domain 4*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 4*

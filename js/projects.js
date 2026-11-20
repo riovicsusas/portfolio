@@ -187,11 +187,11 @@ function openProjectDetail(id) {
         </div>
       </div>
 
-            <!-- PRIMARY: DOSSIER VIEWER + SECONDARY: PDF -->
+            <!-- PRIMARY: TECHNICAL CASE STUDY VIEWER + SECONDARY: PDF -->
       <div style="display:flex; flex-direction:column; gap:12px; margin-top:4px;">
 
         ${p.dossierUrl ? `
-          <!-- Primary CTA: Full interactive dossier -->
+          <!-- Primary CTA: Full interactive case study -->
           <div style="background:var(--bg); border:1.5px solid var(--hunter); border-radius:14px; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
             <div style="display:flex; align-items:center; gap:14px;">
               <div style="width:46px; height:46px; border-radius:11px; background:linear-gradient(135deg,#566746,#3e5232); display:flex; align-items:center; justify-content:center; color:#FAEEE5; flex-shrink:0;">
@@ -200,7 +200,7 @@ function openProjectDetail(id) {
                 </svg>
               </div>
               <div>
-                <h4 style="font-size:14px; font-weight:700; color:#FFFFFF; margin-bottom:3px;">${p.dossierUrl && p.dossierUrl.includes('MasterDossier') ? 'Read the Full Master Dossier' : 'Read Interactive Specification (.md)'}</h4>
+                <h4 style="font-size:14px; font-weight:700; color:#FFFFFF; margin-bottom:3px;">${p.dossierUrl && p.dossierUrl.includes('MasterDossier') ? 'Read the Full Technical Case Study' : 'Read Interactive Specification (.md)'}</h4>
                 <p style="font-size:12px; color:var(--muted); margin:0; line-height:1.5;">Interactive Markdown Viewer &middot; Print-Ready &middot; One-Click Save as PDF</p>
               </div>
             </div>
@@ -212,7 +212,7 @@ function openProjectDetail(id) {
               onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 18px rgba(86,103,70,0.55)'"
               onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 12px rgba(86,103,70,0.4)'"
             >
-              Open Dossier
+              Read Case Study
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
               </svg>
