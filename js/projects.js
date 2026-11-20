@@ -102,6 +102,7 @@ function openProjectDetail(id) {
   const allFlagships = typeof FLAGSHIP_PROJECTS !== 'undefined' ? FLAGSHIP_PROJECTS : [];
   const p = allProjects.find(x => x.id === id) || allFlagships.find(x => x.id === id);
   if (!p) return;
+  const loomStatus = p.id === 'd1-order-lifecycle' ? 'In Progress' : 'Stay tuned! To be posted soon';
 
   // Hide grid and company accordion
   document.getElementById('projectsMainView').style.display = 'none';
@@ -143,14 +144,9 @@ function openProjectDetail(id) {
             <span class="loom-live-pill"><i class="ph ph-circle-fill" style="color:var(--hunter);font-size:8px;"></i> Loom Walkthrough</span>
             <span class="loom-duration-pill"><i class="ph ph-clock"></i> 8–12 min defense</span>
           </div>
-          <span class="loom-hd-badge">HD 1080p</span>
         </div>
-        <div class="loom-display-screen" style="min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px;">
-          <div class="loom-play-btn-circle" style="cursor:pointer;" onclick="alert('Loom defense video is currently queued for recorded deployment. Inspect the Master PDF specification and forensic pillars below!')">
-            <i class="ph ph-play-fill"></i>
-          </div>
-          <h4 class="loom-display-title" style="color:#FFFFFF; margin-top:12px;">${p.title}</h4>
-          <p class="loom-display-sub" style="color:var(--muted); font-size:12px; margin-top:4px;">Recorded Technical Presentation &amp; Systems Architecture Walkthrough</p>
+        <div class="loom-display-screen">
+          <p class="loom-display-title">${loomStatus}</p>
         </div>
       </div>
 

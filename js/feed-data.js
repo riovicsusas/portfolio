@@ -138,6 +138,16 @@ const LATEST_UPDATES = [
       href: "../assets/certifications/gorgias-certified-admin-susas.pdf",
       preview: "../assets/certifications/gorgias-certified-admin-susas.png"
     }
+  },
+  {
+    id: "update-d1-loom",
+    projectId: "d1-order-lifecycle",
+    date: "2026-11-21",
+    status: "In progress",
+    domain: "Order Lifecycle",
+    icon: "ph-video-camera",
+    title: "Domain 1 Loom Video Walkthrough",
+    short: "The walkthrough will show how the warehouse hold protects an address change before the point of no return."
   }
 ];
 
