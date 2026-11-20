@@ -115,7 +115,7 @@ flowchart LR
 | **Boundary 1: Standard Edit Cutoff** | End of Stage 1 | Wave allocation in WMS | Automated line-item edits and SKU swaps stop. Address changes now require a supervisor queue freeze. |
 | **Boundary 2: Hard Point of No Return (PONR)** | Start of Stage 3 | Physical pick scan | All storefront mutations are permanently locked out. Only carrier intercept remains. |
 
-Stage 2 represents the narrow corridor between the two boundaries. In Stage 2, line-item changes are strictly forbidden, but an address correction may still proceed *if and only if* the WMS confirms an immediate supervisor queue freeze before the physical pick begins.
+Stage 2 is the narrow corridor between the two boundaries. Line-item changes stay closed. An address correction may proceed only after the WMS confirms a completed supervisor queue freeze or wave deallocation before physical pick. In this contract, `supervisor_override == true` means authenticated warehouse evidence tied to the shipment and current operation. It is never a flag supplied by the customer, helpdesk widget, or middleware to waive the floor check. A supervisor can stop an unpicked carton; a Boolean cannot stop a picker.
 
 Allowing an order to cross Boundary 2 without stopping it turns an operational inconvenience into an irreversible financial loss. To understand why preventing mis-shipments justifies automated coordinator freezes, we must examine the unit economics and regulatory mandates governing returned inventory.
 
@@ -131,15 +131,11 @@ The 133-second protocol kept Order #18404’s two-pack shipment on the correct r
 
 Synapse Botanicals manufactures dietary supplements and functional nootropics. Unlike apparel, footwear, or consumer electronics, ingestible health products operate under strict federal safety regulations.
 
-Under **FDA 21 CFR Part 111** (Current Good Manufacturing Practice in Manufacturing, Packaging, Labeling, or Holding Operations for Dietary Supplements), returned ingestible products cannot simply be inspected visually and returned to active inventory. The law mandates:
-* Complete physical quarantine of all returned product lots.
-* Detailed quality control evaluation and written disposition records.
-* Validation that storage conditions (temperature, humidity, seal integrity) were never compromised while out of company control.
+Under **21 CFR Part 111, Subpart N**, receiving identifies and quarantines returned supplements until quality control records a material review and disposition. Sections 111.515-111.525 permit QC-approved salvage or reprocessing under the required controls; visual inspection alone does not authorize release.
 
-Because standard parcel tracking (USPS Ground Advantage, UPS Ground) provides **zero temperature telemetry**, Synapse Quality Operating Procedure dictates that **any ingestible product that leaves the custody of the fulfillment network must be directed to `QUARANTINE-SCRAP` and physically destroyed.** A mis-shipped bottle of nootropics cannot be resold. It is an immediate 100% loss.
+The financial example below applies a stricter **declared Synapse QA policy**: returned supplements with unverifiable handling history go to quarantine and scrap after QA disposition. Standard parcel tracking does not supply the thermal evidence needed by that policy. The $8.50 write-off follows this scenario decision; federal law does not impose blanket destruction on every returned supplement. The Capstone separately applies SOP-QA-402 to its combination kit.
 
-> [!NOTE]
-> This section describes an internal operating policy for cost modeling. It is not legal advice or a regulatory determination; confirm disposition rules with your quality and regulatory owner.
+[Returned supplement requirements](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-N)
 
 ### 3.2 The Mis-Shipment Loss Ledger
 
@@ -149,28 +145,28 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
-│          ONE MIS-SHIPPED CARTON · Focus Stick Pack 30-Pack        │
+│          ONE MIS-SHIPPED CARTON · Focus Stick Pack 30-Pack       │
 ├──────────────────────────────────────────────────────────────────┤
-│  DIRECT CASH DRAIN                                                │
-│    COGS written off (mandatory destruction under FDA cGMP) $ 8.50│
+│  DIRECT CASH DRAIN                                               │
+│    COGS written off (declared Synapse QA scrap policy) $ 8.50    │
 │    Outbound freight (unrecoverable) ....................  $ 6.50 │
 │    RTS reverse freight .................................  $ 7.20 │
 │    3PL quarantine fee ..................................  $ 1.50 │
-│                                                         ─────── │
+│                                                         ───────  │
 │                                              CASH:       $23.70  │
-│                                                                   │
-│  NORMAL CONTRIBUTION ($42.00 − $8.50 − $6.50) ........  $27.00 │
-│                                                         ─────── │
-│  CONTRIBUTION DETERIORATION ............................  $50.70  │
-│                                                                   │
-│  $50.70 ÷ $42.00 retail = 120.7% of retail value          │
+│                                                                  │
+│  NORMAL CONTRIBUTION ($42.00 − $8.50 − $6.50) ........  $27.00   │
+│                                                         ───────  │
+│  CONTRIBUTION DETERIORATION ............................  $50.70 │
+│                                                                  │
+│  $50.70 ÷ $42.00 retail = 120.7% of retail value                 │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 | Financial Line Item | Successful Sale Baseline | Mis-Shipment Branch | Cost Type | Operational Context |
 |---|---:|---:|---|---|
 | **Customer Retail Revenue** | $42.00 | $0.00 | Revenue | Full refund issued to customer upon mis-delivery. |
-| **Product COGS (`SYN-FSTK-MY`)** | −$8.50 | −$8.50 | Direct Cash | Outbound inventory lost; destroyed under FDA cGMP quarantine. |
+| **Product COGS (`SYN-FSTK-MY`)** | −$8.50 | −$8.50 | Direct Cash | Original inventory scrapped under the declared QA policy after quarantine and disposition. |
 | **Outbound Carrier Freight** | −$6.50 | −$6.50 | Direct Cash | Initial postage incurred on dispatched carton. |
 | **Carrier Return-to-Sender (RTS)** | $0.00 | −$7.20 | Direct Cash | Reverse logistics freight billed by carrier to return parcel. |
 | **3PL Quarantine & Destruction Fee** | $0.00 | −$1.50 | Direct Cash | Warehouse receiving, cGMP lot documentation, and physical scrap. |
@@ -180,7 +176,7 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 **The mis-shipment creates a $23.70 direct cash loss.** Because a successful sale would have generated **$27.00 in contribution**, the merchant ends up **$50.70 worse off per carton** (120.7% of product retail value). That delta consists of the **$42.00 refund** plus **$8.70 in reverse logistics and disposal costs**. The carton and outbound shipping cost the same either way.
 
 > [!NOTE]
-> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone Sections 6.1 and 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemizes the replacement branch and recovery ledger.
+> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone Section 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes the replacement branch and recovery ledger.
 
 ### 3.3 Scaled Monthly Exposure Model
 
@@ -279,7 +275,7 @@ Where did the 133 seconds go?
 | **Total internal software validation** | **114 seconds** | **85.7%** | **Software / Internal** |
 | **Total Freeze Duration** | **133 seconds** | **100.0%** | |
 
-**Architectural Takeaway**: Warehouse APIs are not the primary bottleneck in order mutation. Internal software coordination and validation pipelines are. If you want the mutation window to shrink, optimize the 114 seconds you own, not the 19 seconds you rent. The single largest item, CASS validation at 64 seconds, runs *while the freeze is already holding the order*, which is exactly why Freeze-First provides ironclad, zero-risk insurance.
+**Architectural Takeaway**: In this staged trace, internal coordination and validation consume 114 of the 133 seconds; warehouse round trips consume 19. The largest item, 64 seconds of CASS validation, runs after the queue lock is confirmed. That is the operating advantage of Freeze-First: validation no longer races an advancing pick wave. Production safety still depends on the warehouse honoring the hold, preserving its owner, and rejecting conflicting or stale work.
 
 ### 4.4 The Four Wire Payloads
 
@@ -343,7 +339,7 @@ Authorization: Bearer <token>
 }
 ```
 
-**Proceed only if** `queue_lock == "SHIPMENT_ON_HOLD"` **and** (`wave_id == null` or `supervisor_override == true`) **and** `pick_status == "NOT_PICKED"`. A Shopify 200 on Step 1 does not satisfy this gate.
+**Proceed only if** `queue_lock == "SHIPMENT_ON_HOLD"` **and** (`wave_id == null` or `supervisor_override == true`) **and** `pick_status == "NOT_PICKED"`. The adapter may set `supervisor_override` only from authenticated WMS confirmation of a completed supervisor freeze or wave deallocation for this shipment and operation. Retain that confirmation in the operation record; reject a client-supplied override. A Shopify 200 or a supervisor's intention to stop the wave does not satisfy this gate.
 
 #### Step 3: Mutate (`orderUpdate` with CASS-Standardized Input)
 
@@ -467,7 +463,7 @@ Because time-based cushions are an operational illusion in multi-tier fulfillmen
 
 *Lays out the ordered checkpoints an order change must clear, what each one demands, and how a timeout or picked order is routed.*
 
-The Freeze-First protocol enforces a strict, ordered state transition that guarantees the storefront never gets ahead of the warehouse floor.
+The Freeze-First protocol puts a confirmed warehouse hold ahead of the storefront write. It blocks the edit while the physical state remains unknown. That protection depends on operation ownership, current revision checks, and a WMS hold that the picking scheduler actually honors; a sequence of API calls alone cannot supply those guarantees.
 
 ```mermaid
 flowchart TD
@@ -501,7 +497,7 @@ flowchart TD
    * *Invariant*: This halts automated Shopify fulfillment workers but does *not* prove the warehouse floor has stopped. Persist `fulfillmentHold.id` immediately.
 2. **Gate 2: Verify (Obtain Physical WMS Queue Lock)**
    * *Target*: 3PL Adapter `GET /shipments?order_id={id}`.
-   * *Contract*: Assert `queue_lock == "SHIPMENT_ON_HOLD"`, `wave_id == null` (or deallocated via supervisor override), and `pick_status == "NOT_PICKED"`.
+   * *Contract*: Assert `queue_lock == "SHIPMENT_ON_HOLD"`, `pick_status == "NOT_PICKED"`, and either `wave_id == null` or an authenticated WMS `supervisor_override` confirming the completed freeze/deallocation described in Section 2.2. Verify that the confirmation belongs to this shipment and operation; an override never bypasses the physical-pick lockout.
    * *Invariant*: An HTTP 200 response from the warehouse API confirms message delivery, *not* a floor freeze. Mutation remains blocked until the queue lock token is returned.
 3. **Gate 3: Mutate (Apply Record Update)**
    * *Target*: Shopify GraphQL `orderUpdate` (for address) or `orderEditCommit` (for line items).
@@ -529,7 +525,9 @@ Three status codes decide what happens next, and they do not mean what they appe
 | **WMS HTTP 200 OK** | WMS HTTP gateway accepted the JSON hold request payload. | **Message transport confirmed.** Floor has NOT stopped. | Maintain hold; poll for physical queue lock confirmation. |
 | **WMS `SHIPMENT_ON_HOLD`** (with Queue ID) | WMS scheduler locked the queue record; pick list generation frozen. | **Physical floor stopped.** Order safely immobilized. | **Clear Gate 3:** Proceed with CASS validation and mutation. |
 | **HTTP 504 Gateway Timeout** | Gateway closed connection before upstream WMS confirmed state. | **Outcome UNKNOWN.** The hold may or may not have landed. | **Mark PENDING.** Reuse idempotency key; alert supervisor before wave cutoff. **Never retry blindly.** |
-| **HTTP 422 `PONR_EXCEEDED`** | WMS business engine rejected hold; order already picked or batched. | **Cutoff crossed.** Mutation is physically impossible. | **HARD LOCKOUT.** Terminate mutation loop; route immediately to Carrier Recovery. |
+| **HTTP 422 `PONR_EXCEEDED` with confirmed physical pick** | WMS rejected the hold because the physical pick boundary has been crossed. | **Hard PONR crossed.** Storefront mutation is closed. Wave assignment alone does not establish this state. | **HARD LOCKOUT.** Terminate the mutation loop and route to recovery. A wave-allocation refusal before pick requires the authenticated supervisor exception, not a blind retry. |
+
+In the Capstone, 13:42:00 ends automated modification; 13:45:00 closes the supervisor rescue window at physical pick. Read the warehouse reason and pick state, not the HTTP number alone. A batched but unpicked order remains eligible only for the verified supervisor path in Section 8.
 
 ```json
 {
@@ -545,13 +543,13 @@ Three status codes decide what happens next, and they do not mean what they appe
 ┌─────────────────────────────────────────────────────────────────┐
 │  200  =  "I GOT YOUR MESSAGE"   → the floor has NOT stopped     │
 │  504  =  "I DON'T KNOW"         → PENDING · same key · escalate │
-│  422  =  "TOO LATE TO CHANGE"   → lockout · UPS Intercept       │
+│  422 + PICKED = HARD LOCKOUT → carrier recovery                 │
 ├─────────────────────────────────────────────────────────────────┤
 │  Confirm the LOCK, not the 200.                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Why 504 is the most dangerous signal.** A timeout after the remote side already succeeded looks identical to a timeout where nothing happened. A blind retry with a *fresh* key can double-apply; a retry with the *same* key and a reconciliation read cannot. The offline harness exercises both cases (Section 11).
+**Why 504 is the most dangerous signal.** A timeout after remote success looks identical to a timeout where nothing happened. A fresh key can create a second intent. Keep the original key and payload, read the authoritative operation-owned outcome, and retry only after confirming the first effect did not occur. The local harness exercises those branches; production needs an equally authoritative WMS lookup. A stale or generic `ON_HOLD` response cannot settle ownership.
 
 ---
 
@@ -651,7 +649,7 @@ In e-commerce, it is trivial to build software that works when everything goes s
 
 > *"In a distributed system, database state is an aspiration; physical warehouse state is reality. The job of the integration layer is to ensure the aspiration never outruns the reality."*
 
-Engineering principles are only as credible as the tests that prove them. To establish complete fiduciary confidence, every state transition, idempotency constraint, and recovery path in this dossier is verified against an offline, reproducible coordinator harness.
+Engineering principles earn their place here through reproducible checks. The offline harness verifies selected hold-coordination behaviors: operation ownership, payload-bound replay, revision checks, conditional hold acquisition, reconciliation, selective release, and recovery after a persisted local effect. The staged trace and complete vendor-integrated mutation workflow remain separate evidence classes. Section 11 states that boundary explicitly.
 
 ---
 
@@ -686,18 +684,9 @@ In accordance with rigorous systems architecture principles, this section strict
 
 ### 11.2 Executed SQLite Coordinator Benchmark
 
-**Run Metadata:** `2026-11-09T18-21-14-457Z-59d713d1` · `Node v24.22.1` · **34 Passed, 0 Failed, 0 Skipped**
+**Use the recorded run, not a remembered millisecond.** The [current coordinator report](../evidence/latency/summary.md) carries the run ID, Node runtime, executed checks, and measured percentile table; [the whole-suite manifest](../evidence/latest_run.json) records the corresponding source and report hashes. Keep presentation figures tied to that evidence instead of a second copied table.
 
-The coordinator harness uses Node's built-in SQLite for a local persistent operation ledger and virtual WMS state. Atomic claims and conditional shipment updates are exercised locally; no vendor API or queue service is contacted. This reflects the default smoke profile (`--full` runs 10,000 attempts per workload).
-
-| Workload | Attempts | Concurrency | p50 response ms | p95 response ms | p99 response ms | Business Effects |
-|---|---:|---:|---:|---:|---:|---:|
-| **Sequential local baseline** | 50 | 1 | 5.13 ms | 6.71 ms | 6.88 ms | 50 |
-| **Concurrent local burst** | 200 | 25 | 13.99 ms | 24.88 ms | 28.20 ms | 200 |
-| **Injected WMS delay** | 40 | 10 | 12.97 ms | 19.36 ms | 20.05 ms | 40 |
-| **Same-payload duplicate pairs** | 100 | 20 | 0.16 ms | 10.94 ms | 14.31 ms | 50 |
-| **Post-cutoff rejection** | 20 | 5 | 0.59 ms | 0.71 ms | 0.73 ms | 0 |
-| **Response loss after WMS success** | 30 | 5 | 6.61 ms | 12.95 ms | 20.67 ms | 30 |
+The harness uses Node's built-in SQLite for a local persistent operation ledger and virtual WMS state. It exercises atomic claims and conditional hold writes without contacting Shopify, ShipBob, or SQS. The default smoke workloads establish local response timings, not vendor confirmation latency; `--full` increases the workload to 10,000 attempts per case.
 
 #### How to Read This Benchmark Table
 - Timings use `performance.now()`; percentiles use nearest-rank (`ceil(p·N)−1`) with no interpolation.

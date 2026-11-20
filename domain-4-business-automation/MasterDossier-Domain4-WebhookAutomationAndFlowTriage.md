@@ -8,51 +8,47 @@
 
 ## 1. A Routine Update, a Closed Ring: The Runaway Loop on Order #24148
 
-*How two individually valid workflows formed an unconstrained execution loop, burning storewide API quotas in 62 seconds, and the emergency triage that contained it.*
+*How a reconstructed tag-feedback chain amplifies demand inside one app/store budget, and the guards that keep repeated work from blocking legitimate warehouse operations.*
 
 ### 1.1 The Incident Anatomy: How the Closed Ring Ignited
 
 Event-driven business automation feels like free labor. A customer updates a shipping address in an online portal, a tag appears on the order, a workflow reacts in the background, a warehouse management system (WMS) receives an updated routing instruction, and not a single human operator touches a keyboard.
 
-The fatal vulnerability of event-driven architectures is that **every reaction is itself an event, and unconstrained events compound exponentially**. An unconstrained event wakes every listener that can see it, and each listener's output becomes one more event for downstream listeners to process. Left ungoverned, that chain does not stop on its own.
+An event-driven system can turn its own output into its next input. A one-for-one feedback chain grows linearly; fan-out above one can grow faster. Either can run without a stopping condition. The warehouse pays for that missing condition when legitimate holds cannot reach the queue.
 
-**11:02:01 EDT.** A routine shipping address update was processed on Order **#24148** (Customer: **Chloe Bennett**, `chloe.bennett@example.com`), automatically appending the tag `Address-Verified`. Two independent Shopify Flow workflows subscribed to the generic trigger `"Order tags added"` (ingested via an `orders/updated` webhook event adapter). Workflow 1 evaluated the new tag and appended `Route-East`. Workflow 2 reacted to the tag change and appended `Logistics-Audited`. The addition of `Logistics-Audited` was itself an `"Order tags added"` event, so Workflow 1 immediately re-triggered.
+**11:02:01 EDT, reconstructed trace.** Order **#24148** (Chloe Bennett, `chloe.bennett@example.com`) receives `Address-Verified`. The model routes order-update deliveries through an unsafe adapter into two custom Flow listeners: one attempts `Route-East`, the other `Logistics-Audited`. The adapter fails to distinguish a new tag from repeated work. The trace supplies **114 event/delivery-attempt entries in 62 seconds**; it does not claim 114 successful tag writes or a native Shopify `Order tags added` trigger. Section 2.1 defines the production connector contract that closes that gap.
 
-Neither workflow contained a syntax error. Neither workflow had a defect in its isolated business logic. Each did precisely what it was written to do, and together they formed a closed ring with no exit condition:
-* Within **62 seconds**, the order's internal timeline exploded to **114 events** (1.84 events per second on a single database record).
-* The Shopify Admin REST API leaky-bucket rate limiter reached **39 of 40 calls** (97.5% saturation).
-* The GraphQL API cost point quota consumed **950 of 1,000 available points** (95.0% budget exhaustion).
-* Middleware webhook ingestion latency surged from an average of **140ms to 4,850ms**—a **34.6× performance collapse**.
+The declared amplification model prices each recursive event at **three REST requests**: an order fetch, a metadata query, and a tag mutation. At 114 / 62 events per second, that is **342 attempted requests / 62 seconds = 5.52 requests/sec**, before background traffic under the same app/store credentials. Against the Standard bucket's 2 requests/sec leak, demand exceeds replenishment by approximately **3.52 requests/sec**. An initially empty 40-request bucket would fill in about **11.4 seconds under a uniform fluid approximation**, sooner with background load. Exact throttle timing depends on bursts, failed calls, and retry scheduling.
+
+The trace's **39/40 REST utilization**, **950/1,000 modeled GraphQL cost points consumed**, and **140ms to 4,850ms middleware latency** are separate illustrative stress snapshots. The repository does not derive those snapshots from the 114 entries or claim observed Shopify performance.
 
 **11:03:03 EDT.** On-call triage contained the loop by deploying an emergency hotfix to Flow 1, inserting the missing negative guard condition (`tags do not contain 'Route-East'`) that terminated recursion on the next cycle.
 
 ### 1.2 Timeline, API Exhaustion, and Blast Radius
 
 ```text
-       11:02:01 EDT                                             11:03:03 EDT
-  Order #24148 Tag Added                                    Emergency Hotfix Applied
-─────────────●──────────────────────────────────────────────────────────●─────────────►
-             │                                                          │
-             ├── 11:02:02: FLOW-01 Appends 'Route-East'                 │
-             ├── 11:02:03: FLOW-02 Appends 'Logistics-Audited'          │
-             ├── 11:02:04: FLOW-01 Re-triggers [Recursion Initiated]    │
-             ├── 11:02:58: Shopify API 429 Warning (39/40 Leaky Bucket) │
-             │                                                          │
-             └──────────────── 62 Seconds: 114 Events ──────────────────┘
-                               [API BUDGET 98% EXHAUSTED]
+11:02:01 EDT                                      11:03:03 EDT
+Order tag received                               Guard deployed
+     +-------------------------------------------------------------+
+     | 11:02:02: FLOW-01 attempts Route-East                       |
+     | 11:02:03: FLOW-02 attempts Logistics-Audited                |
+     | 11:02:04: Repeated work re-enters the adapter               |
+     | 11:02:58: Later illustrative 429 / 39-of-40 snapshot        |
+     +-------------------------------------------------------------+
+             62 seconds / 114 reconstructed trace entries
 ```
 
-Had on-call triage not intervened, the runaway recursion on Order #24148 would have completely starved the entire storefront's API budget—blocking fraud reviews, delaying order fulfillment pushes to 3PL warehouses, and halting customer service updates across thousands of uninvolved customer orders.
+Under the declared amplification model, the looping workload competes with fulfillment pushes, inventory sync, and customer updates that use the **same integration app against the same store**. Separate apps do not share that REST bucket. The operational risk is still concrete: an urgent warehouse hold can wait behind the integration's own repeated work while the picking wave advances.
 
 The second failure mode is quieter and just as expensive: when a warehouse endpoint returns `HTTP 504 Gateway Timeout` during a flash sale and every failed call retries on the same fixed schedule, hundreds of retries land in the same instant on a system that is already struggling. Section 2 contrasts both traps.
 
 > [!CAUTION]
-> **Controlled Failure Scenario Disclosure**: Order #24148, customer Chloe Bennett (`chloe.bennett@example.com`), is an empirical failure-injection scenario executing within an isolated staging environment. The timeline and API telemetry represent a verified failure trace. Deduplication, idempotency hashing, and cutoff rejection resilience were verified against our local SQLite coordinator test harness ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). Platform rate-limit figures illustrate standard Shopify REST Admin API leaky-bucket mechanics (40-call bucket at 2 calls/second leak rate, standard tier / custom app context; enterprise Shopify Plus tiers expand this baseline to 80 or 400 calls). Section 12 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Scenario and evidence scope.** Order #24148 is a reconstructed failure scenario. Its 114 event/delivery-attempt entries, timestamps, resource snapshots, and three-REST-calls-per-event model are declared inputs, not observed platform telemetry. Shopify REST Admin limits are **Standard: 40 requests / 2 req/sec; Advanced: 80 / 4; Plus: 400 / 20**, scoped per app and store. Custom app credentials do not turn a Plus store into a Standard-tier store. The [local coordinator suite](../evidence/latency/summary.md) separately verifies operation identity, duplicate handling, conditional hold acquisition, and reconciliation against simulators. It does not execute the custom Flow connector or reproduce this incident. [Shopify REST rate limits](https://shopify.dev/docs/api/admin-rest/usage/rate-limits)
 
 | Incident Dimension | Incident Parameter Value | Architectural Significance |
 |---|---|---|
 | **Customer Profile** | Chloe Bennett (`chloe.bennett@example.com`) | Customer initiating an address modification via storefront self-service portal. |
-| **Incident Scope** | Order #24148 (Single-order recursive execution storm) | Demonstrates how a single order can starve multi-tenant storewide API quotas. |
+| **Incident Scope** | Order #24148 reconstructed feedback scenario | Demonstrates contention inside one app/store integration budget; other apps retain their own buckets. |
 | **Trigger Mechanism** | Address update appends `Address-Verified` tag | Unconstrained `Order tags added` listeners create circular dependencies. |
 | **Circular Flow Pair** | `FLOW-01` (`Route-East`) $\leftrightarrow$ `FLOW-02` (`Logistics-Audited`) | Two independent flows listening broadly without negative exit criteria. |
 | **Containment Action** | Emergency negative guard deployed to `FLOW-01` at $T+62.1\text{s}$ | Halts sequential recursion immediately; terminates the 114-event storm. |
@@ -74,7 +70,7 @@ flowchart LR
         A2 --> A3["Flow 2 listens to 'Order tags added'<br/>Action: Appends 'Logistics-Audited'"]
         A3 --> A4["Event Bus emits 'Order tags added'"]
         A4 -. "No negative guard: infinite loop" .-> A1
-        A4 --> A5["CONSEQUENCE<br/>Single order burns storewide API quota ❌"]
+        A4 --> A5["CONSEQUENCE<br/>Repeated work competes inside one app/store integration budget"]
     end
 
     subgraph TRAP_B["TRAP B: The 504 Retry Storm (Thundering Herd)"]
@@ -93,15 +89,17 @@ flowchart LR
 
 ### 2.1 Trap A: Runaway Tag Recursion
 
-Shopify Flow executes on a simple, trigger-condition-action contract. In production architectures, tag-based triggers are ingested via the platform's `orders/updated` webhook topic and dispatched through event-bus adapters as `"Order tags added"` events. Crucially, the underlying webhook payloads carry no metadata identifying *who* or *what* caused the mutation. A tag added manually by a customer support operator and a tag added programmatically by a background automation emit the identical `"Order tags added"` event.
+Shopify Flow has no native **Order tags added** trigger. The proposed connector subscribes to `orders/updated`, verifies the webhook signature, durably records event identity, and compares order-tag state against an authoritative prior snapshot. Duplicate delivery is not a new business event; a repeated tag write with no tag delta must not wake the chain.
 
-When Workflow 1 and Workflow 2 both subscribe broadly to `"Order tags added"` and each appends a tag, each addition re-emits the exact trigger the other is listening for. Every iteration consumes capacity from the Shopify Admin API's leaky bucket (evaluated here under the baseline 40-request capacity with a 2 req/s replenishment rate). Because this bucket is shared across all processes authenticating under the same API client credentials, a single looping order starves every concurrent fulfillment push, inventory sync, and customer update in the store.
+When a genuine addition exists, the app invokes a registered custom Flow trigger through Admin GraphQL **`flowTriggerReceive(handle: "order-tags-added", payload: ...)`**. The registered payload schema carries the order ID, event identity, and added tags. This dossier's `Order tags added` label names that custom connector event. A webhook subscription alone does not register a Flow trigger. Persist identity and serialize state comparison per order before dispatching it. [Shopify custom-trigger API](https://shopify.dev/docs/api/admin-graphql/latest/mutations/flowTriggerReceive)
+
+The reconstructed failure model deliberately omits those guards and assigns three REST calls to each recursive delivery attempt: order fetch, metadata query, and tag mutation. Its 5.52 attempted calls/sec exceeds the Standard bucket's 2/sec leak before background traffic. Native Flow actions and `flowTriggerReceive` use GraphQL and carry a separate cost budget; do not count them as REST calls. A production adapter must record actual calls, costs, and outcomes before attributing a throttle to this model.
 
 ### 2.2 Trap B: The 504 Retry Storm (The Thundering Herd)
 
 When a third-party logistics (3PL) warehouse management system experiences high concurrency during a major commercial event (such as Black Friday / Cyber Monday), upstream reverse proxies and API gateways frequently terminate long-running database requests with `HTTP 504 Gateway Timeout`.
 
-In naive middleware implementations, failed webhook deliveries are re-enqueued on a static, deterministic timer (e.g., retry after exactly 15 minutes with zero jitter). If 500 warehouse fulfillment requests fail during a 60-second traffic surge between 12:00:00 and 12:01:00, exactly 500 retry requests will hit the struggling warehouse server simultaneously at 12:15:00. This **synchronized thundering herd** crushes recovering database pools, converting a transient 5-second network hiccup into an hours-long outage that drops orders permanently.
+A fixed relative retry delay preserves a traffic surge's shape. If 500 calls fail between 12:00:00 and 12:01:00 and each retries exactly 15 minutes later, their retry surge lands between 12:15:00 and 12:16:00. Only callers that failed together or were assigned the same retry slot return at the same instant. Full Jitter spreads those correlated attempts; an admission limit still protects the recovering warehouse from aggregate demand.
 
 ### 2.3 Side-by-Side Trap Comparison
 
@@ -124,11 +122,11 @@ Understanding how unconstrained event loops ignite is only the operational sympt
 
 Engineers often evaluate API rate-limiting as a temporary capacity inconvenience. To an executive, API starvation is an immediate operational and cash liability.
 
-When Order #24148 saturated 98% of the Shopify Admin API bucket for 62 seconds, every other automated workflow on the store was starved of API calls. The financial damage of that resource starvation radiates across three operational channels:
+The three-call amplification model shows how one integration can consume its own available capacity. The 39/40 REST and 950/1,000 GraphQL snapshots illustrate stress; they do not establish a measured store outage or prove that unrelated apps stopped. The financial model below separately assumes delayed fulfillment, overselling, and response labor. Its dollars follow those declared operational inputs, not a universal conversion from webhook count to loss.
 
 ```mermaid
 flowchart LR
-    L["Runaway loop<br/>114 events in 62 s"] --> X["API budgets exhausted<br/>REST 39/40, GraphQL 950/1,000"]
+    L["Reconstructed feedback trace<br/>114 delivery-attempt entries in 62 s"] --> X["Declared stress scenario<br/>Contended integration budget"]
     X --> F["Fulfillment routing throttled<br/>83 orders miss carrier departure"]
     X --> I["Inventory webhooks delayed<br/>5 units oversold"]
     X --> E["DevOps incident response<br/>2 senior engineer-hours"]
@@ -190,7 +188,7 @@ Pricing the unit economics demonstrates why immediate intervention is mandatory,
 | **11:02:04.305** | +3.2s | `FLOW-01` | Flow 1 detects new tag; re-evaluates order; appends `Route-East`. | **Recursion Cycle 1** |
 | **11:02:05.410** | +4.3s | `FLOW-02` | Flow 2 detects new tag; re-evaluates order; appends `Logistics-Audited`. | **Recursion Cycle 2** |
 | *[ ... ]* | *[ ... ]* | *[ ... ]* | *[ 94 recurring iterations executed across 52 seconds ]* | *API Saturated* |
-| **11:02:58.820** | +57.7s | Shopify API | Gateway returns `HTTP 429 Too Many Requests`. REST bucket: 39/40 calls. | **Warning Alarm** |
+| **11:02:58.820** | +57.7s | Shopify API model | Later illustrative throttle snapshot: HTTP 429; REST utilization shown as 39/40. This is not the first exhaustion time predicted by the three-call model. | **Sustained Contention** |
 | **11:03:00.110** | +59.0s | Middleware | Ingestion latency degrades to 4,850ms; thread pool exhaustion imminent. | High Contention |
 | **11:03:03.250** | +62.1s | **On-Call Triage** | **Emergency negative check deployed to Flow 1. Recursion halted.** | **LOOP TERMINATED** |
 
@@ -199,21 +197,21 @@ Pricing the unit economics demonstrates why immediate intervention is mandatory,
 | Phase | Window | Duration | What Happened |
 |---|---|---|---|
 | **Ignition** | 11:02:01 to 11:02:04 | 3.0s | Initial address trigger, two valid executions, followed immediately by first recursive re-evaluation. |
-| **Sustained Recursion** | 11:02:04 to 11:02:58 | 54.0s | Unbounded loop executes 94 iterations, exhausting REST and GraphQL quotas on each hop. |
-| **Saturation & Containment** | 11:02:58 to 11:03:03 | 5.1s | 429 throttle alarm fires; on-call engineer deploys negative guard hotfix to Flow 1; loop terminates. |
+| **Sustained Feedback** | 11:02:04 to 11:02:58 | 54.0s | Reconstructed event/delivery attempts continue. The three-call amplification model predicts contention earlier than the later snapshot; successful write counts are not inferred. |
+| **Later Observation & Containment** | 11:02:58 to 11:03:03 | 5.1s | The scenario shows a later throttle snapshot, then inserts the negative guard and ends the modeled feedback chain. |
 
 | Resource Metric | Baseline Value | Peak Incident Saturation | Systemic Impact |
 |---|---|---|---|
-| **Order Timeline Events** | 2–4 events / order | **114 events** in 62 seconds | 1.84 events/sec on a single database record. |
-| **Admin REST API Bucket** | 2–5 / 40 calls | **39 / 40 calls** consumed | 97.5% capacity consumed (leak rate: 2 calls/sec). |
-| **GraphQL Cost Budget** | 50–100 / 1,000 pts | **950 / 1,000 points** exhausted | 95.0% capacity consumed. |
-| **Middleware Ingestion Latency** | 140ms | **4,850ms** | 34.6× degradation; worker pool exhaustion. |
+| **Trace Entries** | Routine traffic not measured | **114 event/delivery-attempt entries** in 62 seconds | 1.84 entries/sec; not a count of successful tag mutations. |
+| **Admin REST API Model** | Standard bucket: 40; leak: 2/sec | **39/40 illustrative snapshot** | Three declared REST calls/event imply 5.52 attempted calls/sec before same-app/store background traffic. |
+| **GraphQL Cost Snapshot** | Restore rate and query costs not modeled | **950/1,000 modeled points consumed** | Independent illustrative snapshot; not derived from REST traffic. |
+| **Middleware Latency Snapshot** | 140ms illustrative baseline | **4,850ms illustrative stress value** | 34.6x ratio under supplied scenario inputs; not a measured vendor benchmark. |
 
 ### 4.3 Reading the Loop
 
-1. **The loop grew linearly, but was completely unbounded**: Each event in a two-flow ring triggered exactly one downstream event—a fan-out of 1, yielding a steady 1.84 events per second. Had a third workflow subscribed to the same tag changes, each event would have spawned two downstream actions, causing the event volume to **double with every generation ($2^N$ exponential explosion)**. Even with a fan-out of 1, the storewide API quota was exhausted in under 60 seconds.
-2. **Detection was not containment**: Monitoring telemetry flagged rapid tag additions at 11:02:04 (+3.2s). However, human-in-the-loop intervention and hotfix deployment were not completed until 11:03:03 (+62.1s). During those 58.9 seconds of containment latency, the automated loop ran unchecked.
-3. **A single negative guard halts the loop at Cycle 1**: A guard on Flow 1 requiring that `Route-East` be absent would have terminated execution at 11:02:04, exactly 3.2 seconds after the customer update, consuming 2 API calls instead of 114.
+1. **The missing exit condition is the defect.** The reconstructed chain is linear, with one modeled successor per entry. Three REST calls per event amplify demand to approximately 5.52 calls/sec. A 40-request Standard bucket leaking at 2/sec cannot sustain that load; the fluid approximation reaches capacity in about 11.4 seconds before background traffic. The later +57.7s snapshot is not evidence of first throttle onset.
+2. **Detection needs an owner.** The trace places a detection marker at +3.2s and containment at +62.1s, leaving 58.9 seconds of modeled response delay. Those timestamps illustrate the operating gap; they are not captured on-call telemetry.
+3. **Stop repeated work before it spends the budget.** At the next modeled evaluation, `Route-East` already present must terminate Flow 1. The corrected path needs two logical tag additions; actual API request counts depend on the connector, reads, and retries.
 
 Halting sequential recursion requires an explicit programmatic rule that terminates the circular dependency before it can spawn. Section 5 details the single mandatory guard that neutralizes tag loops.
 
@@ -263,7 +261,7 @@ Even if the `"Order tags added"` trigger fires 50 times in sequence, Action 1 an
 | **Flow 1** | Listens to any `Order tags added` $\to$ appends `Route-East`. | Condition 1: tags contain `Address-Verified`.<br/>Condition 2: tags **do not contain** `Route-East`.<br/>Action: appends `Route-East`. |
 | **Flow 2** | Listens to any `Order tags added` $\to$ appends `Logistics-Audited`. | Condition 1: tags contain `Route-East`.<br/>Condition 2: tags **do not contain** `Logistics-Audited`.<br/>Action: appends `Logistics-Audited`. |
 
-With both flows guarded, the ring executes exactly once: Flow 1 adds `Route-East`, Flow 2 adds `Logistics-Audited`, Flow 1 re-evaluates, finds `Route-East` already present, and halts immediately. **Two tag additions replace 114 runaway events.**
+Under the corrected sequential contract, Flow 1 adds `Route-East`, Flow 2 adds `Logistics-Audited`, and the next evaluation finds its completion guard already present. **Two logical tag additions replace the reconstructed chain's repeated attempts.** That is the desired state transition, not a claim that two API calls reproduce the complete production workflow.
 
 > [!WARNING]
 > **The Concurrency Gap**: The blueprint exposes a critical boundary. The tag is added in **Action 2**, *after* the external HTTP request in Action 1. Any concurrent webhook event arriving while Action 1 is in-flight will evaluate Condition 2, find the tag absent, and execute a duplicate side effect. Closing that window requires an atomic coordination boundary (Section 6).
@@ -309,7 +307,7 @@ sequenceDiagram
 
 ### 6.2 The Distributed Idempotency Triad
 
-To achieve bulletproof concurrency protection under at-least-once delivery, middleware must enforce the **Idempotency Triad** before any business mutation is dispatched:
+Under at-least-once delivery, the **Idempotency Triad** binds a replay to its original intent. Enforce these controls before dispatch, then verify the operation-owned warehouse outcome. The ledger controls participating workers; it does not turn an independent vendor or a direct Admin edit into the same transaction:
 
 | Idempotency Primitive | Technical Mechanism | What It Prevents | Local Verification Evidence ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)) |
 |---|---|---|---|
@@ -383,7 +381,7 @@ flowchart TD
     H --> I{"Receive count > 3?"}
     I -- "No" --> J["Re-attempt delivery"]
     I -- "Yes" --> K["Move to DLQ; fire Sev-2 on-call alert"]
-    B -- "500 / 502 / 503 ERROR" --> H
+    B -- "500 / 502 / 503: mutation may have committed" --> F
     B -- "429 TOO MANY REQUESTS" --> L["Exponential backoff honoring Retry-After"]
     L --> H
 ```
@@ -396,7 +394,7 @@ flowchart TD
 | **429 TOO MANY REQUESTS** | Rate Limited | Leaky bucket or GraphQL cost point limit exceeded. | **Exponential backoff honoring `Retry-After` header**. | Monitor concurrent flow volume if persistent. |
 | **401 / 403 FORBIDDEN** | Auth or Scope Failure | Expired API token, bad HMAC, or missing OAuth scope. | **ABORT RETRIES IMMEDIATELY.** Quarantine message to DLQ. | **Sev-2 Alert:** Re-authenticate credentials or update scopes. |
 | **422 UNPROCESSABLE** | Business Rejection | Schema invalid, or warehouse Point of No Return crossed. | **ABORT RETRIES IMMEDIATELY.** Do not retry. Quarantine to DLQ. | Inspect payload; verify if order already packed in warehouse. |
-| **500 / 502 / 503 ERROR** | Downstream Server Fault | 3PL database deadlock, server crash, or 502 bad gateway. | **Enqueue to SQS Work Queue.** Retry with Full Jitter (budget: 3). | Alert downstream 3PL provider if retries exhaust to DLQ. |
+| **500 / 502 / 503 ERROR** | Server Fault; Mutation Outcome May Be Unknown | Gateway or server failed before a trustworthy completion response. | Reconcile any possibly committed mutation; retry only under the same operation identity and safe replay contract, with Full Jitter (budget: 3). | Alert TechOps when the outcome or retry budget remains unresolved. |
 | **504 GATEWAY TIMEOUT** | **Unknown State** | Edge gateway closed connection before upstream WMS answered. | **DO NOT RETRY BLINDLY.** Reconcile operation ledger before replay. | Check physical WMS queue state before dispatching duplicate. |
 
 ```
@@ -412,7 +410,7 @@ flowchart TD
 
 ### 7.2 The 504 Reconciliation Protocol: How Middleware Verifies Unknown State
 
-When an outbound webhook mutation (such as placing a fulfillment hold) terminates with `HTTP 504 Gateway Timeout`, the SQS worker executes a three-phase reconciliation protocol before permitting any retry:
+When an outbound mutation (such as placing a fulfillment hold) returns `HTTP 504 Gateway Timeout`, the SQS worker follows the operation-specific reconciliation protocol below before permitting a retry:
 
 ```mermaid
 sequenceDiagram
@@ -422,40 +420,29 @@ sequenceDiagram
     participant G as 3PL API Gateway
     participant DB as 3PL Warehouse DB
 
-    W->>G: POST /fulfillment_orders/{id}/hold (Attempt 1)
-    G--xW: HTTP 504 Gateway Timeout (Socket closed after 5,000ms)
-    Note over W: Outcome UNKNOWN. Did the hold commit?
-
-    rect rgb(30, 41, 59)
-    Note over W,DB: PHASE 1: Idempotent Read Probe (Zero Side Effects)
-    W->>G: GET /fulfillment_orders/{id}
-    G->>DB: Query current status
-    DB-->>G: Status: ON_HOLD (Reason: address-verification)
-    G-->>W: HTTP 200 OK
-    end
-
-    rect rgb(30, 41, 59)
-    Note over W,L: PHASE 2: Reconcile Ledger & Acknowledge
-    W->>L: UPDATE operations SET state = 'CONFIRMED' WHERE id = op_24148
-    W->>W: Acknowledge & Delete SQS Message (0 Duplicate Side Effects)
-    end
+    W->>G: Submit hold with operation_id=op_24148
+    G--xW: HTTP 504: completion response lost
+    Note over W: UNKNOWN. Keep the edit blocked.
+    W->>G: Read authoritative operation outcome and owned holds
+    G->>DB: Resolve op_24148, hold ownership, and current revision
+    DB-->>G: APPLIED, hold_owner=op_24148, hold active, revision verified
+    G-->>W: Verified operation-owned hold outcome
+    W->>L: Record CONFIRMED only for op_24148
+    W->>W: Delete SQS message after durable outcome recording
 ```
 
-1. **Phase 1: Idempotent Read Probe (GET over POST)**:
-   * The worker never re-attempts the mutating `POST`.
-   * Instead, it queries the read-only endpoint: `GET /fulfillment_orders/{id}` or `GET /orders/{order_id}/holds`. Read operations carry zero side effects and impose minimal load on recovering database pools.
-2. **Phase 2: State Evaluation Against Ledger**:
-   * **State A (Mutation Committed)**: If the remote entity displays `ON_HOLD`, the timeout occurred *after* database persistence. The worker marks the local ledger as `CONFIRMED` and deletes the message from SQS. **Zero duplicate API calls are dispatched.**
-   * **State B (Mutation Dropped)**: If the order remains `OPEN` (pre-wave queue) with no hold attached, the packet dropped before execution. The worker re-enqueues the `POST` mutation carrying the *original* `operation_id` into the work queue with Full Jitter backoff.
-   * **State C (Downstream Read Fails / 503)**: If the read probe also times out or returns `503 Service Unavailable`, the 3PL is experiencing a sustained outage. The worker increments the message receive count and enters SQS visibility backoff.
-3. **Phase 3: Exhaustion & Poison-Pill Quarantine**:
-   * If receive attempts exceed 3 without successful reconciliation, the message is routed directly to the Dead-Letter Queue (DLQ), firing an immediate Sev-2 Ops alert with Gorgias ticket tagging (`CS-ADDR-HOLD-UNKNOWN`).
+The lookup above is a required **adapter contract**, not a claim that every WMS exposes this vendor endpoint. The adapter must preserve a stable remote operation reference and authoritative hold ownership. If the vendor cannot distinguish a pending write from one that never applied, uncertainty stays visible and the address edit stays blocked.
+
+1. **Applied:** Confirm only when the authoritative outcome belongs to the original `operation_id`, the active hold satisfies `hold_owner == operation_id`, and the revision checks still permit this workflow. Another agent's `ON_HOLD` state is not our receipt. Persist the verified outcome before deleting the SQS message.
+2. **Not applied:** An `OPEN` snapshot does not prove the first request vanished; the write may still be running or the read may lag. Retry only after authoritative resolution establishes that the original attempt cannot still commit and the same-operation replay contract prevents duplicates. Keep the original operation ID and recheck the cutoff at the remote mutation boundary.
+3. **Unresolved:** If lookup fails, ownership differs, revision changed, or an earlier attempt can still commit, retain `UNKNOWN`, keep the edit blocked, and alert TechOps before the wave deadline. Use `ChangeMessageVisibility` for delayed redelivery. SQS increments receive count on receipt; the worker records its own durable attempt count.
+4. **Budget exhausted:** After three unsuccessful receives, the configured redrive policy transfers the message to the DLQ. The incident ticket owns further reconciliation. Re-enqueuing a new message must not reset the operation's durable attempt budget or authorize a blind replay.
 
 ### 7.3 The Three Diagnostic Questions for Automation Triage
 
 When an on-call engineer receives an alert from the automation bus, they answer three questions in order:
 1. **Is a single order's timeline accelerating faster than baseline traffic?** $\rightarrow$ If yes, an un-guarded tag loop is active (Trap A). Check recent workflow deployments.
-2. **Did the downstream endpoint return a 4xx or 5xx code?** $\rightarrow$ If 422 or 401/403, abort and fix the schema; if 500/503, let SQS retry with jitter; if 504, reconcile state.
+2. **Did the response establish an authoritative outcome?** $\rightarrow$ If 422 or 401/403, stop and inspect the rejection. A 500, 502, 503, or 504 may hide a committed write; reconcile before replay unless the same-operation vendor contract makes replay safe. A status code does not undo a warehouse mutation.
 3. **Does the payload match an existing `operation_id`?** $\rightarrow$ If yes, query the ledger; do not re-execute side effects.
 
 Triaging status codes governs the network boundary, but managing concurrent automations inside the store requires architectural hierarchy. Section 8 introduces the four-tier state-gated ladder that replaces diagram order with deterministic execution.
@@ -502,14 +489,14 @@ Because the state gates are committed as order tags, each tier's workflow must a
 |---|---|---|---|
 | `Order Created` | Place 3PL Fulfillment Hold | Races against automated wave allocation. | Assert warehouse state is `Pre-Wave Queue` before dispatching. |
 | `Order Tags Added` | Append tag `Logistics-Verified` | **Infinite recursion loop** with other tag listeners. | Negative Check: `tags_do_not_contain: 'Logistics-Verified'`. |
-| `Fulfillment Order Hold` | Webhook to 3PL Gateway | Race with physical warehouse wave pickers. | Require HTTP 200/202 acknowledgment before customer notification. |
+| `Fulfillment Order Hold` | Webhook to 3PL Gateway | Race with physical warehouse wave pickers. | Keep the ticket pending after HTTP 200/202 ingress acknowledgment. Permit the edit only after the operation-owned WMS hold is authoritatively confirmed before cutoff; notify completion only after both addresses and selective release are verified. |
 | `Order Cancelled` | Issue Gateway Refund | Double-refund hazard if capture transaction pending. | Verify payment gateway status == `CAPTURED` before dispatching refund. |
 
-State-gated ordering guarantees deterministic sequence within the storefront, but synchronized retry surges still threaten external 3PL gateways during peak events. Section 9 details the asynchronous queue and Full Jitter backoff topology that defuses the thundering herd.
+State prerequisites express workflow order. Atomic claims, operation ownership, and revision checks must still close concurrent execution paths. Section 9 adds the queue, deadline budget, and admission controls that keep retries from overwhelming the warehouse gateway.
 
 ---
 
-## 9. 500 Retries, 8.3 Calls a Second: The SQS, DLQ, and Full Jitter Design
+## 9. Spread the Retries, Bound the Traffic: The SQS, DLQ, and Full Jitter Design
 
 *The queue topology, retry parameters, and backoff math that spread a synchronized 500-request spike over time, as a design not yet load-tested.*
 
@@ -539,7 +526,8 @@ To defuse the Thundering Herd problem (Trap B), Synapse Botanicals decouples syn
 │ SQS WORKER CONSUMER       │ │ DEAD-LETTER QUEUE (DLQ)  │
 │ • Full Jitter Backoff     │ │ • Retention: 14 days     │
 │ • Reconciles 504 outcomes │ │ • Fires Sev-2 Ops Alert  │
-│ • Deletes message on 200  │ │ • Requires manual triage │
+│ * Deletes after durable   │ │ * Requires manual triage │
+│   verified outcome        │ │                          │
 └───────────────────────────┘ └──────────────────────────┘
 ```
 
@@ -561,7 +549,7 @@ $$T_{\text{sleep}} = \text{random}(0, \, \min(M, \, B \times 2^{\text{attempt}})
 | Failed Receive | Ceiling = $\min(M, \, B \times 2^{\text{attempt}})$ | Mean Sleep | 500 Callers Failing Simultaneously |
 |---|---|---|---|
 | **Receive 1** | $\min(300, \, 30 \times 2) = 60\text{s}$ | 30 seconds | 500 / 60 = **8.33 calls/sec** on average |
-| **Receive 2** | $\min(300, \, 30 \times 4) = 120\text{s}$ | 60 seconds | 500 / 120 = **4.17 calls/sec** at most |
+| **Receive 2** | $\min(300, \, 30 \times 4) = 120\text{s}$ | 60 seconds | An isolated 500-call cohort spread over this window averages **4.17 calls/sec**; this is not a rate cap. |
 | **Receive 3** | Exhausted (maxReceiveCount = 3) | N/A | Message moved to DLQ; Sev-2 alert fires |
 
 ### 9.2 Mathematical Proof of Thundering Herd Smoothing
@@ -576,20 +564,20 @@ The standard deviation around this arrival rate is:
 
 $$\sigma = \sqrt{N p (1 - p)} = \sqrt{500 \times \frac{1}{60} \times \left(1 - \frac{1}{60}\right)} \approx 2.86\text{ requests/sec}$$
 
-A synchronized **500-request shockwave is mathematically smoothed into a stable distribution of $8.33 \pm 2.86\text{ calls/second}$**, allowing the struggling 3PL gateway to recover.
+For the isolated first-retry cohort, the expected count in a one-second bin is **8.33**, with standard deviation **2.86**. That is a distribution, not a guaranteed ceiling or a promise that the gateway recovers. Retry generations, reconciliation reads, and new orders can overlap. Bound worker concurrency and outbound request rate, honor `Retry-After`, and stop dispatch at the operation's warehouse deadline. Jitter spreads demand; admission control limits it.
 
 ### 9.3 SQS Queue Configuration Parameters
 
 | Parameter Name | Production Value | Architectural Rationale |
 |---|---|---|
 | **Work Queue Type** | SQS Standard | High throughput at-least-once delivery; duplicates absorbed by ledger (Section 6). |
-| **Visibility Timeout** | 30 seconds | Headroom over 5,000ms gateway threshold for delivery call and ledger read. |
-| **Max Receive Count** | 3 attempts | Initial delivery plus 2 retries; moves poison-pill payloads to DLQ. |
-| **Dead-Letter Retention** | 14 days (SQS max) | Retention measured from initial enqueue; ensures full triage window. |
+| **Visibility Timeout** | 30-second initial visibility | Extend visibility while an owned attempt remains active; apply Full Jitter through `ChangeMessageVisibility`. Visibility expiry does not prove the previous worker stopped. |
+| **Max Receive Count** | 3 receives | Initial receive plus two redeliveries. Keep the operation's durable attempt budget across replacement messages and manual redrive. |
+| **Dead-Letter Retention** | 14 days (SQS max) | For Standard queues, expiry retains the original enqueue timestamp. Source-queue time consumes this period: one day in the source leaves at most thirteen days in the DLQ. Set source retention lower, alert immediately, and assign an incident owner; fourteen days is not a post-DLQ rescue window. |
 | **DLQ Alert Trigger** | Immediate on depth $\ge$ 1 | Any dead-lettered message represents an order at risk of fulfillment failure. |
 | **Backoff Policy** | Full Jitter ($B=30\text{s}, M=300\text{s}$) | Mathematically desynchronizes concurrent retries (Section 9.2). |
 | **422 / 401 / 403 Routing** | Direct to DLQ | Schema and auth rejections cannot resolve through retries. |
-| **504 Threshold** | Upstream timeout > 5,000ms | Enforces "Unknown State" protocol requiring ledger reconciliation before replay. |
+| **Gateway Deadline** | 5,000ms in this design | A declared adapter timeout, not a universal HTTP 504 threshold. A lost mutation response requires operation-specific reconciliation before replay. |
 
 Decoupling webhook ingestion from warehouse delivery completes the defensive infrastructure. Section 10 distills the entire operational framework into four non-negotiable laws.
 
@@ -618,7 +606,7 @@ Order #24148 collapsed because two reasonable automations each trusted the other
 
 Both are **failures of memory**. In the loop, the system could not see its own earlier work. In the storm, the system could not determine whether an earlier attempt had already succeeded.
 
-The four operational laws eliminate these failures directly. A negative guard terminates a circular loop at the second hop. An idempotency ledger converts a duplicate from a destructive double-mutation into a sub-millisecond lookup. Full Jitter transforms a 500-request shockwave into an orderly distribution of 8.3 calls per second. State-gated ladders replace visual assumptions with explicit prerequisites, and status-code triage turns every retry into a deliberate architectural decision.
+The guards close different boundaries. Negative checks stop sequential repeated work; operation identity, ownership, and revision checks arbitrate concurrent work. Full Jitter spreads a retry cohort but does not cap outbound traffic. State prerequisites express workflow order; they do not create a distributed lock. The coordinator must reconcile uncertain effects and give unresolved orders an owner before the warehouse clock expires.
 
 > **Every automated action is an event, and every event can become a loop. Build the system that sees its own earlier work before it acts.**
 
@@ -646,31 +634,19 @@ In accordance with rigorous systems engineering standards, this dossier strictly
 
 | Architectural Deliverable | Dossier Section | Evidence Status | Ground-Truth Evidence Source |
 |---|---|---|---|
-| **Order #24148 Recursive Incident** | Sections 1 and 4 | Controlled Failure Scenario | Reconstructed 62-second forensic telemetry log across 114 events. Chloe Bennett (chloe.bennett@example.com); 114 webhook events in 62 seconds; 98% Admin API bucket saturation. |
+| **Order #24148 Feedback Scenario** | Sections 1 and 4 | Reconstructed Scenario | 114 event/delivery-attempt entries in 62 seconds. The three-REST-calls/event amplification model and resource snapshots are declared illustrations, not captured Shopify telemetry. |
 | **Financial Blast Radius Model** | Section 3 | Modeled Scenario | Unit-economic cost model incorporating 3PL SLA credits and inventory overselling. |
 | **Negative Tag Check Blueprint** | Section 5 | Documented Specification | Production-ready Shopify Flow visual guard pattern. |
 | **Idempotency Triad & Ledger Contract** | Section 6 | **Executed locally** | A duplicate with the same ID and payload hash returns the active or stored result. The original request produces one simulator effect. [Coordinator checks](../evidence/latency/summary.md) |
 | **Status Code Triage & Cutoff Rejection** | Section 7 | **Cutoff checked locally** | The post-cutoff workload produces zero warehouse simulator effects, and replay preserves the rejection. [Coordinator checks](../evidence/latency/summary.md) |
 | **Four-Tier Execution Ladder** | Section 8 | Documented Specification | State-gated priority specifications and trigger-action conflict matrix. |
-| **SQS Work Queue & Full Jitter Model** | Section 9 | Documented Specification | Mathematical backoff model smoothing 500 retry spikes to 8.33 requests/sec. |
+| **SQS Work Queue & Full Jitter Model** | Section 9 | Documented Specification | The isolated 500-call first-retry cohort has an expected 8.33 arrivals per one-second bin. Cloud delivery, admission limits, and recovery behavior remain acceptance tests. |
 
 ### 12.2 Executed Results: 34 of 34 Checks Passed
 
-Run `2026-11-09T18-21-14-457Z-59d713d1` on Node v24.22.1: **34 passed, 0 failed, 0 skipped** ([`../evidence/latency/summary.md`](../evidence/latency/summary.md)). The test harness uses Node's built-in SQLite engine to execute atomic claims and conditional updates against virtual WMS and Shopify state. No external network credentials or cloud queues are contacted.
+The [current coordinator report](../evidence/latency/summary.md) records the run ID, Node version, executed checks, attempt counts, business effects, and measured local percentiles. Use that report when quoting results; do not copy an earlier machine's timing into a current deployment claim.
 
-| Workload | Attempts | Concurrency | p50 Response | p95 Response | p99 Response | Business Effects |
-|---|---:|---:|---:|---:|---:|---:|
-| **Sequential local baseline** | 50 | 1 | 5.13ms | 6.71ms | 6.88ms | 50 |
-| **Concurrent local burst** | 200 | 25 | **13.99ms** | 24.88ms | **28.20ms** | 200 |
-| **Injected WMS delay** | 40 | 10 | 12.97ms | 19.36ms | **20.05ms** | 40 |
-| **Same-payload duplicate pairs** | 100 | 20 | **0.16ms** | 10.94ms | 14.31ms | 50 |
-| **Post-cutoff rejection** | 20 | 5 | **0.59ms** | 0.71ms | **0.73ms** | 0 |
-| **Response loss after WMS success** | 30 | 5 | 6.61ms | 12.95ms | 20.67ms | 30 |
-
-* **Deduplication (0.16ms p50)**: 100 same-payload attempts across 50 pairs produced exactly 50 business effects. The median response was 0.16ms: duplicate requests are intercepted as fast ledger lookups with zero side effects.
-* **Cutoff Enforcement (0.59ms p50)**: 20 post-cutoff requests were rejected with a p50 of 0.59ms (p99: 0.73ms), producing exactly 0 warehouse mutations.
-* **Burst Concurrency (13.99ms p50)**: 200 attempts at concurrency 25 maintained sub-30ms performance (p99: 28.20ms) with 100% data integrity.
-* **Uncertain Response Reconciliation**: 30 responses dropped after simulator success were safely reconciled with zero double-mutations (30 attempts, 30 effects).
+The local fixtures verify duplicate outcomes, conditional hold acquisition, operation ownership, revision conflicts, uncertain-effect reconciliation, selective release, and restart recovery. They contact no Shopify API, WMS vendor, or SQS service. The response distribution includes pending, rejected, and unknown outcomes; it is not warehouse-confirmation latency. A fast duplicate lookup cannot stop a conveyor. The production acceptance test must still prove that the correct order is physically held before the wave releases.
 
 ### 12.3 Safety Claims vs. Executed Checks
 

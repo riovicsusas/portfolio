@@ -16,7 +16,7 @@ The checkout returned no errors. The order confirmation fired. The warehouse pic
 
 The ledger disagreed.
 
-Customer **David Miller** (`david.miller@example.com`) placed an $80.00 basket — one Focus Stick Packs 30-Pack at $42.00 and one Adaptogen Tincture 60ml at $38.00 — and applied four promotional codes in a single session: `VIP20` (20% off products), `WELCOME25` ($25.00 off the order), `LOYALTY10` (a $10.80 loyalty credit), and `FREESHIP` (free ground shipping). None of the codes blocked each other. The checkout accepted them all.
+Customer **David Miller** (`david.miller@example.com`) placed an $80.00 basket containing one Focus Stick Packs 30-Pack at $42.00 and one Adaptogen Tincture 60ml at $38.00. He applied four promotional codes in a single session: `VIP20` (20% off products), `WELCOME25` ($25.00 off the order), `LOYALTY10` (an unearned, merchant-funded $10.80 order discount), and `FREESHIP` (free ground shipping). This scenario assigns no prior customer funding or stored-credit liability to `LOYALTY10`. It reduces revenue. None of the codes blocked each other. The checkout accepted them all.
 
 The customer paid **$28.20**. Manufacturing those goods cost $21.00. Picking, packing, and boxing them cost $4.10. Shipping them cost $6.50. Processing the payment cost $1.12. Total out-of-pocket: **$32.72** — against $28.20 collected.
 
@@ -270,7 +270,7 @@ $$\text{Cart Transform (Normalization)} \longrightarrow \text{Discount API (Calc
 |---|---|---|
 | **Cart Normalization** | Cart Transform (`cart_transform`) | Runs first. Adjusts line pricing and bundle presentation (merge, expand) so discount math begins from a clean cart. |
 | **Discount Calculation & Floor Cap** | Discount Function API (line & delivery) | Computes line and shipping discounts. Caps line discounts at the SKU maximum allowable ceiling (Section 5.2) and evaluates free shipping post-discount. |
-| **Final Validation Gate** | Cart and Checkout Validation (`cart_checkout_validation`) | Runs last on the discounted cart with `blockOnFailure: true` declared in `shopify.extension.toml`. Emits blocking checkout errors if an invalid combination, subtotal breach, or below-floor payable is detected. |
+| **Final Validation Gate** | Cart and Checkout Validation (`cart.validations.generate.run`) | Checks the final discounted cart. Activate its Validation resource through Admin GraphQL `validationCreate` with `enable: true` and `blockOnFailure: true`, then read those flags back. Return blocking checkout errors for an invalid combination, missing cost inputs, or a below-floor payable. The Discount Function owns calculation and capping; Validation does not remove discounts. |
 
 > [!NOTE]
 > **API Index Specification**: Custom applications implementing Function APIs require Shopify Plus. Earlier platform documentation referred to a *discounts allocator* target in preview; current Shopify Functions index under the unified Discount API. Target naming reflects the 2026-10 specification.
@@ -281,7 +281,7 @@ $$\text{Cart Transform (Normalization)} \longrightarrow \text{Discount API (Calc
 
 *The margin formula, why fees must be computed on the discounted payment rather than the sticker price, and the per-SKU ceilings on discount.*
 
-Combination rules define which promotions may coexist; they do not determine how much discount a specific basket can afford. To guarantee that no order is ever sold at an operational loss, every catalog SKU enforces an algorithmic **Contribution Margin Protection Floor**:
+Combination rules govern which promotions coexist. The **Contribution Margin Protection Floor** answers the next question: does the final payment cover this basket's declared product, fulfillment, freight, and processing costs? The gate blocks a negative modeled unit contribution. A zero floor does not fund overhead, acquisition, or unmodeled recovery costs.
 
 $CM = (\text{Retail Price} - \text{Total Discount}) - (\text{COGS} + \text{3PL Handling} + \text{Carrier Freight} + \text{Processing Fee})$
 
@@ -322,11 +322,12 @@ Applying the dynamic formula across the catalog establishes the maximum allowabl
 | `SYN-TNCT-AM` | Adaptogen Tincture 60ml | $38.00 | $12.50 | $3.70 | $5.85 | $23.45 | **$23.02** | **$14.98** | **39.4%** |
 | `SYN-TMBL-MO` | Precision Insulated Tumbler | $34.00 | $7.00 | $3.70 | $5.85 | $17.84 | **$17.35** | **$16.65** | **49.0%** |
 | `SYN-ACC-WHSK` | Micro-Foam Electric Whisk | $16.00 | $3.10 | $3.30 | $4.50 | $11.66 | **$11.53** | **$4.47** | **27.9%** |
-| `SYN-BNDL-MAO` | Starter Bundle (Kitted Scenario)* | $82.00 | $28.40 | $4.50 | $7.20 | $42.78 | **$41.61** | **$40.39** | **49.3%** |
+| `SYN-BNDL-MAO` | Starter Bundle (`catalog_bundle_82`)* | $82.00 | $28.40 | $4.50 | $7.20 | $42.78 | **$41.61** | **$40.39** | **49.3%** |
 
 > [!NOTE]
 > **Logistics Schedule & Bundle BOM Baseline**:
-> * **Single-Item vs. Multi-Item Parcel**: The single-SKU illustrations above reflect standalone shipments ($3.70 handling includes $3.30 base + $0.40 fragile glass packaging allowance, $5.85 freight). When multiple items share a single box in Order #29863, handling totals $4.10 ($3.70 base pick/pack + $0.40 second unit pick) and freight is $6.50. Section 6.5 details how parcel consolidation lowers the basket floor.
+> * **Declared Fulfillment Inputs**: The Focus Sticks, tincture, and tumbler standalone rows each declare $3.70 handling and $5.85 freight. The whisk declares $3.30 handling and $4.50 freight. Order #29863 declares $4.10 handling and $6.50 freight for its two-unit carton. These inputs are recorded under `declared_fulfillment_inputs` in the [input ledger](../evidence/costs/bom_inputs.json). Each amount belongs to its declared configuration. The current cost runner executes bundle `scenarios`; these standalone and basket records remain declared dossier inputs.
+> * **Three Bundle Fixtures, Three Named Inputs**: The $98.00 `capstone` order uses $4.50 handling and $7.20 freight. The $82.00 `catalog_bundle_82` table row holds those fulfillment inputs fixed. The separate $82.00 `alternative_promo` benchmark uses $4.90 handling and $6.50 baseline freight. Price and fulfillment assumptions travel with the scenario ID.
 > * **Bundle BOM**: The Starter Bundle reflects $28.40 kitted COGS ($28.00 raw components + $0.40 packaging/kitting material).
 
 ### 5.3 Merchandising Impact: Unlocked Headroom vs. Low-Margin Hazards
@@ -358,7 +359,7 @@ Deriving mathematical breakeven floors establishes the theoretical defense, but 
 - **Maximum Allowable Discount Capacity**:
   $$\text{Basket Discount Allowance} = \text{GMV } (\$80.00) - \text{Floor } (\$32.85) = \mathbf{\$47.15} \quad (58.94\% \text{ ceiling})$$
 
-Before any promotional code is entered, the basket establishes a total discount allowance of **$47.15**. Every promotional coupon, reward credit, or fee absorption spends directly against this allowance. Any combination that deducts more than $47.15 pushes the order below cost.
+Before checkout accepts a code, the basket carries **$47.15** in discount capacity. In this scenario, `LOYALTY10` is an unearned promotional order discount, so it spends that capacity alongside the other merchant-funded deductions. The $32.85 floor already includes the declared $6.50 freight cost. Deduct shipping expense once; do not spend the same freight dollar again as an additional merchandise discount.
 
 ### 6.2 The Unrestricted Collision Event
 
@@ -369,7 +370,7 @@ During checkout, four separate promotions collided without exclusivity rules, ra
 | **0** | Initial Cart | Baseline $80.00 basket | — | $80.00 | **+$47.15** | Full Headroom Available |
 | **1** | `VIP20` | Product (20% off items) | −$16.00 | $64.00 | **+$31.15** | Within Safe Threshold |
 | **2** | `WELCOME25` | Order ($25.00 off cart) | −$25.00 | $39.00 | **+$6.15** | Critical Buffer Remaining |
-| **3** | `LOYALTY10` | Customer reward tender | −$10.80 | **$28.20** | **−$4.65** | **CRITICAL OVERDRAW (Breach ❌)** |
+| **3** | `LOYALTY10` | Order (unearned promotional reward) | -$10.80 | **$28.20** | **-$4.65** | **CRITICAL OVERDRAW (Breach)** |
 | **4** | `FREESHIP` | Shipping ($6.50 freight absorbed) | $6.50 absorbed | **$28.20** | **−$4.65** | Deficit Shipped Out-of-Pocket ❌ |
 
 ```mermaid
@@ -418,7 +419,7 @@ ORDER #29863: PRE-FIX FINANCIAL DISASTER AUDIT
 
 **Reconciling the $4.65 Overdraw with the −$4.52 Net Loss**: The customer received $51.80 in total discounts, overdrawing the $47.15 allowance by exactly **$4.65**. The final net contribution loss was −$4.52 rather than −$4.65 because the lower collected payment ($28.20 vs. $32.85) reduced credit card fees from $1.25 down to $1.12 ($2.9% × $28.20 + $0.30). This dynamic fee reduction provided **$0.13 in processing fee relief** ($4.65 − $0.13 = $4.52).
 
-**The Shipping Decoy**: While `FREESHIP` did not reduce the customer payable below $28.20, absorbing $6.50 in freight sealed the operational loss. Had the customer been charged standard ground shipping, collected revenue would have reached $34.70 ($28.20 + $6.50)—comfortably clearing the $32.85 floor and yielding a +$1.70 profit despite the stacked discounts.
+**The Shipping Decoy**: `FREESHIP` left customer payment at $28.20 while the merchant absorbed the declared $6.50 freight cost. Charging the customer that $6.50 would raise collected revenue to $34.70. The fee rounds to $1.31, leaving **+$1.79 in contribution**: $34.70 - $21.00 COGS - $4.10 handling - $6.50 freight - $1.31 processing. Freight enters the cost ledger once; collected shipping revenue helps fund it.
 
 ### 6.3 Post-Remediation Execution (Layered Protection Applied)
 
@@ -427,7 +428,7 @@ With the 3×3 Combinatorial Matrix and checkout validation enforced:
 2. The customer attempts `WELCOME25` $\to$ **Blocked by Rule 2**:
    > *"Discount code WELCOME25 cannot be combined with VIP20 on carts under $85.00."*
    Notice that Rule 2 intercepts the combination at the storefront boundary *before* the basket approaches its $32.85 floor.
-3. Loyalty credit stacking is restricted to non-conflicting payment tenders.
+3. Treat `LOYALTY10` as an unearned promotional **order discount**. Apply the same class-exclusivity and basket-floor gates. Customer-funded payment tenders require their own settlement accounting.
 4. **Shipping Qualification**: Because the post-discount subtotal ($64.00) clears the $\ge \$50.00$ threshold (Rule 3), Free Ground Shipping is granted ($6.50 freight absorbed by merchant).
 
 ```text
@@ -492,7 +493,7 @@ Tracing the physical savings of consolidated shipping explains the basket mechan
 
 | # | Failure Mode | Root-Cause Class | Rule Breached | Architectural Guard | Seen in Order #29863 |
 |:---:|---|---|:---:|---|:---:|
-| **1** | Two discounts from same class stack | Missing intra-class exclusivity | Rule 1 | Class-exclusivity gate at checkout boundary (Sections 4.3 and 4.4). | Conditional (`LOYALTY10` if order-class). |
+| **1** | Two discounts from same class stack | Missing intra-class exclusivity | Rule 1 | Class-exclusivity gate at checkout boundary (Sections 4.3 and 4.4). | **YES**: `WELCOME25` + promotional order reward `LOYALTY10`. |
 | **2** | Order discount stacks on small cart | Missing inter-class minimum | Rule 2 ($85.00) | Validation API reads cart subtotal before permitting mix. | **YES**: `WELCOME25` on $80 cart with `VIP20`. |
 | **3** | Free shipping granted on discounted cart | Threshold evaluated pre-discount | Rule 3 ($50.00) | Delivery discount judged strictly on post-discount subtotal. | **YES**: `FREESHIP` applied at $28.20 payable. |
 | **4** | Discounts exceed physical costs | Zero margin protection floor | Dynamic Floor | Per-basket floor validation gate backed by cost inputs (Sections 5 and 6.4). | **YES**: $28.20 collected against $32.85 floor. |
@@ -505,7 +506,7 @@ Examining the five failure modes reveals a fundamental hierarchy between operati
 1. **Heuristic Policy Proxies (Defects #1, #2, #3)**: Rules such as class-exclusivity boundaries, subtotal minimums ($85.00), and post-discount shipping thresholds ($50.00) serve as operational friction. They are easily configured in storefront admin interfaces and immediately intelligible to marketing operators. However, proxy rules are inherently fragile: launching a new high-percentage coupon (e.g., a 40% VIP flash sale) or shifting catalog product costs can satisfy all proxy rules while still breaching profitability.
 2. **The Decisive Defect (Defect #4 — Zero Margin Protection Floor)**: The catastrophic vulnerability in Order #29863 was not merely that codes combined, but that the checkout engine possessed no server-side awareness of direct fulfillment costs. A dynamic margin protection floor acts as an absolute mathematical invariant: regardless of what promotional codes are presented, the transaction is rejected or pruned if customer payment falls below $P'_{\text{dynamic}}$. Had Defect #4 been mitigated, the checkout would have automatically rejected the final promotional deduction at $32.85, preserving contribution even in the total absence of Rules 1 through 3.
 
-Resilient storefront architecture enforces both layers: policy proxies guide customer behavior and preserve promotional clarity, while the algorithmic margin floor guarantees capital preservation. Section 8 details the production configuration parameters, geographic shipping sensitivities, and runtime architecture required to enforce this defense.
+Resilient checkout needs both layers. Policy gates control promotion combinations; the basket floor blocks a negative contribution under the published cost inputs. Neither substitutes for current costs or a positive commercial margin target. Section 8 defines the inputs and deployment contract that make the gate useful.
 
 ---
 
@@ -529,7 +530,7 @@ Resilient storefront architecture enforces both layers: policy proxies guide cus
 
 A major blindspot in naive margin defense is treating fulfillment freight as a single, static national constant (e.g., standardizing on $6.50). In reality, carrier shipping costs fluctuate dramatically across geographic zones. If a merchant sets a static nationwide breakeven floor, orders shipped locally may remain profitable, while identical orders shipped cross-country bleed cash.
 
-To demonstrate this geographic sensitivity, consider the **Starter Bundle** (`SYN-BNDL-MAO`, modeled under the **Promotional Campaign Scenario** at $82.00 retail with $28.40 kitted COGS and $4.90 promotional handling, per `evidence/costs/bom_inputs.json` scenario `alternative_promo`) across standard carrier ground zones:
+The same kit can carry a different financial fixture. Here the **Promotional Campaign Scenario** (`alternative_promo`) declares an $82.00 price, $28.40 kitted COGS, $4.90 handling, and $6.50 baseline freight in [the input ledger](../evidence/costs/bom_inputs.json). Hold price, COGS, and handling fixed; vary only the freight input below. The declared $4.90 handling amount stays fixed throughout this freight sweep.
 
 | Outbound Freight Cost | Total Direct Costs | Net Contribution ($82 Retail) | Dynamic Minimum Payable Floor | Delta vs. $6.50 Baseline | Max Allowable Discount ($) |
 |:---:|:---:|:---:|:---:|:---:|:---:|
@@ -544,42 +545,71 @@ At $6.50 freight (Zone 3), fixed costs are $39.80 and the dynamic floor is **$41
 
 **The Architectural Implication**: A promotional discount of $40.00 on this $82.00 bundle leaves a $42.00 customer payment. That payment is fully profitable in Zone 1 (clearing the $39.24 floor), but generates an immediate operational loss in Zone 8 (failing the $49.64 floor). Therefore, checkout validation cannot rely on static catalog averages; it must dynamically resolve the floor against the customer's actual destination postal zone.
 
-*(Note: In contrast to this $82.00 promotional benchmark, the Capstone models Elena Vance's Order #35070 at its full standard MSRP of $98.00 ($28.40 COGS, $4.50 handling, $7.20 freight, $3.14 processing = $54.76 baseline contribution). Both scenario variants are checked integer-cent inputs in `evidence/costs/bom_inputs.json`. [Capstone Sections 2.1 and 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) itemize Elena's baseline and replacement ledgers.)*
+*(Note: In contrast to this $82.00 promotional benchmark, the Capstone models Elena Vance's Order #35070 at its full standard MSRP of $98.00 ($28.40 COGS, $4.50 handling, $7.20 freight, $3.14 processing = $54.76 baseline contribution). Both scenario variants are checked integer-cent inputs in `evidence/costs/bom_inputs.json`. [Capstone Section 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes Elena's baseline and replacement ledgers.)*
 
-### 8.3 Three-Tier Production Enforcement: Sub-5ms Checkout Validation
+### 8.3 Three-Tier Production Enforcement: Block the Loss Before the Box Moves
 
-Deploying these configuration parameters and zone-aware freight inputs into a live direct-to-consumer storefront requires isolating responsibilities across three architectural tiers:
+A Discount Function calculates and caps the promotion it produces. The Cart and Checkout Validation Function guards the final payable. Keep those jobs separate: the calculator sets the discount; the gate stops a below-floor checkout before the warehouse receives an order it costs money to ship.
 
 ```mermaid
 flowchart TD
-    subgraph TIER1["1. Storefront Checkout Boundary (Shopify Functions / WASM)"]
-        F1["Cart Validation Function<br/>(Sub-5ms Execution Budget)"] --> F2{"Dynamic Floor Check:<br/>Payment >= P'?"}
-        F2 -- "Pass" --> F3["Allow Checkout Progression"]
-        F2 -- "Fail" --> F4["Prune Conflicting Promotion &<br/>Return Explanatory Message to Customer"]
+    subgraph TIER1["1. Checkout Boundary: Proposed Shopify Functions Deployment"]
+        D1["Discount Function<br/>Calculate and cap its discount output"] --> V1["Validation Function<br/>Read final discounted cart and cost inputs"]
+        V1 --> V2{"Inputs valid and current;<br/>contribution floor satisfied?"}
+        V2 -- "Yes" --> PASS["Allow Checkout Progression"]
+        V2 -- "No" --> BLOCK["Block Checkout<br/>Return an actionable customer message"]
     end
-
-    subgraph TIER2["2. Platform Configuration (Shopify Admin / Combinations API)"]
-        A1["Promotion Setup"] --> A2["Native 'combinesWith' Settings<br/>Enforce Intra-Class Exclusivity (Rule 1)"]
-        A2 --> A3["Order Subtotal Triggers<br/>Enforce $85 / $50 Thresholds (Rules 2 & 3)"]
+    subgraph TIER2["2. Promotion Configuration"]
+        A1["Native combinesWith Settings<br/>Approved discount combinations"] --> A2["Function Policy Checks<br/>$85 combination / $50 shipping thresholds"]
     end
-
-    subgraph TIER3["3. ERP & Supply Chain Data Pipeline (Asynchronous Cost Sync)"]
-        E1["ERP / WMS Ledger"] --> E2["Nightly Rate Card & BOM Sync<br/>(COGS, Handling, Freight Rate Cards)"]
-        E2 --> E3["Storefront Private Metafields<br/>(Cached for Sub-Millisecond Function Access)"]
+    subgraph TIER3["3. Asynchronous Cost Publication"]
+        E1["ERP / WMS Declared Cost Inputs"] --> E2["Versioned Metafields<br/>Currency, effective time, and freshness limit"]
     end
-
-    TIER3 -.->|"Populates Cost Inputs"| TIER1
-    TIER2 -.->|"Guards Standard Rules"| TIER1
-
-    style F3 fill:#d4edda,stroke:#28a745,stroke-width:2px;
-    style F4 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
+    TIER2 -.->|"Policy Inputs"| TIER1
+    TIER3 -.->|"Cost Inputs"| TIER1
+    style PASS fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    style BLOCK fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
 ```
 
-* **Execution Envelope**: Validation logic executing at the checkout boundary cannot perform live external HTTP calls to ERPs or databases. All cost inputs (COGS, 3PL handling, carrier freight brackets) are synced asynchronously from the ERP ledger into Shopify private metafields, enabling the WebAssembly function to evaluate dynamic floors in under 5 milliseconds.
-* **Fail-Closed Governance (`blockOnFailure: true`)**: Shopify Validation Functions run under host-level execution controls. In `shopify.extension.toml`, the extension specifies `meta.validation.block_on_failure = true`. If the WASM runtime exceeds its 5ms CPU budget, throws an unhandled exception, or finds cost metafields corrupted or missing, the platform blocks checkout progression rather than failing open.
-* **Single-Coupon Floor Defense**: Margin defense cannot assume that floor violations only occur through multi-code collisions. A single oversized coupon can breach the contribution floor on an entry-level item—for example, a 40% discount applied to the $16.00 Bamboo Whisk collects $9.60 from the customer, instantly breaching the $11.53 dynamic breakeven floor and producing a contribution loss. The Cart and Checkout Validation Function enforces the dynamic floor as an absolute gate against the net payable, regardless of whether discounts originate from four stacked codes or a single misconfigured promotion.
+**Activate the gate through Admin GraphQL.** Deploy the Function first. With the required validation scopes, call `validationCreate(validation: $input)` using the app-owned Function handle. `blockOnFailure` belongs to the Validation resource; a TOML label cannot switch it on:
 
-With the production enforcement architecture firmly in place, Section 9 models the quantified financial returns—measuring the exact capital preserved across individual orders and scaled marketing campaigns.
+```graphql
+mutation ActivateSynapseMarginFloor($input: ValidationCreateInput!) {
+  validationCreate(validation: $input) {
+    validation { id enabled blockOnFailure }
+    userErrors { field message }
+  }
+}
+```
+
+```json
+{
+  "input": {
+    "functionHandle": "synapse-margin-floor",
+    "title": "Synapse contribution floor",
+    "enable": true,
+    "blockOnFailure": true
+  }
+}
+```
+
+Use the handle of the deployed extension. Require no top-level GraphQL errors, an empty `userErrors` array, and a returned Validation ID. Persist that ID, then read the resource back:
+
+```graphql
+query VerifySynapseMarginFloor($id: ID!) {
+  node(id: $id) {
+    ... on Validation { id enabled blockOnFailure }
+  }
+}
+```
+
+Proceed only when the persisted resource returns `enabled: true` and `blockOnFailure: true`. Update an existing resource through `validationUpdate` rather than creating another gate on every retry. These are deployment acceptance checks, not executed calls in this repository. [Validation activation](https://shopify.dev/docs/api/admin-graphql/2026-10/mutations/validationCreate) · [Validation resource](https://shopify.dev/docs/api/admin-graphql/2026-10/objects/Validation)
+
+* **Runtime failure and missing cost data are different failures.** `blockOnFailure: true` closes the runtime-exception path. The Function must separately return a blocking validation error when required costs are missing, malformed, stale, in the wrong currency, or unsuitable for the destination/service. Never substitute zero costs or single-code exclusivity. Evaluate the final discounted cart; include tax in the processing base and exclude remitted tax from contribution revenue. [Validation failure behavior](https://shopify.dev/docs/api/functions/2026-10/cart-and-checkout-validation)
+* **Measure the target; respect the platform limit.** This design targets sub-5ms evaluation using published cost metafields instead of live ERP calls. The repository has not measured that target. Shopify documents an 11-million-instruction allowance for carts with up to 200 lines, scaling for larger carts. Profile the deployed Function against its instruction budget; do not describe 5ms as the host's enforced CPU cutoff. [Function instruction limits](https://shopify.dev/docs/apps/build/functions/optimize-instruction-counts)
+* **One coupon can cross the floor.** The Micro-Foam Electric Whisk (`SYN-ACC-WHSK`) retails at $16.00 and has an $11.53 floor under its declared fulfillment inputs. A 40% promotion leaves $9.60: the gate blocks the checkout even when no other code is present. The number of coupons does not change the cost of putting that whisk in a box.
+
+The checkout mechanism remains a deployment specification. Section 9 measures the declared campaign's contribution swing; it does not turn this proposed gate into a live-platform result.
 
 ---
 
@@ -593,33 +623,32 @@ With the production enforcement architecture firmly in place, Section 9 models t
 |---|:---:|:---:|:---:|
 | **Collected from Customer** | $28.20 | $64.00 | +$35.80 |
 | **Contribution (Standard Gateway Fee)** | **−$4.52** | **+$30.24** | **+$34.76** |
-| **Contribution (With Optional $0.28 Auth Fee)** | −$4.80 | +$30.24 | +$35.04 |
-| **Net Contribution Margin (%)** | **−16.03%** | **+47.25%** | **+63.28%** |
+| **Contribution (With Optional $0.28 Auth Fee on Each Order)** | -$4.80 | +$29.96 | +$34.76 |
+| **Contribution Margin (%)** | **-16.03%** | **+47.25%** | **+63.28 percentage points** |
 
 Enforcing combinatorial rules swings this single order by **+$34.76**.
 
 ### 9.2 Scaled Campaign Exposure Model
 
-To an executive, a −$4.52 loss on a single order may appear negligible. Consider an uncontrolled marketing or affiliate campaign generating 1,000 stacked orders matching Order #29863:
+One -$4.52 order looks small beside a campaign dashboard. Repeat the same fixture 1,000 times and the warehouse ships **-$4,520.00 in modeled contribution**. Hold paid-order volume and cost inputs fixed, then compare the protected checkout:
 
 | Campaign Exposure Metric | Calculation | Financial Result |
 |---|---|---:|
-| **Protected Contribution (Rules Enforced)** | 1,000 orders × +$30.24 | **+$30,240.00** |
-| **Unprotected Modeled Contribution (4 Stacked Codes)** | 1,000 orders × (−$4.52) | **−$4,520.00** |
-| **Net Operational Swing: Capital Preserved** | $30,240.00 − (−$4,520.00) | **+$34,760.00** |
+| **Protected Contribution (Rules Enforced)** | 1,000 orders * +$30.24 | **+$30,240.00** |
+| **Unprotected Modeled Contribution (4 Stacked Codes)** | 1,000 orders * (-$4.52) | **-$4,520.00** |
+| **Preserved Contribution** | $30,240.00 - (-$4,520.00) | **+$34,760.00** |
 
+```text
+1,000-ORDER CAMPAIGN: DECLARED COSTS AND FIXED PAID-ORDER VOLUME
+  Uncontrolled stacking:          -$4,520.00 contribution
+  Protected checkout:           +$30,240.00 contribution
+  ------------------------------------------------------
+  PRESERVED CONTRIBUTION:       +$34,760.00 per campaign
 ```
-                  ┌────────────────────────────────────────────────────────┐
-  1,000 Orders    │ Unconstrained Stacking Loss:   -$4,520.00  (Cash Drain)│
-  Colliding       │ Matrix Protected Contribution:+$30,240.00  (Net Profit)│
-  ────────────────┼────────────────────────────────────────────────────────┤
-  NET RECOVERY    │ TOTAL CASH PRESERVED:         +$34,760.00  (Per Campaign)
-                  └────────────────────────────────────────────────────────┘
-```
 
-A marketing promotion generating 1,000 orders under unconstrained stacking turns an expected **+$30,240.00 profit into an out-of-pocket cash loss of −$4,520.00**—hemorrhaging **$34,760.00 in unrecoverable merchant capital**.
+The control changes what each paid order contributes before overhead and acquisition costs. Across 1,000 identical modeled orders, the protected branch preserves **$34,760.00 in contribution**. This is a scenario comparison; realized campaign results also depend on conversion, demand, and actual fulfillment invoices.
 
-Proving the commercial payoff across live campaign volumes completes the quantitative defense. Section 10 distills the entire operational framework into four non-negotiable rules for prevention and recovery.
+The financial case puts a price on the missing floor. Section 10 turns that diagnosis into enforceable operating rules.
 
 ---
 
@@ -649,7 +678,7 @@ A margin leak is quieter than an outage, but every bit as destructive: nothing a
 The four operational laws eliminate this vulnerability at the boundary:
 * Three-minute forensic triage identifies and fixes conversion-blocking errors before customers churn.
 * A 3×3 combinatorial matrix stops promotional stacking before checkout can proceed.
-* An algorithmic contribution floor guarantees that every completed order defends its unit economics.
+* An activated contribution gate blocks orders below the floor calculated from valid, current inputs; the production audit must reconcile those inputs to actual cost.
 
 > **A sale is not a success until the contribution margin is positive. Protect the floor before you publish the code.**
 
@@ -687,7 +716,7 @@ In accordance with rigorous systems architecture standards, this dossier strictl
 
 ### 12.2 Executed Results: 11 of 11 Checks Passed
 
-Run `2026-11-09T18-21-14-457Z-59d713d1` on Node v24.22.1: **11 passed, 0 failed, 0 skipped** ([`../evidence/costs/summary.md`](../evidence/costs/summary.md)). All monetary values are handled in integer cents with rational half-up rounding.
+The [current cost report](../evidence/costs/summary.md) records its run ID, runtime, and executed checks; the [whole-suite manifest](../evidence/latest_run.json) binds those results to source and report hashes. Use that recorded execution for presentation figures. The suite handles money in integer cents with rational half-up processing fees. A declared input is not an executed check until the report identifies the calculation it exercises.
 
 | # | Executed Test Suite Check | Architectural Topic Covered | Status |
 |:---:|---|---|:---:|
@@ -716,9 +745,10 @@ The local cost suite validates integer-cent arithmetic, BOM fixtures, and discre
 | Boundary verified on discrete whole-cent search. | Live platform execution of Shopify Functions WASM binaries. |
 
 Integration acceptance criteria for cloud deployment:
-1. Shopify Function WebAssembly binary deployed with active `cart-transform` rules.
-2. Storefront theme error boundaries verified to catch HTTP 422 JSON payloads and display contextual user alerts.
-3. Automated monthly financial audits reconciling Stripe gross transaction capture against physical 3PL invoices.
+1. Deploy the Discount and Cart and Checkout Validation Functions on a supported store; activate the Validation resource and read back `enabled: true` and `blockOnFailure: true`.
+2. Exercise the final-cart floor through standard and accelerated checkout. Test a single oversized coupon, stacked discounts, shipping/tax handling, and missing, stale, malformed, or wrong-currency costs. Require the intended customer-facing block.
+3. Inject a Function runtime failure and verify that the activated gate blocks checkout. Measure instruction consumption and latency separately; the local ledger does not establish Function runtime performance.
+4. Reconcile captured payments, remitted tax, promotional deductions, and actual 3PL/carrier charges in the financial audit.
 
 Full test suite documentation is maintained in the evidence directory ([`../evidence/README.md`](../evidence/README.md)).
 

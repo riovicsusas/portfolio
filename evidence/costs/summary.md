@@ -24,6 +24,7 @@ Shipping revenue and tax are zero for these baselines. Tax collected is excluded
 | capstone | $98.00 | $28.40 | $4.50 | $7.20 | $3.14 | $54.76 | 55.88% | $41.61 |
 | alternative_standard | $98.00 | $28.40 | $4.90 | $6.50 | $3.14 | $55.06 | 56.18% | $41.30 |
 | alternative_promo | $82.00 | $28.40 | $4.90 | $6.50 | $2.68 | $39.52 | 48.2% | $41.30 |
+| catalog_bundle_82 | $82.00 | $28.40 | $4.50 | $7.20 | $2.68 | $39.22 | 47.83% | $41.61 |
 | reference_price_82_40 | $82.40 | $28.40 | $4.90 | $6.50 | $2.69 | $39.91 | 48.43% | $41.30 |
 
 The alternative fulfillment rows intentionally use different handling/freight from the Capstone. The representative-price row is not a measurement of cohort profitability.
@@ -85,7 +86,7 @@ This package verifies the printed scenario arithmetic and boundary behavior. It 
 
 ## Executed checks
 
-Run: `2026-11-15T17-18-57-600Z-ceb319f5` · Node v24.18.0
+Run: `2026-11-20T12-15-58-901Z-bb6b6b9f` · Node v24.18.0
 
 Passed: 11; failed: 0; skipped: 0.
 

@@ -14,12 +14,56 @@
     "note": "Kitting material is an assumed product-material allowance, distinct from outbound handling."
   },
   "processing": { "rate_numerator": 29, "rate_denominator": 1000, "fixed_cents": 30, "rounding": "half up to the nearest cent" },
+  "declared_fulfillment_inputs": {
+    "classification": "Declared dossier fulfillment inputs. Aggregate handling amounts; no dynamic surcharge engine or procurement contract is represented. These standalone and basket records are not consumed by the current bundle cost runner.",
+    "records": [
+      {
+        "id": "standalone_catalog",
+        "skus": [
+          "SYN-FSTK-MY",
+          "SYN-TNCT-AM",
+          "SYN-TMBL-MO"
+        ],
+        "parcels": 1,
+        "units": 1,
+        "handling_cents": 370,
+        "freight_cents": 585
+      },
+      {
+        "id": "standalone_whisk",
+        "sku": "SYN-ACC-WHSK",
+        "parcels": 1,
+        "units": 1,
+        "handling_cents": 330,
+        "freight_cents": 450
+      },
+      {
+        "id": "order_29863",
+        "order_id": "#29863",
+        "components": [
+          {
+            "component": "sticks",
+            "quantity": 1
+          },
+          {
+            "component": "tincture",
+            "quantity": 1
+          }
+        ],
+        "parcels": 1,
+        "units": 2,
+        "handling_cents": 410,
+        "freight_cents": 650
+      }
+    ]
+  },
   "scenarios": [
     { "id": "capstone", "label": "Capstone retained-sale baseline", "merchandise_cents": 9800, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 450, "freight_cents": 720 },
     { "id": "alternative_standard", "label": "Separate benchmark: standard price, alternative fulfillment inputs", "merchandise_cents": 9800, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 490, "freight_cents": 650 },
     { "id": "alternative_promo", "label": "Separate benchmark: promotional price", "merchandise_cents": 8200, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 490, "freight_cents": 650 },
+    { "id": "catalog_bundle_82", "label": "Separate catalog-table benchmark: $82 with Capstone fulfillment inputs", "merchandise_cents": 8200, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 450, "freight_cents": 720 },
     { "id": "reference_price_82_40", "label": "Separate representative-price sensitivity; not a measured cohort margin", "merchandise_cents": 8240, "shipping_collected_cents": 0, "tax_collected_cents": 0, "handling_cents": 490, "freight_cents": 650 }
   ],
-  "recovery": { "intercept_cents": 1750, "return_freight_cents": 840, "replacement_handling_cents": 450, "replacement_freight_cents": 1480, "goodwill_expense_cents": 2500, "dispute_fee_cents": 1500, "note": "Sale retained, fresh replacement, no salvage, goodwill fully expensed; chargeback is a separate branch." },
+  "recovery": { "intercept_cents": 1750, "return_freight_cents": 840, "replacement_handling_cents": 450, "replacement_freight_cents": 1480, "goodwill_expense_cents": 2500, "dispute_fee_cents": 1500, "note": "Sale retained, fresh replacement, no salvage. Full-face goodwill expense at issuance is a conservative contribution-model convention; actual credit redemption and settlement are separate. The lost-dispute branch separately reverses principal and adds the declared dispute fee." },
   "sensitivity": { "component_basis_points": [-2000, -1000, 0, 1000, 2000], "kitting_cents": [20, 40, 60, 80, 100], "freight_cents": [450, 650, 850, 1050, 1460, 1780], "note": "Chosen sensitivity ranges; values do not establish carrier zones or supplier quotes." }
 }

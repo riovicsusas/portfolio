@@ -1,6 +1,6 @@
 # Closest Isn’t Cheapest
 
-**How an avoidable second carton turned a $14.60 fulfillment into $22.90 (an $8.30 / 36.2% leak)**
+**How an avoidable second carton drove fulfillment from $14.60 to $22.90; and consolidation recovered $8.30, a 36.2% saving against the split baseline**
 
 *Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Master Dossier — Domain 2*
 
@@ -22,7 +22,7 @@ By evaluating each line item in isolation, the routing algorithm treated geograp
 
 In the final accounting, Allentown’s local parcel cost **$9.10** ($5.40 freight + $3.70 handling) and Reno’s cross-country parcel cost **$13.80** ($10.50 freight + $3.30 handling), producing a **$22.90** split fulfillment invoice. Consolidating all three units into a single Reno carton cost **$14.60** ($10.50 freight + $4.10 handling).
 
-The nearest warehouse was right down the road. Using it was a **36.2% financial penalty**.
+The nearest warehouse was right down the road. Consolidated fulfillment saved **$8.30, or 36.2% of the $22.90 split cost**. Splitting cost 56.8% more than the $14.60 one-box plan.
 
 This failure mode is **split-shipment surcharge leakage**. The software did not crash, throw an exception, or drop an order. The failure materialized silently on the month-end carrier invoice as a physical package the business never needed to buy.
 
@@ -131,7 +131,7 @@ $$\text{Variable Pick Labor} = \$0.40 \text{ for each unit picked after the firs
 
 $$\text{Handling}(P, U) = \$3.30 \times P + \$0.40 \times (U - P) = \$3.30P + \$0.40U - \$0.40P = \mathbf{\$2.90P + \$0.40U}$$
 
-> This is the baseline 3PL handling model ($2.90P + $0.40U) for standard non-fragile dry goods. Base fulfillment ($2.50) + corrugate ($0.80) = $3.30 fixed parcel overhead; $0.40 per additional pick. Specific product configurations (such as fragile liquid tincture packaging in Order #29863 or presentation gift kitting in the Capstone) include declared scenario surcharges documented in `evidence/costs/bom_inputs.json`.
+> **Price the scenario's carton.** The $2.90P + $0.40U equation governs the Domain 2 routing fixture, including its tincture parcel. Capstone and Domain 5 use separately declared fulfillment inputs: $4.50 for the Capstone bundle, $4.90 for the promotional bundle benchmark, and $4.10 for Order #29863's consolidated two-unit basket. The input ledger names those configurations and their aggregate charges. Keep each amount attached to its scenario when calculating contribution.
 
 Where:
 - `P` is the total count of dispatched outbound parcels.
@@ -172,7 +172,7 @@ The modeled rate card assigns $5.40 to Allentown’s local lane and $10.50 to Re
 | **Zone 8** | 1,801+ miles (Cross-Country) | $10.50 | $15.20 |
 
 > [!NOTE]
-> **Cross-Reference: Capstone Order #35070 Sourcing vs. State Failure**: Order #35070 illustrates an address-state race condition rather than an allocation mistake. Its bundle was stocked in Reno (`LOC-NV-02`) and remained allocated there, but the warehouse shipped to Philadelphia after the customer updated to San Francisco. The Capstone models **$7.20** in ground freight for the original Philadelphia leg and **$14.80** in expedited freight for the replacement, totaling $22.00 across the two outbound legs ($7.60 service-level delta). Return freight adds $8.40, totaling $30.40 in cumulative carrier charges before handling, intercept, and scrap costs. See [Capstone Section 6.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) for the complete recovery ledger.
+> **Cross-Reference: Capstone Order #35070 Sourcing vs. State Failure**: Order #35070 illustrates an address-state race condition rather than an allocation mistake. Its bundle was stocked in Reno (`LOC-NV-02`) and remained allocated there, but the warehouse shipped to Philadelphia after the customer updated to San Francisco. The Capstone models **$7.20** in ground freight for the original Philadelphia leg and **$14.80** in expedited freight for the replacement, totaling $22.00 across the two outbound legs ($7.60 service-level delta). Return freight adds $8.40, totaling $30.40 in cumulative carrier charges before handling, intercept, and scrap costs. See [Capstone Section 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) for the complete recovery ledger.
 
 With the contractual physics established—a guaranteed $2.90 handling penalty plus independent carrier postage for every extra box—we can now trace Sarah Jenkins's Bethlehem order through the two divergent routing engines.
 
@@ -269,15 +269,15 @@ Saving $8.30 on a single basket in Bethlehem proves the concept for Zone 2 versu
 
 ---
 
-## 4. The Consolidation Bound: Mathematical Proof That Proximity Never Outweighs Packaging
+## 4. The Consolidation Bound: When the Second Carton Costs More Than the Distance
 
-*Why a single cross-country parcel beats two local parcels under commercial rate cards, and how high expedited postage must rise to break the bound.*
+*Why consolidation wins under the declared rates and equal delivery promises, and where package re-rating or service constraints can reverse the decision.*
 
 ### 4.1 The Consolidation Bound Under Fixed Rates
 
-To prove that consolidation mathematically dominates multi-parcel splits across all domestic postal zones, consider an extreme theoretical scenario deliberately weighted in favor of the split: assume *both* split parcels could travel locally to Zone 2, whereas the consolidated carton must travel cross-country to Zone 8.
+The bound tests the declared three-unit basket against a split deliberately favored by geography: both split parcels travel locally to Zone 2, while the consolidated carton travels cross-country to Zone 8. Hold package rates, handling terms, and the delivery promise constant. Under those inputs, the second carton costs more than the zone premium.
 
-The bound compares the maximum possible cross-country zone premium against the irreducible minimum cost of injecting a second parcel into the logistics network:
+This is a bound on the declared model. A heavier box, dimensional weight, special handling, or a different service promise changes the comparison. Rate the actual package before the warehouse books the label.
 
 | Variable / Parameter | USPS Ground Advantage | Priority Mail Commercial |
 |---|---|---|
@@ -296,7 +296,7 @@ Within each service class, under fixed commercial rate cards and equal delivery 
 | **Two Local Parcels (Zone 2)** | Priority Mail for both | $7.80 each ($15.60) | 2 boxes × $3.30 + 1 pick × $0.40 = **$7.00** | **$22.60** | — |
 | **One Reno Parcel (Zone 8)** | Priority Mail | $15.20 | 1 box × $3.30 + 2 picks × $0.40 = **$4.10** | **$19.30** | **$3.30 Savings** |
 
-The bound holds because the second parcel must pay its own independent fixed handling toll ($2.90) and base carrier freight ($5.40 Ground / $7.80 Priority). Even if both split parcels ship locally, the split costs at least $3.20 more than a cross-country consolidated box.
+Under the declared rate card, the second parcel pays its own $2.90 handling increment plus at least $5.40 Ground or $7.80 Priority postage. Even two hypothetical local parcels cost **$3.20 more on Ground** and **$3.30 more on Priority** than the corresponding one-box plan. That result holds for these fixed package rates and equal delivery promises; it is not a universal law of carrier pricing.
 
 ### 4.2 Stress-Testing the Bound: Service-Level Upgrades & Reno Postage Ceiling
 
@@ -603,7 +603,7 @@ The three-tier waterfall translates commercial rate card physics into determinis
 
 The closest warehouse still has a place in the decision. Give the full basket a chance to stay together first, price the boxes, and make sure the chosen plan keeps the delivery promise.
 
-Engineering principles are only as credible as the tests that prove them. To establish fiduciary confidence, every rate, formula, and boundary condition in this dossier is verified against an offline, reproducible test harness.
+Engineering principles are only as credible as the evidence behind them. The offline harness verifies allocation and arithmetic under declared inputs. Carrier rates, ZIP-zone assignments, one-box fit, and the delivery promise remain scenario assumptions until independently quoted or exercised.
 
 ---
 

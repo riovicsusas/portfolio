@@ -1,16 +1,16 @@
 {
-  "run_id": "2026-11-15T17-18-57-600Z-ceb319f5",
-  "started_at": "2026-11-15T17:19:03.514Z",
-  "finished_at": "2026-11-15T17:19:03.572Z",
+  "run_id": "2026-11-20T12-15-58-901Z-bb6b6b9f",
+  "started_at": "2026-11-20T12:16:05.295Z",
+  "finished_at": "2026-11-20T12:16:05.345Z",
   "runtime": {
     "node": "v24.18.0",
     "platform": "win32",
     "arch": "x64"
   },
-  "revision": "7b38d4b623c17c10f02b4fc34100d59267566c78",
+  "revision": "5394cba3af84f39a7d1ca434a84c23993ac88e16",
   "script_sha256": "e808812b8041542779ad8e44b267d13099afef77d2ea5a6668a1b0c1432a4bd6",
   "input_sha256": {
-    "bom_inputs.json": "b458061b538de4e0a3501fce3c8293663bf35114c5197e7bca37bdc4aeae756c",
+    "bom_inputs.json": "a9b8beb470685dd89fc5d1cba0897ce002c9de1d02354b3fd5f2a83cc7e018bc",
     "money.js": "24e3fbba01f0f1ac2d051b066dcf413b6dce0de3ea220d3220dcf60b7d6ff8a3"
   },
   "classification": "Calculated scenario economics with executed invariant and regression checks",
@@ -168,6 +168,28 @@
         "zero_contribution_floor": {
           "payable_cents": 4130,
           "processing_cents": 150,
+          "contribution_cents": 0,
+          "previous_cent_contribution_cents": -1
+        }
+      },
+      {
+        "id": "catalog_bundle_82",
+        "label": "Separate catalog-table benchmark: $82 with Capstone fulfillment inputs",
+        "merchandise_cents": 8200,
+        "shipping_collected_cents": 0,
+        "tax_collected_cents": 0,
+        "handling_cents": 450,
+        "freight_cents": 720,
+        "cogs_cents": 2840,
+        "contribution_revenue_cents": 8200,
+        "payment_amount_cents": 8200,
+        "processing_cents": 268,
+        "variable_costs_cents": 4278,
+        "contribution_cents": 3922,
+        "contribution_margin_percent": 47.83,
+        "zero_contribution_floor": {
+          "payable_cents": 4161,
+          "processing_cents": 151,
           "contribution_cents": 0,
           "previous_cent_contribution_cents": -1
         }

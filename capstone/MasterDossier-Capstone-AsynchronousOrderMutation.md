@@ -1,6 +1,6 @@
 # 6 Minutes 48 Seconds and an Unconfirmed Hold: The Modeled Cost of a Zombie Order
 
-**How two timed-out webhook requests turned a $98.00 flagship sale into a cross-country mis-shipment, an FDA consumable write-off, and a modeled −$43.84 contribution.**
+**How two timed-out webhook requests turned a $98.00 flagship sale into a cross-country mis-shipment, an SOP-directed bundle write-off, and a modeled -$43.84 contribution.**
 
 *Synapse Botanicals Systems Architecture | Riovic Matthew | Master Dossier — Capstone*
 
@@ -37,7 +37,7 @@ DIGITAL CONTROL PLANE (Shopify Admin)         PHYSICAL FULFILLMENT PLANE (Reno W
 ```
 
 > [!CAUTION]
-> **Scenario and evidence scope.** Order #35070 is a staged reconstruction. Its timestamps, platform responses, and warehouse events are scenario inputs. The repository verifies selected hold-coordination, lease-fencing, and race mechanics locally (`evidence/latency/coordinator.js`); the complete vendor-integrated mutation workflow is an architectural deployment specification. Authenticated UPS CIE calls and physical parcel recovery were outside the scope of offline checks. Section 12 provides the complete verification matrix distinguishing locally proven test suites from operational deployment specifications.
+> **Scenario and evidence scope.** Order #35070 is a staged reconstruction. Its timestamps, platform responses, and warehouse events are scenario inputs. The local coordinator verifies operation ownership, revision checks, and conditional hold acquisition (`evidence/latency/coordinator.js`), together with selected replay and reconciliation behaviors. It does not implement the complete Shopify–WMS address-mutation saga, lease recovery, or distributed fencing. Those vendor integrations remain architectural deployment specifications. Authenticated UPS CIE calls and physical parcel recovery were outside the offline checks. Section 12 marks the evidence boundary for each deliverable.
 
 | Incident Dimension | Baseline Scenario Parameter |
 | :--- | :--- |
@@ -45,7 +45,7 @@ DIGITAL CONTROL PLANE (Shopify Admin)         PHYSICAL FULFILLMENT PLANE (Reno W
 | **Customer** | Elena Vance (`elena.vance@example.com`) |
 | **The Trigger Failure** | Outbound 3PL fulfillment hold timed out (`504 Gateway Timeout`); upstream state remained unknown |
 | **The Automated Cutoff** | Reno warehouse wave released 6 minutes 48 seconds after the first hold dispatch; physical picking commenced at 13:45:00. |
-| **The Blast Radius** | Cross-country mis-shipment, $98.60 damage control toll, $156.84 worst-case dispute loss, and mandatory FDA quarantine |
+| **The Blast Radius** | Cross-country mis-shipment, $98.60 in modeled recovery costs, -$156.84 contribution in the lost-dispute branch, and mandatory quarantine of returned supplements |
 
 Understanding how a silent timeout created a cross-country shipping disaster begins with the physical product inside the carton. Section 2 examines the consumable nature of the bundle and why an address error in botanicals cannot simply be restocked.
 
@@ -78,7 +78,7 @@ Every asynchronous order mutation begins with a race condition between two desti
 
 Elena’s order was not apparel or inert hardware—it contained ingestible dietary supplements (`SYN-TNCT-AM` tincture and `SYN-FSTK-MY` stick packs).
 
-In the dietary supplement and botanical industry, returned or misdirected parcels cannot simply be re-taped and placed back on warehouse shelves. Under **FDA 21 CFR Part 111 (Subpart N)**, returned dietary supplements cannot simply be restocked; they must enter mandatory quarantine pending formal quality disposition review. While the regulations permit salvage of non-supplement components, Synapse's internal quality policy (**SOP-QA-402**) mandates whole-bundle destruction because the labor and testing required to sanitize and re-kit the $7.00 tumbler ($7.00 rework expense) equals its replacement cost while introducing cross-contamination liability. Consequently, un-kitting labor and contamination liabilities convert the returned bundle into a 100% inventory write-off ($28.40 COGS) rather than restockable merchandise.
+A returned supplement is controlled inventory. The warehouse cannot put it back on the shelf because the carton looks intact. **21 CFR Part 111, Subpart N** requires identification and quarantine pending a quality-control material review and disposition decision (Section 111.510). Quality control may approve supplement salvage for redistribution or reprocessing under Sections 111.515 through 111.525; testing alone does not authorize release. This scenario applies the stricter Synapse policy, **SOP-QA-402**: returned combination kits containing supplements go to whole-bundle scrap. The declared tumbler salvage work costs $7.00 against $7.00 in replacement COGS, leaving no recovery benefit before any further supplement testing or reprocessing. QA records the disposition, and the ledger retains the original $28.40 kit cost once. The regulation controls the review. The declared SOP selects destruction.
 
 With the regulatory and inventory stakes established, the incident comes down to a race against the warehouse clock. Section 3 reconstructs the timestamped chronology and the critical 6-minute-and-48-second divergence seam.
 
@@ -279,7 +279,7 @@ The fundamental architectural failure of this integration was treating two compl
 | Status Code & Error | Semantic Meaning | Correct Architectural Response | Operational Failure in Scenario |
 | :--- | :--- | :--- | :--- |
 | **HTTP 504 Gateway Timeout** | The gateway timed out before the warehouse outcome was known. | Keep the edit blocked, alert operations, and reconcile the original hold before any replay. | The 13:40:15 retry also timed out. The warehouse released the wave at 13:42:00 with the hold still unconfirmed. |
-| **HTTP 422 PONR_EXCEEDED** | The warehouse rejected the hold after the cutoff. | Stop retrying the mutation and hand the shipment to recovery for a carrier eligibility check. | The rejection arrived at 13:50:18, 8 minutes 18 seconds after wave release. The old Philadelphia label had already printed. |
+| **HTTP 422 PONR_EXCEEDED** | The warehouse rejected the hold after confirmed physical pick. | Stop retrying the mutation and hand the shipment to recovery for a carrier eligibility check. A wave-only refusal before pick requires the supervisor path, not this hard-lockout branch. | The rejection arrived at 13:50:18, after the 13:45 physical pick and the 13:48 label print. |
 
 > [!IMPORTANT]
 > **A 504 leaves the result unknown. A 422 with `PONR_EXCEEDED` closes the edit path.**
@@ -294,7 +294,7 @@ It is tempting to blame the Cloudflare gateway for the 504 timeout, but network 
 
 | Failure Layer | Specific Defect | Severity | Point-of-No-Return Status |
 | :---: | :--- | :---: | :---: |
-| **1. Transport Layer** | Cloudflare edge gateway timed out after 3.0s under transient network load. | Operational Glitch | **Recoverable** (if reconciled within 6m48s window) |
+| **1. Transport Layer** | The declared 3.0s adapter/gateway deadline elapsed without a confirmed WMS outcome. This is a scenario timeout, not a measured Cloudflare default. | Outcome Unknown | **Recoverable** while an authoritative warehouse hold or supervisor rescue can still stop physical pick |
 | **2. Architectural Layer** | **Sequential Pipeline Abort & Missing Coordinator:** The legacy integration executed a chained script (`Hold` → `Update Address` → `Release`). When Step 1 timed out, Step 2 (`PUT address`) was aborted and never sent. Furthermore, Shopify accepted the address edit without requiring a verified physical lock from ShipBob. | **Critical Design Flaw** | **Recoverable** (if human alert had triggered immediately) |
 | **3. Observability Void** | **Swallowed Errors:** Retries ran inside an unmonitored background HTTP client thread. When Attempt 3 failed with `422 PONR_EXCEEDED` at 13:50:18, the rejection was logged to ephemeral container stdout with no Dead-Letter Queue (DLQ), no PagerDuty/Slack alert, and no Gorgias internal note. | **Critical Operational Defect** | **Silent Failure** (missed 3h40m window before trailer departure) |
 | **4. Timing Layer** | **Clock Mismatch:** Legacy software retry schedule (+5m, +15m) operated completely out of sync with physical warehouse wave releases (13:42:00 cutoff). | **Critical Design Flaw** | The trace reaches cutoff without a confirmed lock. |
@@ -307,14 +307,14 @@ Understanding why the failure occurred explains the breakdown, but an active mis
 
 *Presents the offline UPS fixture with simulated outcomes and fees, a six-step regulatory handling table for the tincture, and the replacement, credit, and notification steps.*
 
-After the modeled wave release at 13:42, the proposed playbook switches from address editing to containment.
+At 13:42:00, Elena's order crossed the automated edit cutoff without a confirmed hold or supervisor intervention. The final rescue window closed at the 13:45:00 physical pick scan. The carton then left Reno on the 17:30 line-haul trailer. By the time Elena reported the Philadelphia hub scan, a warehouse address edit could no longer reach the box. The proposed playbook therefore moves to post-dispatch containment: carrier intercept, a fresh replacement, and controlled return disposition.
 
 For Order #35070, containment unfolded through an **Intercept + Reship + Scrap** recovery sequence:
 1. **October 19, 13:30 EDT (44h post-departure):** Elena Vance observed an in-transit tracking scan: *"In Transit: Arrived at UPS Sorting Facility — Philadelphia, PA"*. Realizing the order was arriving at an East Coast regional hub rather than in California, she re-opened live chat.
 2. **October 19, 13:45 EDT:** Because the carton was stationary in the Philadelphia regional hub awaiting overnight sorting—and was not yet out for delivery—Operations submitted an electronic **UPS Delivery Intercept v2** request targeting the hub before final-mile feeder dispatch.
 3. **October 19, 14:15 EDT:** Upon electronic acceptance of the intercept request, Operations immediately dispatched a priority replacement starter bundle (`#35070-R`) from Reno DC to San Francisco via UPS Next Day Air ($4.50 3PL handling + $14.80 air freight) and issued a $25.00 courtesy store credit. Elena received her replacement in San Francisco the next afternoon (October 20).
 4. **October 20:** UPS confirmed physical interception at the Philadelphia hub, relabeled the package, and routed it back to Reno DC on Return-to-Sender (RTS) ground freight ($17.50 intercept fee + $8.40 return freight = $25.90).
-5. **October 23:** The original returned carton arrived at Reno DC. Under FDA 21 CFR Part 111 (governing mandatory quarantine and quality evaluation for returned supplements), the bundle entered QA quarantine. Because broken physical chain-of-custody prevented verifying thermal transit history, and because un-kitting the sealed presentation box was economically unviable, Synapse QA's formal disposition review under SOP-QA-402 condemned the entire bundle to regulatory scrap ($28.40 inventory write-off).
+5. **October 23:** In the staged recovery, the original carton returned to Reno. Receiving identified and quarantined the returned supplements for quality-control review under 21 CFR Part 111. QA recorded the available packaging and transit evidence, including the missing thermal history, and applied the scenario's **SOP-QA-402** whole-bundle scrap rule. The original $28.40 kit remained fully consumed in the order ledger; its disposition did not create a second charge for the same goods.
 
 The detailed containment streams below define the execution rules for this recovery sequence.
 
@@ -323,7 +323,7 @@ The detailed containment streams below define the execution rules for this recov
 The pinned [UPS Delivery Intercept v2 contract](../evidence/carrier-recovery/contracts/ups_delivery_intercept_v2.openapi.json#L2549) provides three primary electronic disposition request types for eligible shipments before delivery: Return to Sender (`RS`), Alternate Address Redirect (`AA`), or Will Call (`WC`). Operations explicitly selected **Return to Sender (`RS`) + Priority Reshipment from Reno** over an in-flight alternate address redirect (`AA`):
 
 1. **Transit Latency and Churn Mitigation:** In modeled carrier ground freight transit, redirecting (`AA`) a ground package already at the destination hub across the continent back to California is estimated to add 5–6 additional business days of freight and hub re-sorting, pushing delivery out to October 26–27 (7–8 business days / 9–10 calendar days post-checkout). By contrast, the staged recovery path dispatched a fresh replacement bundle (`#35070-R`) directly from Reno DC via **UPS Next Day Air**, achieving confirmed customer delivery in San Francisco the very next afternoon (October 20).
-2. **Product Quality & Regulatory Risk:** Dietary supplement adaptogens and liquid tinctures subjected to prolonged multi-leg ground transit across uncontrolled ambient temperatures risk thermal degradation and package fatigue. Sending a fresh, factory-sealed kit from Reno ensured full active potency and satisfied Synapse's cGMP product release standards under 21 CFR Part 111.
+2. **Product Quality & Regulatory Risk:** Another cross-country leg extends the returned kit's exposure to handling and uncontrolled transit conditions. The scenario contains no verified temperature record or potency test establishing damage or proving that another trip is acceptable. Dispatching a fresh kit from Reno avoids recirculating the returned stock and supports the modeled delivery recovery. QA still owns product release against documented specifications; a fresh seal alone does not certify potency.
 
 For an eligible shipment with active tracking, the proposed workflow submits a return request (`RS`) and tracks the carrier response against the internal operation ID. The JSON below is the checked-in offline fixture. It uses a separate tracking number and the fixture’s canceled-shipment reason `AM`. The adapter stores `idempotency_key` internally, outside the UPS request body.
 
@@ -366,30 +366,31 @@ The pinned contract uses HTTP 200 for the response examples. The simulator check
 
 ### 6.2 Stream 2: Consumable Product Quarantine (FDA 21 CFR Part 111 Compliance)
 
-If the parcel is recovered and returned to Reno, the proposed workflow puts the consumable tincture into quarantine:
+When the recovered parcel reaches Reno, identify and quarantine both returned supplements, the tincture and the stick packs, until quality control records its material review and disposition. The table specifies the receiving and QA workflow; it does not represent a completed physical recovery test.
 
 | Step | Regulatory Protocol | Execution Responsibility | System Record |
 | :---: | :--- | :--- | :--- |
 | **1** | Receiving scan flags return parcel | Reno Inbound Receiving | ShipBob WMS Inbound Scan |
 | **2** | Auto-route to Quarantine Zone A | Automated sorter | WMS Location: `LOC-NV-QUAR-A` |
 | **3** | Inspect packaging & tamper-evident seals | Quality Assurance Officer | Physical Inspection Form |
-| **4** | Audit transit temperature logs | QA Officer | Cold-Chain Transit Telemetry |
-| **5** | Log lot code for `SYN-TNCT-AM` | QA Compliance | ERP Lot Traceability Ledger |
-| **6** | Formal disposition: Scrap & write-off | Operations Manager | Accounting Write-off ($28.40 COGS) |
+| **4** | Review available transit and handling records; document missing thermal evidence | QA Officer | Material-review record, including evidence gaps |
+| **5** | Record returned lot codes for `SYN-TNCT-AM` and `SYN-FSTK-MY` | QA Compliance | ERP Lot Traceability Ledger |
+| **6** | Quality control approves and records scrap disposition under SOP-QA-402; warehouse executes it | QA / Warehouse Operations | QA disposition and inventory record ($28.40 original kit cost) |
 
 > [!NOTE]
 > **The Whole-Bundle Salvage Trade-Off (Why the Tumbler Was Scrapped).**
-> Under FDA 21 CFR Part 111, Subpart N (§111.503–§111.535), returned dietary supplements require formal quarantine and quality disposition review. While regulations permit salvage or reprocessing of uncontaminated non-supplement goods, The Daily Protocol Starter Bundle (`SYN-BNDL-MAO`) is packaged into a tamper-evident presentation gift box with custom molded foam inserts securing the tincture, stick packs, and tumbler together.
-> To salvage the wholesale $7.00 tumbler, warehouse operations would have had to un-kit the bundle ($3.50 technician labor), conduct sanitary cleaning and QA inspection ($2.50), and re-box it in virgin packaging ($1.00). The $7.00 rework expense exactly equals the tumbler's replacement COGS while introducing cross-contamination and QA liability from unsealed herbal tinctures. Under Synapse QA Standard Operating Procedure (SOP-QA-402), returned combination bundles containing ingestibles must be destroyed in their entirety, resulting in the full $28.40 inventory write-off.
+> **21 CFR Part 111, Subpart N permits controlled supplement salvage.** Section 111.510 requires quarantine until quality control completes its review. Sections 111.515 through 111.525 allow QC-approved salvage or reprocessing; reprocessed supplements must meet established specifications before QC releases them. Synapse's declared **SOP-QA-402** sets a stricter rule for this scenario: destroy returned combination kits containing supplements after recording the QA disposition.
+>
+> The kit's tamper-evident presentation box and molded inserts make the tumbler a rework decision. Declared salvage costs are $3.50 to un-kit, $2.50 for sanitary cleaning and QA inspection, and $1.00 for replacement packaging: **$7.00 to recover a $7.00 component**. That leaves zero modeled benefit before further supplement testing or reprocessing. The receiving inspection determines seal condition and records any damage; this scenario does not establish a broken seal, leak, or confirmed contamination. Apply the declared scrap rule and record the full $28.40 kit disposition. The recovery ledger already includes that original cost.
 
 ### 6.3 Stream 3: Customer Resolution & Goodwill Concession
 
 1. Dispatch an immediate expedited replacement from Reno to San Francisco (`SYN-BNDL-MAO`) via Next-Day Air.
-2. Issue an immediate **$25.00 store courtesy credit** for delivery disruption.
+2. Issue the **$25.00 store courtesy credit**. For this contribution model, expense its full face value at issuance as a conservative scenario convention. Track actual credit settlement and redemption separately.
 3. Notify customer via Gorgias Macro M-04 with active replacement tracking.
 4. Record customer outreach and replacement tracking to support a potential payment dispute response.
 
-Enacting these three containment streams halted further customer friction and satisfied FDA compliance, but every emergency action carried an operational cost. Section 7 tallies the financial bill across unit costs, carrier surcharges, and customer concessions.
+These three streams define the proposed containment: recover the parcel when the carrier can intercept it, keep returned supplements under QA control, and restore the customer's delivery promise. The offline fixtures establish selected software behavior and the declared arithmetic. Section 7 prices the recovery branch.
 
 ---
 
@@ -399,11 +400,12 @@ Enacting these three containment streams halted further customer friction and sa
 
 An engineering flaw becomes an executive business case when you calculate its impact on unit economics. Order #35070 began as a flagship, high-margin sale and ended as an operational loss.
 
+<a id="71-baseline-vs-dual-fulfillment-recovery-ledger"></a>
 ### 7.1 Baseline vs. Dual-Fulfillment Recovery Ledger
 
 Starter Bundle COGS is modeled at **$28.40** (Focus Sticks $8.50, AM Tincture $12.50, Precision Tumbler $7.00, kitting $0.40, per [BOM inputs](../evidence/costs/bom_inputs.json)). Payment gateway processing is 2.9% of the $98.00 payment plus $0.30, rounded half-up to **$3.14**.
 
-The recovery in Section 6 adds **$98.60 in incremental damage control costs**. Carrier fees and fulfillment account for $45.20, covering the intercept, return freight, replacement handling, and replacement air freight. The fresh replacement kit adds $28.40, and the courtesy credit adds $25.00. The original kit’s cost is already in the baseline. Together, these recovery costs flip order contribution from **+$54.76** down to **−$43.84**.
+The recovery in Section 6 adds **$98.60 in incremental modeled costs**: $45.20 for intercept, return freight, replacement handling, and replacement air freight; $28.40 for the fresh kit; and $25.00 for goodwill. This model conservatively expenses the store credit's full face value at issuance. Actual credit redemption and settlement belong in the credit ledger. The original kit's $28.40 cost is already in the baseline and is counted once. Under those declared inputs, recovery drives contribution from **+$54.76 to -$43.84**.
 
 ```text
 NORMAL ORDER ECONOMICS (#35070 Baseline):
@@ -434,13 +436,13 @@ ZOMBIE ORDER RECOVERY LEDGER (Replacement Branch):
 
 ### 7.2 Worst-Case Dispute Exposure & Scaled Monthly Risk
 
-If the customer initiates a payment dispute due to delivery disruption, the store absorbs the chargeback reversal and gateway penalty on top of the recovery toll:
+The **lost-dispute branch** assumes the customer disputes the sale, the merchant loses the dispute, and all declared recovery costs remain incurred. Reverse the $98.00 principal and add the modeled $15.00 dispute fee. Opening a dispute alone does not establish this loss:
 
-$$\text{Net Loss} = -\$43.84 - \$98.00 \text{ (Chargeback Reversal)} - \$15.00 \text{ (Gateway Penalty)} = -\mathbf{\$156.84}$$
+$$\text{Lost-Dispute Contribution} = -\$43.84 - \$98.00 \text{ (Principal Reversal)} - \$15.00 \text{ (Dispute Fee)} = -\mathbf{\$156.84}$$
 
-At an enterprise scale of **1,000 orders/day (30,000 orders/month)**, assuming a modest **0.5% address change rate** (150 orders/month subject to post-purchase modification):
+At a declared scale of **1,000 orders/day (30,000 orders/month)**, a **0.5% address-change rate** produces 150 modification requests per month. The sensitivity below varies the failure rate **among those address changes** and assigns the same $98.60 retained-sale recovery toll to each failed change. These are modeled contribution reductions against successful fulfillment.
 
-| Failure Rate Scenario | Unresolved Incidents / Mo | Modeled Monthly Contribution Loss | Annualized Risk Exposure |
+| Failure Rate Among Address Changes | Expected Incidents / Mo | Modeled Monthly Contribution Erosion | Annualized Exposure |
 | :--- | :---: | :---: | :---: |
 | **Low Defect (10%)** | 15 | **$1,479.00** | $17,748 / year |
 | **Moderate Defect (25%)** | 37.5 | **$3,697.50** | $44,370 / year |
@@ -460,13 +462,15 @@ In the proposed workflow, Support submits Elena’s new address through the help
 
 ### 8.1 The Five-Step Coordination Protocol
 
-The coordinator executes order mutations through a strict five-step progression before warehouse wave release:
+The standard path acquires the warehouse hold before wave release. After wave assignment, only the authenticated supervisor exception in Domain 1 can reopen an address correction before physical pick:
 
-1. **Persist a Durable Operation ID:** Assign an immutable `operation_id` across all mutation attempts to guarantee idempotent execution.
-2. **Engage the Physical Lock First:** Require the WMS to freeze the picking wave (`POST /1.0/webhook/order/hold`) and confirm with an HTTP 200 (`LOCK_ACQUIRED`) before modifying any digital records.
-3. **Mutate and Verify Shopify:** Call Shopify Admin GraphQL (`orderUpdate`). Verify zero `userErrors` and confirm the San Francisco destination via read-back before touching the warehouse destination.
-4. **Mutate and Verify WMS:** Push the new address to the warehouse (`PUT /orders/{id}/address`) and execute an immediate read-back query (`GET /orders/{id}`), verifying normalized equality across all six address fields (Street, Suite, City, State, ZIP, Country).
-5. **Targeted Hold Release:** Dispatch a selective release (`DELETE /order/hold?op={operation_id}`) that frees only this operation's lock, ensuring any independent billing or compliance holds remain active.
+1. **Persist the Mutation Intent:** Record an immutable `operation_id`, shipment identity, expected revision, and address fingerprint before dispatch. Replays consult the stored outcome; a changed payload under the same key is a conflict, and competing intents must serialize on the shipment.
+2. **Acquire and Confirm the Physical Hold:** Call `POST /1.0/webhook/order/hold`. Require an authenticated WMS response confirming this operation owns the queue lock and that picking has not begun. An HTTP 200 without that state does not clear the gate.
+3. **Mutate and Verify Shopify:** Execute `orderUpdate`, check `userErrors`, then query the persisted `shippingAddress`. Compare the six normalized destination fields with the recorded intent before touching the WMS destination.
+4. **Mutate and Verify WMS:** Execute `PUT /orders/{id}/address`, then `GET /orders/{id}`. Compare Street, Suite, City, State, ZIP, and Country with the same recorded intent. A transport acknowledgment does not establish destination equality.
+5. **Release This Operation's Hold:** After both read-backs match and ownership remains valid, issue `DELETE /order/hold?op={operation_id}`. Preserve unrelated holds. A release timeout enters `RELEASE_UNCONFIRMED`; reconcile the operation-owned hold before declaring completion.
+
+**Production contract.** Require the WMS to arbitrate hold acquisition atomically against wave and pick transitions. Keep one active mutation intent per shipment, control support and app write paths, and stop on ownership or revision conflicts. Define hold expiry, worker takeover, and direct Admin edit handling before deployment. These controls bound the saga's safety claim; the local harness does not establish vendor-side atomicity, lease recovery, or distributed fencing.
 
 *The sequence diagram below illustrates the coordinator's primary saga execution, followed by the failure handling matrix for partial writes and network edge cases:*
 
@@ -484,38 +488,43 @@ sequenceDiagram
     Note over Helpdesk,Shopify: Phase 1: Physical Warehouse Lock
     Helpdesk->>Coord: POST /order/mutate-address (operation_id, address)
     Coord->>DB: Record State: PENDING (operation_id)
+    Coord-->>Helpdesk: HTTP 202 Accepted after durable acceptance, poll operation status
     Coord->>WMS: POST /1.0/webhook/order/hold (operation_id)
 
-    alt Path A (Happy Path): WMS Confirms Lock (< 600ms)
+    alt Path A (Happy Path): WMS Confirms Operation-Owned Lock
         WMS-->>Coord: HTTP 200 OK (ON_HOLD confirmed)
         Coord->>DB: Update State: LOCK_ACQUIRED
         Coord-->>Helpdesk: Status: LOCKED (Agent UI Unlocked)
 
         Note over Coord,Shopify: Phase 2: Dual Mutation & Full-Address Verification
         Coord->>Shopify: GraphQL orderUpdate (820 Market St, Ste 400, SF)
-        Shopify-->>Coord: HTTP 200 OK (userErrors: [], SF verified)
+        Shopify-->>Coord: HTTP 200 OK (userErrors: [])
+        Coord->>Shopify: GraphQL order(id) query: shippingAddress
+        Shopify-->>Coord: Persisted destination fields
+        Note over Coord,Shopify: Coordinator compares all 6 normalized fields with recorded intent, mismatch stops the saga
         Coord->>WMS: PUT /orders/{id}/address (820 Market St, Ste 400, SF)
         WMS-->>Coord: HTTP 200 OK (Address Accepted)
         Coord->>WMS: GET /orders/{id} (Read-Back Full Destination)
-        WMS-->>Coord: HTTP 200 OK (6 fields verified: Street, Suite, City, State, ZIP, Country)
+        WMS-->>Coord: Persisted destination fields
+        Note over Coord,WMS: Coordinator compares all 6 normalized fields and confirms operation ownership before release
         Coord->>DB: Update State: DESTINATION_VERIFIED
 
         Note over Coord,WMS: Phase 3: Targeted Hold Release
         Coord->>WMS: DELETE /order/hold?op={operation_id}
         WMS-->>Coord: HTTP 200 OK (Operation hold released)
         Coord->>DB: Update State: MUTATION_COMPLETED
-        Coord-->>Helpdesk: HTTP 200 OK: COMPLETED ("Destination Verified Safely")
+        Coord-->>Helpdesk: Operation status: COMPLETED ("Destination Verified Safely")
 
-    else Path B (Cutoff Breach): WMS Rejects Lock
+    else Path B (Physical Pick Boundary): WMS Rejects Lock
         WMS-->>Coord: HTTP 422 PONR_EXCEEDED
         Coord->>DB: Update State: PONR_BREACHED (Halt Mutate)
-        Coord-->>Helpdesk: HTTP 422 Rejection ("CUTOFF_EXCEEDED: Address Locked")
+        Coord-->>Helpdesk: Operation status: REJECTED (422 PONR_EXCEEDED, physical pick confirmed)
         Note over Coord,Helpdesk: Edit blocked · Auto-route to Carrier Recovery (§6)
 
     else Path C (Network Fault): Gateway 504 Timeout (3.0s)
         WMS-->>Coord: HTTP 504 Gateway Timeout
         Coord->>DB: Update State: UNKNOWN (Halt Mutate)
-        Coord-->>Helpdesk: HTTP 409 Conflict ("HOLD_UNCONFIRMED: Manual Check Required")
+        Coord-->>Helpdesk: Operation status: UNKNOWN ("HOLD_UNCONFIRMED: Manual Check Required")
         Coord-)Helpdesk: Trigger Sev-1 Alert (6m45s Buffer to Cutoff)
         Note over Coord,DB: Urgent TechOps escalation before wave release
     end
@@ -523,16 +532,16 @@ sequenceDiagram
 
 ### 8.3 Failure & Exception Handling Matrix
 
-When network timeouts, validation errors, or partial writes occur during Phase 2 or Phase 3, the coordinator guarantees zero silent divergence: the physical warehouse hold remains **LOCKED**, and execution halts until deterministically resolved:
+Before release dispatch, a partial write or failed read-back blocks release while the coordinator reconciles the two destinations under its confirmed WMS hold. After release dispatch, the facts change: a timeout leaves release status **UNKNOWN** because the WMS may already have cleared the hold. Both destinations must have been verified before that attempt. Poll this operation's hold record, preserve unrelated holds, and escalate an unresolved result. Never infer that the carton is still frozen from a missing response.
 
 | Phase & Step | Failure Mode / HTTP Status | Idempotency Ledger State | Coordinator Defensive Action | Frontline & Operational Resolution |
 | :--- | :--- | :---: | :--- | :--- |
 | **Phase 1: Lock** | `HTTP 504 Gateway Timeout` (3.0s) | `UNKNOWN` | Halts execution immediately; does **not** write to Shopify or WMS. | Triggers immediate Sev-1 alert; TechOps reconciles Reno queue state within the remaining 6m45s buffer before wave release. |
 | **Phase 1: Lock** | `HTTP 422 PONR_EXCEEDED` | `PONR_BREACHED` | Halts execution; marks order ineligible for modification. | Helpdesk displays `"CUTOFF_EXCEEDED"`; triggers Section 6 Carrier Intercept and Replacement workflow. |
-| **Phase 2: Shopify** | `HTTP 504 / Connection Timeout` | `SHOPIFY_SYNC_PENDING` | Executes read-back query (`query { order { shippingAddress } }`). Warehouse hold remains **LOCKED**. | If SF address committed $\to$ proceeds to WMS. If PA address retained $\to$ retries mutation or alerts TechOps. Zero physical divergence possible. |
+| **Phase 2: Shopify** | `HTTP 504 / Connection Timeout` | `SHOPIFY_SYNC_PENDING` | Reads the persisted `shippingAddress` for the order and checks the recorded intent. Release remains blocked under the confirmed operation-owned WMS hold. | If the requested destination is confirmed and ownership/revision checks still pass, proceed to WMS synchronization. Otherwise reconcile before any same-intent retry or escalate to TechOps. |
 | **Phase 2: Shopify** | GraphQL `userErrors` (e.g., postal invalid) | `SHOPIFY_MUTATE_FAILED` | Halts mutation chain. Warehouse hold remains **LOCKED**. | Displays specific validation error to agent; Reno queue stays frozen until resolved or released. |
 | **Phase 2: WMS** | HTTP 5xx, timeout, or 6-field read-back mismatch | `WMS_SYNC_FAILED` | Halts execution before release. Warehouse hold remains **LOCKED**. | Prevents order from entering picking wave with mismatched address; alerts Reno DC queue manager for manual sync. |
-| **Phase 3: Release** | `HTTP 504 / Gateway Timeout` | `RELEASE_UNCONFIRMED` | Release status is unknown. Background worker initiates deterministic polling (`GET /orders/{id}/holds?op={id}`). | Both destinations were fully verified before release dispatch. If polling confirms clearance $\to$ marks `MUTATION_COMPLETED`. If polling exhausts $\to$ alerts TechOps to reconcile hold status manually. |
+| **Phase 3: Release** | `HTTP 504 / Gateway Timeout` | `RELEASE_UNCONFIRMED` | Treats release status as unknown. Polls the authoritative operation-owned hold record (`GET /orders/{id}/holds?op={operation_id}`); does not replay the address writes. | Both destinations were verified before release dispatch. Confirm that this operation's hold cleared before marking `MUTATION_COMPLETED`. If it remains active, reconcile the owned release; if lookup remains inconclusive, escalate to TechOps without assuming held or released. |
 ---
 
 ## 9. Alarm on the First Uncertain Result
@@ -570,7 +579,7 @@ The proposed queue separates request acknowledgment from the physical warehouse 
                             │
                             ▼
 ┌────────────────────────────────────────────────────────┐
-│  MIDDLEWARE ADAPTER (Fast Ingestion Engine)            │
+│  MIDDLEWARE ADAPTER (Proposed Ingestion Contract)            │
 │  • Authenticates mutation request payload              │
 │  • Assigns immutable operation_id                      │
 │  • Target acknowledgment to Helpdesk / Client: < 60 ms │
@@ -642,7 +651,7 @@ The architectural philosophy explains why distributed failures persist unnoticed
 
 *Pairs each technical claim with the way it was checked, from integer-cent ledger arithmetic to staged traces and design specifications, and links the related reading.*
 
-In senior systems architecture, credibility requires clearly distinguishing between what has been empirically verified in test harnesses versus what represents an architectural specification. The repository demonstrates local proof of core distributed primitives—atomic operation claims, competing hold resolution, and idempotency ledgers—while complete end-to-end multi-SaaS orchestrations are specified for cloud deployment.
+A warehouse diagram is a deployment contract, not an execution log. The local coordinator verifies operation ownership, revision checks, and conditional hold acquisition, with selected duplicate, cutoff, reconciliation, and restart cases. It does not execute the complete Shopify–WMS address-update saga, six-field vendor read-backs, lease recovery, or distributed fencing. The matrix below separates those deployment specifications from the local behaviors and arithmetic the repository actually checks.
 
 ### 12.1 Evidence Scope & Verification Matrix
 
@@ -654,7 +663,7 @@ The cases below illustrate different failures and controls. Order numbers, timin
 | **Point-of-No-Return Engine** | In Order #18404, the warehouse queue lock is confirmed 18 seconds after the ticket arrives. The coordinator verifies the lock, updates the address, and releases the specific hold at 133 seconds. After wave release, the gate blocks automated mutations (requiring a supervisor queue freeze before physical pick). | Staged trace. Local fixtures test cutoff rejection and selective release. | [Domain 1 Sections 4 and 6](../domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md) · [Coordinator checks](../evidence/latency/summary.md) |
 | **Multi-Node Freight Waterfall** | For a separate Bethlehem, PA basket, the closest stocked node sends two Focus Stick packs from nearby Allentown ($5.40 freight + $3.70 handling). Only Reno has the tincture ($10.50 freight + $3.30 handling). The two parcels cost $22.90. Reno also stocks the sticks and can ship all three items together for $10.50 freight + $4.10 handling = $14.60, saving $8.30 under the same delivery promise. | Modeled allocation and arithmetic on declared stock and rates | [Domain 2 Section 3](../domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md) · [Freight checks](../evidence/freight/summary.md) |
 | **Matrixify Schema Audit** | The synthetic mapping assigns Focus Stick SKU `SYN-FSTK-MY` the 12-digit text `850041234014`. The import gate checks exact text, the Modulo-10 check digit, and the SKU-to-UPC mapping. All 12 approved fixtures retain their identifiers through the 95-bit software round trip. | Local software fixtures | [Domain 3 Sections 5–6](../domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md) · [Barcode checks](../evidence/barcodes/summary.md) |
-| **Shopify Flow Webhook Triage** | In Order #24148, a tag feedback loop generates 114 events in 62 seconds. A repeated operation with the same ID and payload hash receives its existing status or outcome. A conflicting payload is rejected, and an unknown warehouse outcome is reconciled before replay. | Scenario trace. Local fixtures check duplicate, conflict, and reconciliation behavior. | [Domain 4 Sections 4 and 6](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) · [Coordinator checks](../evidence/latency/summary.md) |
+| **Shopify Flow Webhook Triage** | In Order #24148, a reconstructed feedback trace contains 114 event/delivery-attempt entries in 62 seconds. A repeated operation with the same ID and payload hash receives its existing status or outcome. A conflicting payload is rejected, and an unknown warehouse outcome is reconciled before replay. | Scenario trace. Local fixtures check duplicate, conflict, and reconciliation behavior. | [Domain 4 Sections 4 and 6](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) · [Coordinator checks](../evidence/latency/summary.md) |
 | **Algorithmic Margin Defense** | Order #29863 costs $8.50 for sticks + $12.50 for tincture + $4.10 handling + $6.50 freight = $31.60. At a $32.85 payment, the 2.9% + $0.30 fee rounds to $1.25, leaving $31.60. One cent less leaves a deficit. In the separate promotional bundle model, $28.40 COGS and $4.90 handling are fixed. With the same fee, minimum payable is $41.30 at $6.50 freight and $49.64 at $14.60 freight. | Worked basket calculation. Offline cost suite checks the promotional bundle sweep. | [Domain 5 Sections 6.4 and 8.2](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) · [Cost checks](../evidence/costs/summary.md) |
 | **Frontline Helpdesk Integration** | The address-change ticket stays `PENDING` until the warehouse confirms a pre-wave lock. Only `LOCKED` permits the edit. The ticket advances to `COMPLETED` after the coordinator verifies the address in both systems and confirms release. TechOps reconciles uncertain outcomes. | Proposed helpdesk workflow. Local fixtures verify the underlying hold behavior. | [Coordinator checks](../evidence/latency/summary.md) |
 | **GraphQL Order State Query** | Shopify returned San Francisco as the destination, while the WMS manifest still showed a Philadelphia label. The comparison exposes the state divergence. | Diagnostic example | Section 4.3 |
