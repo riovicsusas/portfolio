@@ -16,7 +16,7 @@ If you run an e-commerce operation, or hire the people who do, the most instruct
 
 This case follows an address change from the initial customer checkout to the warehouse cutoff, then traces the operational decisions that govern recovery and its cost.
 
-At 13:15:10 EDT on October 17, 2026, **Elena Vance** bought a $98.00 botanical starter bundle with standard ground shipping. Shop Pay filled in her previous Philadelphia apartment address. The address passed postal validation. Elena spotted the wrong destination in her confirmation email at 13:30:00 — ten seconds before the standard 15-minute edit window closed. By the time she opened live chat at 13:32:15, the order had been in Reno's allocation queue for two minutes and five seconds. Picking had yet to begin. Support could still change the destination if the warehouse confirmed a hold.
+At 13:15:10 EST on November 7, 2026, **Elena Vance** bought a $98.00 botanical starter bundle with standard ground shipping. Shop Pay filled in her previous Philadelphia apartment address. The address passed postal validation. Elena spotted the wrong destination in her confirmation email at 13:30:00 — ten seconds before the standard 15-minute edit window closed. By the time she opened live chat at 13:32:15, the order had been in Reno's allocation queue for two minutes and five seconds. Picking had yet to begin. Support could still change the destination if the warehouse confirmed a hold.
 
 At 13:35:08, the agent saved Elena's San Francisco address in Shopify Admin. The green confirmation appeared, and the agent told her she was all set. Four seconds later, the warehouse hold request went out. It timed out. At 13:42:00, Wave Plan #8812 released the order to the warehouse floor with the original Philadelphia address still on record. Six minutes later, that address printed on the carton label. Elena learned where it had gone when tracking showed it at the Philadelphia hub — 44 hours after the trailer left Reno.
 
@@ -62,11 +62,11 @@ Every asynchronous order mutation begins with a race condition between two desti
 | Attribute | Incident Record |
 | :--- | :--- |
 | **Customer Profile** | Elena Vance (`elena.vance@example.com`) |
-| **Order Placement Timestamp** | `2026-10-17T13:15:10-04:00` (EDT) |
+| **Order Placement Timestamp** | `2026-11-07T13:15:10-05:00` (EST) |
 | **Payment Status** | Captured ($98.00) via Shopify Payments (Stripe) |
 | **Purchased Item** | 1× The Daily Protocol Starter Bundle (`SYN-BNDL-MAO`, $98.00) |
 | **Physical Bundle Contents** | • 1× Focus Stick Packs 30-Pack (Matcha Yuzu, `SYN-FSTK-MY`) — COGS $8.50<br/>• 1× Adaptogen Tincture 60ml (AM Focus, `SYN-TNCT-AM`) — COGS $12.50<br/>• 1× Precision Insulated Tumbler 500ml (Matte Obsidian, `SYN-TMBL-MO`) — COGS $7.00<br/>• Kitting Material Allowance — $0.40<br/>• Bundle COGS Total: $28.40 (matches `evidence/costs/bom_inputs.json`) |
-| **Assigned Warehouse Batch** | Standard ground shipping carried a 15-minute edit window. At 13:30:10 EDT, Synapse sent the order to Reno's allocation queue. Wave Plan #8812, its first eligible picking batch, released at 13:42:00 EDT. |
+| **Assigned Warehouse Batch** | Standard ground shipping carried a 15-minute edit window. At 13:30:10 EST, Synapse sent the order to Reno's allocation queue. Wave Plan #8812, its first eligible picking batch, released at 13:42:00 EST. |
 | **Fulfillment Origin** | Reno Distribution Center, NV (`LOC-NV-02`) |
 | **Original Shipping Address** | 1420 Chestnut St, Apt 4B, Philadelphia, PA 19102 (Zone 8 from NV) |
 | **Requested Destination** | 820 Market St, Suite 400, San Francisco, CA 94102 (Zone 2 from NV) |
@@ -96,7 +96,7 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 
 ### 3.1 Incident Event Chronology
 
-*All event timestamps follow the incident scenario in EDT (UTC−04:00). Order placement is T+0.*
+*All event timestamps follow the incident scenario in EST (UTC−05:00). Order placement is T+0.*
 
 | Timestamp | Elapsed | Actor / System | Real-World Operational Event | State / Result |
 | :--- | :---: | :--- | :--- | :---: |
@@ -119,7 +119,7 @@ Between that first hold dispatch at 13:35:12 and the wave release at 13:42:00 sa
 | **13:50:18** | T+35m08s | Retry Transport | **Retry Attempt 3 arrives at WMS adapter post-wave; rejected. Error logged to stdout without alerting operations.** | **422 PONR_EXCEEDED (Silent)** |
 | **13:50:19** | T+35m09s | Architecture | **"Zombie Order" state established: Digital and physical states permanently diverged** | **DIVERGED** |
 | **17:30:00** | T+4h14m50s | UPS Line-Haul | UPS Line-Haul Trailer #NV-402 departs Reno DC — physical warehouse dock retrieval no longer possible; parcel in transit | Departed |
-| **October 19, 13:30** | T+48h14m50s (44h post-departure) | Customer / Operations | Elena checks tracking: *"In Transit: Arrived at UPS Facility — Philadelphia, PA"*; contacts support. Intercept window opens. | Incident Discovered |
+| **November 9, 13:30** | T+48h14m50s (44h post-departure) | Customer / Operations | Elena checks tracking: *"In Transit: Arrived at UPS Facility — Philadelphia, PA"*; contacts support. Intercept window opens. | Incident Discovered |
 
 > [!NOTE]
 > **Frontline process flaw.** At 13:35:08, the agent saved the San Francisco address directly in Shopify Admin while the Reno warehouse queue was still active — before the warehouse hold was confirmed. The corrected protocol (the Hold-Confirm-Update Coordinator) is detailed in Section 8.
@@ -170,7 +170,7 @@ The carton was staged for dispatch at 13:48 and departed on the 17:30 UPS traile
 
 *How Elena Vance reported the misdirection 44 hours after trailer departure, and the three diagnostic questions that isolated the digital-physical divergence.*
 
-The system’s automated retry loops did not detect this failure. Elena Vance did—**44 hours after the trailer left Reno** (`2026-10-19T13:30:00-04:00`), when her tracking number reported:
+The system’s automated retry loops did not detect this failure. Elena Vance did—**44 hours after the trailer left Reno** (`2026-11-09T13:30:00-05:00`), when her tracking number reported:
 > *"In Transit: Arrived at UPS Sorting Facility — Philadelphia, PA."*
 
 Because the parcel was scanned upon arrival at the regional sorting hub—and was not yet out for delivery on a neighborhood delivery truck—an emergency carrier intercept window was still open. Operations initiated a standardized 3-minute diagnostic triage protocol answering three distinct architectural questions:
@@ -181,7 +181,7 @@ Forensic diagnosis requires comparing what the support agent saw against what do
 
 **Record A: What Frontline Support Saw (Shopify Order Timeline, `Admin → Orders → #35070`):**
 
-| Time (EDT) | Event Displayed in Shopify Admin UI | Operational Takeaway for Agent |
+| Time (EST) | Event Displayed in Shopify Admin UI | Operational Takeaway for Agent |
 |---|---|---|
 | **13:15:10** | Order #35070 placed; payment captured ($98.00). Shipping address: Philadelphia, PA. | Order active. The standard 15-minute edit window opened at checkout. |
 | **13:35:08** | Shipping address updated to 820 Market St, Suite 400, San Francisco, CA. | Green success badge displayed: *"Shipping address updated."* |
@@ -190,7 +190,7 @@ At 13:35:10, having seen Shopify report clean success, the agent responded in Go
 
 **Record B: What TechOps Later Reconstructed (Middleware Adapter & Edge Gateway Ingress Logs):**
 
-| Time (EDT) | Downstream Integration & Network Event | System State & Result |
+| Time (EST) | Downstream Integration & Network Event | System State & Result |
 |---|---|---|
 | **13:35:10** | `orders/updated` webhook delivered to integration middleware bus. | Ingestion 200 OK; execution started. |
 | **13:35:12** | Adapter initiates Step 1 of chained script: `POST /1.0/webhook/order/hold` to Reno WMS. | Hold request dispatched to Cloudflare proxy. |
@@ -310,11 +310,11 @@ Understanding why the failure occurred explains the breakdown, but an active mis
 At 13:42:00, Elena's order crossed the automated edit cutoff without a confirmed hold or supervisor intervention. The final rescue window closed at the 13:45:00 physical pick scan. The carton then left Reno on the 17:30 line-haul trailer. By the time Elena reported the Philadelphia hub scan, a warehouse address edit could no longer reach the box. The proposed playbook therefore moves to post-dispatch containment: carrier intercept, a fresh replacement, and controlled return disposition.
 
 For Order #35070, containment unfolded through an **Intercept + Reship + Scrap** recovery sequence:
-1. **October 19, 13:30 EDT (44h post-departure):** Elena Vance observed an in-transit tracking scan: *"In Transit: Arrived at UPS Sorting Facility — Philadelphia, PA"*. Realizing the order was arriving at an East Coast regional hub rather than in California, she re-opened live chat.
-2. **October 19, 13:45 EDT:** Because the carton was stationary in the Philadelphia regional hub awaiting overnight sorting—and was not yet out for delivery—Operations submitted an electronic **UPS Delivery Intercept v2** request targeting the hub before final-mile feeder dispatch.
-3. **October 19, 14:15 EDT:** Upon electronic acceptance of the intercept request, Operations immediately dispatched a priority replacement starter bundle (`#35070-R`) from Reno DC to San Francisco via UPS Next Day Air ($4.50 3PL handling + $14.80 air freight) and issued a $25.00 courtesy store credit. Elena received her replacement in San Francisco the next afternoon (October 20).
-4. **October 20:** UPS confirmed physical interception at the Philadelphia hub, relabeled the package, and routed it back to Reno DC on Return-to-Sender (RTS) ground freight ($17.50 intercept fee + $8.40 return freight = $25.90).
-5. **October 23:** In the staged recovery, the original carton returned to Reno. Receiving identified and quarantined the returned supplements for quality-control review under 21 CFR Part 111. QA recorded the available packaging and transit evidence, including the missing thermal history, and applied the scenario's **SOP-QA-402** whole-bundle scrap rule. The original $28.40 kit remained fully consumed in the order ledger; its disposition did not create a second charge for the same goods.
+1. **November 9, 13:30 EST (44h post-departure):** Elena Vance observed an in-transit tracking scan: *"In Transit: Arrived at UPS Sorting Facility — Philadelphia, PA"*. Realizing the order was arriving at an East Coast regional hub rather than in California, she re-opened live chat.
+2. **November 9, 13:45 EST:** Because the carton was stationary in the Philadelphia regional hub awaiting overnight sorting—and was not yet out for delivery—Operations submitted an electronic **UPS Delivery Intercept v2** request targeting the hub before final-mile feeder dispatch.
+3. **November 9, 14:15 EST:** Upon electronic acceptance of the intercept request, Operations immediately dispatched a priority replacement starter bundle (`#35070-R`) from Reno DC to San Francisco via UPS Next Day Air ($4.50 3PL handling + $14.80 air freight) and issued a $25.00 courtesy store credit. Elena received her replacement in San Francisco the next afternoon (November 10).
+4. **November 10:** UPS confirmed physical interception at the Philadelphia hub, relabeled the package, and routed it back to Reno DC on Return-to-Sender (RTS) ground freight ($17.50 intercept fee + $8.40 return freight = $25.90).
+5. **November 13:** In the staged recovery, the original carton returned to Reno. Receiving identified and quarantined the returned supplements for quality-control review under 21 CFR Part 111. QA recorded the available packaging and transit evidence, including the missing thermal history, and applied the scenario's **SOP-QA-402** whole-bundle scrap rule. The original $28.40 kit remained fully consumed in the order ledger; its disposition did not create a second charge for the same goods.
 
 The detailed containment streams below define the execution rules for this recovery sequence.
 
@@ -322,7 +322,7 @@ The detailed containment streams below define the execution rules for this recov
 
 The pinned [UPS Delivery Intercept v2 contract](../evidence/carrier-recovery/contracts/ups_delivery_intercept_v2.openapi.json#L2549) provides three primary electronic disposition request types for eligible shipments before delivery: Return to Sender (`RS`), Alternate Address Redirect (`AA`), or Will Call (`WC`). Operations explicitly selected **Return to Sender (`RS`) + Priority Reshipment from Reno** over an in-flight alternate address redirect (`AA`):
 
-1. **Transit Latency and Churn Mitigation:** In modeled carrier ground freight transit, redirecting (`AA`) a ground package already at the destination hub across the continent back to California is estimated to add 5–6 additional business days of freight and hub re-sorting, pushing delivery out to October 26–27 (7–8 business days / 9–10 calendar days post-checkout). By contrast, the staged recovery path dispatched a fresh replacement bundle (`#35070-R`) directly from Reno DC via **UPS Next Day Air**, achieving confirmed customer delivery in San Francisco the very next afternoon (October 20).
+1. **Transit Latency and Churn Mitigation:** In modeled carrier ground freight transit, redirecting (`AA`) a ground package already at the destination hub across the continent back to California is estimated to add 5–6 additional business days of freight and hub re-sorting, pushing delivery out to November 16–17 (9–10 calendar days after checkout). By contrast, the staged recovery path dispatched a fresh replacement bundle (`#35070-R`) directly from Reno DC via **UPS Next Day Air**, achieving confirmed customer delivery in San Francisco the very next afternoon (November 10).
 2. **Product Quality & Regulatory Risk:** Another cross-country leg extends the returned kit's exposure to handling and uncontrolled transit conditions. The scenario contains no verified temperature record or potency test establishing damage or proving that another trip is acceptable. Dispatching a fresh kit from Reno avoids recirculating the returned stock and supports the modeled delivery recovery. QA still owns product release against documented specifications; a fresh seal alone does not certify potency.
 
 For an eligible shipment with active tracking, the proposed workflow submits a return request (`RS`) and tracks the carrier response against the internal operation ID. The JSON below is the checked-in offline fixture. It uses a separate tracking number and the fixture’s canceled-shipment reason `AM`. The adapter stores `idempotency_key` internally, outside the UPS request body.
@@ -679,7 +679,7 @@ The cases below illustrate different failures and controls. Order numbers, timin
 
 ### A.1 Outbound Fulfillment-Hold Request — HTTP POST
 
-**Contract:** Synapse Adapter Hold Route · **Timestamp:** `13:35:12 EDT`
+**Contract:** Synapse Adapter Hold Route · **Timestamp:** `13:35:12 EST`
 
 ```http
 POST /1.0/webhook/order/hold HTTP/1.1
@@ -690,7 +690,7 @@ Content-Type: application/json
 
 {
   "operation_id": "op_hold_5920194812_881920",
-  "idempotency_key": "idem_881920149012_202610171335",
+  "idempotency_key": "idem_881920149012_202611071335",
   "fulfillment_order_id": 881920149012,
   "order_id": 5920194812,
   "reason": "INCORRECT_ADDRESS",
@@ -707,12 +707,12 @@ Content-Type: application/json
 
 ### A.2 Gateway Timeout Response — HTTP 504
 
-**Response Timestamp:** `13:35:15 EDT` (3.0 seconds post-dispatch)
+**Response Timestamp:** `13:35:15 EST` (3.0 seconds post-dispatch)
 
 ```http
 HTTP/1.1 504 Gateway Time-out
 Content-Type: text/html
-Date: Sat, 17 Oct 2026 17:35:15 GMT
+Date: Sat, 07 Nov 2026 18:35:15 GMT
 
 <html><head><title>504 Gateway Time-out</title></head>
 <body><center><h1>504 Gateway Time-out</h1></center>
@@ -721,12 +721,12 @@ Date: Sat, 17 Oct 2026 17:35:15 GMT
 
 ### A.3 Post-Cutoff Hold Rejection — HTTP 422
 
-**Response Timestamp:** `13:50:18 EDT` (Retry Attempt 3, post-dispatch)
+**Response Timestamp:** `13:50:18 EST` (Retry Attempt 3, post-dispatch)
 
 ```http
 HTTP/1.1 422 Unprocessable Entity
 Content-Type: application/json
-Date: Sat, 17 Oct 2026 17:50:19 GMT
+Date: Sat, 07 Nov 2026 18:50:18 GMT
 
 {
   "status": 422,
@@ -736,7 +736,7 @@ Date: Sat, 17 Oct 2026 17:50:19 GMT
     "current_wms_status": "READY_FOR_DISPATCH",
     "tracking_number": "1Z9999999999999999",
     "carrier": "UPS Ground",
-    "packed_at": "2026-10-17T17:48:22Z",
+    "packed_at": "2026-11-07T18:48:22Z",
     "locked_destination": "1420 Chestnut St, Apt 4B, Philadelphia, PA 19102"
   }
 }

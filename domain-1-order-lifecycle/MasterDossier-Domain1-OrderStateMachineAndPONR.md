@@ -2,7 +2,7 @@
 
 **A staged Shopify-to-warehouse address-correction trace, the Freeze-First protocol behind it, and a clear line between what was tested and what was modeled.**
 
-*Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Compiled 2026-11-10*
+*Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Technical Case Study — Domain 1*
 
 ---
 

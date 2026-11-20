@@ -16,18 +16,18 @@ Event-driven business automation feels like free labor. A customer updates a shi
 
 An event-driven system can turn its own output into its next input. A one-for-one feedback chain grows linearly; fan-out above one can grow faster. Either can run without a stopping condition. The warehouse pays for that missing condition when legitimate holds cannot reach the queue.
 
-**11:02:01 EDT, reconstructed trace.** Order **#24148** (Chloe Bennett, `chloe.bennett@example.com`) receives `Address-Verified`. The model routes order-update deliveries through an unsafe adapter into two custom Flow listeners: one attempts `Route-East`, the other `Logistics-Audited`. The adapter fails to distinguish a new tag from repeated work. The trace supplies **114 event/delivery-attempt entries in 62 seconds**; it does not claim 114 successful tag writes or a native Shopify `Order tags added` trigger. Section 2.1 defines the production connector contract that closes that gap.
+**November 2, 2026, at 11:02:01 EST.** Order **#24148** (Chloe Bennett, `chloe.bennett@example.com`) receives `Address-Verified`. The model routes order-update deliveries through an unsafe adapter into two custom Flow listeners: one attempts `Route-East`, the other `Logistics-Audited`. The adapter fails to distinguish a new tag from repeated work. The trace supplies **114 event/delivery-attempt entries in 62 seconds**; it does not claim 114 successful tag writes or a native Shopify `Order tags added` trigger. Section 2.1 defines the production connector contract that closes that gap.
 
 The declared amplification model prices each recursive event at **three REST requests**: an order fetch, a metadata query, and a tag mutation. At 114 / 62 events per second, that is **342 attempted requests / 62 seconds = 5.52 requests/sec**, before background traffic under the same app/store credentials. Against the Standard bucket's 2 requests/sec leak, demand exceeds replenishment by approximately **3.52 requests/sec**. An initially empty 40-request bucket would fill in about **11.4 seconds under a uniform fluid approximation**, sooner with background load. Exact throttle timing depends on bursts, failed calls, and retry scheduling.
 
 The trace's **39/40 REST utilization**, **950/1,000 modeled GraphQL cost points consumed**, and **140ms to 4,850ms middleware latency** are separate illustrative stress snapshots. The repository does not derive those snapshots from the 114 entries or claim observed Shopify performance.
 
-**11:03:03 EDT.** On-call triage contained the loop by deploying an emergency hotfix to Flow 1, inserting the missing negative guard condition (`tags do not contain 'Route-East'`) that terminated recursion on the next cycle.
+**11:03:03 EST.** On-call triage contained the loop by deploying an emergency hotfix to Flow 1, inserting the missing negative guard condition (`tags do not contain 'Route-East'`) that terminated recursion on the next cycle.
 
 ### 1.2 Timeline, API Exhaustion, and Blast Radius
 
 ```text
-11:02:01 EDT                                      11:03:03 EDT
+11:02:01 EST                                      11:03:03 EST
 Order tag received                               Guard deployed
      +-------------------------------------------------------------+
      | 11:02:02: FLOW-01 attempts Route-East                       |
@@ -332,8 +332,8 @@ The payload is normalized (sorted keys, stripped whitespace) and hashed via SHA-
   "expected_order_version": 7,
   "state": "PENDING",
   "attempts": 1,
-  "created_at": "2026-11-02T15:02:01Z",
-  "locked_until": "2026-11-02T15:02:31Z"
+  "created_at": "2026-11-02T16:02:01Z",
+  "locked_until": "2026-11-02T16:02:31Z"
 }
 ```
 
