@@ -6,43 +6,43 @@ const LATEST_UPDATES = [
   {
     id: "update-capstone",
     projectId: "capstone-cross-domain",
-    date: "2026-10-24",
-    tag: "Forensic Post-Mortem",
-    domain: "Master Capstone Architecture",
+    date: "2026-11-20",
+    tag: "Technical Study",
+    domain: "Capstone Architecture",
     icon: "ph-crown",
     title: "Asynchronous Order Mutation & Webhook Failure Autopsy",
-    short: "Conducted an empirical systems autopsy investigating race conditions between customer address updates and 3PL wave picking.",
-    problem: "When customers submitted shipping address corrections within a 15-minute polling window, warehouse WMS systems had already released waves for physical picking. Mis-delivered orders required expensive carrier intercepts and replacement shipments.",
-    solution: "Engineered a mandatory two-phase commit state lock protocol ('Freeze First'), paired with Amazon-standard dead-letter queue (DLQ) buffers and automated UPS/FedEx package intercept triggers.",
+    short: "Staged reconstruction of Order #35070 tracing a 504 fulfillment hold across Reno's 13:42 wave cutoff and 13:45 pick scan.",
+    problem: "A customer address save succeeded in Shopify Admin at 13:35:08, while the outbound WMS hold timed out at 13:35:15. Wave Plan #8812 released at 13:42:00 and physical picking began at 13:45:00, driving $98.60 in modeled recovery costs (-$43.84 retained-sale contribution).",
+    solution: "Designed a Hold–Update–Release coordination protocol with an operation-owned SQLite ledger (`coordinator.js`), six-field read-backs, SQS DLQ reconciliation, and confirmed UPS Delivery Intercept recovery.",
     metrics: [
-      { val: "0%", label: "Misdirected Deliveries Post-Lock" },
-      { val: "$28,500", label: "Monthly GMV Protected" },
-      { val: "<1.2s", label: "State Lock Resolution Latency" }
+      { val: "+$54.76 → -$43.84", label: "Modeled Order Swing" },
+      { val: "$1,479–$14,790", label: "Monthly Erosion Sensitivity" },
+      { val: "34 / 34", label: "Local Coordinator Checks" }
     ],
-    tags: ["Shopify Flow", "ShipBob WMS", "Two-Phase Commit", "DLQ Buffering", "Carrier APIs"]
+    tags: ["Shopify Flow", "ShipBob WMS", "Hold–Update–Release", "SQS DLQ", "UPS Intercept"]
   },
   {
     id: "update-d1",
     projectId: "d1-order-lifecycle",
-    date: "2026-09-11",
+    date: "2026-11-20",
     tag: "State Machine SOP",
     domain: "Order Lifecycle",
     icon: "ph-arrows-clockwise",
     title: "Order State Machine & Point-of-No-Return (PONR) Protocol",
-    short: "Codified the zero-tolerance 'Freeze First' fulfillment hold mandate to eliminate desynchronization with downstream 3PL polling scripts.",
-    problem: "Customer support agents modified orders while physical fulfillment lines picked and packed units, resulting in duplicate split shipments and untracked inventory leakage across multi-node warehouses.",
-    solution: "Established immutable state machine gates with strict Point-of-No-Return (PONR) timestamps, automated CASS address validation, and sanitary destruction logs under FDA 21 CFR Part 111.",
+    short: "Staged 133-second Freeze-First trace separating automated wave cutoffs from hard physical pick lockouts.",
+    problem: "Storefront edits made while an order sits 'In Progress' conflict with batched 3PL wave picking; unheld mis-shipments trigger $23.70 direct cash drain ($50.70 contribution deterioration per unit in the modeled refund branch).",
+    solution: "Codified two PONR boundaries (`wave_id == null` or authenticated WMS `supervisor_override` pre-pick), USPS CASS standardization, and 21 CFR Part 111 / SOP-QA-402 disposition controls.",
     metrics: [
-      { val: "100%", label: "Hold Execution Compliance" },
-      { val: "0", label: "Post-PONR Mis-shipments" },
-      { val: "<45s", label: "Exception Triage Turnaround" }
+      { val: "18s", label: "Staged WMS Lock" },
+      { val: "133s", label: "Total Freeze Cycle" },
+      { val: "$50.70", label: "Unit Delta Modeled" }
     ],
-    tags: ["Order State Machine", "Shopify Admin API", "Fulfillment Holds", "FDA 21 CFR Part 111"]
+    tags: ["Order State Machine", "Shopify Admin API", "PONR Boundaries", "21 CFR Part 111"]
   },
   {
     id: "update-d2",
     projectId: "d2-routing-spec",
-    date: "2026-09-15",
+    date: "2026-11-20",
     tag: "Logistics Specification",
     domain: "Routing & Logistics",
     icon: "ph-truck",
@@ -60,56 +60,56 @@ const LATEST_UPDATES = [
   {
     id: "update-d3",
     projectId: "d3-catalog-sop",
-    date: "2026-09-15",
+    date: "2026-11-20",
     tag: "Data Governance SOP",
     domain: "Bulk Data Management",
     icon: "ph-database",
     title: "Enterprise Matrixify Migration & Barcode Schema Governance",
-    short: "Executed non-destructive MERGE migrations for 50,000+ SKUs with pre-commit UPC-A barcode linters and zero storefront downtime.",
-    problem: "Spreadsheet auto-formatting corrupted 12-digit UPC barcodes into IEEE 754 scientific notation (e.g., 8.10012E+11), breaking warehouse barcode scanners and desynchronizing 3PL catalog matrices.",
-    solution: "Codified the Matrixify Non-Destructive MERGE standard, enforcing Google Sheets raw text export flags, Python pre-commit regex schema validation, and a strict 1-SKU canary batch protocol.",
+    short: "Blocked malformed barcode fixtures and unauthorized handle edits across a 12-variant catalog with targeted column pruning.",
+    problem: "Spreadsheet leading-zero stripping, scientific-notation text exports, and unredirected handle changes disrupt WMS scanning and paid-media URLs ($3,900.00 modeled exposure per release).",
+    solution: "Enforced Gate 1 column pruning paired with Matrixify `MERGE`, strict 12-digit string Modulo-10 verification, and a 2-of-12 (16.67%) canary deployment sequence.",
     metrics: [
-      { val: "50,000+", label: "SKU Catalog Records Mutated" },
-      { val: "0", label: "Barcode Truncation Errors" },
-      { val: "0 mins", label: "Storefront Downtime" }
+      { val: "58 / 58", label: "Barcode & Bitstream Checks" },
+      { val: "$3,900", label: "Modeled Release Exposure" },
+      { val: "5s", label: "Pre-Flight Circuit Stop" }
     ],
-    tags: ["Matrixify", "UPC-A Barcode Integrity", "Schema Linters", "Canary Batches"]
+    tags: ["Matrixify MERGE", "UPC-A Modulo-10", "Column Pruning", "Canary Gates"]
   },
   {
     id: "update-d4",
     projectId: "d4-automation-sop",
-    date: "2026-09-22",
+    date: "2026-11-20",
     tag: "Automation Architecture",
     domain: "Business Automation",
     icon: "ph-cpu",
     title: "Business Logic Automation & Webhook Recursion Triage",
-    short: "Engineered idempotent webhook event handlers with exponential backoff buffers to contain cascading Shopify Flow recursion loops.",
-    problem: "An unconstrained tag-mutation trigger entered an infinite recursive Flow loop (1,840 executions in 12 minutes), exhausting Shopify API rate limits and causing an 8m 45s lag on fraud quarantine checks.",
-    solution: "Built idempotent Shopify Flow workflows utilizing list-quantifier guardrails, unique event payload hashes, and automated Slack webhook anomaly alerts when run frequency exceeds 50 runs/minute.",
+    short: "Reconstructed 114-entry feedback trace and SQS Full Jitter backoff smoothing against 504 gateway retry storms.",
+    problem: "Unconstrained Order #24148 listeners re-emitted tag updates (342 attempted REST requests across 62s at 5.52 req/s against a 2 req/s leak), driving $2,162.50 in modeled outage exposure.",
+    solution: "Specified Flow negative-check guards, `operation_id` + `hold_owner` state reconciliation, 3-receive SQS dead-letter queues, and Full Jitter backoff smoothing.",
     metrics: [
-      { val: "1,840", label: "Recursive Runs Quarantined" },
-      { val: "100%", label: "Webhook Idempotency" },
-      { val: "8m 45s", label: "Fraud Check Lag Eliminated" }
+      { val: "114", label: "Trace Entries in 62s" },
+      { val: "$2,162.50", label: "Modeled Outage Floor" },
+      { val: "8.33/s", label: "Jitter Mean (500 Retries)" }
     ],
-    tags: ["Shopify Flow", "Idempotency Keys", "Webhook Queues", "Slack Alerting"]
+    tags: ["Shopify Flow", "Operation IDs", "SQS Full Jitter", "DLQ Contracts"]
   },
   {
     id: "update-d5",
     projectId: "d5-storefront-casestudy",
-    date: "2026-09-29",
-    tag: "Empirical Case Study",
+    date: "2026-11-20",
+    tag: "Technical Study",
     domain: "Technical Diagnosis",
     icon: "ph-browsers",
     title: "Algorithmic Margin Defense & Storefront Cart Diagnostics",
-    short: "Isolated mobile cart AJAX failures in under 60 seconds and eliminated negative-margin 3-way discount collision stacks.",
-    problem: "Storefront promotional codes (FLASH20 + ALEX15 + FREESHIP) stacked simultaneously, causing gross product margins to collapse from 70% down to 29.5%, while mobile carts experienced unhandled HTTP 422 JSON errors.",
-    solution: "Audited Shopify discount combination matrices to enforce mutual exclusivity, restructured mobile theme cart scripts with defensive validation, and codified Chrome DevTools payload triage checklists.",
+    short: "Reversed a modeled -$4.52 Order #29863 coupon collision and derived whole-cent dynamic contribution floors.",
+    problem: "Four stacked codes (`VIP20` + `WELCOME25` + `LOYALTY10` + `FREESHIP`) reduced an $80 basket to $28.20 collected against a $32.85 breakeven floor (-$4.52 contribution).",
+    solution: "Designed a 3x3 promotion exclusivity matrix enforced via Shopify Functions (`validationCreate` with `blockOnFailure: true`), exact cent floors, and <60s Tier-1 cart triage.",
     metrics: [
-      { val: "<60s", label: "Cart Error MTTI" },
-      { val: "70% → 29.5%", label: "Margin Leak Prevented" },
-      { val: "100%", label: "Stacking Rule Verification" }
+      { val: "+$34.76", label: "Per-Order Swing (Order #29863)" },
+      { val: "$32.85", label: "Exact Basket Floor" },
+      { val: "+$34,760", label: "1,000-Order Model Delta" }
     ],
-    tags: ["Chrome DevTools", "Margin Defense", "Cart Diagnostics", "HTTP 422 Triage"]
+    tags: ["Chrome DevTools", "Margin Floor", "Shopify Validation", "HTTP 422 Triage"]
   },
   {
     id: "update-gorgias-agent",
@@ -138,16 +138,6 @@ const LATEST_UPDATES = [
       href: "../assets/certifications/gorgias-certified-admin-susas.pdf",
       preview: "../assets/certifications/gorgias-certified-admin-susas.png"
     }
-  },
-  {
-    id: "update-d1-loom",
-    projectId: "d1-order-lifecycle",
-    date: "2026-11-21",
-    status: "In progress",
-    domain: "Order Lifecycle",
-    icon: "ph-video-camera",
-    title: "Domain 1 Loom Video Walkthrough",
-    short: "The walkthrough will show how the warehouse hold protects an address change before the point of no return."
   }
 ];
 

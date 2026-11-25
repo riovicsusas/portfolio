@@ -5,27 +5,28 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-**Technical Operations & Systems Analyst** with an Electronics Engineering foundation (Finite State Machines, Logic Systems) and frontline Amazon logistics operations experience. Specializes in multi-node order routing, catalog schema governance, event-driven webhooks, and storefront API forensics across **Shopify Plus** and distributed **3PL Warehouse Management Systems (WMS)**. Proven track record leading Sev-1 incident triage simulations, engineering idempotent Shopify Flow automations, eliminating margin-eroding discount collisions, and authoring rigorous SOPs.
+**Technical Operations & E-Commerce Systems Analyst** with an Electronics Engineering foundation (Finite State Machines, Logic Systems) and frontline Amazon logistics operations experience. Focuses on Shopify Plus order lifecycles, multi-node 3PL routing, catalog schema governance, idempotent webhook automation, and checkout margin forensics. Built the **Synapse Botanicals** reference architecture — six technical studies backed by a **152-check** offline Node.js, SQLite, and OpenAPI verification harness.
 
 ---
 
 ## CORE TECHNICAL SKILLS
-* **Platforms & Middleware:** Shopify Plus Admin, ShipBob 3PL WMS, Gorgias Helpdesk, Matrixify (Excelify), Slack Webhooks
-* **Automation & Logic:** Shopify Flow (Idempotency Guards, List-Quantifiers), Gorgias HTTP Integrations, GraphQL Admin API
-* **Data & Forensics:** Matrixify (`MERGE` Protocol), Python (`re` Barcode Linters), Chrome DevTools (Fetch/XHR, Payload Forensics)
-* **Frameworks & Reliability:** Finite State Machines (FSM), Point-of-No-Return (PONR) State Locks, Sev-1 Incident Command, 5 Whys RCA, CAPA
+* **Platforms & Commerce:** Shopify Plus Admin, ShipBob 3PL WMS, Gorgias Helpdesk, Matrixify (`MERGE` Protocol), Slack Webhooks
+* **APIs & Automation:** GraphQL Admin API (Fulfillment Orders, `validationCreate`), Shopify Flow, REST Rate Limits, AWS SQS / DLQ Design
+* **Verification & Forensics:** Node.js 24 (Built-in SQLite, BigInt Cent Math), Chrome DevTools (Fetch/XHR, Payload Triage), Regex Schema Linters
+* **Operations & Reliability:** Finite State Machines (FSM), Two-Boundary PONR Governance, Sev-1 Incident Triage, CAPA / 5 Whys
 
 ---
 
 ## TECHNICAL PROJECTS & SYSTEMS ARCHITECTURE
 
-### E-Commerce Systems Architecture & Simulation — Synapse Botanicals | 2026
-*Production-grade sandbox modeling multi-node logistics, event-driven webhooks, and margin protection on Shopify Plus. [Portfolio](https://riovicsusas.github.io/portfolio/).*
+### E-Commerce Systems Architecture — Synapse Botanicals | 2026
+*Independent reference architecture modeling distributed fulfillment, catalog governance, automation reliability, and margin protection on Shopify Plus — verified by **152 passing offline checks** across 5 Node.js/SQLite suites ([Portfolio](https://riovicsusas.github.io/portfolio/)).*
 
-* **Asynchronous Order Mutation & Webhook Failure (Capstone):** Modeled 15-minute 3PL polling latency during post-purchase address edits; designed a deterministic **Point-of-No-Return (PONR)** finite state machine with two-phase commit holds in Shopify Flow, eliminating simulated inventory drift and $98 customer chargebacks.
-* **Multi-Node Routing & Freight Surcharge Optimization (Domain 2):** Designed whole-basket routing across Allentown and Reno. Offline checks reproduced **$8.30 (36.2%) lower fulfillment cost** for one Bethlehem basket under modeled rates. A separate 500-order cost model calculated **$997.40 in savings** from declared parcel and freight inputs.
-* **Zero-Loop Workflow Automation & Circuit Breaking (Domain 3):** Stress-tested workflow resiliency by simulating a 1,840-execution recursive Flow loop; rebuilt schemas with list-quantifier idempotency guards, HTTP exponential backoff retries, and automated Slack Sev-1 alerting (>50 runs/min).
-* **Discount Collision Mitigation & Cart Diagnostics (Domains 4, 5 & 6):** Programmed mutual exclusivity rules across discount tiers, eliminating **100% of simulated negative-margin checkout orders**; benchmarked storefront cart friction in Chrome DevTools with **<60s MTTI**; standardized Gorgias macro HTTP action payloads.
+* **Asynchronous Order Coordination & Carrier Recovery (Capstone & Domain 1):** Modeled the 13:42 automated wave cutoff vs. 13:45 hard physical pick boundary (Order #35070, `$98.60` modeled recovery / `-$43.84` retained-sale contribution) and 133-second Freeze-First flow (Order #18404). Specified a **Hold–Update–Release** protocol verified in a local SQLite coordinator (`34/34` checks) alongside pinned UPS Delivery Intercept contract tests (`34/34` checks).
+* **Multi-Node Routing & Split-Shipment Consolidation (Domain 2):** Engineered whole-basket node selection across Allentown (`LOC-PA-01`) and Reno (`LOC-NV-02`) to contain split-carton handling (`$2.90` base parcel fee + postage), verifying **$8.30 (36.2%) modeled savings** per Bethlehem basket and **$997.40** across a paired 500-order cohort (`15/15` checks).
+* **Bulk Catalog Governance & Matrixify Integrity (Domain 3):** Designed a pre-flight validation gate enforcing targeted column pruning paired with Matrixify `MERGE`, strict 12-digit string Modulo-10 checks, handle immutability, and 2-of-12 canary rollouts (`58/58` barcode & bitstream checks; mitigates `$3,900` modeled bad-release exposure).
+* **Idempotent Automation & Retry Storm Containment (Domain 4):** Audited a 114-entry feedback trace saturating a 40-call REST bucket under 3-call burst amplification (`$2,162.50` modeled floor toll); engineered Flow negative guards, `operation_id` + `hold_owner` reconciliation, and AWS SQS Full Jitter retry smoothing (`8.33/s` first-retry expected rate).
+* **Checkout Margin Defense, Cart Triage & Helpdesk Holds (Domains 5 & 6):** Derived whole-cent dynamic contribution floors (`$32.85` on Order #29863, reversing `-$4.52` to `+$30.24` — a **+$34.76 swing**, `+$34,760` across 1,000 modeled orders; `11/11` cost checks), fail-closed Shopify Validation (`validationCreate` with `blockOnFailure: true`), <60s DevTools triage, and 4-state Gorgias hold workflows.
 
 ---
 
@@ -48,6 +49,6 @@
 ---
 
 ## CERTIFICATIONS & TECHNICAL CREDENTIALS
-* **Gorgias Certified Administrator** & **Gorgias Basic Certification** — Gorgias Academy
-* **Shopify Plus Platform Fundamentals & Operational Architecture** — Shopify Academy
-* **Python Scripting for Data Governance & CSV Schema Validation** | **Incident Management & Root Cause Analysis (CAPA / 5 Whys)**
+* **Gorgias Certified Administrator** & **Gorgias Certified Agent** — Gorgias Academy
+* **Shopify Plus Platform Fundamentals & Store Operations** — Shopify Academy
+* **Catalog Schema Governance, Incident Command & Root Cause Analysis (CAPA / 5 Whys)**

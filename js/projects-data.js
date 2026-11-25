@@ -11,10 +11,10 @@ const DEFAULT_PROJECTS = [
     "title": "Order Exception Mutation Protocol",
     "category": "Standard Operating Procedure (SOP)",
     "subtitle": "Parent Specification — Fulfillment Holds & Downstream 3PL Synchronization",
-    "short": "Mandatory protocol for intercepting, modifying, and canceling orders across multi-node 3PL networks without desynchronization.",
-    "overview": "Mandatory operational standard for intercepting, modifying, and canceling active customer orders. Enforces the zero-tolerance 'Freeze First' fulfillment hold protocol, eliminating race conditions across multi-node 3PL warehouses (Allentown & Reno) and preventing downstream mis-ships.",
-    "fullOverview": "This Master Standard Operating Procedure (SOP) establishes the mandatory technical and operational protocol for intercepting, modifying, and canceling active orders across the Synapse Botanicals DTC fulfillment network. It codifies the zero-tolerance 'Freeze First' fulfillment hold mandate to eliminate race conditions between customer support updates and asynchronous 15-minute 3PL warehouse polling scripts. The document governs CASS-standardized shipping address corrections, 1:1 consumable flavor exchanges, financial ledger reconciliations, downstream warehouse queue verifications, and strict quarantine scrap protocols for ingestible botanicals under FDA 21 CFR Part 111.",
-    "dossierUrl": "domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md",
+    "short": "Staged Freeze-First hold protocol for intercepting and modifying active orders without 3PL wave desynchronization.",
+    "overview": "Staged Freeze-First fulfillment hold protocol distinguishing automated wave cutoff from hard physical pick lockout across Allentown (LOC-PA-01) and Reno (LOC-NV-02).",
+    "fullOverview": "This Technical Study establishes the operational protocol for intercepting, modifying, and canceling active orders across the Synapse Botanicals fulfillment network. Built around a 133-second Freeze-First trace (Order #18404, 18s WMS lock confirmation), it enforces two clear PONR boundaries—automated wave cutoff vs. physical pick scan lockout—while governing CASS-standardized address updates, 21 CFR Part 111 quarantine disposition, and Synapse SOP-QA-402 scrap economics ($23.70 direct loss / $50.70 unit contribution delta).",
+    "dossierUrl": "domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -55,7 +55,7 @@ const DEFAULT_PROJECTS = [
         {
           "code": "Domain 1.3 Audit",
           "title": "Audit — Order State Simulation Run Sheet",
-          "role": "Empirical 25-order run sheet validating the 'Freeze First' hold protocol, tax balance adjustments, and restock flags across all order mutation types."
+          "role": "Pairs the 133-second staged trace (Order #18404) with 34/34 local SQLite coordinator checks covering ownership, replay, and cutoff bounds."
         },
         {
           "code": "Domain 2.1 Spec",
@@ -76,7 +76,7 @@ const DEFAULT_PROJECTS = [
     "short": "Authoritative dual-state decision matrix mapping Shopify Fulfillment Orders API states to physical 3PL warehouse phases.",
     "overview": "Authoritative dual-state decision matrix mapping Shopify Fulfillment Orders API states to physical 3PL warehouse phases (Phases 1–6). Establishes the hard Point of No Return (PONR) at LABEL_PRINTED / PACKED and defines financial, tax, and FDA 21 CFR Part 111 lot quarantine rules.",
     "fullOverview": "This authoritative risk governance framework establishes the bidirectional state engine between Shopify's native Fulfillment Orders API and multi-node 3PL Warehouse Management Systems (WMS) across Allentown (LOC-PA-01) and Reno (LOC-NV-02). It codifies the immutable Point of No Return (PONR) threshold where digital mutations terminate and physical carrier intercepts begin, establishes regulatory lot-quarantine standards under FDA 21 CFR Part 111 preventing biological contamination, and defines financial ledger reconciliation rules for multi-state tax shifts and gateway authorizations.",
-    "dossierUrl": "domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md",
+    "dossierUrl": "domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -117,7 +117,7 @@ const DEFAULT_PROJECTS = [
         {
           "code": "Domain 1.3 Audit",
           "title": "Audit — Order State Simulation Run Sheet",
-          "role": "Empirical 25-order run sheet validating PONR gatekeeper rules, tax reconciliation, and scrap workflows."
+          "role": "Exercises PONR cutoff boundaries, reconciliation, and 21 CFR Part 111 / SOP-QA-402 disposition assumptions."
         },
         {
           "code": "Domain 2.1 Spec",
@@ -134,11 +134,11 @@ const DEFAULT_PROJECTS = [
     "icon": "ph-clipboard-text",
     "title": "Order State Simulation Run Sheet",
     "category": "Simulation Audit & Execution Run Sheet",
-    "subtitle": "Production Test Log & Ledger Verification — 25 Order Mutation Scenarios",
-    "short": "Empirical production simulation testing the 'Freeze First' fulfillment hold protocol, downstream 3PL sync, and tax recalculations.",
-    "overview": "Empirical production simulation testing the 'Freeze First' fulfillment hold protocol, downstream 3PL queue synchronization, address mutations, SKU swaps, and tax ledger recalculations with 100% test pass rate.",
-    "fullOverview": "Complete forensic test run sheet detailing live order mutation simulations across Synapse Botanicals' product catalog. Verifies hold placement latency (< 120s), carrier intercept execution windows, tax recalculation deltas across PA and CA destination jurisdictions, and automated sanitary inventory quarantine ('No Restock') for returned consumable stick packs and tinctures under FDA 21 CFR Part 111.",
-    "dossierUrl": "domain-1-order-lifecycle/MasterDossier-Domain1-OrderStateMachineAndPONR.md",
+    "subtitle": "Staged Freeze-First Trace & Local SQLite Coordinator Verification (Order #18404)",
+    "short": "Staged 133-second Freeze-First trace paired with 34/34 local SQLite coordinator checks.",
+    "overview": "Staged 133-second Freeze-First trace (Order #18404, 18s queue lock confirmation) plus 34/34 local SQLite coordinator tests verifying operation ownership, conflict rejection, cutoff racing, and selective release.",
+    "fullOverview": "Combines the Order #18404 staged Freeze-First walkthrough (18s WMS lock confirmation, USPS CASS ZIP+4 standardization, 133s total freeze, 135s re-entry) with local SQLite coordinator harness checks (`evidence/latency/coordinator.js`, 34/34 passed). Distinguishes locally proven hold mechanics from vendor-side WMS deployment specifications and declared 21 CFR Part 111 / SOP-QA-402 scrap economics.",
+    "dossierUrl": "domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -200,7 +200,7 @@ const DEFAULT_PROJECTS = [
     "short": "Architectural specification for Shopify Native Order Routing, multi-node allocation rules, and split-shipment containment.",
     "overview": "Routing specification for Allentown and Reno. Check whether one warehouse can fill the basket, compare eligible plans on cost and delivery, then reserve the chosen stock.",
     "fullOverview": "In the Bethlehem, PA fixture, the closest-stocked rule sends two stick packs from nearby Allentown and the tincture from Reno. Reno already has to ship the tincture and has both stick packs in stock. The proposed routing waterfall checks the basket as a unit, compares the rated parcel costs against the delivery promise, and rechecks stock before reservation.",
-    "dossierUrl": "domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md",
+    "dossierUrl": "domain-2-order-routing/TechnicalStudy-Domain2-MultiNodeLogisticsRouting.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -262,7 +262,7 @@ const DEFAULT_PROJECTS = [
     "short": "Mathematical decision engine balancing 3PL split-shipment fees against cross-country carrier postage zones.",
     "overview": "Compares the cost of a local Allentown parcel plus a Reno parcel with the cost of shipping the full Bethlehem basket from Reno.",
     "fullOverview": "The fixed-rate model puts the Bethlehem split at $22.90 and one Reno box at $14.60. Consolidation avoids $5.40 in postage and $2.90 in handling under the same delivery promise. If the larger Reno box raises postage by $8.30, the plans tie.",
-    "dossierUrl": "domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md",
+    "dossierUrl": "domain-2-order-routing/TechnicalStudy-Domain2-MultiNodeLogisticsRouting.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -324,7 +324,7 @@ const DEFAULT_PROJECTS = [
     "short": "The Bethlehem basket costs $8.30 less in one box. A separate 500-order model calculates $997.40 in savings.",
     "overview": "Compares two Bethlehem parcel plans, then models fulfillment spend for the same 500 orders under two sets of split and freight inputs.",
     "fullOverview": "For Bethlehem, the proximity-only rule splits the basket between Allentown and Reno. One box from Reno costs $14.60 instead of $22.90. In the separate cohort, Model Alpha has 157 splits and Model Beta has 41. Given the supplied freight totals, 116 fewer parcels and $661.00 less freight produce $997.40 in modeled savings.",
-    "dossierUrl": "domain-2-order-routing/MasterDossier-Domain2-MultiNodeLogisticsRouting.md",
+    "dossierUrl": "domain-2-order-routing/TechnicalStudy-Domain2-MultiNodeLogisticsRouting.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -389,10 +389,10 @@ const DEFAULT_PROJECTS = [
     "title": "Bulk Catalog Migration & Hygiene Protocol",
     "category": "Standard Operating Procedure (SOP)",
     "subtitle": "Parent Specification — Zero-Corruption Bulk Data Governance & Matrixify Workflows",
-    "short": "Master operational standard for exporting, mutating, and re-importing enterprise catalog data without barcode truncation or SEO breaks.",
-    "overview": "Master operational protocol for bulk catalog exports, audits, mutations, and re-imports. Mandates strict Google Sheets formatting controls, Matrixify non-destructive MERGE commands, canary batch deployments, and 3PL barcode verification.",
-    "fullOverview": "This Master SOP codifies the enterprise data hygiene standards for managing Synapse Botanicals' product catalog. It establishes strict procedural safeguards against catastrophic catalog import errors: scientific notation barcode truncation, accidental handle mutation (broken SEO and 404s), custom metafield type mismatches, and destructive REPLACE wipes overwriting live Available-to-Sell (ATS) inventory counts. The protocol enforces mandatory pre-import database backups, Google Sheets raw text handling, 10% canary batch validation, and post-import 3PL physical scanner verification.",
-    "dossierUrl": "domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md",
+    "short": "Pre-flight schema governance blocking malformed barcodes, leading-zero stripping, and unredirected handle edits.",
+    "overview": "Bulk catalog governance mandating targeted column pruning paired with Matrixify MERGE, 12-digit string Modulo-10 checks, and 2-of-12 canary deployments ($3,900 modeled bad-release exposure).",
+    "fullOverview": "Codifies Synapse Botanicals' bulk catalog governance across 12 product variants. Guards against spreadsheet leading-zero stripping, shortened scientific-notation exports, blank-cell overwrites under unpruned sheets, and handle mutations without working 301 redirects ($3,900 modeled exposure including $900 paid media assuming disabled redirects). Enforces Gate 1 physical column pruning + Matrixify MERGE, 16.67% (2-of-12) canary batches, and 58/58 local barcode/bitstream validation checks.",
+    "dossierUrl": "domain-3-bulk-data-management/TechnicalStudy-Domain3-BulkCatalogSchemaGovernance.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -454,7 +454,7 @@ const DEFAULT_PROJECTS = [
     "short": "Field-level data dictionary and automated validation formulas preventing barcode corruption and schema drift.",
     "overview": "Comprehensive technical governance matrix establishing field-level schemas, regex audit formulas, mutation risk classifications, and automated validation gates for all bulk catalog operations across Shopify and 3PL WMS.",
     "fullOverview": "This technical governance matrix defines the mandatory schema specifications for all 24 critical product and variant fields in the Synapse Botanicals catalog. It categorizes each field into Hazard Tiers (Hazard Tier 1: Barcode, Handle, Variant ID, Inventory Quantity; Hazard Tier 2: SKU, Price, Cost, Weight; Hazard Tier 3: Metafields, Tags, Descriptions), provides plug-and-play Google Sheets audit formulas (e.g. 12-digit UPC verification regex, lowercase-hyphenated handle syntax validators), and codifies exact rollback procedures for failed import batches.",
-    "dossierUrl": "domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md",
+    "dossierUrl": "domain-3-bulk-data-management/TechnicalStudy-Domain3-BulkCatalogSchemaGovernance.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -512,11 +512,11 @@ const DEFAULT_PROJECTS = [
     "icon": "ph-file-text",
     "title": "Bulk Catalog Mutation Run Sheet",
     "category": "Empirical Simulation & Execution Log",
-    "subtitle": "Proof-of-Execution — 12-SKU Controlled Catalog Restructure & Metafield Injection",
-    "short": "Production test log documenting a zero-downtime, zero-error catalog mutation across 12 product variants.",
-    "overview": "Production execution run sheet documenting a live, controlled 12-variant catalog mutation. Demonstrates 100% barcode preservation, zero SEO handle drift, successful custom metafield injection, and zero inventory count discrepancy.",
-    "fullOverview": "This execution run sheet records the forensic step-by-step execution of a major catalog restructure for Synapse Botanicals. Over a 90-minute operational window, the run sheet logs the pre-import snapshot, spreadsheet formula audit, canary batch import (SKU SYN-BNDL-MAO), full batch execution via Matrixify Command: MERGE, and multi-point verification. The audit verifies 100% preservation of 12-digit barcodes, flawless injection of custom nutritional metafields, zero 404 URL errors across storefront handles, and zero desync of Available-to-Sell stock counts across Allentown and Reno.",
-    "dossierUrl": "domain-3-bulk-data-management/MasterDossier-Domain3-BulkCatalogSchemaGovernance.md",
+    "subtitle": "Pre-Flight 5-Second Stop & 16.67% (2-of-12) Canary Protocol",
+    "short": "Reconstructed 5-second circuit-breaker stop and 58/58 local barcode/bitstream validation checks across 12 catalog variants.",
+    "overview": "Documents the reconstructed 5-second pre-flight intercept of 3 injected catalog defects across 12 variants, paired with 58/58 passing local UPC-A checksum and bitstream round-trip checks.",
+    "fullOverview": "Traces the reconstructed October 24 pre-flight stop (09:15:10–09:15:15 EDT) that aborted before contacting Shopify Admin upon detecting two malformed synthetic barcode fixtures (`8.40001E+11` and `84000103000`) plus an unapproved handle change on `SYN-TMBL-MO`. Specifies Gate 1 column pruning + Matrixify `MERGE`, 2-of-12 (16.67%) canary deployment, and offline Modulo-10 / 95-bit encoder round-trip verification (`58/58` passed).",
+    "dossierUrl": "domain-3-bulk-data-management/TechnicalStudy-Domain3-BulkCatalogSchemaGovernance.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -578,7 +578,7 @@ const DEFAULT_PROJECTS = [
     "short": "Defines mandatory engineering standards for constructing, deploying, monitoring, and debugging business logic automations and webhook integrations in Shopify Flow.",
     "overview": "Defines mandatory engineering standards for constructing, deploying, monitoring, and debugging business logic automations in Shopify Flow and webhook integrations across 3PL WMS and Gorgias.",
     "fullOverview": "This Master Standard Operating Procedure (SOP) defines the engineering standards for event-driven business logic automations and webhook integrations across Synapse Botanicals. It establishes strict guardrails against infinite tag recursion loops, unmonitored webhook dropouts, asynchronous state drift, and payload validation failures. Outlines Shopify Flow architectural blueprints, HMAC-SHA256 signature verification, a 3-step emergency kill-switch, and a master tag taxonomy.",
-    "dossierUrl": "domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md",
+    "dossierUrl": "domain-4-business-automation/TechnicalStudy-Domain4-WebhookAutomationAndFlowTriage.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -640,7 +640,7 @@ const DEFAULT_PROJECTS = [
     "short": "Authoritative technical decision matrix governing webhook response codes, exponential backoff, and recursion guardrails.",
     "overview": "Authoritative technical decision matrix defining event prioritization, HTTP webhook triage curves, exponential backoff schedules, circuit-breaker thresholds, and loop-prevention guardrails for enterprise e-commerce automations.",
     "fullOverview": "This incident governance matrix defines the operational architecture for event-driven workflows across Shopify Flow, custom middleware, and third-party APIs (3PL WMS, Gorgias, ERP). It establishes strict triage protocols for HTTP response status codes (200/202 Success, 429 Rate Limit backoff curves, 500/502/504 Server Error circuit breakers), mandates idempotent ingestion via unique event headers, codifies exponential retry schedules with jitter, and defines hard anti-recursion guardrails (tag negation preconditions, mutation debounce timers, and recursion kill-switches) to prevent runaway automation loops.",
-    "dossierUrl": "domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md",
+    "dossierUrl": "domain-4-business-automation/TechnicalStudy-Domain4-WebhookAutomationAndFlowTriage.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -698,11 +698,11 @@ const DEFAULT_PROJECTS = [
     "icon": "ph-warning-octagon",
     "title": "Webhook Failure & Flow Recursion Run Sheet",
     "category": "Empirical Simulation & Execution Log",
-    "subtitle": "Incident Forensics & Recovery Audit — Controlled Severity-1 Remediation",
-    "short": "Forensic execution log resolving a circular Flow recursion loop and an upstream 3PL 504 webhook dropout.",
-    "overview": "Production test log documenting the controlled simulation and forensic remediation of two high-severity automation incidents: an infinite Flow tagging loop exhausting API limits, and a 3PL 504 timeout triggering webhook drops.",
-    "fullOverview": "This incident forensics run sheet documents the live simulation, rapid containment, and architectural remediation of two catastrophic e-commerce automation failures. Incident Alpha models a runaway circular Flow loop that generated 4,800+ duplicate mutations in under 4 minutes, triggering Shopify API rate throttling; it logs the emergency triage, conditional tag gating fix, and bulk cleanup. Incident Bravo models a 3PL WMS database deadlock returning persistent HTTP 504 Gateway Timeouts; it demonstrates the interception of dropped payloads via an AWS SQS Dead-Letter Queue, replaying 100% of stranded orders with zero manual re-entry.",
-    "dossierUrl": "domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md",
+    "subtitle": "Reconstructed 114-Entry Feedback Trace & SQS Full Jitter Recovery Design",
+    "short": "Audits a 114-entry feedback trace exhausting a 40-call REST bucket and specifies SQS Full Jitter backoff smoothing.",
+    "overview": "Documents the Order #24148 reconstructed 62-second feedback trace (3-call amplification model, $2,162.50 modeled outage floor) plus operation-owned reconciliation and AWS SQS Full Jitter design.",
+    "fullOverview": "Examines two automation traps: Trap A models Order #24148's 114 reconstructed trace entries over 62s using three REST calls per attempt (5.52 req/s against a 2 req/s Standard leak rate, draining a 40-call bucket in ~11.4s under fluid approximation, $2,162.50 modeled toll); Trap B addresses 500 synchronized 504 retries via AWS SQS Full Jitter (8.33/s first-retry expected rate), admission limits, original-enqueue 14-day DLQ retention awareness, and `operation_id` + `hold_owner` state verification (`34/34` local coordinator checks).",
+    "dossierUrl": "domain-4-business-automation/TechnicalStudy-Domain4-WebhookAutomationAndFlowTriage.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -764,7 +764,7 @@ const DEFAULT_PROJECTS = [
     "short": "Master diagnostic protocol for rapid troubleshooting of broken checkouts, payment gateway failures, and cart freezes.",
     "overview": "Master operational protocol for front-line and escalation storefront triage. Codifies the '3-Minute Diagnostic' framework across Order Timeline forensics, Chrome DevTools network telemetry, and discount combination audits.",
     "fullOverview": "This Master SOP establishes the authoritative diagnostic methodology for identifying, isolating, and resolving high-severity e-commerce storefront errors in under 3 minutes. It provides exhaustive procedural playbooks across three vectors: Vector 1 (Order Timeline Forensics for raw Stripe gateway decline codes, AVS/CVV risk indicators, and automated Flow mutation trails); Vector 2 (Browser DevTools Network Telemetry for inspecting live AJAX /cart/add.js payloads, 422 Unprocessable Entity errors, and third-party script conflicts); and Vector 3 (Discount Stacking & Combination Governance for auditing conflicting promotional rules and protecting gross margins).",
-    "dossierUrl": "domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md",
+    "dossierUrl": "domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -821,12 +821,12 @@ const DEFAULT_PROJECTS = [
     "folderIcon": "ph-magnifying-glass",
     "icon": "ph-shield-check",
     "title": "Discount Collision & Cart Diagnostics Analysis",
-    "category": "Empirical Storefront Simulation & Financial Post-Mortem",
-    "subtitle": "Storefront Telemetry & Margin Verification — 300-Order Empirical Promotional Simulation",
-    "short": "Empirical financial post-mortem exposing how unmonitored discount stacking eroded contribution margins by 40.5%.",
-    "overview": "Empirical 300-order storefront simulation and financial post-mortem evaluating uncontrolled discount stacking (Model Omega) vs. strict combination governance (Model Sigma). Demonstrates margin floor recovery from 23.0% to 63.5%.",
-    "fullOverview": "This empirical case study documents a forensic financial simulation across a 300-order promotional campaign at Synapse Botanicals. It contrasts Model Omega (an uncontrolled promotional setup allowing sitewide discounts, creator codes, and free shipping to compound without restriction) against Model Sigma (a governed architecture with combination rules and strict contribution margin floors). The study reveals that uncontrolled stacking resulted in 82% of orders breaching the brand's 35% margin threshold, while Model Sigma recovered $8,420 in preserved gross profit, eliminated zero-margin split freight, and maintained a healthy 63.5% net contribution margin.",
-    "dossierUrl": "domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md",
+    "category": "Storefront Technical Study & Contribution Modeling",
+    "subtitle": "Order #29863 Financial Post-Mortem & Whole-Cent Breakeven Floors",
+    "short": "Reverses a modeled -$4.52 Order #29863 coupon collision (+$34.76 swing) and scales to +$34,760 across 1,000 modeled orders.",
+    "overview": "Audits Order #29863's four-code stacking collapse ($28.20 collected vs. $32.85 floor, -$4.52 contribution) against protected rules (+$30.24 contribution, +$34.76 swing) plus 11/11 local integer-cent cost checks.",
+    "fullOverview": "Traces how four unblocked promotional codes (`VIP20` + `WELCOME25` + `LOYALTY10` + `FREESHIP`) dropped Order #29863's $80.00 basket to $28.20 collected against $32.72 direct costs (-$4.52 contribution). Derives whole-cent breakeven contribution floors (`$32.85` basket; `$41.30–$49.64` zone sensitivity on `alternative_promo`) enforced via a 3x3 promotion exclusivity matrix and Shopify Validation (`validationCreate` with `enabled: true`, `blockOnFailure: true`). Across 1,000 identical orders, protection preserves +$34,760.00 in contribution.",
+    "dossierUrl": "domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
@@ -890,18 +890,18 @@ const DEFAULT_PROJECTS = [
     "icon": "ph-percent",
     "title": "Discount Combinations & Margin Protection Engine",
     "category": "Decision Matrix & Risk Governance Framework",
-    "subtitle": "Algorithmic Evaluation & Margin Governance Engine — 3x3 Stacking Matrix & Unit Economics",
-    "short": "Codifies mathematical permutations across Shopify discount classes (Product, Order, Shipping) and enforces a hard 35% contribution margin floor across all promotions.",
-    "overview": "Codifies mathematical permutations across Shopify discount classes (Product, Order, Shipping) and enforces a hard 35% contribution margin floor ($CM >= 35%) across all promotional campaigns.",
-    "fullOverview": "This algorithmic decision engine governs promotional discounting across Synapse Botanicals, establishing clear policies for discount combinations across Shopify's three discount classes: Product, Order, and Shipping. It provides a complete 3x3 interaction matrix, contribution margin formula modeling with carrier freight absorption, and checkout error remediation playbooks to permanently eliminate toxic order cohorts.",
-    "dossierUrl": "domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md",
+    "subtitle": "Algorithmic Evaluation & Margin Governance Engine — 3x3 Stacking Matrix & Dynamic Floors",
+    "short": "Codifies mutual exclusivity across Shopify discount classes (Product, Order, Shipping) and whole-cent dynamic contribution floors.",
+    "overview": "Enforces 3x3 discount combination rules ($85/$50 subtotal gates) and dynamic whole-cent contribution floors (blocking negative unit contribution, including single oversized coupons).",
+    "fullOverview": "Defines promotional combination governance across Synapse Botanicals' three Shopify discount classes (Product, Order, Shipping) paired with dynamic whole-cent breakeven contribution floors (`11/11` local cost checks). Deployed through Cart Transform, Discount Function capping, and Cart and Checkout Validation (`validationCreate` with `enabled: true`, `blockOnFailure: true`) synced from versioned cost metafields.",
+    "dossierUrl": "domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md",
     "pdfUrl": "",
     "image": "",
     "tags": [
-      "Shopify Discounts Engine",
-      "Checkout API",
-      "Contribution Margin Modeling",
-      "Freight Absorption",
+      "Shopify Functions",
+      "Checkout Validation",
+      "Contribution Margin Floor",
+      "Freight Zone Sensitivity",
       "Carrier Rate Cards",
       "Promotion Governance"
     ],
@@ -909,37 +909,37 @@ const DEFAULT_PROJECTS = [
       "lineage": "Domain 5.1 Parent SOP ➔ Domain 5.2 Case Study ➔ Domain 5.3 Discount Engine ➔ Storefront Checkout",
       "architectureScope": [
         {
-          "name": "Shopify Discounts Engine",
-          "role": "Evaluates combination rules, code precedence, and cart eligibility"
+          "name": "Shopify Discounts Function",
+          "role": "Calculates and caps line and shipping discounts"
         },
         {
-          "name": "Storefront Checkout API",
-          "role": "Executes GraphQL discount mutations and returns rejection error toasts"
+          "name": "Cart & Checkout Validation Function",
+          "role": "Checks final discounted payable and cost freshness (blockOnFailure: true)"
         },
         {
           "name": "Carrier Rate Cards",
-          "role": "Supplies actual ground postage costs for margin erosion calculations"
+          "role": "Supplies zone freight sensitivity inputs ($4.50–$17.80 modeled sweep)"
         },
         {
-          "name": "Financial Margin Ledger",
-          "role": "Enforces 35% minimum contribution margin floor across promotional carts"
+          "name": "Integer-Cent Cost Harness",
+          "role": "Verifies whole-cent dynamic floors and rational half-up fees (11/11 checks)"
         }
       ],
       "dependencies": [
         {
           "code": "Domain 2.2 Matrix",
           "title": "Matrix — Order Routing Cost Optimization Decision Engine",
-          "role": "Supplies carrier zone freight benchmarks for absorbed shipping calculations."
+          "role": "Demonstrates freight consolidation and scenario handling inputs."
         },
         {
           "code": "Domain 3.2 Matrix",
           "title": "Matrix — Catalog Data Schema & Validation Governance",
-          "role": "Ensures compare-at prices and catalog variants feed accurate discount baselines."
+          "role": "Ensures SKU identifiers and BOM metadata feed accurate discount baselines."
         },
         {
-          "code": "Domain 5.2 Case Study",
-          "title": "CaseStudy — Discount Code Collision & Checkout Cart Diagnostics",
-          "role": "Empirical simulation documenting the recovery of 82% toxic order cohorts."
+          "code": "Domain 5.2 Study",
+          "title": "Technical Study — Order #29863 Margin Defense",
+          "role": "Demonstrates the +$34.76 per-order and +$34,760 campaign contribution swing."
         }
       ]
     }
@@ -950,8 +950,8 @@ const DEFAULT_PROJECTS = [
     "folderIcon": "ph-crown",
     "icon": "ph-arrows-split",
     "title": "Asynchronous Order Mutation & Webhook Failure",
-    "category": "Cross-Domain Empirical Simulation & Forensic Post-Mortem",
-    "subtitle": "Advanced Case Study — Distributed Race Conditions & Two-Phase Commit Locks",
+    "category": "Cross-Domain Technical Study & Post-Mortem",
+    "subtitle": "Technical Study — Hold–Update–Release Coordination & Order #35070",
     "isCapstone": true,
     "isCaseStudy": true,
     "domainsUsed": [
@@ -959,10 +959,10 @@ const DEFAULT_PROJECTS = [
       "Domain 2: Inventory & Multi-Node Routing",
       "Domain 4: Business Automations & Webhooks"
     ],
-    "short": "Forensic cross-domain systems investigation analyzing an asynchronous race condition between Shopify Flow customer address edits and 3PL WMS HTTP 504 timeout retries.",
-    "overview": "Forensic cross-domain systems investigation analyzing an asynchronous race condition between Shopify Flow customer address edits and 3PL WMS HTTP 504 timeout retries. Establishes distributed idempotency locks, carrier intercept protocols, and emergency triage playbooks.",
-    "fullOverview": "This Capstone Cross-Domain Case Study documents a high-severity operational failure at Synapse Botanicals manifesting at the uncoordinated seam between distributed systems. When a customer requested an urgent address change 35 minutes post-purchase, Shopify Flow accepted the edit in Admin while the downstream 3PL WMS in Reno (LOC-NV-02) suffered a database lockup returning HTTP 504 Gateway Timeout. During Shopify's 15-minute background webhook retry delay, warehouse operators printed the shipping label with the original address, crossing the irreversible Point of No Return (PONR). When the webhook finally reconnected, the 3PL rejected the edit with HTTP 422 Unprocessable Entity, creating a desynchronized 'Zombie Order'. The case study establishes distributed idempotency locks, automated carrier redirect rules, and cross-domain fail-safe architecture.",
-    "dossierUrl": "capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md",
+    "short": "Staged reconstruction of Order #35070 tracing a 504 hold timeout across Reno's 13:42 wave cutoff and 13:45 pick scan.",
+    "overview": "Autopsies Order #35070's silent Shopify–WMS state divergence (-$43.84 retained-sale contribution / $98.60 recovery) and specifies a Hold–Update–Release coordinator verified by local SQLite and UPS OpenAPI harnesses.",
+    "fullOverview": "Reconstructs Elena Vance's Order #35070 ($98 Starter Bundle): after Shopify Admin saved a San Francisco edit at 13:35:08, the outbound WMS hold timed out (`504`) at 13:35:15. Wave Plan #8812 released at 13:42:00 and physical picking commenced at 13:45:00, sending the parcel to Philadelphia and driving $98.60 in modeled recovery (-$43.84 retained-sale contribution; -$156.84 lost-dispute branch). Specifies an orchestrated Hold–Update–Release saga, six-field read-backs, and SQS DLQ reconciliation, backed by `coordinator.js` (34/34 checks) and UPS Delivery Intercept checks (34/34).",
+    "dossierUrl": "capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md",
     "pdfUrl": "",
     "isPlaceholder": false,
     "image": "",
@@ -971,36 +971,36 @@ const DEFAULT_PROJECTS = [
       "Shopify Flow",
       "Shopify Webhooks API",
       "ShipBob 3PL WMS",
-      "UPS Package Intercept API",
-      "Two-Phase Commit Locks",
+      "UPS Delivery Intercept API",
+      "Hold–Update–Release",
       "Gorgias CRM"
     ],
     "loomUrl": "",
     "references": {
-      "lineage": "Domain 1.1 Parent SOP ➔ Domain 1.2 PONR Matrix ➔ Domain 2.1 Multi-Node Routing ➔ Domain 4.1 Webhook Engine ➔ Capstone Analysis",
+      "lineage": "Domain 1.1 Parent SOP ➔ Domain 1.2 PONR Matrix ➔ Domain 2.1 Multi-Node Routing ➔ Domain 4.1 Webhook Engine ➔ Capstone Study",
       "architectureScope": [
         {
           "name": "Shopify Fulfillment Orders API",
-          "role": "State machine single source of truth and fulfillment hold coordinator"
+          "role": "Storefront destination state and read-back verification"
         },
         {
-          "name": "Enterprise Webhook Proxy & SQS DLQ",
-          "role": "Dead-letter queue buffering and idempotent retry governance"
+          "name": "Coordinator Ledger & SQS DLQ",
+          "role": "Operation ownership, revision checks, and reconciliation (`coordinator.js`)"
         },
         {
           "name": "3PL WMS (ShipBob Reno LOC-NV-02)",
-          "role": "Physical wave batching, carton packing, and carrier label generation"
+          "role": "Wave cutoff (13:42), physical pick scan (13:45), and hold ownership"
         },
         {
-          "name": "UPS Package Intercept API",
-          "role": "Physical in-transit parcel redirection once PONR has been breached"
+          "name": "UPS Delivery Intercept API",
+          "role": "Post-PONR parcel intercept and SOP-QA-402 disposition workflow"
         }
       ],
       "dependencies": [
         {
           "code": "Domain 1.2 Matrix",
           "title": "Matrix — Order State Point of No Return",
-          "role": "Defines the physical PONR gate breached during the 15-minute webhook retry window."
+          "role": "Separates automated wave cutoff (13:42) from hard physical pick lockout (13:45)."
         },
         {
           "code": "Domain 4.1 Matrix",

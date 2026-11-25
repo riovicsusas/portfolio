@@ -44,11 +44,11 @@ function renderFlagshipGrid() {
             <img src="${p.image}" alt="${p.title}" loading="lazy" />
             <div class="card-badges-overlay">
               <span class="card-domain-badge"><i class="ph ph-crown"></i> ${p.domain}</span>
-              <span class="card-loom-badge"><i class="ph ph-video-camera"></i> ${p.loomDuration}</span>
+              ${p.loomUrl ? `<span class="card-loom-badge"><i class="ph ph-video-camera"></i> ${p.loomDuration}</span>` : `<span class="card-loom-badge"><i class="ph ph-file-text"></i> ${p.loomDuration}</span>`}
             </div>
           </div>
           <div class="project-card-body">
-            <span class="featured-label-pill"><i class="ph ph-sparkle"></i> Master Capstone Investigation</span>
+            <span class="featured-label-pill"><i class="ph ph-sparkle"></i> Capstone Technical Study</span>
             <h3 class="project-card-title" style="font-size:20px;">${p.title}</h3>
             <p style="font-size:12px; font-weight:600; color:var(--muted); margin-bottom:10px;">${p.subtitle}</p>
             <p class="project-card-desc">${p.desc}</p>
@@ -56,7 +56,7 @@ function renderFlagshipGrid() {
               ${p.tags.map(t => `<span class="project-card-tag">${t}</span>`).join('')}
             </div>
             <span class="project-card-cta">
-              Watch Loom Defense &amp; Walkthrough <i class="ph ph-arrow-right"></i>
+              ${p.loomUrl ? 'Watch Walkthrough &amp; Read Study' : 'Inspect Technical Study &amp; Architecture'} <i class="ph ph-arrow-right"></i>
             </span>
           </div>
         </div>
@@ -69,7 +69,7 @@ function renderFlagshipGrid() {
           <img src="${p.image}" alt="${p.title}" loading="lazy" />
           <div class="card-badges-overlay">
             <span class="card-domain-badge">${p.domain}</span>
-            <span class="card-loom-badge"><i class="ph ph-video-camera"></i> ${p.loomDuration}</span>
+            ${p.loomUrl ? `<span class="card-loom-badge"><i class="ph ph-video-camera"></i> ${p.loomDuration}</span>` : `<span class="card-loom-badge"><i class="ph ph-file-text"></i> ${p.loomDuration}</span>`}
           </div>
         </div>
         <div class="project-card-body">
@@ -80,7 +80,7 @@ function renderFlagshipGrid() {
             ${p.tags.map(t => `<span class="project-card-tag">${t}</span>`).join('')}
           </div>
           <span class="project-card-cta">
-            Watch Loom Defense &amp; Walkthrough <i class="ph ph-arrow-right"></i>
+            ${p.loomUrl ? 'Watch Walkthrough &amp; Read Study' : 'Inspect Technical Study &amp; Architecture'} <i class="ph ph-arrow-right"></i>
           </span>
         </div>
       </div>
@@ -102,7 +102,6 @@ function openProjectDetail(id) {
   const allFlagships = typeof FLAGSHIP_PROJECTS !== 'undefined' ? FLAGSHIP_PROJECTS : [];
   const p = allProjects.find(x => x.id === id) || allFlagships.find(x => x.id === id);
   if (!p) return;
-  const loomStatus = p.id === 'd1-order-lifecycle' ? 'In Progress' : 'Stay tuned! To be posted soon';
 
   // Hide grid and company accordion
   document.getElementById('projectsMainView').style.display = 'none';
@@ -120,7 +119,7 @@ function openProjectDetail(id) {
       <div class="breadcrumb" style="margin-top:12px;">
         <span onclick="closeProjectDetail()">Projects</span>
         <i class="ph ph-caret-right" style="font-size:10px;"></i>
-        <span style="color:var(--linen);">${p.domain || p.folder || 'Case Study'}</span>
+        <span style="color:var(--linen);">${p.domain || p.folder || 'Technical Study'}</span>
         <i class="ph ph-caret-right" style="font-size:10px;"></i>
         <span style="color:var(--isabelline);">${p.title}</span>
       </div>
@@ -131,24 +130,25 @@ function openProjectDetail(id) {
         <span class="deliverable-card-category" style="font-size:12px; padding:4px 12px; background:rgba(86,103,70,0.25); border:1px solid var(--hunter); border-radius:20px; color:var(--isabelline); font-weight:700;">
           ${p.category || 'Technical Operations SOP'}
         </span>
-        <span style="font-size:12px; font-weight:700; color:var(--muted);"><i class="ph ph-clock"></i> 8–12 min technical defense</span>
       </div>
 
       <h2 style="font-size:26px; font-weight:900; color:#FFFFFF; margin-bottom:6px; line-height:1.25;">${p.title}</h2>
       ${p.subtitle ? `<p style="font-size:14px; font-weight:600; color:var(--muted); margin-bottom:20px;">${p.subtitle}</p>` : ''}
 
+      ${p.loomUrl ? `
       <!-- LOOM WALKTHROUGH CARD -->
       <div class="loom-placeholder-card" style="margin-bottom:28px;">
         <div class="loom-card-top">
           <div class="loom-meta-info">
             <span class="loom-live-pill"><i class="ph ph-circle-fill" style="color:var(--hunter);font-size:8px;"></i> Loom Walkthrough</span>
-            <span class="loom-duration-pill"><i class="ph ph-clock"></i> 8–12 min defense</span>
+            <span class="loom-duration-pill"><i class="ph ph-clock"></i> ${p.loomDuration || 'Technical defense'}</span>
           </div>
         </div>
         <div class="loom-display-screen">
-          <p class="loom-display-title">${loomStatus}</p>
+          <a href="${p.loomUrl}" target="_blank" rel="noopener" class="loom-display-title">Watch Recorded Walkthrough</a>
         </div>
       </div>
+      ` : ''}
 
       <!-- EXECUTIVE SUMMARY -->
       <div style="margin-bottom:28px;">
@@ -168,26 +168,26 @@ function openProjectDetail(id) {
           <div class="pillar-box">
             <span class="pillar-num">02</span>
             <h5>State Machine Governance</h5>
-            <p>Enforcing immutable Point-of-No-Return (PONR) locks and two-phase commit holds to prevent duplicate mutations.</p>
+            <p>Enforcing two-boundary Point-of-No-Return (PONR) gates and operation-owned holds to prevent state divergence.</p>
           </div>
           <div class="pillar-box">
             <span class="pillar-num">03</span>
             <h5>Idempotent Automation</h5>
-            <p>Protecting Shopify Flow and webhook listeners with unique transaction keys, exponential backoff, and DLQ retries.</p>
+            <p>Protecting Shopify Flow and webhook listeners with unique operation IDs, reconciliation lookups, and SQS DLQ retries.</p>
           </div>
           <div class="pillar-box">
             <span class="pillar-num">04</span>
             <h5>Measurable Verification</h5>
-            <p>Auditing zero inventory drift, containment of split-shipment surcharges, and sub-60-second incident triage.</p>
+            <p>Backed by 152 automated offline checks spanning hold coordination, routing math, barcode integrity, and checkout floors.</p>
           </div>
         </div>
       </div>
 
-            <!-- PRIMARY: TECHNICAL CASE STUDY VIEWER + SECONDARY: PDF -->
+            <!-- PRIMARY: TECHNICAL STUDY VIEWER + SECONDARY: PDF -->
       <div style="display:flex; flex-direction:column; gap:12px; margin-top:4px;">
 
         ${p.dossierUrl ? `
-          <!-- Primary CTA: Full interactive case study -->
+          <!-- Primary CTA: Full interactive technical study -->
           <div style="background:var(--bg); border:1.5px solid var(--hunter); border-radius:14px; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
             <div style="display:flex; align-items:center; gap:14px;">
               <div style="width:46px; height:46px; border-radius:11px; background:linear-gradient(135deg,#566746,#3e5232); display:flex; align-items:center; justify-content:center; color:#FAEEE5; flex-shrink:0;">
@@ -196,7 +196,7 @@ function openProjectDetail(id) {
                 </svg>
               </div>
               <div>
-                <h4 style="font-size:14px; font-weight:700; color:#FFFFFF; margin-bottom:3px;">${p.dossierUrl && p.dossierUrl.includes('MasterDossier') ? 'Read the Full Technical Case Study' : 'Read Interactive Specification (.md)'}</h4>
+                <h4 style="font-size:14px; font-weight:700; color:#FFFFFF; margin-bottom:3px;">${p.dossierUrl && (p.dossierUrl.includes('TechnicalStudy') || p.dossierUrl.includes('MasterDossier')) ? 'Read the Full Technical Study' : 'Read Interactive Specification (.md)'}</h4>
                 <p style="font-size:12px; color:var(--muted); margin:0; line-height:1.5;">Interactive Markdown Viewer &middot; Print-Ready &middot; One-Click Save as PDF</p>
               </div>
             </div>
@@ -208,7 +208,7 @@ function openProjectDetail(id) {
               onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 18px rgba(86,103,70,0.55)'"
               onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 12px rgba(86,103,70,0.4)'"
             >
-              Read Case Study
+              Read Technical Study
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
               </svg>

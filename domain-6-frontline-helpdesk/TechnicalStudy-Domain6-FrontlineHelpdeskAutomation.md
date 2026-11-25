@@ -2,7 +2,7 @@
 
 **A scenario-based helpdesk design that commits a Shopify fulfillment hold before the warehouse's 15-minute wave cycle can pick the order.**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 6*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 6*
 
 ---
 
@@ -174,7 +174,7 @@ A hold request dispatched to a distributed warehouse has four possible states. T
 | `CS-ADDR-HOLD-REJECTED` | `REJECTED` | WMS rejected hold; order already wave-released or picked past PONR. | Escalate to carrier package intercept; pre-populate Macro `M-04`. | **DO NOT edit address in Shopify** (will desync from printed label). |
 | `CS-ADDR-HOLD-UNKNOWN` | `UNKNOWN` | Gateway timeout (`HTTP 504`); physical outcome is unknown. | Escalate to TechOps lead immediately before the warehouse cutoff. | **DO NOT guess outcome.**<br/>Do not confirm cancellation to customer. |
 
-At the middleware layer, a hold keeps the same operation ID, normalized payload hash, and expected order version across retries. A duplicate delivery with the same ID and payload gets the current or stored result, so it does not dispatch another hold. A conflicting payload or stale version is rejected. After a timeout, TechOps checks authoritative warehouse state before replay. [Domain 4 Sections 6.3–6.4](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md) shows the request and ledger for the separate Order #24148 example.
+At the middleware layer, a hold keeps the same operation ID, normalized payload hash, and expected order version across retries. A duplicate delivery with the same ID and payload gets the current or stored result, so it does not dispatch another hold. A conflicting payload or stale version is rejected. After a timeout, TechOps checks authoritative warehouse state before replay. [Domain 4 Sections 6.3–6.4](../domain-4-business-automation/TechnicalStudy-Domain4-WebhookAutomationAndFlowTriage.md) shows the request and ledger for the separate Order #24148 example.
 
 ```mermaid
 flowchart TD
@@ -411,7 +411,7 @@ AVOIDED COST LEDGER PER MIS-DELIVERY EVENT:
   FULLY LOADED MODELED SAVINGS PER EVENT:            $233.33
 ```
 
-> **Comparison with Order #35070.** This helpdesk model uses $6.50 in original freight and $8.80 in return freight. The Capstone uses $7.20 and $8.40, respectively. Both scenarios use $14.80 for replacement freight, $17.50 for intercept, and $28.40 for the kitted Starter Bundle. The kit contains $8.50 of sticks, $12.50 of tincture, $7.00 for a tumbler, and $0.40 of kitting materials. The [Capstone recovery ledger](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) also includes $4.50 in replacement handling and a $25.00 goodwill credit.
+> **Comparison with Order #35070.** This helpdesk model uses $6.50 in original freight and $8.80 in return freight. The Capstone uses $7.20 and $8.40, respectively. Both scenarios use $14.80 for replacement freight, $17.50 for intercept, and $28.40 for the kitted Starter Bundle. The kit contains $8.50 of sticks, $12.50 of tincture, $7.00 for a tumbler, and $0.40 of kitting materials. The [Capstone recovery ledger](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) also includes $4.50 in replacement handling and a $25.00 goodwill credit.
 
 The $76.00 modeled direct cost comprises $15.30 in original and return freight ($6.50 + $8.80), $14.80 in replacement freight, $28.40 in scrap COGS, and $17.50 in carrier intercept fees. In the local simulator, electronic acceptance alone records $0.00. A confirmed return event records the modeled $17.50 fee once. [Carrier recovery fixtures](../evidence/carrier-recovery/summary.md) show both outcomes.
 
@@ -522,4 +522,4 @@ The architecture established in this case study closes that seam forever:
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 6*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 6*

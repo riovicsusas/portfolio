@@ -2,7 +2,7 @@
 
 **How a tag loop and a synchronized retry storm each turn automation into an outage, and the guards that stop both**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 4*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 4*
 
 ---
 
@@ -677,4 +677,4 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 4*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 4*

@@ -2,7 +2,7 @@
 
 **How an avoidable second carton drove fulfillment from $14.60 to $22.90; and consolidation recovered $8.30, a 36.2% saving against the split baseline**
 
-*Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Technical Case Study — Domain 2*
+*Synapse Botanicals Systems Architecture | Logistics & Order Routing Engineering | Technical Study — Domain 2*
 
 ---
 
@@ -138,7 +138,7 @@ Where:
 - `U` is the total count of physical units picked across all parcels.
 - The \$2.90 coefficient is not the sum of base and corrugate (\$3.30). It is \$3.30 less the \$0.40 credit that the per-unit term would otherwise assess for each parcel's first pick (which the schedule waives).
 
-This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units. The separate two-item checkout in Domain 5 uses declared inputs of $4.10 handling and $6.50 freight for the basket. [Domain 5 Section 6](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md) applies those inputs to the checkout margin calculation.
+This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units. The separate two-item checkout in Domain 5 uses declared inputs of $4.10 handling and $6.50 freight for the basket. [Domain 5 Section 6](../domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md) applies those inputs to the checkout margin calculation.
 
 Checking the rate card against the formula:
 
@@ -172,7 +172,7 @@ The modeled rate card assigns $5.40 to Allentown’s local lane and $10.50 to Re
 | **Zone 8** | 1,801+ miles (Cross-Country) | $10.50 | $15.20 |
 
 > [!NOTE]
-> **Cross-Reference: Capstone Order #35070 Sourcing vs. State Failure**: Order #35070 illustrates an address-state race condition rather than an allocation mistake. Its bundle was stocked in Reno (`LOC-NV-02`) and remained allocated there, but the warehouse shipped to Philadelphia after the customer updated to San Francisco. The Capstone models **$7.20** in ground freight for the original Philadelphia leg and **$14.80** in expedited freight for the replacement, totaling $22.00 across the two outbound legs ($7.60 service-level delta). Return freight adds $8.40, totaling $30.40 in cumulative carrier charges before handling, intercept, and scrap costs. See [Capstone Section 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) for the complete recovery ledger.
+> **Cross-Reference: Capstone Order #35070 Sourcing vs. State Failure**: Order #35070 illustrates an address-state race condition rather than an allocation mistake. Its bundle was stocked in Reno (`LOC-NV-02`) and remained allocated there, but the warehouse shipped to Philadelphia after the customer updated to San Francisco. The Capstone models **$7.20** in ground freight for the original Philadelphia leg and **$14.80** in expedited freight for the replacement, totaling $22.00 across the two outbound legs ($7.60 service-level delta). Return freight adds $8.40, totaling $30.40 in cumulative carrier charges before handling, intercept, and scrap costs. See [Capstone Section 7.1](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) for the complete recovery ledger.
 
 With the contractual physics established—a guaranteed $2.90 handling penalty plus independent carrier postage for every extra box—we can now trace Sarah Jenkins's Bethlehem order through the two divergent routing engines.
 

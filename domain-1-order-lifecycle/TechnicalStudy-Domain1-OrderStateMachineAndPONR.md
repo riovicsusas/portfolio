@@ -2,7 +2,7 @@
 
 **A staged Shopify-to-warehouse address-correction trace, the Freeze-First protocol behind it, and a clear line between what was tested and what was modeled.**
 
-*Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Technical Case Study — Domain 1*
+*Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Technical Study — Domain 1*
 
 ---
 
@@ -176,7 +176,7 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 **The mis-shipment creates a $23.70 direct cash loss.** Because a successful sale would have generated **$27.00 in contribution**, the merchant ends up **$50.70 worse off per carton** (120.7% of product retail value). That delta consists of the **$42.00 refund** plus **$8.70 in reverse logistics and disposal costs**. The carton and outbound shipping cost the same either way.
 
 > [!NOTE]
-> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone Section 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes the replacement branch and recovery ledger.
+> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone Section 7.1](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes the replacement branch and recovery ledger.
 
 ### 3.3 Scaled Monthly Exposure Model
 
@@ -507,7 +507,7 @@ flowchart TD
    * *Contract*: Pass exact `holdIds` created in Gate 1.
    * *Invariant*: Confirm the WMS status transitions back to `READY_FOR_WAVE_BATCH` with updated metadata.
 
-In this case, Order #18404 received a verified warehouse lock 18 seconds after ticket ingestion and resumed with the corrected Binghamton label. In the separate Capstone case, Order #35070 received a 504 at the hold gateway and still carried the old Philadelphia destination in the Reno queue. That outcome calls for a warehouse state check before any update or retry. [Capstone Sections 3–5](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md) traces the timeout through the warehouse cutoff.
+In this case, Order #18404 received a verified warehouse lock 18 seconds after ticket ingestion and resumed with the corrected Binghamton label. In the separate Capstone case, Order #35070 received a 504 at the hold gateway and still carried the old Philadelphia destination in the Reno queue. That outcome calls for a warehouse state check before any update or retry. [Capstone Sections 3–5](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md) traces the timeout through the warehouse cutoff.
 
 Executing Gate 2 in production requires translating raw HTTP responses into accurate warehouse state assertions. As Section 7 demonstrates, standard HTTP status codes in distributed commerce rarely mean what they seem.
 

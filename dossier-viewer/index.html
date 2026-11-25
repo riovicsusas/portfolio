@@ -1101,24 +1101,23 @@
     var filePath = params.get('file');
 
     if (!filePath) {
-      showError('No <code>?file=</code> parameter provided. Open a case study from the Projects page or use a link such as <code>?file=capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md</code>.');
+      showError('No <code>?file=</code> parameter provided. Open a technical study from the Projects page or use a link such as <code>?file=capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md</code>.');
       return;
     }
 
-    // Keep previously shared viewer links working after removing duplicate case study files.
-    var legacyDossierFolders = new Map([
-      ['MasterDossier-Capstone-AsynchronousOrderMutation.md', 'capstone'],
-      ['MasterDossier-Domain1-OrderStateMachineAndPONR.md', 'domain-1-order-lifecycle'],
-      ['MasterDossier-Domain2-MultiNodeLogisticsRouting.md', 'domain-2-order-routing'],
-      ['MasterDossier-Domain3-BulkCatalogSchemaGovernance.md', 'domain-3-bulk-data-management'],
-      ['MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md', 'domain-4-business-automation'],
-      ['MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md', 'domain-5-technical-diagnosis'],
+    // Keep previously shared viewer links working after renaming MasterDossier-* to TechnicalStudy-* and removing legacy folder prefixes.
+    var legacyStudyAliases = new Map([
+      ['MasterDossier-Capstone-AsynchronousOrderMutation.md', 'capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md'],
+      ['MasterDossier-Domain1-OrderStateMachineAndPONR.md', 'domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md'],
+      ['MasterDossier-Domain2-MultiNodeLogisticsRouting.md', 'domain-2-order-routing/TechnicalStudy-Domain2-MultiNodeLogisticsRouting.md'],
+      ['MasterDossier-Domain3-BulkCatalogSchemaGovernance.md', 'domain-3-bulk-data-management/TechnicalStudy-Domain3-BulkCatalogSchemaGovernance.md'],
+      ['MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md', 'domain-4-business-automation/TechnicalStudy-Domain4-WebhookAutomationAndFlowTriage.md'],
+      ['MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md', 'domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md'],
+      ['MasterDossier-Domain6-FrontlineHelpdeskAutomation.md', 'domain-6-frontline-helpdesk/TechnicalStudy-Domain6-FrontlineHelpdeskAutomation.md'],
     ]);
-    var legacyPrefix = 'master-dossiers/';
-    if (filePath.startsWith(legacyPrefix)) {
-      var legacyFilename = filePath.slice(legacyPrefix.length);
-      var canonicalFolder = legacyDossierFolders.get(legacyFilename);
-      if (canonicalFolder) filePath = canonicalFolder + '/' + legacyFilename;
+    var requestedFilename = filePath.split('/').pop();
+    if (legacyStudyAliases.has(requestedFilename)) {
+      filePath = legacyStudyAliases.get(requestedFilename);
     }
 
     /* ── Fetch the markdown file ── */
@@ -1343,7 +1342,8 @@
       var tocEl = qs('#toc-links');
       var fragment = document.createDocumentFragment();
       var idx = 0;
-      var preserveSectionNumbers = filePath.split('/').pop() === 'MasterDossier-Capstone-AsynchronousOrderMutation.md';
+      var currentStudyName = filePath.split('/').pop();
+      var preserveSectionNumbers = currentStudyName === 'TechnicalStudy-Capstone-AsynchronousOrderMutation.md' || currentStudyName === 'MasterDossier-Capstone-AsynchronousOrderMutation.md';
 
       headings.forEach(function (h) {
         if (preserveSectionNumbers) h.style.scrollMarginTop = '72px';
@@ -1395,7 +1395,8 @@
       if (str.indexOf('domain-3') !== -1 || str.indexOf('domain3') !== -1 || str.indexOf('bulk-data') !== -1 || str.indexOf('catalog') !== -1 || str.indexOf('matrixify') !== -1) return 'Domain 3 — Bulk Catalog Governance';
       if (str.indexOf('domain-4') !== -1 || str.indexOf('domain4') !== -1 || str.indexOf('business-automation') !== -1 || str.indexOf('webhook') !== -1 || str.indexOf('flow') !== -1) return 'Domain 4 — Business Automations';
       if (str.indexOf('domain-5') !== -1 || str.indexOf('domain5') !== -1 || str.indexOf('technical-diagnosis') !== -1 || str.indexOf('discount') !== -1 || str.indexOf('cartdiagnostics') !== -1) return 'Domain 5 — Technical Diagnosis';
-      return 'Technical Case Study';
+      if (str.indexOf('domain-6') !== -1 || str.indexOf('domain6') !== -1 || str.indexOf('frontline') !== -1 || str.indexOf('helpdesk') !== -1) return 'Domain 6 — Frontline Helpdesk Automation';
+      return 'Technical Study';
     }
 
     /* ── Error state ── */

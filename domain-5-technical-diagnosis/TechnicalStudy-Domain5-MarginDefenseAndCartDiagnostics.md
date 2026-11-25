@@ -2,7 +2,7 @@
 
 **How four stacked promotions turned an $80 cart into a modeled −$4.52 loss, and the contribution floor that blocks it**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 5*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 5*
 
 ---
 
@@ -177,7 +177,7 @@ If payment shows `Authorized` and the order remains unfulfilled, the failure occ
 | **500 / 502 / 503 Error** | Downstream Server Fault | **Transient 3PL outage.** Check warehouse API status page. Verify message is enqueued with jittered exponential backoff rather than dropped. |
 | **401 / 403 Forbidden** | Auth / Scope Failure | **Fatal integration fault.** Halt exports immediately; alert on-call engineer to refresh expired OAuth tokens or rotated HMAC secret keys. |
 
-*(For the complete architectural implementation of dead-letter queues, exponential backoff with full jitter, and two-phase 504 ledger reconciliation, see [Domain 4 Section 7.1](../domain-4-business-automation/MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md).)*
+*(For the complete architectural implementation of dead-letter queues, exponential backoff with full jitter, and two-phase 504 ledger reconciliation, see [Domain 4 Section 7.1](../domain-4-business-automation/TechnicalStudy-Domain4-WebhookAutomationAndFlowTriage.md).)*
 
 Rapid forensic triage restores conversion when checkout breaks, but unblocking the transaction pipeline is only half the battle. Once orders flow freely, the storefront must defend against checkouts that succeed at the direct expense of profitability. Section 4 introduces the 3×3 combinatorial matrix that prevents uncontrolled promotional stacking.
 
@@ -270,7 +270,7 @@ $$\text{Cart Transform (Normalization)} \longrightarrow \text{Discount API (Calc
 |---|---|---|
 | **Cart Normalization** | Cart Transform (`cart_transform`) | Runs first. Adjusts line pricing and bundle presentation (merge, expand) so discount math begins from a clean cart. |
 | **Discount Calculation & Floor Cap** | Discount Function API (line & delivery) | Computes line and shipping discounts. Caps line discounts at the SKU maximum allowable ceiling (Section 5.2) and evaluates free shipping post-discount. |
-| **Final Validation Gate** | Cart and Checkout Validation (`cart.validations.generate.run`) | Checks the final discounted cart. Activate its Validation resource through Admin GraphQL `validationCreate` with `enable: true` and `blockOnFailure: true`, then read those flags back. Return blocking checkout errors for an invalid combination, missing cost inputs, or a below-floor payable. The Discount Function owns calculation and capping; Validation does not remove discounts. |
+| **Final Validation Gate** | Cart and Checkout Validation (`cart.validations.generate.run`) | Checks the final discounted cart. Activate its Validation resource through Admin GraphQL `validationCreate` with `enabled: true` and `blockOnFailure: true`, then read those flags back. Return blocking checkout errors for an invalid combination, missing cost inputs, or a below-floor payable. The Discount Function owns calculation and capping; Validation does not remove discounts. |
 
 > [!NOTE]
 > **API Index Specification**: Custom applications implementing Function APIs require Shopify Plus. Earlier platform documentation referred to a *discounts allocator* target in preview; current Shopify Functions index under the unified Discount API. Target naming reflects the 2026-10 specification.
@@ -545,7 +545,7 @@ At $6.50 freight (Zone 3), fixed costs are $39.80 and the dynamic floor is **$41
 
 **The Architectural Implication**: A promotional discount of $40.00 on this $82.00 bundle leaves a $42.00 customer payment. That payment is fully profitable in Zone 1 (clearing the $39.24 floor), but generates an immediate operational loss in Zone 8 (failing the $49.64 floor). Therefore, checkout validation cannot rely on static catalog averages; it must dynamically resolve the floor against the customer's actual destination postal zone.
 
-*(Note: In contrast to this $82.00 promotional benchmark, the Capstone models Elena Vance's Order #35070 at its full standard MSRP of $98.00 ($28.40 COGS, $4.50 handling, $7.20 freight, $3.14 processing = $54.76 baseline contribution). Both scenario variants are checked integer-cent inputs in `evidence/costs/bom_inputs.json`. [Capstone Section 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes Elena's baseline and replacement ledgers.)*
+*(Note: In contrast to this $82.00 promotional benchmark, the Capstone models Elena Vance's Order #35070 at its full standard MSRP of $98.00 ($28.40 COGS, $4.50 handling, $7.20 freight, $3.14 processing = $54.76 baseline contribution). Both scenario variants are checked integer-cent inputs in `evidence/costs/bom_inputs.json`. [Capstone Section 7.1](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes Elena's baseline and replacement ledgers.)*
 
 ### 8.3 Three-Tier Production Enforcement: Block the Loss Before the Box Moves
 
@@ -587,7 +587,7 @@ mutation ActivateSynapseMarginFloor($input: ValidationCreateInput!) {
   "input": {
     "functionHandle": "synapse-margin-floor",
     "title": "Synapse contribution floor",
-    "enable": true,
+    "enabled": true,
     "blockOnFailure": true
   }
 }
@@ -754,4 +754,4 @@ Full test suite documentation is maintained in the evidence directory ([`../evid
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 5*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 5*

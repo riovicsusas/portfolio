@@ -2,7 +2,7 @@
 
 **How a five-second pre-flight check kept a corrupted bulk update out of the store, with zero rows committed**
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 3*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 3*
 
 ---
 
@@ -434,8 +434,8 @@ When the Gate 3 circuit breaker aborted `Catalog_Mutation_v2.xlsx`, remediation 
 Rows 4 and 5 illustrate why surgical governance matters: catalog data does not exist in a vacuum — it is the single source of truth for all financial ledgers in the enterprise. The Focus Sticks price increase to **$42.00** defends a **79.76% gross margin** against its **$8.50** production cost. Correcting the tincture cost from an erroneous $13.50 back to the canonical **$12.50** prevents silent margin distortion across accounting and analytics systems.
 
 These two canonical costs directly power downstream order modeling across the portfolio:
-* In **[Domain 5 Section 6.1](../domain-5-technical-diagnosis/MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md)**, Order #29863 combines one stick pack ($8.50) and one tincture ($12.50) for a base COGS of **$21.00** before handling, freight, and processing.
-* In the **[Capstone Section 7.1](../capstone/MasterDossier-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger)**, Order #35070 bundles these with a $7.00 tumbler and $0.40 kitting charge to establish the Starter Bundle at **$28.40 COGS**.
+* In **[Domain 5 Section 6.1](../domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md)**, Order #29863 combines one stick pack ($8.50) and one tincture ($12.50) for a base COGS of **$21.00** before handling, freight, and processing.
+* In the **[Capstone Section 7.1](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger)**, Order #35070 bundles these with a $7.00 tumbler and $0.40 kitting charge to establish the Starter Bundle at **$28.40 COGS**.
 
 
 ### 8.2 Why Nothing Was Reconstructed
@@ -603,4 +603,4 @@ Local software agreement is verified. The encoder and decoder agree on all twelv
 
 ---
 
-*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Case Study — Domain 3*
+*Synapse Botanicals Systems Architecture | Riovic Matthew | Technical Study — Domain 3*
