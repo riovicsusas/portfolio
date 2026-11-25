@@ -1,7 +1,7 @@
 import { r as e, t } from "./rolldown-runtime-QGRDbDUS.js";
 import { n, t as r } from "./jsx-runtime-s04k_HfJ.js";
 import { t as i } from "./scheduler-oVI243f0.js";
-import { n as a, t as o } from "./section-cards-06B1lzKw.js";
+import { n as a, t as o } from "./section-cards-BCnmkKX-.js";
 // node_modules/react-dom/cjs/react-dom.production.js
 var s = /* @__PURE__ */ t(((e) => {
 	var t = n();
@@ -14447,15 +14447,15 @@ var wd = (...e) => e.filter(Boolean).join(" "), Td = "focus-visible:ring-ring/60
 							children: "About Me"
 						}),
 						/* @__PURE__ */ (0, W.jsx)("a", {
-							href: "testimonials/",
-							children: "Testimonials"
+							href: "evidence/",
+							children: "Evidence"
 						})
 					]
 				})
 			]
 		}) : this.props.children;
 	}
-}, Qf = (0, d.lazy)(() => import("./mobile-portfolio-C9ryVHL-.js"));
+}, Qf = (0, d.lazy)(() => import("./mobile-portfolio-DEliP2yX.js"));
 function $f() {
 	let [e, t] = (0, d.useState)(() => window.matchMedia("(max-width: 767px)").matches);
 	return (0, d.useEffect)(() => {
@@ -14477,7 +14477,7 @@ function ep() {
 		profileImage: "images/susas_profilepic.jpg",
 		downloadAction: {
 			label: "View résumé",
-			href: "RESUME-Riovic-Matthew-TechOps-Systems-Analyst.md"
+			href: "resume/"
 		},
 		connectAction: {
 			label: "Let’s connect",

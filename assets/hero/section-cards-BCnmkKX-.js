@@ -240,23 +240,6 @@ var E = {
 			alt: "Bi-Coastal Multi-Node Routing Engine & Freight Optimization",
 			fallback: "images/hero-cards/projects.svg"
 		}
-	],
-	testimonials: [
-		{
-			src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
-			alt: "David F.",
-			fallback: "images/hero-cards/feedback.svg"
-		},
-		{
-			src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80",
-			alt: "Sarah L.",
-			fallback: "images/hero-cards/feedback.svg"
-		},
-		{
-			src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
-			alt: "Marcus K.",
-			fallback: "images/hero-cards/feedback.svg"
-		}
 	]
 }, D = [
 	{
@@ -269,7 +252,7 @@ var E = {
 		title: "Projects",
 		href: "projects/",
 		images: E.projects,
-		description: "Six operational domains and a capstone investigation, covering fulfillment, catalog governance, automation, and support."
+		description: "Five domain studies and a Capstone on fulfillment, catalog governance, automation, and margin protection."
 	},
 	{
 		title: "About Me",
@@ -291,10 +274,23 @@ var E = {
 		description: "My engineering background, certifications, technical approach, and résumé."
 	},
 	{
-		title: "Testimonials",
-		href: "testimonials/",
-		images: E.testimonials,
-		description: "Client perspectives on automation, margin protection, catalog work, and frontline operations."
+		title: "Evidence & Verification",
+		href: "evidence/",
+		images: [
+			{
+				src: "images/hero-cards/systems.svg",
+				alt: "Systems verification illustration"
+			},
+			{
+				src: "images/hero-cards/projects.svg",
+				alt: "Technical project illustration"
+			},
+			{
+				src: "images/hero-cards/project-update.svg",
+				alt: "Verification report illustration"
+			}
+		],
+		description: "What the offline checks verify, what they model, and where live platform testing remains outstanding."
 	}
 ];
 // src/section-cards.tsx

@@ -33,10 +33,10 @@ export default function MobilePortfolio() {
     bio="**I connect the moving parts of e-commerce.** From Shopify Plus to warehouse routing and automation, I turn complex operations into **clear, reliable systems.**"
     avatar="images/susas_profilepic.jpg"
     links={[
-      { label: 'Gmail', icon: 'images/professional/gmail.svg', href: 'mailto:riovic.susas@gmail.com' },
+      { label: 'Email', icon: 'images/professional/gmail.svg', href: 'mailto:riovicmatthew@gmail.com' },
       { label: 'LinkedIn', icon: 'images/professional/linkedin.svg', href: 'https://www.linkedin.com/in/riovicsusas' },
-      { label: 'WhatsApp', icon: 'images/professional/whatsapp.svg', href: 'contact/' },
-      { label: 'Upwork', icon: 'images/professional/upwork.svg', href: 'contact/' },
+      { label: 'GitHub', icon: 'images/professional/github.svg', href: 'https://github.com/riovicsusas/portfolio' },
+      { label: 'Upwork', icon: 'images/professional/upwork.svg', href: 'https://www.upwork.com/freelancers/~01cd8c2868dd2fc99c?mp_source=share' },
     ]}
     badges={badges} autoplay={0} dragHint={false}
     dailyDrivers={<MobileDailyDrivers />}

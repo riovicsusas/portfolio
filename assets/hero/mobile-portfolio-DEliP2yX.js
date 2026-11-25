@@ -1,6 +1,6 @@
 import { r as e, t } from "./rolldown-runtime-QGRDbDUS.js";
 import { n, t as r } from "./jsx-runtime-s04k_HfJ.js";
-import { t as i } from "./section-cards-06B1lzKw.js";
+import { t as i } from "./section-cards-BCnmkKX-.js";
 // node_modules/matter-js/build/matter.js
 var a = /* @__PURE__ */ t(((e, t, n) => {
 	(function(n, r) {
@@ -3260,9 +3260,9 @@ function O() {
 		avatar: "images/susas_profilepic.jpg",
 		links: [
 			{
-				label: "Gmail",
+				label: "Email",
 				icon: "images/professional/gmail.svg",
-				href: "mailto:riovic.susas@gmail.com"
+				href: "mailto:riovicmatthew@gmail.com"
 			},
 			{
 				label: "LinkedIn",
@@ -3270,14 +3270,14 @@ function O() {
 				href: "https://www.linkedin.com/in/riovicsusas"
 			},
 			{
-				label: "WhatsApp",
-				icon: "images/professional/whatsapp.svg",
-				href: "contact/"
+				label: "GitHub",
+				icon: "images/professional/github.svg",
+				href: "https://github.com/riovicsusas/portfolio"
 			},
 			{
 				label: "Upwork",
 				icon: "images/professional/upwork.svg",
-				href: "contact/"
+				href: "https://www.upwork.com/freelancers/~01cd8c2868dd2fc99c?mp_source=share"
 			}
 		],
 		badges: E,

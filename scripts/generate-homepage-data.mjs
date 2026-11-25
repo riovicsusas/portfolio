@@ -7,7 +7,6 @@ const updates = runInNewContext(readFileSync('js/feed-data.js', 'utf8') + '\nLAT
 const recentIds = [...new Set(updates.map(update => update.projectId).filter(Boolean))]
 const ordered = [...recentIds.map(id => projects.find(project => project.id === id)).filter(Boolean), ...projects]
 const recent = [...new Map(ordered.map(project => [project.id, project])).values()].slice(0, 3)
-const portraits = [...readFileSync('testimonials/index.html', 'utf8').matchAll(/<img src="([^"]+)" alt="([^"]+)"/g)].slice(0, 3)
 writeFileSync('src/homepage-content.generated.json', JSON.stringify({
   latest: updates.slice(0, 3).map(update => {
     const project = projects.find(project => project.id === update.projectId)
@@ -18,5 +17,4 @@ writeFileSync('src/homepage-content.generated.json', JSON.stringify({
     }
   }),
   projects: recent.map(project => ({ src: project.image, alt: project.title, fallback: 'images/hero-cards/projects.svg' })),
-  testimonials: portraits.map(([, src, alt]) => ({ src, alt, fallback: 'images/hero-cards/feedback.svg' })),
 }, null, 2) + '\n')

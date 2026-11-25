@@ -2,7 +2,7 @@
 
 **Systems Architecture · E-Commerce Infrastructure · Shopify Plus · Multi-Node 3PL Logistics**
 
-[View live portfolio](https://riovicsusas.github.io/portfolio/) · [Contact](https://riovicsusas.github.io/portfolio/contact/)
+[View live portfolio](https://riovicsusas.github.io/portfolio/) · [Contact](https://riovicsusas.github.io/portfolio/contact/) · [Evidence summary](https://riovicsusas.github.io/portfolio/evidence/)
 
 ---
 
@@ -58,7 +58,7 @@ Each case study presents an operational problem, the proposed systems design, mo
 ├── latest/index.html               # Portfolio updates
 ├── projects/index.html             # Project catalogue and case studies
 ├── resume/                         # Résumé page and downloadable PDF
-├── testimonials/index.html         # Client reviews and impact metrics
+├── evidence/index.html             # Central evidence and verification summary
 ├── assets/hero/                    # Built homepage assets
 ├── components/ and src/            # Homepage React source
 ├── css/ and js/                    # Shared styles and static page scripts

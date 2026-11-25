@@ -10,7 +10,7 @@ class HeroBoundary extends Component<{ children: ReactNode }, { failed: boolean 
   state = { failed: false }
   static getDerivedStateFromError() { return { failed: true } }
   render() {
-    return this.state.failed ? <section className='hero-fallback'><h1>Riovic Matthew G. Susas</h1><p>E-Commerce Systems Analyst</p><nav aria-label='Explore portfolio'><a href='latest/'>Latest Updates</a><a href='projects/'>Projects</a><a href='about/'>About Me</a><a href='testimonials/'>Testimonials</a></nav></section> : this.props.children
+    return this.state.failed ? <section className='hero-fallback'><h1>Riovic Matthew G. Susas</h1><p>E-Commerce Systems Analyst</p><nav aria-label='Explore portfolio'><a href='latest/'>Latest Updates</a><a href='projects/'>Projects</a><a href='about/'>About Me</a><a href='evidence/'>Evidence</a></nav></section> : this.props.children
   }
 }
 const MobilePortfolio = lazy(() => import('./mobile-portfolio'))
@@ -33,7 +33,7 @@ function ResponsiveHomepage() {
       availabilityLabel='Technical operations · Systems & automation'
       description='I connect the moving parts of e-commerce. From Shopify Plus to warehouse routing and automation, I turn complex operations into clear, reliable systems.'
       profileImage='images/susas_profilepic.jpg'
-      downloadAction={{ label: 'View résumé', href: 'RESUME-Riovic-Matthew-TechOps-Systems-Analyst.md' }}
+      downloadAction={{ label: 'View résumé', href: 'resume/' }}
       connectAction={{ label: 'Let’s connect', href: 'contact/' }}
       brandLogos={[]}
       sectionContent={<SectionCards layout='carousel' />}
