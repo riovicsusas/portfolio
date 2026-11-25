@@ -43,7 +43,7 @@
 ## EDUCATION
 
 ### Bachelor of Science in Electronics Engineering — Cebu Institute of Technology – University
-*Cebu, Philippines | Expected Graduation: 2026*
+*Cebu, Philippines | In progress*
 * **Core Systems Focus:** Systems Engineering, Finite State Machines (FSM), Logic Circuit Design, Telemetry & Discrete Signals.
 
 ---
