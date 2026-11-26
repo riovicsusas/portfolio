@@ -57,10 +57,10 @@ Electronics Engineering foundation (Finite State Machines, Logic
 Systems) and frontline Amazon logistics operations experience. Focuses
 on Shopify Plus order lifecycles, multi-node 3PL routing, catalog schema
 governance, idempotent webhook automation, and checkout margin
-forensics. Built the <strong>Synapse Botanicals</strong> reference
-architecture — six technical studies backed by a
-<strong>152-check</strong> offline Node.js, SQLite, and OpenAPI
-verification harness.</p>
+forensics. Developed the <strong>Synapse Botanicals</strong> reference
+architecture, presented in a Capstone and five domain studies, with a
+local verification package reporting <strong>152 passing
+checks</strong> across five workstreams.</p>
 <hr />
 <h2 id="core-technical-skills">CORE TECHNICAL SKILLS</h2>
 <ul>
@@ -85,8 +85,9 @@ id="e-commerce-systems-architecture--synapse-botanicals--2026">E-Commerce
 Systems Architecture — Synapse Botanicals | 2026</h3>
 <p><em>Independent reference architecture modeling distributed
 fulfillment, catalog governance, automation reliability, and margin
-protection on Shopify Plus — verified by <strong>152 passing offline
-checks</strong> across 5 Node.js/SQLite suites (<a
+protection on Shopify Plus — supported by five offline verification
+workstreams reporting <strong>152 passed checks, 3 skipped checks, and 0
+failures</strong> (<a
 href="https://riovicsusas.github.io/portfolio/">Portfolio</a>).</em></p>
 <ul>
 <li><strong>Asynchronous Order Coordination &amp; Carrier Recovery
@@ -98,31 +99,32 @@ Freeze-First flow (Order #18404). Specified a
 coordinator (34/34 checks) alongside pinned UPS Delivery Intercept
 contract tests (34/34 checks).</li>
 <li><strong>Multi-Node Routing &amp; Split-Shipment Consolidation
-(Domain 2):</strong> Engineered whole-basket node selection across
-Allentown (<code>LOC-PA-01</code>) and Reno (<code>LOC-NV-02</code>) to
-contain split-carton handling ($2.90 base parcel fee + postage),
-verifying <strong>$8.30 (36.2%) modeled savings</strong> per Bethlehem
-basket and <strong>$997.40</strong> across a paired 500-order cohort
-(15/15 checks).</li>
+(Domain 2):</strong> Designed and modeled whole-basket node selection
+across Allentown (<code>LOC-PA-01</code>) and Reno
+(<code>LOC-NV-02</code>) to contain split-carton handling ($2.90 base
+parcel fee + postage), calculating <strong>$8.30 (36.2%) modeled
+savings</strong> per Bethlehem basket and <strong>$997.40</strong>
+across a paired 500-order cohort (15/15 checks).</li>
 <li><strong>Bulk Catalog Governance &amp; Matrixify Integrity (Domain
 3):</strong> Designed a pre-flight validation gate enforcing targeted
 column pruning paired with Matrixify <code>MERGE</code>, strict 12-digit
-string Modulo-10 checks, handle immutability, and 2-of-12 canary
-rollouts (58/58 barcode &amp; bitstream checks; mitigates $3,900 modeled
-bad-release exposure).</li>
+string Modulo-10 checks, handle immutability, and a modeled 2-of-12
+canary rollout (58/58 local barcode &amp; bitstream checks; quantified
+$3,900 in potential bad-release exposure under declared
+assumptions).</li>
 <li><strong>Idempotent Automation &amp; Retry Storm Containment (Domain
 4):</strong> Audited a 114-entry feedback trace saturating a 40-call
 REST bucket under 3-call burst amplification ($2,162.50 modeled floor
 toll); engineered Flow negative guards, <code>operation_id</code> +
 <code>hold_owner</code> reconciliation, and AWS SQS Full Jitter retry
 smoothing (8.33/s first-retry expected rate).</li>
-<li><strong>Checkout Margin Defense, Cart Triage &amp; Helpdesk Holds
-(Domains 5 &amp; 6):</strong> Derived whole-cent dynamic contribution
-floors ($32.85 on Order #29863, reversing -$4.52 to +$30.24 — a
-<strong>+$34.76 swing</strong>, +$34,760 across 1,000 modeled orders;
-11/11 cost checks), fail-closed Shopify Validation
+<li><strong>Checkout Margin Defense &amp; Cart Triage (Domain
+5):</strong> Derived whole-cent dynamic contribution floors ($32.85 on
+Order #29863, reversing -$4.52 to +$30.24 — a <strong>+$34.76 modeled
+swing</strong>, or <strong>+$34,760</strong> across 1,000 modeled
+orders; 11/11 cost checks), specified fail-closed Shopify Validation
 (<code>validationCreate</code> with <code>blockOnFailure: true</code>),
-&lt;60s DevTools triage, and 4-state Gorgias hold workflows.</li>
+and documented &lt;60s DevTools triage.</li>
 </ul>
 <hr />
 <h2 id="professional-experience">PROFESSIONAL EXPERIENCE</h2>
