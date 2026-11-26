@@ -10,74 +10,222 @@
   <link rel="stylesheet" href="../css/typography.css" />
 </head>
 <body class="fullwidth-layout responsive-page about-rework">
-  <a href="../" class="homepage-back-link"><span aria-hidden="true">&larr;</span> Back to homepage</a>
+  <header class="site-header">
+    <a href="../" class="site-logo"><span class="site-logo-dot" aria-hidden="true"></span> Riovic Matthew Susas</a>
+    <nav aria-label="Portfolio sections">
+      <ul class="site-nav">
+        <li><a class="site-nav-link" href="../">Home</a></li>
+        <li><a class="site-nav-link" href="../latest/">Latest</a></li>
+        <li><a class="site-nav-link" href="../projects/">Projects</a></li>
+        <li><a class="site-nav-link active" href="../about/" aria-current="page">About</a></li>
+        <li><a class="site-nav-link" href="../evidence/">Evidence</a></li>
+        <li><a class="site-nav-link" href="../resume/">Résumé</a></li>
+        <li><a class="site-nav-link" href="../contact/">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
   <main class="main" id="mainContent">
     <div class="about-content">
       <header class="about-introduction">
         <div class="about-photo"><img src="../images/susas_profilepic.jpg" alt="Riovic Matthew Susas" width="240" height="300" /></div>
         <div>
-          <p class="about-eyebrow">About me · Cebu, Philippines</p>
+          <p class="about-eyebrow">About me · Cebu, Philippines (UTC+8)</p>
           <h1>Riovic Matthew Susas</h1>
-          <p class="about-role">E-commerce Systems Analyst</p>
+          <p class="about-role">Technical Operations &amp; E-Commerce Systems Analyst</p>
           <h2 class="about-lead">I connect the moving parts of e-commerce.</h2>
-          <p>I bring an electronics engineering foundation and customer-support experience to the way I approach store operations. I’m interested in what happens between the storefront, the warehouse, and the support team—and how to make those handoffs clearer.</p>
-          <p>My portfolio explores order exceptions, fulfillment routing, catalog data, and automation. I trace problems back to their source, map the workflow, and develop practical controls and documentation. My aim is to help teams understand what happened, decide what to do next, and maintain the systems they rely on.</p>
+          <p>I combine an Electronics Engineering foundation (Finite State Machines, logic systems, discrete telemetry) with frontline Amazon logistics operations experience to untangle what happens between the storefront, 3PL warehouses, carrier APIs, and support queues.</p>
+          <p>Through the <strong>Synapse Botanicals</strong> reference architecture, I model order-mutation race conditions, multi-node freight trade-offs, bulk catalog governance, webhook recursion containment, and checkout margin floors—backed by a reproducible <strong>152-check</strong> offline Node.js, SQLite, and OpenAPI verification harness.</p>
           <div class="about-actions">
             <a class="about-button primary" href="../resume/">View résumé <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
             <a class="about-button" href="../resume/Riovic-Matthew-Susas-Resume.pdf" download>Download PDF <span aria-hidden="true">↓</span></a>
+            <a class="about-button" href="../projects/">Explore case studies <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
           </div>
         </div>
       </header>
 
       <section class="about-section" aria-labelledby="background-title">
-        <div class="about-section-heading"><p class="about-eyebrow">01 / My background</p><h2 id="background-title">From engineering principles to operational problems.</h2></div>
+        <div class="about-section-heading"><p class="about-eyebrow">01 / My background</p><h2 id="background-title">From engineering principles to operational reliability.</h2></div>
         <ol class="about-timeline">
-          <li><span class="about-time">Foundation</span><div><h3>Electronics engineering</h3><p class="about-detail">Cebu Institute of Technology – University</p><p>Studies in logic, finite state machines, and signals inform how I map dependencies and investigate system behavior.</p></div></li>
-          <li><span class="about-time">Jul–Dec 2023</span><div><h3>Customer Service Operations Associate</h3><p class="about-detail">Amazon Operation Services Philippines, Inc.</p><p>Handled customer concerns involving order progress, payments, delivery exceptions, and refunds, with attention to timely resolution and clear communication.</p></div></li>
-          <li><span class="about-time">2026 · Portfolio</span><div><h3>E-commerce systems case studies</h3><p class="about-detail">Independent projects and simulations</p><p>Developed scenarios exploring fulfillment coordination, catalog governance, automation failures, and support workflows. These portfolio examples are separate from my Amazon employment.</p></div></li>
+          <li>
+            <span class="about-time">In progress</span>
+            <div>
+              <h3>B.S. in Electronics Engineering</h3>
+              <p class="about-detail">Cebu Institute of Technology – University · Cebu, Philippines</p>
+              <p>Focused on Systems Engineering, Finite State Machines (FSM), Logic Circuit Design, and Discrete Telemetry. That training shapes how I isolate timing races, gate irreversible state transitions, and reason about asynchronous handoffs.</p>
+            </div>
+          </li>
+          <li>
+            <span class="about-time">Jul–Dec 2023</span>
+            <div>
+              <h3>Customer Service Operations Associate</h3>
+              <p class="about-detail">Amazon Operation Services Philippines, Inc. · Cebu, Philippines</p>
+              <ul class="about-highlights">
+                <li>Resolved SLA-bound customer escalations spanning order lifecycles, payment authorizations, carrier tracking desynchronizations, and refund triage.</li>
+                <li>Coordinated directly with Amazon Fulfillment Centers and carrier dispatch teams to release stranded parcels and correct delivery anomalies.</li>
+                <li>Consistently surpassed CSAT, QA, and First-Contact Resolution (FCR) benchmarks, securing a permanent regularization offer within 5 months.</li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <span class="about-time">2026 · Portfolio</span>
+            <div>
+              <h3>Synapse Botanicals Systems Architecture</h3>
+              <p class="about-detail">Independent reference architecture &amp; offline verification harness (separate from Amazon employment)</p>
+              <p>Authored a Capstone post-mortem and five domain studies across Shopify Plus, multi-node 3PL fulfillment, Matrixify schema governance, webhook retry smoothing, and checkout margin protection—verified locally across five Node.js 24 / SQLite / OpenAPI test suites (152 passed, 0 failed, 3 skipped).</p>
+            </div>
+          </li>
         </ol>
       </section>
 
       <section class="about-section" aria-labelledby="capabilities-title">
-        <div class="about-section-heading"><p class="about-eyebrow">02 / What I work on</p><h2 id="capabilities-title">The handoffs that keep a store moving.</h2><p>The linked case studies are independent portfolio simulations.</p></div>
+        <div class="about-section-heading"><p class="about-eyebrow">02 / What I work on</p><h2 id="capabilities-title">Six operational pillars across the e-commerce stack.</h2><p>All linked technical studies are independent portfolio simulations backed by local verification tests.</p></div>
         <div class="about-capabilities">
-          <a class="about-capability" href="../projects/?id=d5-storefront-casestudy"><span class="about-card-index">01</span><h3>Store operations &amp; diagnostics</h3><p>Investigating cart behavior, discount interactions, and catalog changes through payload inspection and data checks.</p><span class="about-card-link">Explore the diagnostics case study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span></a>
-          <a class="about-capability" href="../projects/?id=d2-routing-spec"><span class="about-card-index">02</span><h3>Fulfillment &amp; logistics</h3><p>Mapping order states, warehouse handoffs, routing decisions, and the trade-offs behind split shipments.</p><span class="about-card-link">Explore the routing case study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span></a>
+          <a class="about-capability" href="../projects/?id=capstone-cross-domain">
+            <span class="about-card-index">CAPSTONE / ASYNC COORDINATION</span>
+            <h3>Order mutation &amp; webhook failure autopsy</h3>
+            <p>Tracing timed-out holds across Reno's wave cutoff and physical pick lockouts, specifying a Hold–Update–Release saga and SQS DLQ recovery verified across 34 local coordinator checks.</p>
+            <span class="about-card-link">Inspect Capstone Study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
+          <a class="about-capability" href="../projects/?id=d1-order-lifecycle">
+            <span class="about-card-index">DOMAIN 01 / ORDER LIFECYCLE</span>
+            <h3>Two-boundary PONR &amp; Freeze-First holds</h3>
+            <p>Separating automated 3PL wave batching from physical pick scans alongside USPS CASS address validation and 21 CFR Part 111 / SOP-QA-402 disposition controls.</p>
+            <span class="about-card-link">Explore Domain 1 Study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
+          <a class="about-capability" href="../projects/?id=d2-routing-spec">
+            <span class="about-card-index">DOMAIN 02 / FULFILLMENT ROUTING</span>
+            <h3>Multi-node allocation &amp; split containment</h3>
+            <p>Comparing closest-stocked split parcels against whole-basket routing between Allentown (PA) and Reno (NV) to verify modeled freight savings without delaying delivery promises.</p>
+            <span class="about-card-link">Explore Domain 2 Study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
+          <a class="about-capability" href="../projects/?id=d3-catalog-sop">
+            <span class="about-card-index">DOMAIN 03 / BULK DATA GOVERNANCE</span>
+            <h3>Matrixify MERGE &amp; barcode schema gates</h3>
+            <p>Enforcing pre-flight Modulo-10 UPC checks, leading-zero bitstream preservation, targeted column pruning, handle immutability, and 2-of-12 canary gates.</p>
+            <span class="about-card-link">Explore Domain 3 Study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
+          <a class="about-capability" href="../projects/?id=d4-automation-sop">
+            <span class="about-card-index">DOMAIN 04 / BUSINESS AUTOMATION</span>
+            <h3>Flow guards &amp; SQS retry containment</h3>
+            <p>Breaking self-triggering REST bucket exhaustion with Flow negative guards, operation ownership reconciliation, 3-receive DLQ routing, and Full Jitter backoff smoothing.</p>
+            <span class="about-card-link">Explore Domain 4 Study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
+          <a class="about-capability" href="../projects/?id=d5-storefront-casestudy">
+            <span class="about-card-index">DOMAIN 05 / TECHNICAL DIAGNOSIS</span>
+            <h3>Margin floors &amp; storefront cart triage</h3>
+            <p>Deriving whole-cent breakeven floors, fail-closed Shopify Validation (`blockOnFailure: true`) specs, exclusivity matrices, and &lt;60s Fetch/XHR diagnostic runbooks.</p>
+            <span class="about-card-link">Explore Domain 5 Study <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
         </div>
       </section>
 
       <section class="about-section" aria-labelledby="approach-title">
         <div class="about-section-heading"><p class="about-eyebrow">03 / How I work</p><h2 id="approach-title">Understand first. Make the fix maintainable.</h2></div>
         <ol class="about-process">
-          <li><span>01</span><h3>Investigate</h3><p>Clarify the reported issue and collect relevant evidence.</p></li>
-          <li><span>02</span><h3>Map</h3><p>Identify the systems, states, dependencies, and owners involved.</p></li>
-          <li><span>03</span><h3>Implement</h3><p>Choose a practical control with clear failure and recovery paths.</p></li>
-          <li><span>04</span><h3>Validate</h3><p>Check expected behavior, edge cases, and downstream effects.</p></li>
-          <li><span>05</span><h3>Document</h3><p>Leave a usable runbook, decision record, and handoff.</p></li>
+          <li><span>01</span><h3>Investigate</h3><p>Clarify the symptom, capture payloads and timestamps, and isolate the failure boundary.</p></li>
+          <li><span>02</span><h3>Map</h3><p>Trace systems, state transitions, rate limits, and ownership across teams.</p></li>
+          <li><span>03</span><h3>Implement</h3><p>Apply targeted controls with fail-closed validation, idempotency keys, and recovery paths.</p></li>
+          <li><span>04</span><h3>Validate</h3><p>Verify boundary conditions and edge cases with automated offline checks.</p></li>
+          <li><span>05</span><h3>Document</h3><p>Deliver clear SOPs, decision matrices, and verifiable handoffs.</p></li>
         </ol>
       </section>
 
       <section class="about-section" aria-labelledby="tools-title">
         <div class="about-section-heading"><p class="about-eyebrow">04 / Tools &amp; credentials</p><h2 id="tools-title">A practical toolkit, organized by purpose.</h2></div>
         <div class="about-tool-grid">
-          <div class="about-panel"><h3>Commerce &amp; fulfillment</h3><p class="about-tool-names">Shopify Plus · ShipBob · Matrixify</p><p>Order-state mapping, routing scenarios, catalog field validation, and controlled bulk-update workflows.</p></div>
-          <div class="about-panel"><h3>Automation &amp; customer support</h3><p class="about-tool-names">Shopify Flow · Gorgias · Slack</p><p>Workflow conditions, helpdesk macros, HTTP integration designs, and exception escalation.</p></div>
-          <div class="about-panel"><h3>Data &amp; troubleshooting</h3><p class="about-tool-names">Python · GraphQL · Chrome DevTools</p><p>Validation scripts, API queries, and request/response inspection to support diagnosis.</p></div>
-          <div class="about-panel"><h3>Analysis &amp; documentation</h3><p class="about-tool-names">State machines · Root-cause analysis · SOPs</p><p>Process maps, decision matrices, test scenarios, and operating procedures.</p></div>
+          <div class="about-panel">
+            <h3>Commerce &amp; fulfillment</h3>
+            <div class="about-tool-chips">
+              <span class="about-tool-chip"><img src="../images/icon_shopify.png" alt="" width="18" height="18" /> Shopify Plus</span>
+              <span class="about-tool-chip"><img src="../images/icon_shipbob.png" alt="" width="18" height="18" /> ShipBob 3PL WMS</span>
+              <span class="about-tool-chip"><img src="../images/icon_matrixify.png" alt="" width="18" height="18" /> Matrixify (MERGE)</span>
+            </div>
+            <p>Fulfillment Orders API state mapping, multi-node routing models, catalog field governance, and controlled bulk imports.</p>
+          </div>
+          <div class="about-panel">
+            <h3>Automation &amp; support systems</h3>
+            <div class="about-tool-chips">
+              <span class="about-tool-chip"><img src="../images/icon_flow.png" alt="" width="18" height="18" /> Shopify Flow</span>
+              <span class="about-tool-chip"><img src="../images/icon_gorgias.png" alt="" width="18" height="18" /> Gorgias Helpdesk</span>
+              <span class="about-tool-chip"><img src="../images/icon_slack.png" alt="" width="18" height="18" /> Slack Webhooks</span>
+            </div>
+            <p>Guarded workflow rules, helpdesk macros, HTTP integration contracts, and exception escalation workflows.</p>
+          </div>
+          <div class="about-panel">
+            <h3>APIs, testing &amp; diagnostics</h3>
+            <div class="about-tool-chips">
+              <span class="about-tool-chip"><img src="../images/tools/nodejs.svg" alt="" width="18" height="18" /> Node.js 24</span>
+              <span class="about-tool-chip"><img src="../images/tools/sqlite.svg" alt="" width="18" height="18" /> Built-in SQLite</span>
+              <span class="about-tool-chip"><img src="../images/tools/graphql.svg" alt="" width="18" height="18" /> GraphQL &amp; REST</span>
+              <span class="about-tool-chip"><img src="../images/tools/sqs.svg" alt="" width="18" height="18" /> AWS SQS / DLQ</span>
+              <span class="about-tool-chip"><img src="../images/tools/devtools.svg" alt="" width="18" height="18" /> Chrome DevTools</span>
+              <span class="about-tool-chip"><img src="../images/tools/python.svg" alt="" width="18" height="18" /> Python</span>
+            </div>
+            <p>BigInt cent arithmetic, OpenAPI carrier-recovery contract tests, Fetch/XHR payload inspection, and regex schema linters.</p>
+          </div>
+          <div class="about-panel">
+            <h3>Architecture &amp; reliability</h3>
+            <div class="about-tool-chips">
+              <span class="about-tool-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#8fa16d" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.3 10.9 15.7 7.1M8.3 13.1l7.4 3.8"/></svg>
+                Finite State Machines
+              </span>
+              <span class="about-tool-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#C9B79F" stroke-width="1.8" aria-hidden="true"><path d="M12 3v18M5 8h14M5 16h14"/></svg>
+                Two-Boundary PONR
+              </span>
+              <span class="about-tool-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#E5C378" stroke-width="1.8" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                CAPA / 5 Whys &amp; SOPs
+              </span>
+              <span class="about-tool-chip"><img src="../images/professional/github.svg" class="invert-on-dark" alt="" width="18" height="18" /> GitHub Actions</span>
+            </div>
+            <p>Sev-1 post-mortems, CI-verified test harnesses, runbooks, and auditable decision matrices.</p>
+          </div>
         </div>
+
+        <a class="about-evidence-banner" href="../evidence/">
+          <div>
+            <h3>Offline Verification Harness — 152 Passed · 0 Failed · 3 Skipped</h3>
+            <p>Five local Node.js 24 test suites verifying parcel freight (15), SQLite order coordination (34), UPC/bitstream validation (58), BigInt cent margins (11), and pinned UPS OpenAPI recovery contracts (34).</p>
+          </div>
+          <span class="about-evidence-cta">Inspect Evidence Summary <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+        </a>
+
         <div class="about-credentials" aria-label="Credentials and learning">
-          <article><p class="about-detail">Gorgias Academy</p><h3>Gorgias Certified Administrator</h3></article>
-          <article><p class="about-detail">Gorgias Academy</p><h3>Gorgias Certified Agent</h3></article>
-          <article><p class="about-detail">Shopify Academy · Learning</p><h3>Shopify platform &amp; store operations</h3></article>
+          <a class="about-credential-link" href="../assets/certifications/gorgias-certified-admin-susas.pdf" target="_blank" rel="noopener noreferrer">
+            <p class="about-detail">Gorgias Academy</p>
+            <h3>Gorgias Certified Administrator</h3>
+            <span class="about-credential-meta">View certificate PDF <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
+          <a class="about-credential-link" href="../assets/certifications/gorgias-certified-agent-susas.pdf" target="_blank" rel="noopener noreferrer">
+            <p class="about-detail">Gorgias Academy</p>
+            <h3>Gorgias Certified Agent</h3>
+            <span class="about-credential-meta">View certificate PDF <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 18 18 6M6 6h12v12"/></svg></span>
+          </a>
+          <article>
+            <p class="about-detail">Shopify Academy · Platform Fundamentals</p>
+            <h3>Shopify Plus Platform &amp; Store Operations</h3>
+            <span class="about-credential-meta">Applied across 6 technical studies</span>
+          </article>
         </div>
       </section>
 
       <section class="about-contact" aria-labelledby="contact-title">
         <p class="about-eyebrow">05 / Let’s connect</p>
         <h2 id="contact-title">Let’s talk about the systems behind your store.</h2>
-        <p>If you’re looking for someone who enjoys untangling operational problems and making workflows clearer, I’d like to hear from you.</p>
-        <div class="about-actions"><a class="about-button primary" href="../contact/">Let’s Connect <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a><a class="about-button" href="../resume/">View résumé <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a></div>
-        <nav class="about-professional-links" aria-label="Professional links"><a href="mailto:riovicmatthew@gmail.com">Email</a><a href="https://www.linkedin.com/in/riovicsusas" target="_blank" rel="noopener noreferrer">LinkedIn <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a><a href="https://github.com/riovicsusas/portfolio" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://www.upwork.com/freelancers/~01cd8c2868dd2fc99c?mp_source=share" target="_blank" rel="noopener noreferrer">Upwork</a></nav>
+        <p>If you’re hiring for Technical Operations, E-Commerce Systems Analysis, or Shopify Plus support engineering, I’d welcome the conversation.</p>
+        <div class="about-actions">
+          <a class="about-button primary" href="../contact/">Contact channels <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
+          <a class="about-button" href="../resume/">View résumé <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
+        </div>
+        <nav class="about-professional-links" aria-label="Professional links">
+          <a href="mailto:riovicmatthew@gmail.com">riovicmatthew@gmail.com</a>
+          <a href="https://www.linkedin.com/in/riovicsusas" target="_blank" rel="noopener noreferrer">LinkedIn <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
+          <a href="https://github.com/riovicsusas/portfolio" target="_blank" rel="noopener noreferrer">GitHub <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
+          <a href="https://www.upwork.com/freelancers/~01cd8c2868dd2fc99c?mp_source=share" target="_blank" rel="noopener noreferrer">Upwork <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
+        </nav>
       </section>
     </div>
   </main>

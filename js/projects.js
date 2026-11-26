@@ -156,32 +156,32 @@ function openProjectDetail(id) {
         <p style="font-size:14px; color:var(--text); line-height:1.8;">${p.fullOverview || p.overview || p.desc || p.short}</p>
       </div>
 
-      <!-- FORENSIC INVESTIGATION PILLARS -->
+      <!-- ARCHITECTURE SCOPE & VERIFICATION PILLARS -->
       <div style="margin-bottom:28px;">
-        <p class="modal-section-label" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;"><i class="ph ph-shield-check"></i> Core Implementation Pillars &amp; Verification</p>
+        <p class="modal-section-label" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;"><i class="ph ph-shield-check"></i> Architecture Scope &amp; Controls</p>
         <div class="pdf-placeholder-pillars">
+          ${(p.references?.architectureScope?.length ? p.references.architectureScope : (p.tags || []).slice(0, 4).map(tag => ({ name: tag, role: 'Verified operational boundary and workflow control.' }))).map((scope, idx) => `
           <div class="pillar-box">
-            <span class="pillar-num">01</span>
-            <h5>Root Cause Analysis</h5>
-            <p>Identifying the race condition or data corruption vector between storefront events and asynchronous backend fulfillment.</p>
-          </div>
-          <div class="pillar-box">
-            <span class="pillar-num">02</span>
-            <h5>State Machine Governance</h5>
-            <p>Enforcing two-boundary Point-of-No-Return (PONR) gates and operation-owned holds to prevent state divergence.</p>
-          </div>
-          <div class="pillar-box">
-            <span class="pillar-num">03</span>
-            <h5>Idempotent Automation</h5>
-            <p>Protecting Shopify Flow and webhook listeners with unique operation IDs, reconciliation lookups, and SQS DLQ retries.</p>
-          </div>
-          <div class="pillar-box">
-            <span class="pillar-num">04</span>
-            <h5>Measurable Verification</h5>
-            <p>Backed by 152 automated offline checks spanning hold coordination, routing math, barcode integrity, and checkout floors.</p>
-          </div>
+            <span class="pillar-num">${String(idx + 1).padStart(2, '0')}</span>
+            <h5>${scope.name}</h5>
+            <p>${scope.role}</p>
+          </div>`).join('')}
         </div>
       </div>
+
+      ${p.references?.dependencies?.length ? `
+      <!-- RELATED ARCHITECTURE -->
+      <div style="margin-bottom:28px;">
+        <p class="modal-section-label" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px;"><i class="ph ph-git-branch"></i> Related Specifications</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+          ${p.references.dependencies.map(dep => `
+          <div style="padding:12px 14px; border:1px solid rgba(201,183,159,0.22); border-radius:10px; background:rgba(255,255,255,0.025);">
+            <div style="font-size:10.5px; font-weight:700; color:var(--isabelline); margin-bottom:4px;">${dep.code}</div>
+            <div style="font-size:12.5px; font-weight:700; color:var(--linen); margin-bottom:4px;">${dep.title}</div>
+            <p style="font-size:11.5px; color:var(--muted); margin:0; line-height:1.5;">${dep.role}</p>
+          </div>`).join('')}
+        </div>
+      </div>` : ''}
 
             <!-- PRIMARY: TECHNICAL STUDY VIEWER + SECONDARY: PDF -->
       <div style="display:flex; flex-direction:column; gap:12px; margin-top:4px;">
