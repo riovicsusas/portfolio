@@ -69,9 +69,9 @@ const FLAGSHIP_PROJECTS = [
       "PONR Boundaries",
       "State Machines"
     ],
-    "dossierUrl": "domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md",
+    "dossierUrl": "domain-1-order-lifecycle/TechnicalStudy-Domain1-UILieBlindspot.md",
     "pdfUrl": "",
-    "specName": "TechnicalStudy-Domain1-OrderStateMachineAndPONR.md"
+    "specName": "TechnicalStudy-Domain1-UILieBlindspot.md"
   },
   {
     "id": "d2-routing-spec",

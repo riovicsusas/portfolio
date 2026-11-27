@@ -34,7 +34,7 @@ The portfolio currently presents two domain studies and one integration Capstone
 | Study | Technical Case Study | Read Online |
 | :--- | :--- | :--- |
 | **Capstone** | [Asynchronous Order Mutation](capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md) |
-| **Domain 1 — Order Lifecycle** | [Order State Machine and Point-of-No-Return Protocol](domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md) |
+| **Domain 1 — Order Lifecycle** | [The 'In Progress' UI Lie & Three Observability Blindspots](domain-1-order-lifecycle/TechnicalStudy-Domain1-UILieBlindspot.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-1-order-lifecycle/TechnicalStudy-Domain1-UILieBlindspot.md) |
 | **Domain 2 — Routing and Logistics** | [Multi-Node Logistics Routing](domain-2-order-routing/TechnicalStudy-Domain2-MultiNodeLogisticsRouting.md) | [Read Online](https://riovicsusas.github.io/portfolio/dossier-viewer/?file=domain-2-order-routing/TechnicalStudy-Domain2-MultiNodeLogisticsRouting.md) |
 
 ## Repository Layout
