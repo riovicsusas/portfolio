@@ -1,6 +1,6 @@
 import { r as e, t } from "./rolldown-runtime-QGRDbDUS.js";
 import { n, t as r } from "./jsx-runtime-s04k_HfJ.js";
-import { t as i } from "./section-cards-BCnmkKX-.js";
+import { t as i } from "./section-cards-CAWbjxfZ.js";
 // node_modules/matter-js/build/matter.js
 var a = /* @__PURE__ */ t(((e, t, n) => {
 	(function(n, r) {
@@ -3227,7 +3227,6 @@ var E = [
 	},
 	{ label: "AUTOMATION" },
 	{ label: "3PL LOGISTICS" },
-	{ label: "MATRIXIFY" },
 	{
 		label: "SHOPIFY FLOW",
 		bg: "#bba5ef",

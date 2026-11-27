@@ -1110,10 +1110,6 @@
       ['MasterDossier-Capstone-AsynchronousOrderMutation.md', 'capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md'],
       ['MasterDossier-Domain1-OrderStateMachineAndPONR.md', 'domain-1-order-lifecycle/TechnicalStudy-Domain1-OrderStateMachineAndPONR.md'],
       ['MasterDossier-Domain2-MultiNodeLogisticsRouting.md', 'domain-2-order-routing/TechnicalStudy-Domain2-MultiNodeLogisticsRouting.md'],
-      ['MasterDossier-Domain3-BulkCatalogSchemaGovernance.md', 'domain-3-bulk-data-management/TechnicalStudy-Domain3-BulkCatalogSchemaGovernance.md'],
-      ['MasterDossier-Domain4-WebhookAutomationAndFlowTriage.md', 'domain-4-business-automation/TechnicalStudy-Domain4-WebhookAutomationAndFlowTriage.md'],
-      ['MasterDossier-Domain5-MarginDefenseAndCartDiagnostics.md', 'domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md'],
-      ['MasterDossier-Domain6-FrontlineHelpdeskAutomation.md', 'domain-6-frontline-helpdesk/TechnicalStudy-Domain6-FrontlineHelpdeskAutomation.md'],
     ]);
     var requestedFilename = filePath.split('/').pop();
     if (legacyStudyAliases.has(requestedFilename)) {
@@ -1392,10 +1388,6 @@
       if (str.indexOf('capstone') !== -1) return '★ Capstone — Cross-Domain';
       if (str.indexOf('domain-1') !== -1 || str.indexOf('domain1') !== -1 || str.indexOf('order-lifecycle') !== -1 || str.indexOf('orderexception') !== -1 || str.indexOf('pointofnoreturn') !== -1) return 'Domain 1 — Order Lifecycle';
       if (str.indexOf('domain-2') !== -1 || str.indexOf('domain2') !== -1 || str.indexOf('order-routing') !== -1 || str.indexOf('routingengine') !== -1 || str.indexOf('multilocation') !== -1) return 'Domain 2 — Routing & Logistics';
-      if (str.indexOf('domain-3') !== -1 || str.indexOf('domain3') !== -1 || str.indexOf('bulk-data') !== -1 || str.indexOf('catalog') !== -1 || str.indexOf('matrixify') !== -1) return 'Domain 3 — Bulk Catalog Governance';
-      if (str.indexOf('domain-4') !== -1 || str.indexOf('domain4') !== -1 || str.indexOf('business-automation') !== -1 || str.indexOf('webhook') !== -1 || str.indexOf('flow') !== -1) return 'Domain 4 — Business Automations';
-      if (str.indexOf('domain-5') !== -1 || str.indexOf('domain5') !== -1 || str.indexOf('technical-diagnosis') !== -1 || str.indexOf('discount') !== -1 || str.indexOf('cartdiagnostics') !== -1) return 'Domain 5 — Technical Diagnosis';
-      if (str.indexOf('domain-6') !== -1 || str.indexOf('domain6') !== -1 || str.indexOf('frontline') !== -1 || str.indexOf('helpdesk') !== -1) return 'Domain 6 — Frontline Helpdesk Automation';
       return 'Technical Study';
     }
 

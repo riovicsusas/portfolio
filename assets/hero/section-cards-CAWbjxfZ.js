@@ -252,7 +252,7 @@ var E = {
 		title: "Projects",
 		href: "projects/",
 		images: E.projects,
-		description: "Five domain studies and a Capstone on fulfillment, catalog governance, automation, and margin protection."
+		description: "Two domain studies and a Capstone on order lifecycle, routing, and fulfillment coordination."
 	},
 	{
 		title: "About Me",

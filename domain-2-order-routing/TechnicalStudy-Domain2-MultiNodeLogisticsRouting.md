@@ -131,14 +131,14 @@ $$\text{Variable Pick Labor} = \$0.40 \text{ for each unit picked after the firs
 
 $$\text{Handling}(P, U) = \$3.30 \times P + \$0.40 \times (U - P) = \$3.30P + \$0.40U - \$0.40P = \mathbf{\$2.90P + \$0.40U}$$
 
-> **Price the scenario's carton.** The $2.90P + $0.40U equation governs the Domain 2 routing fixture, including its tincture parcel. Capstone and Domain 5 use separately declared fulfillment inputs: $4.50 for the Capstone bundle, $4.90 for the promotional bundle benchmark, and $4.10 for Order #29863's consolidated two-unit basket. The input ledger names those configurations and their aggregate charges. Keep each amount attached to its scenario when calculating contribution.
+> **Price the scenario's carton.** The $2.90P + $0.40U equation governs this routing fixture, including its tincture parcel. For the Bethlehem basket, handling totals $7.00 for two parcels or $4.10 for one parcel. Treat these as declared scenario calculations, not live warehouse charges.
 
 Where:
 - `P` is the total count of dispatched outbound parcels.
 - `U` is the total count of physical units picked across all parcels.
 - The \$2.90 coefficient is not the sum of base and corrugate (\$3.30). It is \$3.30 less the \$0.40 credit that the per-unit term would otherwise assess for each parcel's first pick (which the schedule waives).
 
-This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units. The separate two-item checkout in Domain 5 uses declared inputs of $4.10 handling and $6.50 freight for the basket. [Domain 5 Section 6](../domain-5-technical-diagnosis/TechnicalStudy-Domain5-MarginDefenseAndCartDiagnostics.md) applies those inputs to the checkout margin calculation.
+This rate card gives $3.30 handling for a single parcel with one physical unit and $4.10 for a single parcel with three units.
 
 Checking the rate card against the formula:
 

@@ -5,7 +5,7 @@ import './mobile-portfolio.css'
 
 const badges: PortfolioBadge[] = [
   { label: 'SHOPIFY PLUS', bg: '#c6e795', border: '#b0ce81', color: '#213817' },
-  { label: 'AUTOMATION' }, { label: '3PL LOGISTICS' }, { label: 'MATRIXIFY' },
+  { label: 'AUTOMATION' }, { label: '3PL LOGISTICS' },
   { label: 'SHOPIFY FLOW', bg: '#bba5ef', border: '#a68bde', color: '#271443' },
   { label: 'WAREHOUSE ROUTING' }, { label: 'SYSTEMS THINKING' },
   { label: 'CUSTOMER OPERATIONS' },

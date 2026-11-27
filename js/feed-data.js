@@ -1,6 +1,6 @@
 /**
  * Portfolio Activity Feed & Latest Updates
- * Directly linked to the 6 Flagship Engineering Case Studies
+ * Directly linked to the three published case studies
  */
 const LATEST_UPDATES = [
   {
@@ -56,60 +56,6 @@ const LATEST_UPDATES = [
       { val: "$997.40", label: "Separate 500-Order Model" }
     ],
     tags: ["Multi-Node Routing", "Freight Waterfalls", "ShipBob 3PL", "Split Containment"]
-  },
-  {
-    id: "update-d3",
-    projectId: "d3-catalog-sop",
-    date: "2026-11-20",
-    tag: "Data Governance SOP",
-    domain: "Bulk Data Management",
-    icon: "ph-database",
-    title: "Enterprise Matrixify Migration & Barcode Schema Governance",
-    short: "Blocked malformed barcode fixtures and unauthorized handle edits across a 12-variant catalog with targeted column pruning.",
-    problem: "Spreadsheet leading-zero stripping, scientific-notation text exports, and unredirected handle changes disrupt WMS scanning and paid-media URLs ($3,900.00 modeled exposure per release).",
-    solution: "Enforced Gate 1 column pruning paired with Matrixify `MERGE`, strict 12-digit string Modulo-10 verification, and a 2-of-12 (16.67%) canary deployment sequence.",
-    metrics: [
-      { val: "58 / 58", label: "Barcode & Bitstream Checks" },
-      { val: "$3,900", label: "Modeled Release Exposure" },
-      { val: "5s", label: "Pre-Flight Circuit Stop" }
-    ],
-    tags: ["Matrixify MERGE", "UPC-A Modulo-10", "Column Pruning", "Canary Gates"]
-  },
-  {
-    id: "update-d4",
-    projectId: "d4-automation-sop",
-    date: "2026-11-20",
-    tag: "Automation Architecture",
-    domain: "Business Automation",
-    icon: "ph-cpu",
-    title: "Business Logic Automation & Webhook Recursion Triage",
-    short: "Reconstructed 114-entry feedback trace and SQS Full Jitter backoff smoothing against 504 gateway retry storms.",
-    problem: "Unconstrained Order #24148 listeners re-emitted tag updates (342 attempted REST requests across 62s at 5.52 req/s against a 2 req/s leak), driving $2,162.50 in modeled outage exposure.",
-    solution: "Specified Flow negative-check guards, `operation_id` + `hold_owner` state reconciliation, 3-receive SQS dead-letter queues, and Full Jitter backoff smoothing.",
-    metrics: [
-      { val: "114", label: "Trace Entries in 62s" },
-      { val: "$2,162.50", label: "Modeled Outage Floor" },
-      { val: "8.33/s", label: "Jitter Mean (500 Retries)" }
-    ],
-    tags: ["Shopify Flow", "Operation IDs", "SQS Full Jitter", "DLQ Contracts"]
-  },
-  {
-    id: "update-d5",
-    projectId: "d5-storefront-casestudy",
-    date: "2026-11-20",
-    tag: "Technical Study",
-    domain: "Technical Diagnosis",
-    icon: "ph-browsers",
-    title: "Algorithmic Margin Defense & Storefront Cart Diagnostics",
-    short: "Reversed a modeled -$4.52 Order #29863 coupon collision and derived whole-cent dynamic contribution floors.",
-    problem: "Four stacked codes (`VIP20` + `WELCOME25` + `LOYALTY10` + `FREESHIP`) reduced an $80 basket to $28.20 collected against a $32.85 breakeven floor (-$4.52 contribution).",
-    solution: "Designed a 3x3 promotion exclusivity matrix enforced via Shopify Functions (`validationCreate` with `blockOnFailure: true`), exact cent floors, and <60s Tier-1 cart triage.",
-    metrics: [
-      { val: "+$34.76", label: "Per-Order Swing (Order #29863)" },
-      { val: "$32.85", label: "Exact Basket Floor" },
-      { val: "+$34,760", label: "1,000-Order Model Delta" }
-    ],
-    tags: ["Chrome DevTools", "Margin Floor", "Shopify Validation", "HTTP 422 Triage"]
   },
   {
     id: "update-gorgias-agent",

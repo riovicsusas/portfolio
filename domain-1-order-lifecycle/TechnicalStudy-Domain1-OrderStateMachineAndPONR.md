@@ -684,7 +684,7 @@ In accordance with rigorous systems architecture principles, this section strict
 
 ### 11.2 Executed SQLite Coordinator Benchmark
 
-**Use the recorded run, not a remembered millisecond.** The [current coordinator report](../evidence/latency/summary.md) carries the run ID, Node runtime, executed checks, and measured percentile table; [the whole-suite manifest](../evidence/latest_run.json) records the corresponding source and report hashes. Keep presentation figures tied to that evidence instead of a second copied table.
+**Use the recorded run, not a remembered millisecond.** The [coordinator report](../evidence/latency/summary.md) carries the run ID, Node runtime, executed checks, and measured percentile table. Keep presentation figures tied to that evidence instead of a second copied table.
 
 The harness uses Node's built-in SQLite for a local persistent operation ledger and virtual WMS state. It exercises atomic claims and conditional hold writes without contacting Shopify, ShipBob, or SQS. The default smoke workloads establish local response timings, not vendor confirmation latency; `--full` increases the workload to 10,000 attempts per case.
 

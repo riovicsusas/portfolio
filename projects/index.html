@@ -114,116 +114,22 @@
     <!-- MAIN PROJECTS VIEW -->
     <div id="projectsMainView">
       <div class="section-header">
-        <h2>Technical Operations &amp; Engineering Case Studies</h2>
-        <p>Curated end-to-end architectures, empirical simulations, and forensic post-mortems across Shopify Plus, 3PL WMS, and Carrier APIs.</p>
+        <h2>Order-to-Fulfillment Systems Case Studies</h2>
+        <p>Three focused studies examine order-state control, multi-node routing, and the failure handoffs between commerce and fulfillment systems.</p>
       </div>
 
-      <!-- OPERATIONAL ENVIRONMENT ACCORDION -->
-      <div class="company-dropdown-wrapper" id="companyOverviewDropdown">
-        <button class="company-dropdown-toggle" onclick="toggleCompanyDropdown()" aria-expanded="false" id="companyDropdownBtn">
-          <div class="company-toggle-left">
-            <span class="company-badge"><i class="ph ph-buildings"></i> Engineered Sandbox</span>
-            <span class="company-toggle-name">Target Storefront: Synapse Botanicals (DTC)</span>
-          </div>
-          <div class="company-toggle-right">
-            <span class="company-store-pill"><i class="ph ph-arrow-square-out"></i> synapse-botanicals.myshopify.com</span>
-            <span class="company-caret-btn"><i class="ph ph-caret-down" id="companyCaretIcon"></i></span>
-          </div>
-        </button>
+      <section aria-labelledby="scenario-title" style="max-width:920px; margin:0 auto 28px; padding:20px 24px; border:1px solid rgba(201,183,159,0.2); border-radius:14px; background:rgba(255,255,255,0.025);">
+        <h3 id="scenario-title" style="margin:0 0 8px; color:var(--linen);">Shared reference scenario</h3>
+        <p style="margin:0; color:var(--muted); line-height:1.7;">Synapse Botanicals is a fictional direct-to-consumer store used to make the examples concrete. Its studies model Shopify order state, fulfillment routing between Allentown and Reno, and cross-system recovery. Orders, rates, and timings are declared scenarios, not records from a live merchant.</p>
+      </section>
 
-        <div class="company-dropdown-content" id="companyDropdownContent" style="display:none;">
-          <h3 class="company-title">Synapse Botanicals — Enterprise Operational Architecture</h3>
-          <p class="company-desc">Synapse Botanicals is an engineered sandbox for modeling the operations of a direct-to-consumer health and wellness brand. Built around a Shopify Plus reference architecture, its case studies explore distributed fulfillment, data integrity, and asynchronous automation through controlled simulations and reproducible local tests.</p>
-
-          <div class="company-details-grid">
-            <div class="company-detail-item">
-              <div class="detail-label"><i class="ph ph-package"></i> Product Catalog Matrix</div>
-              <p><strong>12 Master Variants</strong> across 5 product lines (Focus Stick Packs, Adaptogen Tinctures, Starter Bundles, Precision Tumblers, and Whisks). High average unit volume requiring strict lot controls, expiration tracking, and multi-node routing.</p>
-            </div>
-            <div class="company-detail-item">
-              <div class="detail-label"><i class="ph ph-chart-line-up"></i> Order Volume Scenario</div>
-              <p><strong>800–1,200 orders/day</strong> is the modeled peak workload. Customer address changes and discount combinations provide controlled test cases for automated triage.</p>
-            </div>
-            <div class="company-detail-item">
-              <div class="detail-label"><i class="ph ph-truck"></i> Multi-Node Fulfillment</div>
-              <p>Modeled fulfillment network spanning <strong>Allentown, PA</strong> and <strong>Reno, NV</strong>, used to test inventory-aware routing and Shopify-to-WMS coordination.</p>
-              <figure class="fulfillment-map">
-                <img src="../images/fulfillment-network.svg" width="720" height="430" alt="Map of the contiguous United States with a circle at Reno in the west and a diamond at Allentown in the east, joined by a dotted line showing geographic separation." loading="lazy" decoding="async" />
-                <ul class="fulfillment-map-legend" aria-label="Modeled fulfillment locations">
-                  <li><span class="fulfillment-node fulfillment-node-west" aria-hidden="true"></span><span><strong>Reno, NV</strong><small>LOC-NV-02</small></span></li>
-                  <li><span class="fulfillment-node fulfillment-node-east" aria-hidden="true"></span><span><strong>Allentown, PA</strong><small>LOC-PA-01</small></span></li>
-                </ul>
-                <figcaption>
-                  <span class="fulfillment-map-distance"><strong>≈2,320 miles</strong> · Approximate straight-line distance between city centers.</span>
-                  Modeled fulfillment locations. Inventory availability and destination determine which node can fulfill an order.
-                </figcaption>
-              </figure>
-            </div>
-            <div class="company-detail-item">
-              <div class="detail-label"><i class="ph ph-cpu"></i> Integrated Tech Stack</div>
-              <div class="tech-stack-badges">
-                <span class="tech-badge"><img src="../images/icon_shopify.png" class="tech-icon-img" alt="Shopify Plus"> Shopify Plus</span>
-                <span class="tech-badge"><i class="ph ph-arrows-clockwise"></i> Shopify Flow</span>
-                <span class="tech-badge"><img src="../images/icon_shipbob.png" class="tech-icon-img" alt="ShipBob"> ShipBob 3PL WMS</span>
-                <span class="tech-badge"><img src="../images/icon_gorgias.png" class="tech-icon-img" alt="Gorgias"> Gorgias</span>
-                <span class="tech-badge"><img src="../images/icon_matrixify.png" class="tech-icon-img" alt="Matrixify"> Matrixify</span>
-                <span class="tech-badge"><i class="ph ph-browsers"></i> Chrome DevTools</span>
-              </div>
-              <button class="catalog-quickview-btn" id="catalogQuickViewBtn" onclick="toggleCatalogQuickView(event)" aria-expanded="false">
-                <i class="ph ph-table"></i> QuickView 12-Variant Catalog
-              </button>
-            </div>
-          </div>
-
-          <!-- CATALOG QUICKVIEW DRAWER -->
-          <div class="catalog-quickview-drawer" id="catalogQuickViewDrawer" style="display:none;">
-            <div class="quickview-header">
-              <div class="quickview-title"><i class="ph ph-database"></i> Synapse Botanicals — 12-Variant Master Catalog Matrix</div>
-              <button class="quickview-close-btn" onclick="toggleCatalogQuickView(event)"><i class="ph ph-x"></i></button>
-            </div>
-            <div class="quickview-table-wrapper">
-              <table class="quickview-table">
-                <thead>
-                  <tr>
-                    <th>SKU Code</th>
-                    <th>Product &amp; Variant Name</th>
-                    <th>Category</th>
-                    <th>Retail</th>
-                    <th>Gross Margin</th>
-                    <th>Primary Fulfillment Node</th>
-                    <th>Hazard Tier</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td><code>SYN-FSTK-MY</code></td><td>Focus Stick Packs 30-Pack (Matcha Yuzu)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-FSTK-BO</code></td><td>Focus Stick Packs 30-Pack (Blood Orange)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-FSTK-WB</code></td><td>Focus Stick Packs 30-Pack (Wild Blueberry)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-FSTK-GA</code></td><td>Focus Stick Packs 30-Pack (Crisp Green Apple)</td><td>Drink Mix</td><td>$42.00</td><td><span class="margin-pill high">80%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-TNCT-AM</code></td><td>Adaptogen Tincture 60ml (AM Focus / Lion's Mane)</td><td>Tincture</td><td>$38.00</td><td><span class="margin-pill med">67%</span></td><td>LOC-NV-02 (Reno Exclusive)</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-TNCT-PM</code></td><td>Adaptogen Tincture 60ml (PM Restore / Reishi)</td><td>Tincture</td><td>$38.00</td><td><span class="margin-pill med">67%</span></td><td>LOC-NV-02 (Reno Exclusive)</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-BNDL-MAO</code></td><td>Starter Bundle (Matcha / AM / Obsidian)</td><td>Product Bundles</td><td>$82.00 / $98.00</td><td><span class="margin-pill high">70%</span></td><td>LOC-NV-02 (Reno)</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-BNDL-BAB</code></td><td>Starter Bundle (Orange / AM / Bone White)</td><td>Product Bundles</td><td>$82.00 / $98.00</td><td><span class="margin-pill high">70%</span></td><td>LOC-NV-02 (Reno)</td><td>Tier 1</td></tr>
-                  <tr><td><code>SYN-TMBL-MO</code></td><td>Precision Insulated Tumbler 500ml (Matte Obsidian)</td><td>Drinkware / Merch</td><td>$34.00</td><td><span class="margin-pill high">79%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
-                  <tr><td><code>SYN-TMBL-BW</code></td><td>Precision Insulated Tumbler 500ml (Bone White)</td><td>Drinkware / Merch</td><td>$34.00</td><td><span class="margin-pill high">79%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
-                  <tr><td><code>SYN-TMBL-SG</code></td><td>Precision Insulated Tumbler 500ml (Sage Green)</td><td>Drinkware / Merch</td><td>$34.00</td><td><span class="margin-pill high">79%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
-                  <tr><td><code>SYN-ACC-WHSK</code></td><td>Micro-Foam Electric Whisk</td><td>Kitchen Tool / Merch</td><td>$16.00</td><td><span class="margin-pill high">81%</span></td><td>LOC-PA-01 / LOC-NV-02</td><td>Tier 4</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+      <div class="filter-pills-row" aria-label="Filter case studies">
+        <button class="filter-pill active" data-filter="all" onclick="filterProjects('all')">All Case Studies (3)</button>
+        <button class="filter-pill" data-filter="lifecycle" onclick="filterProjects('lifecycle')">Order Lifecycle (1)</button>
+        <button class="filter-pill" data-filter="routing" onclick="filterProjects('routing')">Routing &amp; Logistics (1)</button>
+        <button class="filter-pill" data-filter="capstone" onclick="filterProjects('capstone')">Capstone (1)</button>
       </div>
 
-      <!-- FILTER PILLS -->
-      <div class="filter-pills-row">
-        <button class="filter-pill active" data-filter="all" onclick="filterProjects('all')">All Case Studies (6)</button>
-        <button class="filter-pill" data-filter="logistics" onclick="filterProjects('logistics')">Logistics &amp; 3PL (2)</button>
-        <button class="filter-pill" data-filter="automations" onclick="filterProjects('automations')">Automations &amp; Flow (2)</button>
-        <button class="filter-pill" data-filter="data" onclick="filterProjects('data')">Data &amp; Catalog (1)</button>
-        <button class="filter-pill" data-filter="diagnostics" onclick="filterProjects('diagnostics')">Diagnostics &amp; Margin (1)</button>
-      </div>
-
-      <!-- 21ST.DEV CURATED PROJECT CARDS GRID -->
       <div class="projects-curated-grid" id="projectsGrid"></div>
     </div>
 
@@ -233,7 +139,6 @@
   </main>
 
   <script src="../js/main.js"></script>
-  <script src="../js/projects-data.js"></script>
   <script src="../js/flagship-data.js"></script>
   <script src="../js/projects.js"></script>
 </body>

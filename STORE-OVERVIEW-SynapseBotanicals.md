@@ -89,44 +89,36 @@ flowchart TD
 
 ## 4. The Technical Stack & Integration Layer
 
-The brand relies on an interconnected operational stack where data integrity, speed, and automation guardrails are paramount:
+The published studies focus on the systems that shape an order from checkout through warehouse and carrier handoff:
 
-* **E-Commerce Platform & Core ERP:** **Shopify Plus** (Custom Online Store 2.0 Theme, Fulfillment Orders API, GraphQL admin mutations).
-* **Fulfillment & WMS Middleware:** **ShipBob 3PL WMS** (Distributed multi-node warehousing across Reno and Allentown synchronized via asynchronous REST webhooks).
-* **Frontline Customer Support & Automation:** **Gorgias Helpdesk** (HTTP integration webhooks, automated order holds, macro-driven tag sanitation, and customer address mutation safeguards).
-* **Order & Inventory Routing:** Native Shopify Order Routing engine with strict deterministic rules: *Minimize split fulfillments* $\rightarrow$ *Closest location priority*.
-* **Workflow Automation & Idempotency:** **Shopify Flow** (Fraud risk quarantine holds, VIP high-order value routing, automated tag hygiene, and zero-loop idempotency locks).
-* **Data Engineering & Catalog Migrations:** **Matrixify (Excelify)** + Native CSV ingestion pipelines paired with custom pre-flight Python regex linters.
-* **Incident Alerting & Telemetry:** **Slack Webhooks** (Real-time Sev-1 order routing alerts and inventory depletion thresholds).
-* **Diagnostic & Observability Tooling:** **Chrome DevTools** (Storefront API / Cart AJAX payload triage), Order Timeline transaction forensics, and gateway authorization logs.
+* **Commerce platform:** **Shopify Plus**, using its Admin API and fulfillment-order state.
+* **Fulfillment network:** A modeled **ShipBob 3PL WMS** with Reno and Allentown inventory nodes.
+* **Order routing:** A declared decision model comparing closest-stocked fulfillment with whole-basket consolidation.
+* **Coordination design:** Shopify events, an idempotency ledger, and an AWS SQS retry / dead-letter topology in the Capstone architecture.
+* **Carrier recovery:** A focused offline UPS Delivery Intercept contract fixture; no live carrier request is claimed.
 
 ---
 
-## 5. Core Operational Challenges (The TechOps Mandate)
+## 5. Published Case Studies
 
-Because Synapse Botanicals operates at the intersection of perishable health supplements, multi-location logistics, and high-velocity promotional marketing, the Technical Operations role enforces five primary operational disciplines across the architecture, synthesized by an integrated Capstone:
+The public portfolio presents two domain studies and an integration Capstone:
 
-1. **Order State Machine & Point-of-No-Return Protocol (Domain 1):** Managing physical-to-digital order synchronization across Shopify and 3PL WMS, enforcing fulfillment holds, and defining irreversible operational cutoffs.
-2. **Bi-Coastal Multi-Node Logistics & Freight Cost Optimization (Domain 2):** Preventing multi-node stockouts and misallocated split shipments that trigger redundant pick/pack and carrier freight surcharges.
-3. **Enterprise Matrixify Migration & Barcode Schema Governance (Domain 3):** Enforcing strict schema governance and plain-text data typing to prevent catastrophic catalog corruptions (e.g. numeric coercion of 12-digit UPC barcodes or accidental handle mutations).
-4. **Business Logic Automation & Webhook Recursion Triage (Domain 4):** Building event-driven workflows in Shopify Flow equipped with state-check guards, queue-level retries, and dead-letter queues.
-5. **Algorithmic Margin Defense & Storefront Cart Diagnostics (Domain 5):** Auditing multi-tier discount combinations (Product, Order, and Shipping) to eliminate negative-margin coupon stacking, while isolating client-side cart exceptions and payment gateway errors.
-6. **Asynchronous Order Mutations & Distributed Webhook Failure Architecture (Capstone):** Synthesizing all foundational domains (D1–D5) into an empirical autopsy of distributed state divergence ("Zombie Orders") when asynchronous webhooks fail across system seams.
+1. **Order State Machine & Point-of-No-Return Protocol (Domain 1):** Manages digital-to-warehouse order synchronization, fulfillment holds, and irreversible operational cutoffs.
+2. **Bi-Coastal Multi-Node Routing & Freight Optimization (Domain 2):** Compares closest-stocked parcel splits with whole-basket routing using declared inventory and rate inputs.
+3. **Asynchronous Order Mutation & Cross-System Recovery (Capstone):** Brings order-state control and routing decisions into one staged incident, then specifies idempotent coordination, timeout reconciliation, and post-handoff recovery.
 
 ---
 
 ## 6. Reproducible Technical Evidence Package
 
-The [offline Node.js suite](evidence/README.md) separates assumptions, computed outputs, measured simulator timings and public references. It records executed checks, failures and skips, runtime and source/input hashes. The retained sample run supplies detailed local execution records.
+The [offline Node.js suite](evidence/README.md) separates assumptions, computed outputs, measured simulator timings, and public references. It records executed checks, failures and skips, runtime, and source/input hashes. The checked-in component reports show the latest recorded workstream results; rerun the suite to generate a fresh aggregate manifest.
 
-- [Freight](evidence/freight/summary.md): feasible synthetic shipment plans, conditional handling/cohort calculations and scale projections. Tariff verification is explicitly outside the executed checks.
-- [Coordinator](evidence/latency/summary.md): local SQLite operation identity, cutoff, reconciliation, owned-hold release and post-effect process-restart assertions, with separately measured seeded workloads.
-- [Barcodes](evidence/barcodes/summary.md): twelve synthetic SKU mappings, checksum and invalid-input tests, and shared-table UPC bitstream self-consistency. No physical or independent optical scan is asserted.
-- [Costs](evidence/costs/summary.md): explicit $28.00 component BOM plus assumed $0.40 kitting material; integer-cent contribution branches and discount-floor sensitivity.
-- [Recovery](evidence/carrier-recovery/summary.md): focused checks against a pinned official UPS contract and an event-driven local recovery model. No authenticated CIE request or actual interception is represented.
-
+- [Freight](evidence/freight/summary.md): feasible synthetic shipment plans, conditional handling/cohort calculations, and scale projections. Tariff verification is outside the executed checks.
+- [Coordinator](evidence/latency/summary.md): local SQLite operation identity, cutoff, reconciliation, owned-hold release, and post-effect restart assertions, with separately measured seeded workloads.
+- [Costs](evidence/costs/summary.md): declared component BOM, assumed kitting material, integer-cent contribution branches, and cost sensitivity.
+- [Recovery](evidence/carrier-recovery/summary.md): focused checks against a pinned official UPS contract and a local recovery model. No authenticated CIE request or actual interception is represented.
 ```bash
 node evidence/run_all.js
 ```
 
-Use `--full` for a larger local timing workload. Offline tests do not certify the merchant's private costs, actual provider latency, configured helpdesk automations, SQS deployment, warehouse actions or carrier billing.
+Use `--full` for a larger local timing workload. Offline tests do not certify private merchant costs, provider latency, live workflows, SQS deployment, warehouse actions or carrier billing.

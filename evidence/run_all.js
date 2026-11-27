@@ -12,7 +12,6 @@ fs.mkdirSync(archive, { recursive: true });
 const suites = [
   ['freight', 'calculate_freight.js', 'results.json'],
   ['latency', 'coordinator_simulator.js', 'metrics.json'],
-  ['barcodes', 'validate_barcodes.js', 'results.json'],
   ['costs', 'run_cost_model.js', 'sensitivity.json'],
   ['carrier-recovery', 'test_recovery.js', 'results.json']
 ];

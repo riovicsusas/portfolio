@@ -3,7 +3,7 @@ import content from './homepage-content.generated.json'
 
 export const sections: AnimatedHikeCardProps[] = [
   { title: 'Latest Updates', href: 'latest/', images: content.latest, description: 'Recent project releases, operational improvements, and technical investigations from the activity timeline.' },
-  { title: 'Projects', href: 'projects/', images: content.projects, description: 'Five domain studies and a Capstone on fulfillment, catalog governance, automation, and margin protection.' },
+  { title: 'Projects', href: 'projects/', images: content.projects, description: 'Two domain studies and a Capstone on order lifecycle, routing, and fulfillment coordination.' },
   { title: 'About Me', href: 'about/', images: [
     { src: 'images/susas_profilepic.jpg', alt: 'Riovic Matthew Susas' },
     { src: 'images/hero-cards/systems.svg', alt: 'Connected systems illustration' },

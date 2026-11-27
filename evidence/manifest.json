@@ -34,20 +34,6 @@
     },
     {
       "id": "C",
-      "name": "Barcode identity and bitstream validation",
-      "directory": "evidence/barcodes",
-      "entry_script": "evidence/barcodes/validate_barcodes.js",
-      "sources": [
-        "Synthetic 12-variant fixture catalog; UPC-A Modulo-10 and shared pattern tables"
-      ],
-      "outputs": [
-        "evidence/barcodes/results.json",
-        "evidence/barcodes/summary.md"
-      ],
-      "classification": "Local identifier and bitstream tests"
-    },
-    {
-      "id": "D",
       "name": "BOM and contribution sensitivity",
       "directory": "evidence/costs",
       "entry_script": "evidence/costs/run_cost_model.js",
@@ -61,7 +47,7 @@
       "classification": "Calculated scenario results; no procurement history asserted"
     },
     {
-      "id": "E",
+      "id": "D",
       "name": "Carrier contract subset and recovery simulation",
       "directory": "evidence/carrier-recovery",
       "entry_script": "evidence/carrier-recovery/test_recovery.js",
@@ -76,6 +62,5 @@
     }
   ],
   "runtime": "Node.js 24+ with built-in SQLite support",
-  "execution_manifest": "latest_run.json",
-  "representative_run": "sample-run/run.json"
+  "execution_manifest": "latest_run.json"
 }
