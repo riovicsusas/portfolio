@@ -28,20 +28,20 @@ const FLAGSHIP_PROJECTS = [
     "id": "d1-order-lifecycle",
     "isFeatured": false,
     "title": "Order State Machine & Point-of-No-Return (PONR) Protocol",
-    "subtitle": "Two-Boundary PONR Model — Fulfillment Holds & Downstream 3PL Synchronization",
+    "subtitle": "Why Shopify’s ‘In Progress’ Masks Warehouse Reality — State Compression & Lock-Verified Coordination",
     "domain": "Order Lifecycle",
-    "category": "Standard Operating Procedure (SOP)",
+    "category": "Systems Investigation & State Architecture",
     "filterCat": "lifecycle",
     "loomDuration": "Technical Study",
     "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
-    "desc": "Shopify says “In Progress”—but is the order still safe to edit? Learn how the warehouse stage changes the answer, and how a verified freeze protects an address correction.",
-    "fullOverview": "Order #18404's address-change request arrives after handoff to the warehouse. Shopify still shows “In Progress,” a status shared by queued, wave-assigned, and picked orders. This study explains the order lifecycle, identifies the physical point of no return, and applies Freeze-First: hold in Shopify, verify the WMS stop, make a validated change, then release only the hold this operation owns. Its 133-second trace is staged; local checks cover coordinator behavior, not a live Shopify or WMS workflow.",
+    "desc": "Shopify displays “In Progress” across queued, wave-assigned, and picked cartons. A systems investigation into UI state compression, expedited buffer bypass, and the lock-verified coordinator tested across 34 local checks.",
+    "fullOverview": "Order #18404’s address edit arrives 11 minutes after checkout—looking safe in Shopify Admin under “In Progress,” even though expedited SLA routing already pushed it into Allentown’s warehouse queue 72 seconds after purchase. This investigation exposes the three blindspots behind that label (5 physical stages compressed into 1 UI status, expedited buffer bypass, and misleading HTTP 200/504 signals), models the $50.70 single-pack mis-shipment stake, and replaces human guesswork with a lock-verified Freeze-First coordinator. Order #18404’s 133-second trace is staged; the 34 local checks verify coordinator state and hold-isolation mechanics rather than a live Shopify or WMS workflow.",
     "objectives": [
-      "Map the order lifecycle from Shopify handoff through warehouse pick and carrier dispatch.",
-      "Distinguish the WMS stages hidden behind Shopify’s “In Progress” status.",
-      "Identify the wave-assignment boundary and the physical-pick point of no return.",
-      "Apply Freeze → Verify → Mutate → Release before changing an order already known to the warehouse.",
-      "Choose a safe response to a confirmed hold, a 504 timeout, or a post-pick rejection."
+      "Expose how Shopify’s single “In Progress” status compresses queued, wave-assigned, and picked warehouse states.",
+      "Trace how expedited shipping SLAs skip the 15-minute edit buffer and shrink the safe window below 600 seconds.",
+      "Separate HTTP 200 transport receipts and 504 uncertainty from a verified SHIPMENT_ON_HOLD lock.",
+      "Enforce Freeze → Verify → Mutate → Release with explicit holdIds isolation and hard post-pick lockout.",
+      "Contrast staged 133-second trace latency against 34 locally verified SQLite coordinator checks."
     ],
     "references": {
       "architectureScope": [

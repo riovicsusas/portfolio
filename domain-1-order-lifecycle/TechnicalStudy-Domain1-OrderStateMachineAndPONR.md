@@ -1,24 +1,24 @@
-# 133 Seconds to Stop a Wrong Label: A Staged Freeze-First Trace
+# One Label, Five Realities: Why Shopify’s ‘In Progress’ Misled Operations
 
-**A staged Shopify-to-warehouse address-correction trace, the Freeze-First protocol behind it, and a clear line between what was tested and what was modeled.**
+**A systems investigation into storefront-to-warehouse state compression, why expedited orders silently lose their edit cushion, and how a lock-verified coordinator replaces operational guesswork.**
 
-*Synapse Botanicals Systems Architecture | Order Lifecycle & Point of No Return (PONR) Engineering | Technical Study — Domain 1*
+*Synapse Botanicals Systems Architecture | Order Lifecycle & State Synchronization | Technical Study — Domain 1*
 
 ---
 
-## 1. Four Seconds to Save, 133 to Stop: A Staged Storefront–Warehouse Desync Trace
+## 1. The Paradox of ‘In Progress’: Four Seconds on a Phone vs. 133 Seconds on a Warehouse Floor
 
-*How a four-second phone edit triggered a 133-second multi-system hold, preventing an interstate mis-shipment to an outdated address.*
+*Why an 11-minute-old order looked safe to edit in Shopify Admin—even though it was already queued in Allentown—and how a 133-second lock-first trace stopped a wrong label from printing.*
 
-### 1.1 The Desync Paradox: Database Intent vs. Warehouse Reality
+### 1.1 Symptom vs. Reality: A Database Write Cannot Stop a Conveyor
 
 Marcus Chen fixes his shipping address on his phone. It takes four seconds: one field, one tap, one green checkmark. The storefront says *saved*.
 
 Nothing on a warehouse floor in Allentown, Pennsylvania has heard about it.
 
-A database write is a statement of intent. A carton on a conveyor is a fact. The distance between the two is where Order #18404—a $102 purchase comprising two $42 stick packs and $18 expedited shipping—nearly became a mis-shipment. The carton was bound for Scranton, PA when the customer actually lived in Binghamton, NY, a 49-mile interstate delta that no amount of storefront correctness could have closed on its own.
+A database write is a statement of intent. A carton on a conveyor is a fact. Between those two sits the gap where Order #18404—a $102.00 purchase of two $42.00 stick packs plus $18.00 expedited shipping—nearly became an interstate mis-shipment. The parcel was queued for Scranton, PA while the customer lived 49 miles across state lines in Binghamton, NY.
 
-The save did not stop the order. **Stopping it took 133 seconds** of coordinated freeze, verification, mutation, and release, and the order had to be found still standing in the queue when that work finished.
+Stopping the label did not happen when the support agent clicked save. **Stopping it took 133 seconds** of coordinated freeze, verification, mutation, and release—and the order had to still be standing unpicked in the warehouse queue when that verification completed.
 
 ```text
        10:14:00 EST              10:14:18 EST                 10:16:13 EST   10:16:15 EST
@@ -30,33 +30,37 @@ The save did not stop the order. **Stopping it took 133 seconds** of coordinated
              └──────────── 133 Seconds Total Freeze ────────────┘
 ```
 
-At 10:14:00 EST, customer Marcus Chen submitted an urgent ticket: he had moved from Scranton, Pennsylvania to Binghamton, New York—about 49 miles apart, crossing state lines. Order **#18404** was already queued at Synapse's Allentown fulfillment center (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and obtained an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address underwent postal standardization, the order record was updated, and the hold was released. Release was confirmed at 10:16:13 EST, 133 seconds after ingestion. Order #18404 re-entered the Allentown wave queue at 10:16:15 EST, 135 seconds after ingestion, carrying the correct Binghamton shipping label.
+At 10:14:00 EST, 11 minutes after checkout, customer Marcus Chen submitted urgent ticket `#T-10492`: he had moved from Scranton, Pennsylvania to Binghamton, New York. Order **#18404** was already queued inside Synapse’s Allentown fulfillment node (`LOC-PA-01`). Within 18 seconds of ticket ingestion, the coordinator placed a native fulfillment hold in Shopify and received an authenticated queue lock from the warehouse management system (WMS). Over the next 115 seconds, the address cleared postal standardization, the order record updated, and the coordinator released only its own hold. Release was confirmed at 10:16:13 EST (133 seconds), and Order #18404 re-entered the Allentown wave queue at 10:16:15 EST (135 seconds) carrying the corrected Binghamton label.
 
-The wrong label never printed because the order was physically prevented from moving while its address was in doubt.
+The wrong label never printed—not because support read the Shopify status correctly, but because the architecture refused to trust the storefront status alone.
 
 > [!CAUTION]
-> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this case study are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 11 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
+> **Staging Scenario Disclosure**: Order #18404, Marcus Chen, and the trace timings in this case study are a **staged scenario** characterizing the Synapse Botanicals integration architecture. They are not an extract from a production database, and `marcus.chen@example.com` is a reserved example domain. The offline test harnesses in Section 7 verify the *coordination mechanics*; they do not reproduce this timeline. All financial figures represent unit-economic scenario modeling.
 
-### 1.2 Executive Incident Matrix
+### 1.2 Diagnostic Snapshot: Order #18404
 
 | Dimension | Detail | Why it matters |
 |---|---|---|
 | **Order Profile** | `#18404` · `gid://shopify/Order/5892114432104` · FO `gid://shopify/FulfillmentOrder/6710448123901` · 2× Focus Stick Packs 30-Pack ($84.00) + Expedited Shipping ($18.00) = **$102.00** | Ingestible product plus a paid priority SLA: the two attributes that shrink the safe edit window. |
 | **Origin & Route** | Origin `LOC-PA-01` (Allentown, PA). Wrong destination: Scranton, PA. Correct destination: Binghamton, NY. **49-mile interstate delta.** | The correction crosses a state line, so zone, node, and tax-jurisdiction inputs all change. |
 | **Ingestion Window** | Ticket received **10:14:00 EST**, 11 minutes after checkout. The order had entered WMS at 10:04:12. | The order was already in the warehouse queue when the customer asked to change it. |
-| **Safety Invariant** | **Freeze-First**: confirm the *physical* queue lock before any mutation; release only the hold you placed. | An unconfirmed freeze is not a freeze. |
-| **Financial Exposure** | Order #18404 is a **$102.00 purchase**. A mis-shipment would create additional product, reverse-freight and recovery costs; Section 3 illustrates these using a separate one-pack example. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
-| **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Release confirmed at **10:16:13 EST** after **133 seconds**; order resumed at **10:16:15 EST** after **135 seconds.** | In this staged trace, the wrong label never printed: the order was held, corrected, and released before it re-entered the wave queue. |
+| **Safety Invariant** | **Freeze-First**: confirm the *physical* queue lock before any mutation; release only the hold this operation placed. | An unconfirmed freeze is not a freeze. |
+| **Financial Exposure** | Order #18404 is a **$102.00 purchase**. A mis-shipment creates additional product, reverse-freight, and recovery costs; Section 3 isolates these in a single-pack model. | Recovery costs depend on the basket and whether the customer receives a refund or replacement. |
+| **Operational Result** | Frozen, corrected with CASS-standardized ZIP+4, released. Release confirmed at **10:16:13 EST** after **133 seconds**; order resumed at **10:16:15 EST** after **135 seconds.** | In this staged trace, the wrong label never printed: the order was held, corrected, and released before re-entering the wave queue. |
 
 ---
 
-## 2. One Label, Three Realities: Five Warehouse Stages Behind Shopify's 'In Progress'
+## 2. Three Blindspots Behind One Status Label
 
-*Answers when an order can still be edited: full changes early, address-only with a supervisor freeze mid-wave, and no storefront changes after the pick scan.*
+*Breaks down the three structural causes behind storefront–warehouse desynchronization: UI state compression, expedited buffer bypass, and misleading HTTP telemetry.*
 
-Shopify Admin has one dial for fulfillment. The warehouse has five physical stages. They run on **different clocks**, and the storefront clock is the one that lies.
+When support or middleware inspects an order in Shopify Admin and decides whether it can still be changed, three invisible architectural flaws conspire to produce false confidence.
 
-Shopify operates on near-instantaneous ACID database transactions. A 3PL warehouse (such as ShipBob operating facilities in Allentown, PA and Reno, NV) operates on physical batching clocks—periodic API polling cycles (typically 15 minutes) and scheduled wave releases where 50 to 100 orders are dropped to pickers simultaneously. Between these two clocks lies an architectural gap where runaway parcels are born.
+### 2.1 Blindspot 1: Five Physical Warehouse Stages Compressed into ‘In Progress’
+
+Shopify Admin has one dial for active fulfillment. The warehouse has five physical stages. They run on **different clocks**, and the storefront clock obscures the physical transition.
+
+Shopify operates on near-instantaneous ACID database transactions. A 3PL warehouse (such as ShipBob operating facilities in Allentown, PA and Reno, NV) operates on physical batching clocks—periodic API polling cycles (typically 15 minutes) and scheduled wave releases where 50 to 100 orders are dropped to pickers simultaneously.
 
 ```mermaid
 flowchart TD
@@ -80,7 +84,7 @@ flowchart TD
     style W3 fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
 ```
 
-### 2.1 The Five-Stage State Matrix & Discrepancy Telemetry
+#### The Five-Stage State Matrix
 
 | Stage | Physical reality on floor | Shopify Admin shows | Hazard Level | Mutation Eligibility | Operational Discrepancy |
 |---|---|---|---|---|---|
@@ -91,11 +95,11 @@ flowchart TD
 | **4 · Manifested** | Shipping label affixed; carton staged on carrier dock. | `Fulfilled` | **Irreversible** | Post-fulfillment carrier intercept only. | Admin finally agrees with reality, too late to edit. |
 
 > [!WARNING]
-> **The Critical Vulnerability**: Stages **1, 2, and 3 all display the identical `In Progress` status in Shopify Admin**. A single storefront label masks three completely different operational environments: *safe to edit*, *edit only with a supervisor*, and *hard physical lockout*. Any integration that gates mutations on Shopify Admin status alone is gating on noise.
+> **The Critical Vulnerability**: Stages **1, 2, and 3 all display the identical `In Progress` status in Shopify Admin**. A single storefront label masks three incompatible physical states: *safe to edit with a lock*, *address-only via supervisor intervention*, and *hard physical lockout*. Any integration that gates mutations on Shopify Admin status alone is gating on noise.
 
-### 2.2 The Two Operational Boundaries
+#### The Two Operational Boundaries
 
-Fulfillment safety requires recognizing two distinct operational boundaries rather than a single vague "cutoff":
+Fulfillment safety requires separating two distinct operational cutoffs rather than relying on one vague "cutoff" concept:
 
 ```mermaid
 flowchart LR
@@ -112,36 +116,105 @@ flowchart LR
 
 | Boundary | Location | Trigger Event | Consequence |
 |---|---|---|---|
-| **Boundary 1: Standard Edit Cutoff** | End of Stage 1 | Wave allocation in WMS | Automated line-item edits and SKU swaps stop. Address changes now require a supervisor queue freeze. |
-| **Boundary 2: Hard Point of No Return (PONR)** | Start of Stage 3 | Physical pick scan | All storefront mutations are permanently locked out. Only carrier intercept remains. |
+| **Boundary 1: Standard Edit Cutoff** | End of Stage 1 | Wave allocation in WMS | Automated line-item edits and SKU swaps stop. Address changes now require a verified supervisor queue freeze. |
+| **Boundary 2: Hard Point of No Return (PONR)** | Start of Stage 3 | Physical pick scan | All storefront mutations are permanently locked out. Only carrier recovery remains. |
 
-Stage 2 is the narrow corridor between the two boundaries. Line-item changes stay closed. An address correction may proceed only after the WMS confirms a completed supervisor queue freeze or wave deallocation before physical pick. In this contract, `supervisor_override == true` means authenticated warehouse evidence tied to the shipment and current operation. It is never a flag supplied by the customer, helpdesk widget, or middleware to waive the floor check. A supervisor can stop an unpicked carton; a Boolean cannot stop a picker.
-
-Allowing an order to cross Boundary 2 without stopping it turns an operational inconvenience into an irreversible financial loss. To understand why preventing mis-shipments justifies automated coordinator freezes, we must examine the unit economics and regulatory mandates governing returned inventory.
+Stage 2 is the narrow corridor between those two boundaries. Line-item changes stay closed. An address correction may proceed only after the WMS confirms a completed supervisor queue freeze or wave deallocation before physical pick. In this contract, `supervisor_override == true` represents authenticated warehouse evidence tied to the shipment and current operation—never a flag supplied by the customer, helpdesk widget, or middleware to waive the floor check. A supervisor can stop an unpicked carton; a Boolean cannot stop a picker.
 
 ---
 
-## 3. $50.70 Worse Off Per Carton: Modeled Single-Pack Refund and Scrap-Policy Economics
+### 2.2 Blindspot 2: The Expedited SLA Trap (No Four-Minute Cushion)
 
-*Walks through an illustrative one-pack loss, why Synapse's quality procedure bars reselling returned supplements, and how 150 monthly tickets scale it.*
+An operator sees an order placed 11 minutes ago and reasons: *"Standard orders sit in a 15-minute buffer. We still have four minutes before the warehouse sees it."*
 
-The 133-second protocol kept Order #18404’s two-pack shipment on the correct route. To show how mis-shipment costs accumulate, this section uses a separate single-pack illustration.
+For Order #18404, that mental model was wrong by nearly ten minutes.
+
+```text
+STANDARD ORDER (15-minute fraud/edit buffer)
+ 00:00        checkout
+ ├────────────────── 15:00 buffer: Stage 0, Zero Risk ──────────────────┤
+ 15:00                                                         WMS drop (Stage 1)
+ ▲ ticket at T+11 arrives INSIDE the buffer: a pure storefront edit.
+
+EXPEDITED ORDER (#18404)
+ 00:00  checkout
+ ├─ 1:10 ─┤ fraud scoring passes (10:04:10)
+          ├2s┤ WMS drop (10:04:12)  ◄── Stage 1 begins at T+1:12
+              ├───────────────── 9:48 (588s) in queue ─────────────────┤
+                                                              ticket at T+11:00 (10:14:00)
+ ▲ ticket arrives AFTER the drop: the order is already in the warehouse's hands.
+```
+
+This reflects a core e-commerce architectural rule: **Shipping Service Level Agreements (SLAs) override batching buffers.**
+
+Order #18404 carried an **$18.00 premium for Expedited Shipping**. To make guaranteed carrier transit cutoffs (such as UPS Next Day Air departing Allentown at 2:00 PM), Shopify Flow routing evaluates priority orders immediately:
+
+1. **Standard Tier Orders**: Held in Shopify’s Stage 0 buffer for 15 minutes to allow customer self-service edits and fraud scoring.
+2. **Expedited Tier Orders**: Tagged `priority:expedited`. Upon passing automated risk analysis (`Risk Level == LOW`), the order skips the buffer and dispatches immediately to the 3PL to catch the earliest picking wave.
+
+Order #18404 cleared fraud scoring at 10:04:10 EST and dropped into ShipBob two seconds later. By the time Marcus Chen opened his ticket at 10:14:00 EST, the order had already spent **588 seconds** in the Allentown queue.
+
+**The 600-Second Design Budget:** In expedited fulfillment, the safe editing window does not last 15 minutes; it closes inside a **600-second design budget** from WMS drop—a budget, not a guaranteed wave cadence. Notice the arithmetic: the ticket arrived 588 seconds after drop, and the queue lock was confirmed at **606 seconds** after drop. Order #18404 was saved with zero remaining margin in the design budget, proving why an integration must never assume a buffer exists: **query and lock the physical stage first.**
+
+---
+
+### 2.3 Blindspot 3: Wire Signals That Look Like Answers (`200` ≠ Stopped, `504` ≠ Failed)
+
+Even when middleware stops trusting the Shopify UI and calls the warehouse API directly, standard HTTP status codes create a third observability trap. Three signals decide what happens next, and none of them mean what they appear to mean at first glance:
+
+| Inbound Telemetry Signal | Exact Technical Meaning | Architectural Interpretation | Required System Action |
+|---|---|---|---|
+| **Shopify Hold `200 OK`** (`userErrors: []`) | Shopify database flagged fulfillment order as `ON_HOLD`. | **Storefront intent recorded.** Floor has NOT stopped. | Proceed to WMS verification; **do NOT mutate order record yet.** |
+| **WMS HTTP `200 OK`** | WMS HTTP gateway accepted the JSON hold payload. | **Message transport confirmed.** Floor has NOT stopped. | Maintain hold; poll for physical queue lock confirmation. |
+| **WMS `SHIPMENT_ON_HOLD`** (with Queue ID) | WMS scheduler locked the queue record; pick list generation frozen. | **Physical floor stopped.** Order safely immobilized. | **Clear to mutate:** Proceed with validation and order update. |
+| **HTTP `504 Gateway Timeout`** | Gateway closed connection before upstream WMS confirmed state. | **Outcome UNKNOWN.** The hold may or may not have landed. | **Mark `PENDING` / `UNKNOWN`.** Keep idempotency key; reconcile or escalate before cutoff. **Never retry blindly.** |
+| **HTTP `422 PONR_EXCEEDED`** (with confirmed physical pick) | WMS rejected the hold because the physical pick boundary was crossed. | **Hard PONR crossed.** Storefront mutation is closed. Wave assignment alone does not establish this state. | **HARD LOCKOUT.** Terminate mutation and route to carrier recovery. A pre-pick wave refusal requires authenticated supervisor intervention, not a blind retry. |
+
+```json
+{
+  "error": "PONR_EXCEEDED",
+  "message": "Shipment has crossed the physical pick boundary; mutation refused.",
+  "order_id": "gid://shopify/Order/5892114432104",
+  "pick_status": "PICKED",
+  "idempotency_key": "ponr-18404-addr-v1"
+}
+```
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  200  =  "I GOT YOUR MESSAGE"   → the floor has NOT stopped     │
+│  504  =  "I DON'T KNOW"         → UNKNOWN · same key · reconcile│
+│  422 + PICKED = HARD LOCKOUT    → carrier recovery              │
+├─────────────────────────────────────────────────────────────────┤
+│  Confirm the LOCK, not the 200.                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Why `504` is the highest-risk signal.** A timeout after remote execution succeeds looks identical over the wire to a timeout before execution began. Generating a fresh key on retry creates a second competing intent; keeping the original key and payload, querying the authoritative operation-owned outcome, and retrying only after confirming the first effect did not land avoids double-application. A stale or unowned `ON_HOLD` status cannot settle ownership. *(The local coordinator harness exercises those branches; [Capstone Sections 3–5](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md) traces what happens when a `504` is swallowed silently before wave release on Order #35070.)*
+
+---
+
+## 3. Why Guessing Wrong Costs $50.70 Per Carton: Regulatory Quarantine and Unit Economics
+
+*Walks through an illustrative single-pack mis-shipment ledger, why Synapse’s QA policy bars restocking returned supplements, and how 150 monthly exception tickets scale the exposure.*
+
+The 133-second lock kept Order #18404’s two-pack shipment on the right route. To quantify why tolerating UI ambiguity around `In Progress` is financially unacceptable, this section isolates the economics of a single unmitigated mis-delivery.
 
 ### 3.1 Regulatory Governance: FDA 21 CFR Part 111 cGMP
 
 Synapse Botanicals manufactures dietary supplements and functional nootropics. Unlike apparel, footwear, or consumer electronics, ingestible health products operate under strict federal safety regulations.
 
-Under **21 CFR Part 111, Subpart N**, receiving identifies and quarantines returned supplements until quality control records a material review and disposition. Sections 111.515-111.525 permit QC-approved salvage or reprocessing under the required controls; visual inspection alone does not authorize release.
+Under **21 CFR Part 111, Subpart N**, receiving identifies and quarantines returned supplements until quality control records a material review and disposition. Sections 111.515–111.525 permit QC-approved salvage or reprocessing under the required controls; visual inspection alone does not authorize release.
 
-The financial example below applies a stricter **declared Synapse QA policy**: returned supplements with unverifiable handling history go to quarantine and scrap after QA disposition. Standard parcel tracking does not supply the thermal evidence needed by that policy. The $8.50 write-off follows this scenario decision; federal law does not impose blanket destruction on every returned supplement. The Capstone separately applies SOP-QA-402 to its combination kit.
+The financial model below applies a stricter **declared Synapse QA policy**: returned supplements with unverifiable handling history go to quarantine and scrap after QA disposition. Standard parcel tracking does not supply the thermal evidence needed by that policy. The $8.50 write-off follows this scenario decision; federal law does not impose blanket destruction on every returned supplement. The Capstone separately applies `SOP-QA-402` to its combination kit.
 
 [Returned supplement requirements](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-N)
 
-### 3.2 The Mis-Shipment Loss Ledger
+### 3.2 Self-Contained Single-Pack Mis-Shipment Loss Ledger
 
-> **Self-Contained Projection — Single-Pack Mis-Shipment Economics**: The table below is an independent unit-economics illustration for one mis-shipped Focus Stick Pack 30-Pack (SYN-FSTK-MY, $42.00 retail / $8.50 COGS). It is not the economics of Order #18404 itself ($102.00, 2 packs + $18.00 expedited shipping). It models what a single unmitigated mis-delivery would cost in isolation. Platform BOM rates are sourced from evidence/costs/summary.md.
+> **Self-Contained Projection — Single-Pack Mis-Shipment Economics**: The table below is an independent unit-economics illustration for one mis-shipped Focus Stick Packs 30-Pack (`SYN-FSTK-MY`, $42.00 retail / $8.50 COGS). It is not the economics of Order #18404 itself ($102.00, 2 packs + $18.00 expedited shipping). It models what a single unmitigated mis-delivery costs in isolation. Platform BOM rates are sourced from [evidence/costs/summary.md](../evidence/costs/summary.md).
 
-This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FSTK-MY`), fully refunded after a mis-shipment, with no replacement or customer shipping revenue. Handling and payment fees not listed below are excluded:
+This illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FSTK-MY`), fully refunded after a mis-shipment, with no replacement or customer shipping revenue. Handling and payment fees not listed below are excluded:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -166,21 +239,21 @@ This separate illustration covers one $42.00 Focus Stick Packs 30-Pack (`SYN-FST
 | Financial Line Item | Successful Sale Baseline | Mis-Shipment Branch | Cost Type | Operational Context |
 |---|---:|---:|---|---|
 | **Customer Retail Revenue** | $42.00 | $0.00 | Revenue | Full refund issued to customer upon mis-delivery. |
-| **Product COGS (`SYN-FSTK-MY`)** | −$8.50 | −$8.50 | Direct Cash | Original inventory scrapped under the declared QA policy after quarantine and disposition. |
+| **Product COGS (`SYN-FSTK-MY`)** | −$8.50 | −$8.50 | Direct Cash | Original inventory scrapped under declared QA policy after quarantine and disposition. |
 | **Outbound Carrier Freight** | −$6.50 | −$6.50 | Direct Cash | Initial postage incurred on dispatched carton. |
 | **Carrier Return-to-Sender (RTS)** | $0.00 | −$7.20 | Direct Cash | Reverse logistics freight billed by carrier to return parcel. |
 | **3PL Quarantine & Destruction Fee** | $0.00 | −$1.50 | Direct Cash | Warehouse receiving, cGMP lot documentation, and physical scrap. |
 | **Net Contribution Ledger** | **+$27.00** | **−$23.70** | Cash & Economic | Net retained contribution vs. direct out-of-pocket cash loss. |
 | **Net Contribution Deterioration** | — | **−$50.70** | Delta | Direct cash drain ($23.70) + lost normal contribution ($27.00). |
 
-**The mis-shipment creates a $23.70 direct cash loss.** Because a successful sale would have generated **$27.00 in contribution**, the merchant ends up **$50.70 worse off per carton** (120.7% of product retail value). That delta consists of the **$42.00 refund** plus **$8.70 in reverse logistics and disposal costs**. The carton and outbound shipping cost the same either way.
+**The mis-shipment creates a $23.70 direct cash loss.** Because a successful sale would have generated **$27.00 in contribution**, the merchant finishes **$50.70 worse off per carton** (120.7% of product retail value)—composed of the **$42.00 refund** plus **$8.70 in reverse logistics and disposal charges**.
 
 > [!NOTE]
-> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost as one component of a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials). In that separate scenario the merchant keeps the sale and sends a replacement. [Capstone Section 7.1](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes the replacement branch and recovery ledger.
+> **Shared product cost, separate loss scenarios.** The $8.50 Focus Stick cost comes from the [BOM ledger](../evidence/costs/summary.md). This single-pack example assumes a full $42.00 refund, $6.50 original freight, $7.20 return freight, and a $1.50 quarantine charge. The Capstone’s Order #35070 uses the same $8.50 stick cost inside a $28.40 kit ($8.50 sticks + $12.50 tincture + $7.00 tumbler + $0.40 kitting materials), where the merchant keeps the sale and sends a replacement. [Capstone Section 7.1](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md#71-baseline-vs-dual-fulfillment-recovery-ledger) itemizes that branch.
 
 ### 3.3 Scaled Monthly Exposure Model
 
-For this projection, all 150 monthly exceptions are assumed to follow the single-pack refund scenario in Section 3.2:
+Assuming all 150 monthly exceptions follow the single-pack refund scenario in Section 3.2:
 
 $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address Error Rate} \times \text{Unit Cost}$$
 
@@ -190,22 +263,112 @@ $$\text{Monthly Exposure} = \text{Daily Orders} \times 30 \times \text{Address E
 | Address Error Rate | 0.5% | Industry baseline across DTC checkouts |
 | Tickets Per Month | 150 exception tickets | 30,000 × 0.005 = 150 |
 
-| If the freeze fails on every ticket | Cost Per Carton | Monthly Expense (×150) | Annualized Exposure (×12) |
+| If storefront edits miss the floor lock on every ticket | Cost Per Carton | Monthly Expense (×150) | Annualized Exposure (×12) |
 |---|---:|---:|---:|
 | **Direct cash drain** | $23.70 | **$3,555.00 / month** | **$42,660.00 / year** |
 | **Contribution deterioration** | $50.70 | **$7,605.00 / month** | **$91,260.00 / year** |
 
-A robust integration protocol that freezes warehouse execution in about 18 seconds does not merely improve customer satisfaction; it also protects margin. At 150 modeled single-pack refund events per month, the contribution exposure reaches **$7,605 monthly**, or **$91,260 annually**.
-
-Preventing these losses requires understanding where the seconds actually go during an emergency address change. The staged trace of Order #18404 demonstrates how a 133-second freeze successfully immobilized a carton before it crossed Boundary 2.
+At 150 modeled events per month, relying on `In Progress` intuition exposes the business to **$7,605 monthly ($91,260 annually)** in contribution deterioration. Eliminating that exposure cannot rest on training agents to work faster—it requires changing the order of operations in software.
 
 ---
 
-## 4. 114 Seconds You Own, 19 You Rent: Staged Latency Breakdown of Order #18404
+## 4. The Architectural Fix: Replacing Guesswork with a Lock-Verified State Coordinator
 
-*Follows the hold, verification, update, and release against timestamps, identifies the slowest step, and lists the four wire payloads.*
+*Shows how a four-gate coordinator enforces physical-state verification before any storefront write, isolates operation-owned holds, and deterministically branches by physical stage.*
 
-### 4.1 Order & Exception Ingestion Profile
+### 4.1 From Human Heuristics to Enforced State Coordination
+
+Teaching support agents to guess whether an 11-minute-old order is "probably still queued" does not survive expedited SLAs or network timeouts. Instead of leaving stage evaluation to human judgment, the architecture places a **Freeze-First state coordinator** between incoming edit requests and Shopify mutations.
+
+The coordinator enforces three core properties (verified locally in `evidence/latency/coordinator.js`):
+1. **Atomic operation ownership & payload fingerprinting:** One active operation owns one shipment at a time; reusing an operation key with a modified payload is rejected as a conflict.
+2. **Conditional physical-state lock before mutation:** A storefront write cannot execute until the WMS confirms an active lock on an unpicked shipment at the expected revision.
+3. **Scoped hold release:** Releasing the coordinator’s lock passes explicit `holdIds`, preventing an address update from silently clearing an unrelated fraud or tax hold.
+
+### 4.2 The Four-Gate Coordinator Flow (Freeze → Verify → Mutate → Release)
+
+```mermaid
+flowchart TD
+    A["Support Ticket Ingested<br>(Address, SKU swap, Cancel)"] --> B{"Current Warehouse State<br>Before PONR?"}
+    
+    B -- "No: Stage 3 or 4<br>(Picked / Packed / Labeled)" --> C["HARD PONR LOCKOUT<br>Reject storefront edit"]
+    C --> D["Failover to Post-Delivery<br>Return or Carrier Intercept"]
+
+    B -- "Yes: Stage 0, 1, or 2<br>(Pre-Drop / Queue / Wave)" --> E["Step 1: FREEZE<br>Place native Shopify hold"]
+    E --> F["Step 2: VERIFY<br>Query WMS for queue lock"]
+    
+    F --> G{"WMS confirms<br>SHIPMENT_ON_HOLD?"}
+    G -- "Confirmed" --> H["Step 3: MUTATE<br>Apply CASS address or SKU swap"]
+    G -- "504 / Unknown" --> I["Mark PENDING / UNKNOWN<br>Reconcile & alert before cutoff"]
+    
+    H --> J["Step 4: RELEASE<br>Release this operation's holdIds"]
+    J --> K["Order Resumes: READY_FOR_WAVE_BATCH<br>Audit note appended to timeline"]
+
+    style C fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
+    style E fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    style F fill:#fff3cd,stroke:#ffc107,stroke-width:2px;
+    style H fill:#cce5ff,stroke:#004085,stroke-width:2px;
+    style J fill:#d4edda,stroke:#28a745,stroke-width:2px;
+```
+
+1. **Gate 1 — Freeze (`fulfillmentOrderHold`):** Places a native Shopify fulfillment hold with `reason: INCORRECT_ADDRESS` and a stable `handle`, and persists `fulfillmentHold.id`. This pauses Shopify workers, but does *not* prove the warehouse stopped.
+2. **Gate 2 — Verify (`GET /shipments?order_id={id}`):** Requires `queue_lock == "SHIPMENT_ON_HOLD"`, `pick_status == "NOT_PICKED"`, and either `wave_id == null` or an authenticated WMS `supervisor_override` tied to this shipment and operation. Mutation remains blocked on a mere HTTP `200` transport acknowledgement.
+3. **Gate 3 — Mutate (`orderUpdate` / `orderEditCommit`):** Executes only after Gate 2 passes, using USPS CASS/DPV-standardized payloads (for addresses) or `$0.00`-balanced catalog swaps (for pre-wave line items).
+4. **Gate 4 — Release (`fulfillmentOrderReleaseHold`):** Passes the exact `holdIds` array created in Gate 1 and confirms transition back to `READY_FOR_WAVE_BATCH`.
+
+> [!IMPORTANT]
+> **Hold Isolation Invariant**: Passing explicit `holdIds` is mandatory. In Shopify’s Admin GraphQL API, omitting `holdIds` releases **every active hold on the fulfillment order**. If another system placed an independent fraud or tax review hold, an unscoped release silently clears it. Reference payloads for all four gates appear in [Appendix A](#appendix-a--integration-wire-contracts).
+
+### 4.3 Deterministic Exception Routing by Physical Stage
+
+Every customer modification request enters through the same physical-state gate, which routes the request deterministically based on stage and mutation class:
+
+```mermaid
+flowchart TD
+    Request["Customer exception"] --> Gate["PONR gate · Physical warehouse stage"]
+
+    Gate -->|"Stages 0–1"| Early["`**Address Correction** · CASS/DPV normalized
+**1:1 Item Exchange** · Same catalog family`"]
+
+    Gate -->|"Stage 2"| Wave["`**Address Correction Only**
+Requires authenticated WMS supervisor
+freeze before picking begins`"]
+
+    Gate -->|"Stages 3–4"| Late["`**Hard Lockout**
+Storefront edits closed
+Route to UPS Delivery Intercept / recovery`"]
+
+    style Early fill:#d4edda,stroke:#28a745,color:#142533
+    style Wave fill:#fff3cd,stroke:#ffc107,color:#142533
+    style Late fill:#f8d7da,stroke:#dc3545,color:#142533
+```
+
+* **Address Correction (Stages 0–1 Automated; Stage 2 Supervisor-Verified):**
+  1. Freeze and confirm `SHIPMENT_ON_HOLD` (or authenticated WMS supervisor freeze/deallocation at Stage 2).
+  2. Standardize raw input through USPS CASS/DPV to ZIP+4 (`142 Court Street, Apt 3B, Binghamton, NY 13901` → `142 COURT ST APT 3B, BINGHAMTON NY 13901-3412 (DPV: Valid)`).
+  3. Recalculate shipping zone, origin node, and cross-state tax/rate flags (e.g., PA → NY on Order #18404).
+  4. Execute `orderUpdate`, release only the operation’s `holdIds`, and log an immutable audit entry on the Shopify timeline (`[CASS-ADDR-UPDATE] ... Auth: Gorgias #T-10492. HoldId: 89104.`).
+* **1:1 Consumable Item Exchange (Stages 0–1 Only; Closed at Stage 2+):**
+  1. Automatically rejected past Boundary 1 (`Stage 2+`), routing instead to post-delivery exchange.
+  2. Verifies real-time Available-to-Sell (`ATS ≥ 5 units`) at the allocated node (`LOC-PA-01`) to avoid overselling active pick waves.
+  3. Restricts exchanges to identical product-family and price-point parity (`SYN-FSTK-MY` ↔ `SYN-FSTK-BO`, both $42.00) with `$0.00` net financial delta across subtotals, discounts, taxes, and captured payment.
+  4. Executes `orderEditCommit` under confirmed lock and releases explicit `holdIds`.
+* **Hard Lockout & Carrier Failover (Stages 3–4):**
+  1. On `422 PONR_EXCEEDED` or physical state `PICKED`/`PACKED`/`MANIFESTED`, storefront edits and cancellations lock out permanently—no retry loop is permitted.
+  2. Failover triggers UPS Delivery Intercept v2 through the normalized Synapse adapter (`requestType: RS` and cancel reason `AM` in the offline test fixtures; the normalized adapter payload is never sent directly to UPS).
+  3. Carrier status codes obey strict evidence semantics: HTTP `200` with `success: false` is a business failure; electronic `ACCEPTED` stays `pending` until a physical depot diversion event confirms recovery; a timeout is `UNKNOWN` and reconciled by lookup, never blind resubmission.
+  4. In the offline carrier fixtures, a confirmed return incurs **$17.50** while failed/rejected requests incur **$0.00**. Customer notifications state explicitly that an intercept is a carrier request rather than a guarantee.
+
+> [!NOTE]
+> Replacement economics in [evidence/costs/summary.md](../evidence/costs/summary.md) illustrate why catching edits before Boundary 2 matters: an incremental recovery cost of **$98.60** turns a $54.76 baseline contribution into **−$43.84** in the Capstone replacement branch.
+
+---
+
+## 5. Staged Execution & Latency Discovery: Inside Order #18404’s 133 Seconds
+
+*Traces Order #18404 step by step and reveals that 85.7% of total cycle time sat inside internal validation—explaining why locking first eliminates the race against picking waves.*
+
+### 5.1 Order & Exception Profile
 
 | Field | Value |
 |---|---|
@@ -215,12 +378,12 @@ Preventing these losses requires understanding where the seconds actually go dur
 | Line Items | 1× Focus Stick Packs Matcha Yuzu (`SYN-FSTK-MY`, $42.00), 1× Focus Stick Packs Blood Orange (`SYN-FSTK-BO`, $42.00), Expedited Shipping ($18.00) |
 | Total Captured | **$102.00** |
 | Allocated Node | Allentown, PA (`LOC-PA-01`) |
-| Destination Route | Scranton, PA 18503 $\rightarrow$ Binghamton, NY 13901-3412 (49-mile interstate delta) |
+| Destination Route | Scranton, PA 18503 → Binghamton, NY 13901-3412 (49-mile interstate delta) |
 | Checkout Timestamp | ≈10:03:00 EST (ticket arrived 11 minutes later) |
 | Customer Exception Ticket | 10:14:00 EST (Gorgias `#T-10492`): *"URGENT: I entered my old apartment address in Scranton PA, but I just moved to Binghamton NY! Please update before shipping!"* |
 | Physical Stage at Ingestion | **Stage 1 · In Queue** |
 
-### 4.2 Chronological Event Timeline
+### 5.2 Chronological Trace (`10:04:12` → `10:16:15`)
 
 ```text
  10:03:00  checkout ─┐
@@ -245,23 +408,23 @@ Preventing these losses requires understanding where the seconds actually go dur
 | **10:04:12** | — | ShipBob WMS | Order drops to WMS queue (Stage 1 begins) | Warehouse |
 | **10:14:00** | T+0s | Gorgias | Support ticket `#T-10492` ingested via webhook | Software |
 | **10:14:02** | +2s | Shopify Flow | Idempotency key `MUT-18404-ADDR` assigned; transaction opened | Software |
-| **10:14:04** | +2s | Shopify Admin | `fulfillmentOrderHold` dispatched automatically while order was queued (Stage 1, `reason: INCORRECT_ADDRESS`) | Software |
+| **10:14:04** | +2s | Shopify Admin | `fulfillmentOrderHold` dispatched automatically while queued (Stage 1, `reason: INCORRECT_ADDRESS`) | Software |
 | **10:14:18** | +14s | ShipBob WMS | Adapter confirms WMS queue lock (`SHIPMENT_ON_HOLD`, Queue `#SB-948102`) | **Warehouse API** |
 | **10:15:22** | +64s | USPS CASS | Normalization returns DPV-valid ZIP+4 (`13901-3412`) | Software |
-| **10:15:30** | +8s | Shopify Admin | `orderUpdate` executed with standardized postal payload after WMS queue lock confirmation (ledger delta $0.00) | Software |
+| **10:15:30** | +8s | Shopify Admin | `orderUpdate` executed with standardized postal payload after WMS lock confirmation (ledger delta $0.00) | Software |
 | **10:16:00** | +30s | Coordinator | Coordinator verification and un-editable audit logging | Software |
 | **10:16:08** | +8s | Shopify Admin | `fulfillmentOrderReleaseHold` dispatched specifying explicit `holdIds` | Software |
 | **10:16:13** | +5s | ShipBob WMS | Adapter verifies WMS transition to `READY_FOR_WAVE_BATCH` | **Warehouse API** |
-| **10:16:15** | +2s | ShipBob WMS | Order resumes in wave eligibility with Binghamton shipping label | Warehouse |
+| **10:16:15** | +2s | ShipBob WMS | Order resumes wave eligibility with Binghamton shipping label | Warehouse |
 
 Freeze duration: 10:14:00 → 10:16:13 = **133 seconds**. Native hold and queue lock took **18 seconds** (10:14:00 → 10:14:18). Internal validation, mutation, and release took **115 seconds** (10:14:18 → 10:16:13).
 
 > [!NOTE]
-> **Timestamp reconciliation.** The 18s + 115s = 133s split and the 19s/114s split in Section 4.3 are the fixed invariants. Measured to the order's resumption at 10:16:15, elapsed time is 135 seconds, so this case study counts the freeze to **release confirmation (10:16:13)** and treats the final 2 seconds as wave re-entry.
+> **Timestamp reconciliation.** The 18s + 115s = 133s split and the 19s / 114s split in Section 5.3 are the fixed invariants. Measured to the order's resumption at 10:16:15, elapsed time is 135 seconds, so this case study counts the freeze to **release confirmation (10:16:13)** and treats the final 2 seconds as wave re-entry.
 
-### 4.3 The 19-Second Discovery
+### 5.3 The Latency Discovery: 114 Seconds Internal vs. 19 Seconds Warehouse
 
-Where did the 133 seconds go?
+Where did the 133 seconds actually go?
 
 | Operational Component | Duration | Share of Total | Clock Domain |
 |---|---:|---:|---|
@@ -275,14 +438,88 @@ Where did the 133 seconds go?
 | **Total internal software validation** | **114 seconds** | **85.7%** | **Software / Internal** |
 | **Total Freeze Duration** | **133 seconds** | **100.0%** | |
 
-**Architectural Takeaway**: In this staged trace, internal coordination and validation consume 114 of the 133 seconds; warehouse round trips consume 19. The largest item, 64 seconds of CASS validation, runs after the queue lock is confirmed. That is the operating advantage of Freeze-First: validation no longer races an advancing pick wave. Production safety still depends on the warehouse honoring the hold, preserving its owner, and rejecting conflicting or stale work.
+**Architectural Takeaway:** In this staged trace, internal validation and orchestration consume **114 of the 133 seconds (85.7%)**, while warehouse round trips consume **19 seconds (14.3%)**. The single slowest step—**64 seconds of USPS CASS validation**—runs *after* the queue lock lands at 10:14:18. Had the integration validated first and frozen afterward, it would have stayed exposed to wave release for more than a minute longer. Freeze-First removes slow validation from racing an advancing pick wave—provided the warehouse honors the hold, preserves its owner, and rejects conflicting or stale work.
 
-### 4.4 The Four Wire Payloads
+---
+
+## 6. Four Coordinator Invariants & Architectural Takeaway
+
+*Synthesizes the four system invariants enforced by the coordinator and the boundary between digital aspiration and physical warehouse state.*
+
+1. **Freeze Before Mutate:** Never write an order mutation against an unheld shipment. A storefront edit without a confirmed warehouse hold is a race condition by design.
+2. **Confirm the Lock, Not the `200`:** An HTTP `200` proves only that a server accepted a request. Only a confirmed `SHIPMENT_ON_HOLD` queue token clears Gate 3.
+3. **Release Only Owned `holdIds`:** Passing explicit `holdIds` ensures resolving a shipping edit never strips an independent fraud or tax hold.
+4. **Fail Closed Past Picked:** Once a physical pick scan occurs, database writes describe a world that no longer exists; mutations terminate immediately in favor of carrier intercept and cGMP quarantine governance.
+
+Marcus Chen never learned that his order spent two minutes paused in Allentown. His carton arrived in Binghamton with the only artifact being a timeline entry and a 133-second lock window. That is what a sound integration layer looks like: invisible when it works, because it refuses to let a four-second tap on a storefront outrun a physical conveyor 49 miles away.
+
+> *"In a distributed system, database state is an aspiration; physical warehouse state is reality. The job of the integration layer is to ensure the aspiration never outruns the reality."*
+
+---
+
+## 7. Verification & Evidence Boundary: Locally Executed Checks vs. Staged Claims
+
+*Sorts every claim in this study by evidence level—from locally executed checks to staged and unestablished claims—then details the coordinator’s executed test suite.*
+
+Architectural invariants earn credibility through reproducible boundaries. The offline harness exercises selected hold-coordination behaviors locally—operation ownership, payload-bound replay, revision checks, conditional hold acquisition, reconciliation, selective release, and crash recovery—while leaving the staged Order #18404 trace and live vendor SLAs strictly separated.
+
+**Ground-Truth Evidence References:**
+- [Coordinator Latency Benchmark](../evidence/latency/summary.md)
+- [Unit Cost & BOM Ledger](../evidence/costs/summary.md)
+- [Carrier Recovery Contracts](../evidence/carrier-recovery/summary.md)
+- [Reproducible Evidence Suite](../evidence/README.md)
+
+### 7.1 Evidence Scope & Verification Status Matrix
+
+| System Component / Claim | Evidentiary Status | Verification Source | Not Established / Scope Boundary |
+|---|---|---|---|
+| **Atomic claim of a hold, one WMS-simulator effect per eligible request** | **Executed locally** | Latency suite (34/34 passed) | Real vendor WMS API behavior |
+| **Duplicate / replayed deliveries do not double-apply; payload conflicts rejected** | **Executed locally** | Latency suite (34/34 passed) | Cross-region delivery semantics |
+| **Post-cutoff rejection preserved on replay; wave release mid-request rejects mutation** | **Executed locally** | Latency suite (34/34 passed) | A physical warehouse floor stop |
+| **Timeout-after-success reconciles without a second effect; absent effect reconciles before same-key retry** | **Executed locally** | Latency suite (34/34 passed) | Production internet network failure modes |
+| **Selective release preserves unrelated holds** | **Executed locally** | Latency suite (34/34 passed) | Live behavior of Shopify's hosted API |
+| **Recovery by a new process after worker exit at the post-effect boundary** | **Executed locally** | Latency suite (34/34 passed) | Durable distributed locking across clusters |
+| **Pinned UPS Delivery Intercept v2 snapshot matches provenance hash; selected wire constraints enforced** | **Verified offline** | Carrier suite (34 passed, **2 skipped**) | Full OpenAPI validation; provider certification |
+| **Accepted ≠ recovered; duplicate events never repeat a fee; terminal states not overwritten** | **Executed locally** | Carrier suite (34 passed) | Physical carrier interception on trailers |
+| **Printed BOM, contribution, and replacement arithmetic reconcile in whole integer cents** | **Executed locally** | Cost suite (11/11 passed) | Real supplier purchasing contracts, net profit |
+| **The 133-second trace, Order #18404** | **Staged scenario** | Narrative scenario inputs | Any production wall-clock measurement |
+| **FDA 21 CFR Part 111 scrap policy and fee lines** | **Scenario policy** | Declared regulatory inputs | Formal regulatory determination, contract rates |
+| **Production latency, SQS delivery, vendor SLAs** | **Not established** | Architectural design | Live third-party platform guarantees |
+
+### 7.2 Executed SQLite Coordinator Benchmark
+
+**Use the recorded run, not a remembered millisecond.** The [coordinator report](../evidence/latency/summary.md) carries the run ID, Node runtime, executed checks, and measured percentile table. Keep presentation figures tied to that evidence instead of a second copied table.
+
+The harness uses Node’s built-in SQLite for a local persistent operation ledger and virtual WMS state. It exercises atomic claims and conditional hold writes without contacting Shopify, ShipBob, or SQS. The default smoke workloads establish local response timings, not vendor confirmation latency; `--full` increases the workload to 10,000 attempts per case.
+
+#### How to Read the Benchmark
+- Timings use `performance.now()`; percentiles use nearest-rank (`ceil(p·N)−1`) with no interpolation.
+- All outcomes are retained, including pending, rejected, and unknown results. **Response latency is not confirmation latency.**
+- The seed reproduces *injected delays*, not operating-system scheduling or wall-clock durations.
+- The **duplicate-pairs workload** illustrates idempotency directly: **100 deliveries produced exactly 50 business effects**.
+- The **cutoff workload** illustrates the binary gate directly: **20 attempts produced exactly 0 effects**.
+- Milliseconds in a local simulator are *not* comparable to the staged 19s/114s trace. The harness tests claim-and-commit mechanics; it does not measure external CASS calls or human review.
+
+#### Core Passing Assertions (All 34 Verified)
+1. **Atomic Claims**: An eligible hold commits exactly one WMS-simulator effect; a stale order revision cannot apply a hold.
+2. **Serialized Duplicate Handling**: Concurrent same-order duplicates return *pending*; later replays return *confirmed*; competing operation IDs serialize on the same shipment; reconciliation cannot steal an active pending operation.
+3. **Post-Cutoff Preservation**: A rejected cutoff outcome is preserved on duplicate delivery; a wave release between initial read and conditional hold rejects mutation.
+4. **Selective Release**: Releasing the coordinator’s hold preserves an unrelated hold.
+5. **Uncertainty Handling**: Timeout after remote success reconciles without a second effect; absent effect reconciles before a safe same-key retry; revision change after an uncertain effect is detected.
+6. **Payload Integrity**: Reusing a key for a different order, or with a changed address, is rejected as a conflict.
+7. **Crash Recovery**: A new process recovers an effect persisted before worker termination.
+
+---
+
+<a id="appendix-a--integration-wire-contracts"></a>
+## Appendix A — Integration Wire Contracts
+
+*Reference GraphQL mutations and normalized 3PL adapter contract for the four Freeze-First coordinator gates.*
 
 > [!NOTE]
-> The Shopify mutations below follow the Admin GraphQL schema shapes for `fulfillmentOrderHold`, `orderUpdate`, and `fulfillmentOrderReleaseHold`. The 3PL adapter endpoint is Synapse's own normalized contract.
+> The Shopify mutations below follow the Admin GraphQL schema shapes for `fulfillmentOrderHold`, `orderUpdate`, and `fulfillmentOrderReleaseHold`. The 3PL adapter endpoint is Synapse’s normalized internal contract.
 
-#### Step 1: Freeze (`fulfillmentOrderHold`)
+### A.1 Gate 1: Freeze (`fulfillmentOrderHold`)
 
 ```graphql
 mutation FreezeFulfillmentOrder($id: ID!, $hold: FulfillmentOrderHoldInput!) {
@@ -316,9 +553,9 @@ mutation FreezeFulfillmentOrder($id: ID!, $hold: FulfillmentOrderHoldInput!) {
 }
 ```
 
-Expected result: `fulfillmentHold.id = gid://shopify/FulfillmentHold/89104`. **Persist this ID.** Step 4 depends on it.
+Expected result: `fulfillmentHold.id = gid://shopify/FulfillmentHold/89104`. **Persist this ID** for Gate 4.
 
-#### Step 2: Verify the WMS Queue Lock (3PL Adapter)
+### A.2 Gate 2: Verify the WMS Queue Lock (3PL Adapter)
 
 ```http
 GET /shipments?order_id=gid://shopify/Order/5892114432104 HTTP/1.1
@@ -339,9 +576,9 @@ Authorization: Bearer <token>
 }
 ```
 
-**Proceed only if** `queue_lock == "SHIPMENT_ON_HOLD"` **and** (`wave_id == null` or `supervisor_override == true`) **and** `pick_status == "NOT_PICKED"`. The adapter may set `supervisor_override` only from authenticated WMS confirmation of a completed supervisor freeze or wave deallocation for this shipment and operation. Retain that confirmation in the operation record; reject a client-supplied override. A Shopify 200 or a supervisor's intention to stop the wave does not satisfy this gate.
+**Proceed only if** `queue_lock == "SHIPMENT_ON_HOLD"` **and** (`wave_id == null` or `supervisor_override == true`) **and** `pick_status == "NOT_PICKED"`. The adapter sets `supervisor_override` solely from authenticated WMS confirmation of a completed supervisor freeze or wave deallocation for this shipment and operation—never from a client-supplied flag.
 
-#### Step 3: Mutate (`orderUpdate` with CASS-Standardized Input)
+### A.3 Gate 3: Mutate (`orderUpdate` with CASS-Standardized Input)
 
 ```graphql
 mutation CorrectShippingAddress($input: OrderInput!) {
@@ -383,9 +620,9 @@ mutation CorrectShippingAddress($input: OrderInput!) {
 }
 ```
 
-The address is the **CASS-standardized, ZIP+4** output, never the raw customer text.
+The payload supplies the **CASS-standardized, ZIP+4** address rather than unvalidated customer text.
 
-#### Step 4: Release (`fulfillmentOrderReleaseHold`, Explicit `holdIds`)
+### A.4 Gate 4: Release (`fulfillmentOrderReleaseHold`, Explicit `holdIds`)
 
 ```graphql
 mutation ReleaseOurHoldOnly($id: ID!, $holdIds: [ID!]) {
@@ -410,300 +647,6 @@ mutation ReleaseOurHoldOnly($id: ID!, $holdIds: [ID!]) {
   ]
 }
 ```
-
-> [!IMPORTANT]
-> **Hold Isolation Rule**: Passing explicit `holdIds` is **mandatory**. In the Shopify Admin API, omitting `holdIds` instructs the system to release **every active hold on the fulfillment order**. If an order has an independent fraud hold or a tax review lock placed by another system, a generic release call will silently clear those holds as well. Enterprise mutations must strictly release only the specific hold ID they created.
-
-The wire payloads execute the mechanics of the save. But why was Order #18404 facing a high-wire, 133-second emergency freeze in the first place? To answer that, we must examine the hidden architectural interaction between carrier service level agreements and storefront hold buffers.
-
----
-
-## 5. No Four-Minute Cushion: Expedited SLA Routing and the 600-Second Design Budget
-
-*Why priority shipping tiers bypass standard edit buffers, shrinking the safe mutation window from fifteen minutes to zero.*
-
-A support agent sees an order 11 minutes old and reasons: *"Standard orders sit in a 15-minute buffer. We have four minutes."* For Order #18404, that reasoning was wrong.
-
-```text
-STANDARD ORDER (15-minute fraud/edit buffer)
- 00:00        checkout
- ├────────────────── 15:00 buffer: Stage 0, Zero Risk ──────────────────┤
- 15:00                                                         WMS drop (Stage 1)
- ▲ ticket at T+11 arrives INSIDE the buffer: a pure storefront edit.
-
-EXPEDITED ORDER (#18404)
- 00:00  checkout
- ├─ 1:10 ─┤ fraud scoring passes (10:04:10)
-          ├2s┤ WMS drop (10:04:12)  ◄── Stage 1 begins at T+1:12
-              ├───────────────── 9:48 (588s) in queue ─────────────────┤
-                                                              ticket at T+11:00 (10:14:00)
- ▲ ticket arrives AFTER the drop: the order is already in the warehouse's hands.
-```
-
-### 5.1 The Architectural Explanation: Expedited SLA Routing
-
-This timing reflects a core e-commerce architectural rule: **Shipping Service Level Agreements (SLAs) override batching buffers.**
-
-Order #18404 was not a standard ground shipment; the customer paid an **$18.00 premium for Expedited Shipping**. In order to meet guaranteed carrier transit cutoffs (e.g., UPS Next Day Air departing the Allentown dock at 2:00 PM), Shopify Flow routing rules evaluate incoming orders immediately:
-
-1. **Standard Tier Orders**: Held in Shopify's Stage 0 buffer for 15 minutes to allow customer self-service edits and fraud risk scoring.
-2. **Expedited Tier Orders**: Tagged with `priority:expedited`. Upon passing automated risk analysis (Risk Level == `LOW`), the coordinator immediately dispatches the fulfillment request to the 3PL to ensure the parcel catches the earliest available picking wave.
-
-Order #18404 cleared fraud scoring at 10:04:10 EST and was pushed to ShipBob two seconds later. By the time Marcus Chen sent his ticket at 10:14:00 EST, the order had been in the Allentown queue for nearly ten minutes (588 seconds).
-
-**The Rule**: In expedited fulfillment, the safe editing window does not last 15 minutes. It closes in **under 600 seconds** from WMS drop.
-
-The 600-second figure is a *design budget*, not a measured wave cadence. Note the arithmetic: the ticket arrived 588 seconds after drop, and the queue lock was confirmed at 606 seconds after drop. The order was saved with no margin in the budget, not by the budget. This is precisely why the protocol never assumes a buffer exists: **check the physical stage, then freeze.**
-
-Because time-based cushions are an operational illusion in multi-tier fulfillment, safe order mutation requires a deterministic, event-driven state machine. Section 6 defines the four-gate protocol that enforces this invariant.
-
----
-
-## 6. Lock Before You Touch: The Four-Gate Freeze-First Protocol for Order Edits
-
-*Lays out the ordered checkpoints an order change must clear, what each one demands, and how a timeout or picked order is routed.*
-
-The Freeze-First protocol puts a confirmed warehouse hold ahead of the storefront write. It blocks the edit while the physical state remains unknown. That protection depends on operation ownership, current revision checks, and a WMS hold that the picking scheduler actually honors; a sequence of API calls alone cannot supply those guarantees.
-
-```mermaid
-flowchart TD
-    A["Support Ticket Ingested<br>(Address, SKU swap, Cancel)"] --> B{"Current Warehouse State<br>Before PONR?"}
-    
-    B -- "No: Stage 3 or 4<br>(Picked / Packed / Labeled)" --> C["HARD PONR LOCKOUT<br>Reject storefront edit"]
-    C --> D["Failover to Post-Delivery<br>Return or Carrier Intercept"]
-
-    B -- "Yes: Stage 0, 1, or 2<br>(Pre-Drop / Queue / Wave)" --> E["Step 1: LOCK<br>Place native Shopify hold"]
-    E --> F["Step 2: VERIFY<br>Poll WMS for queue lock"]
-    
-    F --> G{"WMS confirms<br>SHIPMENT_ON_HOLD?"}
-    G -- "Confirmed" --> H["Step 3: MUTATE<br>Apply CASS address or SKU swap"]
-    G -- "504 / Unknown" --> I["Mark PENDING<br>Alert supervisor before wave cutoff"]
-    
-    H --> J["Step 4: RELEASE<br>Release this operation's holdIds"]
-    J --> K["Order Resumes: READY_FOR_WAVE_BATCH<br>Audit note appended to timeline"]
-
-    style C fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
-    style E fill:#d4edda,stroke:#28a745,stroke-width:2px;
-    style F fill:#fff3cd,stroke:#ffc107,stroke-width:2px;
-    style H fill:#cce5ff,stroke:#004085,stroke-width:2px;
-    style J fill:#d4edda,stroke:#28a745,stroke-width:2px;
-```
-
-### 6.1 The Four Sequential Gates
-
-1. **Gate 1: Freeze (Place Native Hold)**
-   * *Target*: Shopify Admin GraphQL `fulfillmentOrderHold`.
-   * *Contract*: Specify `reason: INCORRECT_ADDRESS` and a stable idempotency `handle`.
-   * *Invariant*: This halts automated Shopify fulfillment workers but does *not* prove the warehouse floor has stopped. Persist `fulfillmentHold.id` immediately.
-2. **Gate 2: Verify (Obtain Physical WMS Queue Lock)**
-   * *Target*: 3PL Adapter `GET /shipments?order_id={id}`.
-   * *Contract*: Assert `queue_lock == "SHIPMENT_ON_HOLD"`, `pick_status == "NOT_PICKED"`, and either `wave_id == null` or an authenticated WMS `supervisor_override` confirming the completed freeze/deallocation described in Section 2.2. Verify that the confirmation belongs to this shipment and operation; an override never bypasses the physical-pick lockout.
-   * *Invariant*: An HTTP 200 response from the warehouse API confirms message delivery, *not* a floor freeze. Mutation remains blocked until the queue lock token is returned.
-3. **Gate 3: Mutate (Apply Record Update)**
-   * *Target*: Shopify GraphQL `orderUpdate` (for address) or `orderEditCommit` (for line items).
-   * *Contract*: Address must pass USPS CASS/DPV validation; line-item swaps must balance ledger deltas to $0.00.
-4. **Gate 4: Release (Scoped Re-Queueing)**
-   * *Target*: Shopify Admin GraphQL `fulfillmentOrderReleaseHold`.
-   * *Contract*: Pass exact `holdIds` created in Gate 1.
-   * *Invariant*: Confirm the WMS status transitions back to `READY_FOR_WAVE_BATCH` with updated metadata.
-
-In this case, Order #18404 received a verified warehouse lock 18 seconds after ticket ingestion and resumed with the corrected Binghamton label. In the separate Capstone case, Order #35070 received a 504 at the hold gateway and still carried the old Philadelphia destination in the Reno queue. That outcome calls for a warehouse state check before any update or retry. [Capstone Sections 3–5](../capstone/TechnicalStudy-Capstone-AsynchronousOrderMutation.md) traces the timeout through the warehouse cutoff.
-
-Executing Gate 2 in production requires translating raw HTTP responses into accurate warehouse state assertions. As Section 7 demonstrates, standard HTTP status codes in distributed commerce rarely mean what they seem.
-
----
-
-## 7. Acknowledged, Unknown, or Too Late: How to Read 200, 504, and 422 Codes
-
-*Maps each Shopify and warehouse response to what actually happened on the floor and the action required, and why a timeout is riskiest.*
-
-Three status codes decide what happens next, and they do not mean what they appear to mean.
-
-| Inbound Telemetry Signal | Exact Technical Meaning | Architectural Interpretation | Required System Action |
-|---|---|---|---|
-| **Shopify Hold 200 OK** (`userErrors: []`) | Shopify database flagged fulfillment order as `ON_HOLD`. | **Storefront intent recorded.** Floor has NOT stopped. | Proceed to Gate 2; **do NOT mutate order record yet.** |
-| **WMS HTTP 200 OK** | WMS HTTP gateway accepted the JSON hold request payload. | **Message transport confirmed.** Floor has NOT stopped. | Maintain hold; poll for physical queue lock confirmation. |
-| **WMS `SHIPMENT_ON_HOLD`** (with Queue ID) | WMS scheduler locked the queue record; pick list generation frozen. | **Physical floor stopped.** Order safely immobilized. | **Clear Gate 3:** Proceed with CASS validation and mutation. |
-| **HTTP 504 Gateway Timeout** | Gateway closed connection before upstream WMS confirmed state. | **Outcome UNKNOWN.** The hold may or may not have landed. | **Mark PENDING.** Reuse idempotency key; alert supervisor before wave cutoff. **Never retry blindly.** |
-| **HTTP 422 `PONR_EXCEEDED` with confirmed physical pick** | WMS rejected the hold because the physical pick boundary has been crossed. | **Hard PONR crossed.** Storefront mutation is closed. Wave assignment alone does not establish this state. | **HARD LOCKOUT.** Terminate the mutation loop and route to recovery. A wave-allocation refusal before pick requires the authenticated supervisor exception, not a blind retry. |
-
-In the Capstone, 13:42:00 ends automated modification; 13:45:00 closes the supervisor rescue window at physical pick. Read the warehouse reason and pick state, not the HTTP number alone. A batched but unpicked order remains eligible only for the verified supervisor path in Section 8.
-
-```json
-{
-  "error": "PONR_EXCEEDED",
-  "message": "Shipment has crossed the physical pick boundary; mutation refused.",
-  "order_id": "gid://shopify/Order/5892114432104",
-  "pick_status": "PICKED",
-  "idempotency_key": "ponr-18404-addr-v1"
-}
-```
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  200  =  "I GOT YOUR MESSAGE"   → the floor has NOT stopped     │
-│  504  =  "I DON'T KNOW"         → PENDING · same key · escalate │
-│  422 + PICKED = HARD LOCKOUT → carrier recovery                 │
-├─────────────────────────────────────────────────────────────────┤
-│  Confirm the LOCK, not the 200.                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Why 504 is the most dangerous signal.** A timeout after remote success looks identical to a timeout where nothing happened. A fresh key can create a second intent. Keep the original key and payload, read the authoritative operation-owned outcome, and retry only after confirming the first effect did not occur. The local harness exercises those branches; production needs an equally authoritative WMS lookup. A stale or generic `ON_HOLD` response cannot settle ownership.
-
----
-
-## 8. Stage Decides the Playbook: Address Fix, Flavor Swap, Cancellation, and Intercept
-
-*Shows how a single physical-state check routes each request, then walks through the ordered steps and safeguards for each of the three paths.*
-
-Every customer request, whether address edit, flavor swap, or cancellation, enters through **the same physical-state gate**. The playbooks differ in what happens after it.
-
-```mermaid
-flowchart TD
-    Request["Customer exception"] --> Gate["PONR gate · Physical warehouse stage"]
-
-    Gate -->|"Stages 0–1"| Early["`**Playbook A** · CASS address correction
-**Playbook B** · 1:1 flavor exchange`"]
-
-    Gate -->|"Stage 2"| Wave["`**Playbook A** · Address correction only
-Confirm the supervisor queue freeze in WMS
-before picking begins`"]
-
-    Gate -->|"Stages 3–4"| Late["`**Playbook C** · Hard lockout
-Request UPS Delivery Intercept if eligible
-Notify the customer`"]
-
-    style Early fill:#d4edda,stroke:#28a745,color:#142533
-    style Wave fill:#fff3cd,stroke:#ffc107,color:#142533
-    style Late fill:#f8d7da,stroke:#dc3545,color:#142533
-```
-
-### 8.1 Playbook A: CASS-Standardized Address Correction
-
-*The Order #18404 Path.*
-
-1. **Gate Assessment**: Read physical stage. Stage 0–1 $\to$ automated fast-path; Stage 2 $\to$ supervisor freeze; Stage 3+ $\to$ Playbook C.
-2. **Freeze $\to$ Verify** (Gates 1–2): Confirm WMS queue lock token before touching record.
-3. **USPS CASS / DPV Normalization**: Run raw user address through CASS standardization, appending ZIP+4 and verifying Delivery Point Validation (DPV):
-   ```text
-   Raw Input:   142 Court Street, Apt 3B, Binghamton, NY 13901
-   CASS Output: 142 COURT ST APT 3B, BINGHAMTON NY 13901-3412 (DPV: Valid)
-   ```
-4. **Dynamic Zone & Node Recalculation**: Re-evaluate carrier shipping zone and origin node. For Order #18404, the destination crosses state lines from PA to NY, so the coordinator flags the cross-state delta for tax and rate reconciliation.
-5. **Mutate $\to$ Release** (Gates 3–4): Execute `orderUpdate` and release with explicit `holdIds`.
-6. **Timeline Audit Logging**: Write an un-editable staff note to the Shopify timeline:
-   ```text
-   [CASS-ADDR-UPDATE] Raw: 142 Court Street, Apt 3B, Binghamton, NY 13901 -> CASS: 142 COURT ST APT 3B, BINGHAMTON NY 13901-3412. Auth: Gorgias #T-10492. HoldId: 89104.
-   ```
-
-### 8.2 Playbook B: 1:1 Consumable Flavor Exchange
-
-*Available only before Boundary 1: Stage 0–1, prior to wave assignment.*
-
-1. **Gate**: If wave assigned (Stage 2+), **SKU swaps are closed**; route to post-delivery exchange.
-2. **Freeze $\to$ Verify**: Obtain WMS queue lock.
-3. **Real-Time Available-to-Sell (ATS) Verification**: Query warehouse inventory at the specific allocated node (`LOC-PA-01`). Available inventory must satisfy $\text{ATS} \ge 5\text{ units}$ to prevent overselling active picking waves.
-4. **Strict Catalog Family Constraint**: Swaps are strictly limited to products within the identical product master family and at an identical price point (`SYN-FSTK-MY` $\leftrightarrow$ `SYN-FSTK-BO`, both $42.00).
-5. **Zero-Balance Financial Reconciliation**: Subtotals, promotional discounts, jurisdictional sales taxes, and captured payments must reconcile to exactly **$0.00 net delta**.
-6. **Mutate $\to$ Release**: Execute `orderEditCommit` and release with explicit `holdIds`.
-
-### 8.3 Playbook C: Cancellation & Hard Lockout Failover
-
-*Stage 3 and beyond. Storefront mutations are over; the carrier is the only lever left.*
-
-1. **Receive 422 `PONR_EXCEEDED`** or a physical state of picked/packed/manifested.
-2. **Programmatic Storefront Lockout**: Disable "Cancel Order" in Shopify Admin; do NOT retry mutation.
-3. **Submit UPS Delivery Intercept v2**: Submit carrier request through the Synapse adapter, which translates to the carrier's wire contract. The normalized adapter body must **never be sent directly to UPS**. The offline suite checks a return request with `requestType: RS` and canceled reason `AM`.
-4. **Interpret Carrier Results Honestly**:
-   - HTTP 200 with `success: false` is a **business failure**.
-   - Electronic acceptance (`ACCEPTED`) is **not** physical recovery. Remain in "pending" until a physical tracking event confirms depot diversion.
-   - A timeout is `UNKNOWN`; reconcile by lookup, not by resubmission.
-5. **Modeled Recovery Economics**: Successful return costs **$17.50**; failed or rejected requests cost **$0.00** in the fixtures.
-6. **Customer Transparency Automation**:
-   > *"Hi Marcus, we caught your address update after your order had already been packed at our Allentown distribution center, which means we could no longer modify it in our system. We have initiated a carrier reroute request with UPS. Intercepts are requests, not guarantees. We will notify you the moment the carrier confirms diversion, and we will ensure your order reaches Binghamton regardless."*
-
-> [!NOTE]
-> Replacement economics in the BOM package (`evidence/costs/summary.md`) show how expensive this branch is: an incremental recovery cost of **$98.60** turns a $54.76 baseline contribution into **−$43.84**. That is the economic argument for catching tickets *before* Boundary 2.
-
----
-
-## 9. Hold First, Release Only Yours: Four Laws for Safe Order Mutation
-
-*Gives readers a short checklist: when to freeze, what proves a stop, how far a release may reach, and when editing ends.*
-
-1. **Freeze First, Mutate Second**: Never change an order that has not been physically held. A mutation without a freeze is a race you have chosen to run.
-2. **Receipt Is Not a Stop (Confirm the Lock, Not the 200)**: An acknowledgment proves only that a packet reached a server. The only signal that clears a mutation is a confirmed `SHIPMENT_ON_HOLD` queue token.
-3. **Release Only What You Held (Explicit `holdIds`)**: Your hold is the only hold you may release. Passing explicit `holdIds` ensures that resolving an address issue does not accidentally release an order undergoing fraud or tax review.
-4. **Never Mutate Past Picked**: After the pick scan, the database is describing a world that no longer exists. All storefront mutations are terminated; pivot immediately to carrier intercept and FDA cGMP quarantine disposal.
-
----
-
-## 10. Invisible When It Works: What a Correct Integration Layer Looks Like
-
-Marcus Chen never learned that his order spent two minutes in suspended animation. His carton arrived in Binghamton. The only record of the near miss is a timeline entry and a freeze duration of 133 seconds.
-
-That is what a correct integration layer looks like: invisible when it works, because it refused to let a four-second tap on a phone outrun a physical conveyor 49 miles away.
-
-In e-commerce, it is trivial to build software that works when everything goes smoothly. What distinguishes enterprise engineering is how a system behaves when a customer changes their mind while an automated warehouse is already in motion.
-
-> *"In a distributed system, database state is an aspiration; physical warehouse state is reality. The job of the integration layer is to ensure the aspiration never outruns the reality."*
-
-Engineering principles earn their place here through reproducible checks. The offline harness verifies selected hold-coordination behaviors: operation ownership, payload-bound replay, revision checks, conditional hold acquisition, reconciliation, selective release, and recovery after a persisted local effect. The staged trace and complete vendor-integrated mutation workflow remain separate evidence classes. Section 11 states that boundary explicitly.
-
----
-
-## 11. What Ran, What Didn't: Locally Executed Tests Versus Staged and Modeled Claims
-
-*Sorts each claim by evidence level, from executed locally to not established, then reports the simulator benchmark's latency percentiles and business-effect counts.*
-
-In accordance with rigorous systems architecture principles, this section strictly separates locally verified software test suites from operational specifications.
-
-**Ground-Truth Evidence References:**
-- [Coordinator Latency Benchmark](../evidence/latency/summary.md)
-- [Unit Cost & BOM Ledger](../evidence/costs/summary.md)
-- [Carrier Recovery Contracts](../evidence/carrier-recovery/summary.md)
-- [Reproducible Evidence Suite](../evidence/README.md)
-
-### 11.1 Evidence Scope & Verification Status Matrix
-
-| System Component / Claim | Evidentiary Status | Verification Source | Not Established / Scope Boundary |
-|---|---|---|---|
-| **Atomic claim of a hold, one WMS-simulator effect per eligible request** | **Executed locally** | Latency suite (34/34 passed) | Real vendor WMS API behavior |
-| **Duplicate / replayed deliveries do not double-apply; payload conflicts rejected** | **Executed locally** | Latency suite (34/34 passed) | Cross-region delivery semantics |
-| **Post-cutoff rejection preserved on replay; wave release mid-request rejects mutation** | **Executed locally** | Latency suite (34/34 passed) | A physical warehouse floor stop |
-| **Timeout-after-success reconciles without a second effect; absent effect reconciles before same-key retry** | **Executed locally** | Latency suite (34/34 passed) | Production internet network failure modes |
-| **Selective release preserves unrelated holds** | **Executed locally** | Latency suite (34/34 passed) | Live behavior of Shopify's hosted API |
-| **Recovery by a new process after worker exit at the post-effect boundary** | **Executed locally** | Latency suite (34/34 passed) | Durable distributed locking across clusters |
-| **Pinned UPS Delivery Intercept v2 snapshot matches provenance hash; selected wire constraints enforced** | **Verified offline** | Carrier suite (34 passed, **2 skipped**) | Full OpenAPI validation; provider certification |
-| **Accepted ≠ recovered; duplicate events never repeat a fee; terminal states not overwritten** | **Executed locally** | Carrier suite (34 passed) | Physical carrier interception on trailers |
-| **Printed BOM, contribution, and replacement arithmetic reconcile in whole integer cents** | **Executed locally** | Cost suite (11/11 passed) | Real supplier purchasing contracts, net profit |
-| **The 133-second trace, Order #18404** | **Staged scenario** | Narrative scenario inputs | Any production wall-clock measurement |
-| **FDA 21 CFR Part 111 scrap policy and fee lines** | **Scenario policy** | Declared regulatory inputs | Formal regulatory determination, contract rates |
-| **Production latency, SQS delivery, vendor SLAs** | **Not established** | Architectural design | Live third-party platform guarantees |
-
-### 11.2 Executed SQLite Coordinator Benchmark
-
-**Use the recorded run, not a remembered millisecond.** The [coordinator report](../evidence/latency/summary.md) carries the run ID, Node runtime, executed checks, and measured percentile table. Keep presentation figures tied to that evidence instead of a second copied table.
-
-The harness uses Node's built-in SQLite for a local persistent operation ledger and virtual WMS state. It exercises atomic claims and conditional hold writes without contacting Shopify, ShipBob, or SQS. The default smoke workloads establish local response timings, not vendor confirmation latency; `--full` increases the workload to 10,000 attempts per case.
-
-#### How to Read This Benchmark Table
-- Timings use `performance.now()`; percentiles use nearest-rank (`ceil(p·N)−1`) with no interpolation.
-- All outcomes are retained, including pending, rejected, and unknown results. **Response latency is not confirmation latency.**
-- The seed reproduces *injected delays*, not operating-system scheduling or wall-clock durations.
-- The **duplicate-pairs row** is the clearest illustration of idempotency: **100 deliveries produced exactly 50 business effects**.
-- The **cutoff row** is the clearest illustration of the binary gate: **20 attempts produced exactly 0 effects**.
-- Milliseconds in a local simulator are *not* comparable to the staged 19s/114s trace. The harness tests claim-and-commit mechanics; it does not measure external CASS calls or human review.
-
-#### Core Passing Assertions (All 34 Verified)
-1. **Atomic Claims**: An eligible hold commits exactly one WMS-simulator effect; a stale order revision cannot apply a hold.
-2. **Serialized Duplicate Handling**: Concurrent same-order duplicates return *pending*; later replays return *confirmed*; competing operation IDs serialize on the same shipment; reconciliation cannot steal an active pending operation.
-3. **Post-Cutoff Preservation**: A rejected cutoff outcome is preserved on duplicate delivery; a wave release between initial read and conditional hold rejects mutation.
-4. **Selective Release**: Releasing the coordinator's hold preserves an unrelated hold.
-5. **Uncertainty Handling**: Timeout after remote success reconciles without a second effect; absent effect reconciles before a safe same-key retry; revision change after an uncertain effect is detected.
-6. **Payload Integrity**: Reusing a key for a different order, or with a changed address, is rejected as a conflict.
-7. **Crash Recovery**: A new process recovers an effect persisted before worker termination.
 
 ---
 
