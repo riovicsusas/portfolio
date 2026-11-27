@@ -156,6 +156,8 @@ function openProjectDetail(id) {
         <p style="font-size:14px; color:var(--text); line-height:1.8;">${p.fullOverview || p.overview || p.desc || p.short}</p>
       </div>
 
+      ${p.objectives?.length ? '<section aria-labelledby="projectObjectivesTitle" style="margin-bottom:28px;"><p id="projectObjectivesTitle" class="modal-section-label" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;">What You Will Learn</p><ul style="display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; margin:0; padding:0; list-style:none;">' + p.objectives.map((objective, idx) => '<li style="display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border:1px solid rgba(201,183,159,0.18); border-radius:10px; background:rgba(24,51,75,0.58); color:var(--text); font-size:12.5px; line-height:1.55;"><span aria-hidden="true" style="color:var(--gold); font-weight:800;">0' + (idx + 1) + '</span><span>' + objective + '</span></li>').join('') + '</ul></section>' : ''}
+
       <!-- ARCHITECTURE SCOPE & VERIFICATION PILLARS -->
       <div style="margin-bottom:28px;">
         <p class="modal-section-label" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;"><i class="ph ph-shield-check"></i> Architecture Scope &amp; Controls</p>
@@ -170,6 +172,7 @@ function openProjectDetail(id) {
       </div>
 
       ${p.references?.dependencies?.length ? `
+
       <!-- RELATED ARCHITECTURE -->
       <div style="margin-bottom:28px;">
         <p class="modal-section-label" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px;"><i class="ph ph-git-branch"></i> Related Specifications</p>
@@ -183,6 +186,7 @@ function openProjectDetail(id) {
         </div>
       </div>` : ''}
 
+      ${p.id === 'd1-order-lifecycle' ? '<div style="margin:-16px 0 28px;"><p style="font-size:11px; color:var(--muted); margin:0 0 8px;">Select a control to see what it does in this study.</p><div style="display:grid; gap:8px;"><details style="border:1px solid rgba(201,183,159,0.2); border-radius:9px; background:rgba(24,51,75,0.48); padding:10px 13px;"><summary style="display:flex; justify-content:space-between; gap:12px; cursor:pointer; color:var(--linen); font-size:12px; font-weight:700;"><span>01 · Order-state mapping</span><span aria-hidden="true" style="color:var(--gold);">+</span></summary><p style="margin:9px 0 0; color:var(--text); font-size:12px; line-height:1.6;">Compares Shopify’s visible status with the WMS physical stage. It reveals whether the order is pre-drop, queued, wave-assigned, picked, or manifested—and which changes are still eligible.</p></details><details style="border:1px solid rgba(201,183,159,0.2); border-radius:9px; background:rgba(24,51,75,0.48); padding:10px 13px;"><summary style="display:flex; justify-content:space-between; gap:12px; cursor:pointer; color:var(--linen); font-size:12px; font-weight:700;"><span>02 · Freeze-First coordinator</span><span aria-hidden="true" style="color:var(--gold);">+</span></summary><p style="margin:9px 0 0; color:var(--text); font-size:12px; line-height:1.6;">Places a Shopify hold, then waits for a verified WMS queue lock. A gateway acknowledgement alone does not clear this gate.</p></details><details style="border:1px solid rgba(201,183,159,0.2); border-radius:9px; background:rgba(24,51,75,0.48); padding:10px 13px;"><summary style="display:flex; justify-content:space-between; gap:12px; cursor:pointer; color:var(--linen); font-size:12px; font-weight:700;"><span>03 · Mutation and PONR guards</span><span aria-hidden="true" style="color:var(--gold);">+</span></summary><p style="margin:9px 0 0; color:var(--text); font-size:12px; line-height:1.6;">Applies the address or item-change checks while the order is still eligible. At the physical pick scan, it blocks storefront edits and routes the case to recovery.</p></details><details style="border:1px solid rgba(201,183,159,0.2); border-radius:9px; background:rgba(24,51,75,0.48); padding:10px 13px;"><summary style="display:flex; justify-content:space-between; gap:12px; cursor:pointer; color:var(--linen); font-size:12px; font-weight:700;"><span>04 · Scoped release and recovery</span><span aria-hidden="true" style="color:var(--gold);">+</span></summary><p style="margin:9px 0 0; color:var(--text); font-size:12px; line-height:1.6;">Releases only the hold created by this operation. If the carton has already been picked or manifested, the storefront edit remains closed and carrier recovery is a separate path.</p></details></div></div>' : ''}
             <!-- PRIMARY: TECHNICAL STUDY VIEWER + SECONDARY: PDF -->
       <div style="display:flex; flex-direction:column; gap:12px; margin-top:4px;">
 

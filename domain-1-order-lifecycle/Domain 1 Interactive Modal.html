@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f2234" />
+  <title>Domain 1 Interactive Modal</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f2234;
+      --panel: #18334b;
+      --panel-deep: #102638;
+      --green: #566746;
+      --green-light: #b7c99a;
+      --gold: #e5c378;
+      --linen: #faeee5;
+      --text: #e8ddd4;
+      --muted: #b9b3ac;
+      --line: rgba(201, 183, 159, 0.25);
+      --red: #f0a6a6;
+      --amber: #f1d38a;
+      --radius: 18px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 12% 5%, rgba(86, 103, 70, 0.18), transparent 36rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    button,
+    a,
+    select {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible + .toggle-track {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .page-shell {
+      width: min(100% - 36px, 1000px);
+      margin: 0 auto;
+      padding: clamp(48px, 9vw, 108px) 0 72px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gold);
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      color: var(--linen);
+    }
+
+    .eyebrow {
+      margin: 54px 0 12px;
+      color: var(--gold);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--linen);
+      font-family: "Space Grotesk", Manrope, system-ui, sans-serif;
+      line-height: 1.18;
+    }
+
+    h1 {
+      max-width: 780px;
+      margin-bottom: 18px;
+      font-size: clamp(2.25rem, 6vw, 4.4rem);
+      letter-spacing: -0.045em;
+    }
+
+    .intro {
+      max-width: 720px;
+      color: var(--text);
+      font-size: clamp(1rem, 2vw, 1.18rem);
+    }
+
+    .prototype-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .prototype-label::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      content: "";
+    }
+
+    .principle-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: start;
+      max-width: 790px;
+      margin: 38px 0 30px;
+      padding: 22px 24px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--gold);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: rgba(24, 51, 75, 0.76);
+    }
+
+    .principle-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(229, 195, 120, 0.13);
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .principle-card p {
+      margin-bottom: 0;
+    }
+
+    .principle-card strong {
+      color: var(--linen);
+    }
+
+    .launch-button,
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 50px;
+      padding: 12px 20px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #718455, var(--green));
+      box-shadow: 0 10px 28px rgba(86, 103, 70, 0.24);
+      color: #fff9ed;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 160ms ease, filter 160ms ease;
+    }
+
+    .launch-button:hover,
+    .primary-button:hover {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    .launch-button svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .page-note {
+      max-width: 690px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    dialog {
+      width: min(1000px, calc(100vw - 36px));
+      max-width: none;
+      max-height: min(92dvh, 920px);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(201, 183, 159, 0.5);
+      border-radius: 20px;
+      background: var(--bg);
+      box-shadow: 0 32px 100px rgba(0, 0, 0, 0.58);
+      color: var(--text);
+    }
+
+    dialog::backdrop {
+      background: rgba(4, 12, 20, 0.78);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-frame {
+      display: flex;
+      max-height: min(92dvh, 920px);
+      flex-direction: column;
+    }
+
+    .modal-header,
+    .modal-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 17px 22px;
+      background: rgba(15, 34, 52, 0.98);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--line);
+    }
+
+    .modal-heading {
+      min-width: 0;
+    }
+
+    .modal-kicker {
+      margin: 0 0 3px;
+      color: var(--gold);
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: clamp(1.2rem, 3vw, 1.65rem);
+    }
+
+    .icon-button {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--linen);
+      cursor: pointer;
+      font-size: 1.45rem;
+      line-height: 1;
+    }
+
+    .icon-button:hover {
+      border-color: var(--gold);
+      background: rgba(229, 195, 120, 0.08);
+    }
+
+    .modal-scroll {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 22px;
+      scrollbar-color: #566746 #102638;
+    }
+
+    .modal-lead {
+      max-width: 760px;
+      margin-bottom: 18px;
+      color: var(--muted);
+    }
+
+    .scope-note {
+      margin: 0 0 24px;
+      padding: 13px 15px;
+      border: 1px solid rgba(229, 195, 120, 0.28);
+      border-radius: 12px;
+      background: rgba(229, 195, 120, 0.06);
+      color: var(--text);
+      font-size: 0.84rem;
+    }
+
+    .scope-note strong {
+      color: var(--gold);
+    }
+
+    .preset-heading,
+    .section-heading {
+      margin: 0 0 11px;
+      color: var(--linen);
+      font-size: 0.96rem;
+      font-weight: 800;
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 23px;
+    }
+
+    .preset-button,
+    .secondary-button {
+      min-height: 39px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(24, 51, 75, 0.72);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .preset-button:hover,
+    .secondary-button:hover {
+      border-color: var(--gold);
+      color: var(--linen);
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .control-card {
+      min-width: 0;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: linear-gradient(150deg, rgba(24, 51, 75, 0.94), rgba(16, 38, 56, 0.92));
+    }
+
+    .control-card h3 {
+      margin: 0 0 14px;
+      font-size: 1rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 13px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      color: var(--linen);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .field select {
+      width: 100%;
+      min-height: 43px;
+      padding: 9px 34px 9px 11px;
+      border: 1px solid rgba(201, 183, 159, 0.34);
+      border-radius: 9px;
+      background-color: #0f2234;
+      color: var(--text);
+    }
+
+    .field select:disabled {
+      border-style: dashed;
+      color: var(--muted);
+      cursor: not-allowed;
+      opacity: 0.88;
+    }
+
+    .field-help {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.5;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 15px 0 0;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .toggle-row input {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      margin: 1px 0 0;
+      accent-color: var(--green-light);
+    }
+
+    .status-explainer {
+      min-height: 49px;
+      margin: 11px 0 0;
+      padding: 10px 11px;
+      border-left: 3px solid var(--gold);
+      border-radius: 0 8px 8px 0;
+      background: rgba(229, 195, 120, 0.055);
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .result-card {
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(16, 38, 56, 0.92);
+    }
+
+    .result-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .result-top h3 {
+      margin: 3px 0 6px;
+      font-size: clamp(1.1rem, 2.8vw, 1.45rem);
+    }
+
+    .result-summary {
+      max-width: 710px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .verdict {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 0.67rem;
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .verdict::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      content: "";
+    }
+
+    .tone-ready { color: var(--green-light); }
+    .tone-blocked { color: var(--red); }
+    .tone-unknown { color: var(--amber); }
+    .tone-neutral { color: var(--muted); }
+
+    .gate-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin: 17px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .gate-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 9px;
+      align-items: start;
+      min-width: 0;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(24, 51, 75, 0.56);
+    }
+
+    .gate-icon {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      font-size: 0.72rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .gate-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--linen);
+      font-size: 0.75rem;
+    }
+
+    .gate-item span:last-child {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.45;
+    }
+
+    .next-action {
+      padding: 13px 14px;
+      border: 1px solid rgba(229, 195, 120, 0.25);
+      border-radius: 11px;
+      background: rgba(229, 195, 120, 0.055);
+    }
+
+    .next-action h4 {
+      margin: 0 0 4px;
+      color: var(--gold);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .next-action p {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.82rem;
+    }
+
+    .request-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .modal-footer p {
+      max-width: 640px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .secondary-button {
+      min-width: 92px;
+      background: transparent;
+      font-size: 0.8rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 700px) {
+      .page-shell {
+        width: min(100% - 28px, 600px);
+        padding-top: 38px;
+      }
+
+      .eyebrow {
+        margin-top: 42px;
+      }
+
+      dialog {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100dvh;
+        max-height: 100dvh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .modal-frame {
+        height: 100dvh;
+        max-height: 100dvh;
+      }
+
+      .modal-header,
+      .modal-footer {
+        padding: 13px 16px;
+      }
+
+      .modal-scroll {
+        padding: 17px 15px 24px;
+      }
+
+      .control-grid {
+        gap: 11px;
+      }
+
+      .control-card {
+        padding: 14px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .page-shell {
+        width: min(100% - 24px, 480px);
+      }
+
+      .principle-card {
+        gap: 11px;
+        padding: 17px;
+      }
+
+      .control-grid,
+      .gate-list {
+        grid-template-columns: 1fr;
+      }
+
+      .result-top {
+        flex-direction: column-reverse;
+        gap: 10px;
+      }
+
+      .modal-footer {
+        align-items: flex-start;
+      }
+
+      .modal-footer p {
+        font-size: 0.69rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <a class="back-link" href="../projects/" aria-label="Return to portfolio projects">
+      <span aria-hidden="true">←</span> Back to Projects
+    </a>
+
+    <p class="eyebrow">Domain 1 · Interactive prototype</p>
+    <h1>Domain 1 Interactive Modal</h1>
+    <p class="intro">
+      Explore how an order can look safe to edit in Shopify while its warehouse state tells a different story.
+      Change the conditions and see which action the model allows.
+    </p>
+    <span class="prototype-label">Standalone preview · not yet linked from the dossier</span>
+
+    <div class="principle-card">
+      <span class="principle-mark" aria-hidden="true">i</span>
+      <p>
+        <strong>Start with the physical state.</strong>
+        Shopify’s “In Progress” status can cover a queued order, a wave-assigned order, or one already picked.
+        The WMS stage determines which edits are still safe.
+      </p>
+    </div>
+
+    <button class="launch-button" id="openModal" type="button" aria-haspopup="dialog" aria-controls="scenarioDialog">
+      <span>Open the interactive scenario</span>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 12h13m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    <p class="page-note">
+      This prototype runs in your browser and uses the documented scenario rules. It does not contact Shopify,
+      ShipBob, or a live warehouse.
+    </p>
+  </main>
+
+  <dialog id="scenarioDialog" aria-labelledby="modalTitle" aria-describedby="modalIntro">
+    <div class="modal-frame">
+      <header class="modal-header">
+        <div class="modal-heading">
+          <p class="modal-kicker">Domain 1 · Order state sandbox</p>
+          <h2 id="modalTitle">What can this order safely do?</h2>
+        </div>
+        <button class="icon-button" id="closeModal" type="button" aria-label="Close interactive scenario">×</button>
+      </header>
+
+      <div class="modal-scroll">
+        <p class="modal-lead" id="modalIntro">
+          Choose what Shopify shows, then inspect the warehouse state. “In Progress” is intentionally shared by
+          three different WMS stages.
+        </p>
+
+        <p class="scope-note">
+          <strong>Model boundary:</strong> This is an interactive explanation of the stated rules, not a live
+          integration. Green means the fulfillment-stage gate is open; address, inventory, payment, and financial
+          validation still apply where relevant.
+        </p>
+
+        <section aria-labelledby="presetTitle">
+          <h3 class="preset-heading" id="presetTitle">Start with a scenario</h3>
+          <div class="presets">
+            <button class="preset-button" type="button" data-preset="predrop">Stage 0 · Before warehouse handoff</button>
+            <button class="preset-button" type="button" data-preset="order18404">Order #18404 · Verified queue hold</button>
+            <button class="preset-button" type="button" data-preset="wave-open">Wave assigned · No verified freeze</button>
+            <button class="preset-button" type="button" data-preset="wave-locked">Wave assigned · Freeze verified</button>
+            <button class="preset-button" type="button" data-preset="timeout">504 · Outcome unknown</button>
+            <button class="preset-button" type="button" data-preset="picked">Picked · Hard lockout</button>
+          </div>
+        </section>
+
+        <div class="control-grid">
+          <section class="control-card" aria-labelledby="shopifyTitle">
+            <h3 id="shopifyTitle">1. Storefront view</h3>
+
+            <div class="field">
+              <label for="shopifyStatus">Shopify fulfillment status</label>
+              <select id="shopifyStatus">
+                <option value="unfulfilled">Unfulfilled</option>
+                <option value="in_progress">In Progress</option>
+                <option value="fulfilled">Fulfilled</option>
+              </select>
+              <p class="field-help">Shopify has fewer visible states than the warehouse floor.</p>
+            </div>
+
+            <div class="field">
+              <label for="shopifyHold">Shopify native fulfillment hold</label>
+              <select id="shopifyHold">
+                <option value="no">No hold recorded</option>
+                <option value="yes">Our hold is recorded</option>
+              </select>
+              <p class="field-help">A Shopify hold pauses storefront fulfillment handling; it does not prove the WMS stopped.</p>
+            </div>
+
+            <label class="toggle-row" for="mismatchMode">
+              <input id="mismatchMode" type="checkbox" />
+              <span>Let me create a Shopify/WMS status mismatch</span>
+            </label>
+          </section>
+
+          <section class="control-card" aria-labelledby="warehouseTitle">
+            <h3 id="warehouseTitle">2. Warehouse view</h3>
+
+            <div class="field">
+              <label for="wmsStage">WMS physical stage</label>
+              <select id="wmsStage">
+                <option value="not_received">Not received · Stage 0</option>
+                <option value="queued">Queued · Stage 1</option>
+                <option value="wave">Wave assigned · Stage 2</option>
+                <option value="picked">Picked / packed · Stage 3</option>
+                <option value="manifested">Manifested · Stage 4</option>
+              </select>
+              <p class="field-help" id="wmsStageHelp">Before warehouse handoff, no WMS webhook or shipment record exists.</p>
+            </div>
+
+            <div class="field">
+              <label for="wmsCondition">Warehouse hold condition</label>
+              <select id="wmsCondition"></select>
+              <p class="field-help" id="conditionHelp">No WMS lock is requested before the warehouse has received the order.</p>
+            </div>
+          </section>
+
+          <section class="control-card" aria-labelledby="requestTitle">
+            <h3 id="requestTitle">3. Customer request</h3>
+            <div class="field">
+              <label for="requestType">What needs to change?</label>
+              <select id="requestType">
+                <option value="address">Correct the shipping address</option>
+                <option value="swap">Swap an item</option>
+                <option value="cancel">Cancel the order</option>
+              </select>
+            </div>
+            <p class="status-explainer" id="requestHelp">
+              Address changes still require the address to be validated and standardized before it is saved.
+            </p>
+          </section>
+
+          <section class="control-card" aria-labelledby="mappingTitle">
+            <h3 id="mappingTitle">What Shopify can see</h3>
+            <p class="field-help">
+              Stage 0 normally appears as <strong>Unfulfilled</strong>. WMS Stages 1, 2, and 3 can all appear as
+              <strong>In Progress</strong>. Stage 4 appears as <strong>Fulfilled</strong>.
+            </p>
+            <p class="status-explainer" id="statusExplainer">
+              The order has not been handed to the warehouse, so the WMS controls are unavailable.
+            </p>
+          </section>
+        </div>
+
+        <section class="result-card" aria-labelledby="resultTitle" aria-live="polite" aria-atomic="true">
+          <div class="result-top">
+            <div>
+              <span class="verdict tone-ready" id="verdict">Stage gate open</span>
+              <h3 id="resultTitle">No warehouse lock is needed yet</h3>
+              <p class="result-summary" id="resultSummary"></p>
+            </div>
+          </div>
+
+          <h4 class="section-heading">Gate check</h4>
+          <ul class="gate-list" id="gateList"></ul>
+
+          <div class="next-action">
+            <h4>Next safe action</h4>
+            <p id="nextAction"></p>
+          </div>
+          <p class="request-note" id="requestNote"></p>
+        </section>
+      </div>
+
+      <footer class="modal-footer">
+        <p>Try changing one condition at a time. The result updates immediately so you can see which gate changed it.</p>
+        <button class="secondary-button" id="footerClose" type="button">Close</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script>
+    const dialog = document.getElementById("scenarioDialog");
+    const openButton = document.getElementById("openModal");
+    const closeButtons = [document.getElementById("closeModal"), document.getElementById("footerClose")];
+    const shopifyStatus = document.getElementById("shopifyStatus");
+    const shopifyHold = document.getElementById("shopifyHold");
+    const wmsStage = document.getElementById("wmsStage");
+    const wmsCondition = document.getElementById("wmsCondition");
+    const requestType = document.getElementById("requestType");
+    const mismatchMode = document.getElementById("mismatchMode");
+    const wmsStageHelp = document.getElementById("wmsStageHelp");
+    const conditionHelp = document.getElementById("conditionHelp");
+    const statusExplainer = document.getElementById("statusExplainer");
+    const verdict = document.getElementById("verdict");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultSummary = document.getElementById("resultSummary");
+    const gateList = document.getElementById("gateList");
+    const nextAction = document.getElementById("nextAction");
+    const requestHelp = document.getElementById("requestHelp");
+    const requestNote = document.getElementById("requestNote");
+
+    const stageDetails = {
+      not_received: { number: 0, label: "Not received · Stage 0", expectedStatus: "unfulfilled" },
+      queued: { number: 1, label: "Queued · Stage 1", expectedStatus: "in_progress" },
+      wave: { number: 2, label: "Wave assigned · Stage 2", expectedStatus: "in_progress" },
+      picked: { number: 3, label: "Picked / packed · Stage 3", expectedStatus: "in_progress" },
+      manifested: { number: 4, label: "Manifested · Stage 4", expectedStatus: "fulfilled" }
+    };
+
+    const statusLabels = {
+      unfulfilled: "Unfulfilled",
+      in_progress: "In Progress",
+      fulfilled: "Fulfilled"
+    };
+
+    const requestLabels = {
+      address: "address correction",
+      swap: "item swap",
+      cancel: "cancellation"
+    };
+
+    const conditionOptions = {
+      not_received: [
+        ["not_applicable", "No WMS record · webhook not sent"]
+      ],
+      queued: [
+        ["no_lock", "No verified WMS queue lock"],
+        ["ack_only", "HTTP 200 acknowledgement only"],
+        ["verified", "Verified SHIPMENT_ON_HOLD + NOT_PICKED"],
+        ["unknown", "504 timeout · outcome unknown"]
+      ],
+      wave: [
+        ["no_lock", "No verified supervisor freeze"],
+        ["verified", "Supervisor freeze/deallocation verified · NOT_PICKED"],
+        ["unknown", "504 timeout · outcome unknown"]
+      ],
+      picked: [
+        ["physical_lockout", "Physical pick is complete · hard lockout"]
+      ],
+      manifested: [
+        ["physical_lockout", "Parcel manifested · carrier recovery only"]
+      ]
+    };
+
+    function defaultWmsStage(status) {
+      if (status === "in_progress") return "queued";
+      if (status === "fulfilled") return "manifested";
+      return "not_received";
+    }
+
+    function allowedStages(status) {
+      if (status === "in_progress") return ["queued", "wave", "picked"];
+      return [defaultWmsStage(status)];
+    }
+
+    function setWmsStageOptions(preferredValue) {
+      const stages = mismatchMode.checked
+        ? Object.keys(stageDetails)
+        : allowedStages(shopifyStatus.value);
+      const current = preferredValue || wmsStage.value;
+      wmsStage.replaceChildren();
+
+      stages.forEach(function (stageKey) {
+        const option = document.createElement("option");
+        option.value = stageKey;
+        option.textContent = stageDetails[stageKey].label;
+        wmsStage.append(option);
+      });
+
+      wmsStage.value = stages.includes(current) ? current : stages[0];
+      wmsStage.disabled = !mismatchMode.checked && shopifyStatus.value !== "in_progress";
+
+      if (shopifyStatus.value === "unfulfilled" && !mismatchMode.checked) {
+        wmsStageHelp.textContent = "No WMS webhook has been sent. There is no warehouse shipment to query or hold.";
+      } else if (shopifyStatus.value === "fulfilled" && !mismatchMode.checked) {
+        wmsStageHelp.textContent = "Shopify shows Fulfilled; the normal mapping places the parcel at the manifested stage.";
+      } else if (mismatchMode.checked) {
+        wmsStageHelp.textContent = "Mismatch exercise: choose a warehouse state that conflicts with Shopify to see why edits must pause.";
+      } else {
+        wmsStageHelp.textContent = "Shopify says In Progress for all three choices. Select the physical WMS stage.";
+      }
+
+      setConditionOptions();
+    }
+
+    function setConditionOptions() {
+      const stageKey = wmsStage.value;
+      const options = conditionOptions[stageKey];
+      const isActionableStage = stageKey === "queued" || stageKey === "wave";
+      wmsCondition.replaceChildren();
+
+      options.forEach(function (entry) {
+        const option = document.createElement("option");
+        option.value = entry[0];
+        option.textContent = entry[1];
+        wmsCondition.append(option);
+      });
+
+      wmsCondition.disabled = !isActionableStage;
+
+      if (stageKey === "not_received") {
+        conditionHelp.textContent = "No warehouse lock is requested before the warehouse has received the order.";
+      } else if (stageKey === "queued") {
+        conditionHelp.textContent = "An acknowledgement is not a lock. Editing waits for a verified WMS hold and an unpicked status.";
+      } else if (stageKey === "wave") {
+        conditionHelp.textContent = "After wave assignment, an address edit needs verified supervisor freeze/deallocation before picking.";
+      } else {
+        conditionHelp.textContent = "A warehouse lock cannot undo a completed pick or carrier handoff.";
+      }
+    }
+
+    function gateItem(title, detail, tone) {
+      const item = document.createElement("li");
+      item.className = "gate-item";
+      const icon = document.createElement("span");
+      icon.className = "gate-icon tone-" + tone;
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = tone === "ready" ? "✓" : tone === "unknown" ? "?" : tone === "neutral" ? "—" : "!";
+      const copy = document.createElement("span");
+      const heading = document.createElement("strong");
+      heading.textContent = title;
+      const body = document.createElement("span");
+      body.textContent = detail;
+      copy.append(heading, body);
+      item.append(icon, copy);
+      return item;
+    }
+
+    function setResult(tone, badgeText, title, summary, gates, action, note) {
+      verdict.className = "verdict tone-" + tone;
+      verdict.textContent = badgeText;
+      resultTitle.textContent = title;
+      resultSummary.textContent = summary;
+      nextAction.textContent = action;
+      requestNote.textContent = note || "";
+      gateList.replaceChildren();
+      gates.forEach(function (gate) {
+        gateList.append(gateItem(gate[0], gate[1], gate[2]));
+      });
+    }
+
+    function render() {
+      const status = shopifyStatus.value;
+      const holdPlaced = shopifyHold.value === "yes";
+      const stageKey = wmsStage.value;
+      const stage = stageDetails[stageKey];
+      const condition = wmsCondition.value;
+      const request = requestType.value;
+      const requestLabel = requestLabels[request];
+      const isMismatch = stage.expectedStatus !== status;
+      const requestChecks = {
+        address: "Address requests still need CASS/DPV validation and a read-back of the saved address.",
+        swap: "Item swaps still need available stock, an allowed product/price match, and a zero net financial delta.",
+        cancel: "Cancellations still need payment and refund-state checks."
+      };
+      requestHelp.textContent = requestChecks[request];
+      statusExplainer.textContent = status === "in_progress"
+        ? "The visible Shopify label is identical for WMS Stages 1, 2, and 3. Use the warehouse stage to decide."
+        : status === "fulfilled"
+          ? "Shopify shows the order as fulfilled. The normal mapping is a manifested parcel, beyond storefront edits."
+          : "The order has not been handed to the warehouse, so the WMS controls are unavailable.";
+
+      if (isMismatch) {
+        const expected = stageDetails[stageKey].expectedStatus;
+        setResult(
+          "blocked",
+          "State mismatch · stop",
+          "Reconcile the two systems before editing",
+          "Shopify shows " + statusLabels[status] + ", while the WMS reports " + stage.label + ". The storefront status cannot resolve this disagreement.",
+          [
+            ["Shopify/WMS agreement", "The two systems currently describe different lifecycle stages.", "blocked"],
+            ["Shopify hold", holdPlaced ? "A Shopify hold is present, but it does not resolve the stage mismatch." : "No native Shopify hold is recorded.", "neutral"],
+            ["WMS condition", "The selected warehouse state expects Shopify to show " + statusLabels[expected] + ".", "blocked"],
+            ["Request rule", "Do not apply an address, item, or cancellation mutation while state is uncertain.", "blocked"]
+          ],
+          "Pause the mutation. Read the authoritative WMS shipment state, reconcile Shopify, and then evaluate the request again.",
+          "This mismatch mode is an intentional exercise; it demonstrates why a storefront label alone is not enough."
+        );
+        return;
+      }
+
+      if (stage.number === 0) {
+        setResult(
+          "ready",
+          "Stage gate open",
+          "No warehouse lock is needed yet",
+          "The order is still in Shopify’s pre-drop window. No webhook has reached the WMS, so the warehouse has no shipment record to lock.",
+          [
+            ["Shopify/WMS agreement", "Unfulfilled maps to the pre-drop state; no WMS record exists yet.", "ready"],
+            ["Shopify native hold", holdPlaced ? "A Shopify hold is present." : "No WMS handoff has occurred, so a warehouse hold is not required.", "ready"],
+            ["WMS freeze", "Not needed: no webhook or shipment record exists yet.", "ready"],
+            ["Request rule", "The fulfillment-stage gate permits this " + requestLabel + ".", "ready"]
+          ],
+          "Run the request-specific checks, save the change in Shopify, and let the normal handoff occur with the corrected order.",
+          requestChecks[request]
+        );
+        return;
+      }
+
+      if (stage.number >= 3) {
+        setResult(
+          "blocked",
+          "Hard lockout",
+          stage.number === 3 ? "The physical pick boundary has been crossed" : "The parcel has left storefront control",
+          stage.number === 3
+            ? "The items have been picked or packed. A database edit would no longer match the physical carton."
+            : "The parcel is manifested. A storefront mutation cannot change the carrier’s parcel.",
+          [
+            ["Shopify/WMS agreement", "The selected status matches the warehouse’s later-stage state.", "ready"],
+            ["Shopify native hold", holdPlaced ? "A hold cannot reverse completed physical work." : "A new hold cannot undo the completed stage.", "neutral"],
+            ["Physical boundary", stage.number === 3 ? "Picked/packed is the hard point of no return." : "Manifested means the parcel is with the carrier process.", "blocked"],
+            ["Request rule", "Block the " + requestLabel + " in the storefront.", "blocked"]
+          ],
+          "Stop storefront edits. Check the applicable recovery path and explain to the customer that carrier recovery is a request, not a guarantee.",
+          "The model does not submit a carrier intercept or predict whether one will succeed."
+        );
+        return;
+      }
+
+      const stageTwoRequestBlocked = stage.number === 2 && request !== "address";
+      if (stageTwoRequestBlocked) {
+        const freezeTone = condition === "verified" ? "ready" : condition === "unknown" ? "unknown" : "neutral";
+        const freezeDetail = condition === "verified"
+          ? "A supervisor freeze is verified, but it cannot reopen this request type."
+          : condition === "unknown"
+            ? "The hold outcome is unknown; no edit may proceed."
+            : "No verified supervisor freeze is selected.";
+        setResult(
+          "blocked",
+          "Request closed at Stage 2",
+          "A wave freeze does not reopen every edit",
+          "After wave assignment, this model permits address correction only. An item swap or cancellation remains blocked even if the warehouse can stop the unpicked carton.",
+          [
+            ["Shopify/WMS agreement", "The visible lifecycle status matches the selected WMS stage.", "ready"],
+            ["Shopify native hold", holdPlaced ? "Our Shopify hold is recorded." : "A Shopify hold is not recorded.", holdPlaced ? "ready" : "neutral"],
+            ["WMS freeze", freezeDetail, freezeTone],
+            ["Request rule", "Item swaps and cancellations are closed after wave assignment.", "blocked"]
+          ],
+          "Do not apply this " + requestLabel + ". If the customer wants an address correction, select that request and complete both hold checks; otherwise follow the approved post-wave process.",
+          requestChecks[request]
+        );
+        return;
+      }
+
+      if (condition === "unknown") {
+        setResult(
+          "unknown",
+          "Outcome unknown",
+          "Do not mutate or retry blindly",
+          "A 504 timeout does not tell you whether the warehouse committed the hold. The order’s physical state must be reconciled first.",
+          [
+            ["Shopify/WMS agreement", "The visible lifecycle status matches the selected WMS stage.", "ready"],
+            ["Shopify native hold", holdPlaced ? "Our Shopify hold remains recorded." : "Place and retain the Shopify hold while reconciling.", holdPlaced ? "ready" : "blocked"],
+            ["WMS freeze", "The hold outcome is unknown; no verified lock is available yet.", "unknown"],
+            ["Request rule", "The " + requestLabel + " must wait until the WMS outcome is authoritative.", "unknown"]
+          ],
+          "Keep the original operation identity, query the authoritative WMS state, and retry only after confirming the first effect did not happen.",
+          "A timeout may arrive before or after the remote system commits. This browser model does not contact that system."
+        );
+        return;
+      }
+
+      const verifiedCondition = condition === "verified";
+      const holdGate = holdPlaced;
+
+      if (!holdGate) {
+        setResult(
+          "blocked",
+          "Hold required",
+          "Freeze the storefront before the edit",
+          "The order is already known to the warehouse. A WMS lock by itself does not replace the Shopify hold in the Freeze-First sequence.",
+          [
+            ["Shopify/WMS agreement", "The visible lifecycle status matches the selected WMS stage.", "ready"],
+            ["Shopify native hold", "No Shopify hold is recorded for this operation.", "blocked"],
+            ["WMS freeze", verifiedCondition ? "The selected WMS lock is verified." : "No qualifying WMS lock is verified.", verifiedCondition ? "ready" : "blocked"],
+            ["Request rule", "The " + requestLabel + " still needs its request-specific checks.", "neutral"]
+          ],
+          stage.number === 2
+            ? "Place the Shopify hold, then request a supervisor freeze/deallocation and verify that the order is still not picked before correcting the address."
+            : "Place the Shopify hold, preserve its ID, then verify the WMS queue lock before changing the order.",
+          requestChecks[request]
+        );
+        return;
+      }
+
+      if (!verifiedCondition) {
+        const onlyAck = condition === "ack_only";
+        setResult(
+          "blocked",
+          "No verified warehouse lock",
+          onlyAck ? "The warehouse acknowledged the request, but has not confirmed a stop" : "The warehouse has not confirmed a stop",
+          onlyAck
+            ? "HTTP 200 confirms that the gateway received the request. It does not prove that picking is paused."
+            : "The shipment may still move through the queue or wave. The edit must wait for physical-state evidence.",
+          [
+            ["Shopify/WMS agreement", "The visible lifecycle status matches the selected WMS stage.", "ready"],
+            ["Shopify native hold", "Our Shopify hold is recorded.", "ready"],
+            ["WMS freeze", onlyAck ? "Acknowledgement only; no SHIPMENT_ON_HOLD lock is proven." : "No qualifying queue or supervisor lock is present.", "blocked"],
+            ["Request rule", "The " + requestLabel + " waits for WMS confirmation.", "neutral"]
+          ],
+          stage.number === 2
+            ? "Ask the warehouse supervisor to freeze or deallocate this unpicked order, then verify the confirmation against this shipment and operation."
+            : "Keep the Shopify hold active and obtain a verified WMS queue lock before mutating the order.",
+          requestChecks[request]
+        );
+        return;
+      }
+
+      setResult(
+        "ready",
+        "Stage gate open",
+        stage.number === 2 ? "Address correction may proceed under the verified freeze" : "The verified queue hold allows the edit path",
+        stage.number === 2
+          ? "The WMS confirms a supervisor freeze/deallocation, and the order is still not picked. The rule allows an address correction only."
+          : "The Shopify hold and WMS queue lock are both confirmed. The order has not crossed the pick boundary.",
+        [
+          ["Shopify/WMS agreement", "The visible lifecycle status matches the selected WMS stage.", "ready"],
+          ["Shopify native hold", "Our Shopify hold is recorded.", "ready"],
+          ["WMS freeze", stage.number === 2 ? "Supervisor freeze/deallocation is verified; pick status is NOT_PICKED." : "SHIPMENT_ON_HOLD is verified; pick status is NOT_PICKED.", "ready"],
+          ["Request rule", "The " + requestLabel + " is permitted by this lifecycle stage.", "ready"]
+        ],
+        "Apply the request-specific validation, make the mutation, verify the saved state, then release only the hold owned by this operation.",
+        requestChecks[request]
+      );
+    }
+
+    function applyPreset(name) {
+      mismatchMode.checked = false;
+      shopifyHold.value = "no";
+      requestType.value = "address";
+
+      if (name === "order18404") {
+        shopifyStatus.value = "in_progress";
+        shopifyHold.value = "yes";
+        requestType.value = "address";
+        setWmsStageOptions("queued");
+        wmsCondition.value = "verified";
+      } else if (name === "wave-open" || name === "wave-locked") {
+        shopifyStatus.value = "in_progress";
+        shopifyHold.value = "yes";
+        setWmsStageOptions("wave");
+        wmsCondition.value = name === "wave-locked" ? "verified" : "no_lock";
+      } else if (name === "timeout") {
+        shopifyStatus.value = "in_progress";
+        shopifyHold.value = "yes";
+        setWmsStageOptions("queued");
+        wmsCondition.value = "unknown";
+      } else if (name === "picked") {
+        shopifyStatus.value = "in_progress";
+        shopifyHold.value = "yes";
+        setWmsStageOptions("picked");
+      } else {
+        shopifyStatus.value = "unfulfilled";
+        setWmsStageOptions("not_received");
+      }
+      render();
+    }
+
+    openButton.addEventListener("click", function () {
+      dialog.showModal();
+    });
+
+    closeButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        dialog.close();
+      });
+    });
+
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog) dialog.close();
+    });
+
+    shopifyStatus.addEventListener("change", function () {
+      if (!mismatchMode.checked) setWmsStageOptions(defaultWmsStage(shopifyStatus.value));
+      render();
+    });
+
+    mismatchMode.addEventListener("change", function () {
+      if (mismatchMode.checked) {
+        setWmsStageOptions(wmsStage.value);
+      } else {
+        setWmsStageOptions(defaultWmsStage(shopifyStatus.value));
+      }
+      render();
+    });
+
+    wmsStage.addEventListener("change", function () {
+      setConditionOptions();
+      render();
+    });
+
+    [shopifyHold, wmsCondition, requestType].forEach(function (control) {
+      control.addEventListener("change", render);
+    });
+
+    document.querySelectorAll("[data-preset]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        applyPreset(button.dataset.preset);
+      });
+    });
+
+    setWmsStageOptions("not_received");
+    render();
+  </script>
+</body>
+</html>

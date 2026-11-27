@@ -34,7 +34,35 @@ const FLAGSHIP_PROJECTS = [
     "filterCat": "lifecycle",
     "loomDuration": "Technical Study",
     "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
-    "desc": "Staged 133-second Freeze-First trace (Order #18404, 18s WMS queue lock) separating automated wave cutoff from hard physical pick lockout, paired with CASS address validation and 21 CFR Part 111 / SOP-QA-402 disposition controls.",
+    "desc": "Shopify says “In Progress”—but is the order still safe to edit? Learn how the warehouse stage changes the answer, and how a verified freeze protects an address correction.",
+    "fullOverview": "Order #18404's address-change request arrives after handoff to the warehouse. Shopify still shows “In Progress,” a status shared by queued, wave-assigned, and picked orders. This study explains the order lifecycle, identifies the physical point of no return, and applies Freeze-First: hold in Shopify, verify the WMS stop, make a validated change, then release only the hold this operation owns. Its 133-second trace is staged; local checks cover coordinator behavior, not a live Shopify or WMS workflow.",
+    "objectives": [
+      "Map the order lifecycle from Shopify handoff through warehouse pick and carrier dispatch.",
+      "Distinguish the WMS stages hidden behind Shopify’s “In Progress” status.",
+      "Identify the wave-assignment boundary and the physical-pick point of no return.",
+      "Apply Freeze → Verify → Mutate → Release before changing an order already known to the warehouse.",
+      "Choose a safe response to a confirmed hold, a 504 timeout, or a post-pick rejection."
+    ],
+    "references": {
+      "architectureScope": [
+        {
+          "name": "Order-state mapping",
+          "role": "Maps Shopify’s visible fulfillment status to the warehouse stage that determines whether an edit is safe."
+        },
+        {
+          "name": "Freeze-First coordinator",
+          "role": "Places the Shopify hold, then requires a confirmed physical WMS lock before changing an order already handed off."
+        },
+        {
+          "name": "Mutation and PONR guards",
+          "role": "Applies request-specific checks and blocks storefront changes after the physical pick boundary."
+        },
+        {
+          "name": "Scoped release and recovery",
+          "role": "Releases only the hold owned by this operation; after pick, sends the request to recovery instead of rewriting the order."
+        }
+      ]
+    },
     "tags": [
       "Shopify Flow",
       "ShipBob WMS",
